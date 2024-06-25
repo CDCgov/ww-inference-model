@@ -6,7 +6,7 @@
 > This project is a work-in-progress. Despite this project's early stage, all development is in public as part of the Center for Forecasting and Outbreak Analytics' goals around open development. Questions and suggestions are welcome through GitHub issues or a PR.
 >
 
-{wwinference} estimates latent incident infections from wastewater concentration data and data on epidemiological indicators, with an initial assumed structure that the wastewater concentration data comes from subsets of the population contributing to the global epidemiological indicator data, such as hospital admissions. This model reflects the model currently used to produce forecasts of COVID-19 hospital admissions, of which the pipeline and model code is available at
+`{wwinference}` estimates latent incident infections from wastewater concentration data and data on epidemiological indicators, with an initial assumed structure that the wastewater concentration data comes from subsets of the population contributing to the global epidemiological indicator data, such as hospital admissions. This model reflects the model currently used to produce forecasts of COVID-19 hospital admissions, of which the pipeline and model code is available at
 the  [wastewater-informed-covid-forecasting](https://github.com/CDCgov/wastewater-informed-covid-forecasting) repository. 
 
 The intention is for {wwinference} to provide a user-friendly R-package interface for running forecasting models that use wastewater concentrations combined with other more traditional epidemiological signals such as cases or hospital admissions. 
