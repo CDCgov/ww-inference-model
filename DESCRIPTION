@@ -1,5 +1,5 @@
 Package: wwinference
-Title: What the Package Does (One Line, Title Case)
+Title: Jointly infers infection dynamics from wastewater data and epidemiological indicators
 Version: 0.0.0.9000
 Authors@R: c(
     person(given = "Kaitlyn",
@@ -39,7 +39,17 @@ Authors@R: c(
            role = c("aut"),
            email = "xum8@cdc.gov")
 	)
-Description: What the package does (one paragraph).
+Description: An implementation of a hierarchical semi-mechanistic renewal
+approach jointly calibrating to multiple wastewater concentrations datasets from
+subsets of a specified population and epidemioliogical indicators such as cases
+or hospital admissions from the whole population. Our framework is an extension
+of the widely used semi-mechanistic renewal framework {EpiNow2}, using a Bayesian
+latent variable approach implemented in the probabilistic programming language
+Stan. This package contains just the core components needed to fit these two
+data sources and produce the following outputs-- estimated and forecasted
+hospital admissions, estimated and forecasted wastewater concentrations,
+global $R(t)$ estimates, local $R(t)$ estimates for the subpopulations
+represented by each wastewater catchment area.
 License: Apache License (>= 2)
 URL: https://github.com/cdcgov/ww-inference-model/
 BugReports: https://github.com/cdcgov/ww-inference-model/issues/
