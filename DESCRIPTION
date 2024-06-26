@@ -40,18 +40,18 @@ Authors@R: c(
            email = "xum8@cdc.gov")
 	)
 Description: An implementation of a hierarchical semi-mechanistic renewal
-approach jointly calibrating to multiple wastewater concentrations datasets from
-subsets of a specified population and epidemioliogical indicators such as cases
-or hospital admissions from the whole population. Our framework is an extension
-of the widely used semi-mechanistic renewal framework {EpiNow2}, using a Bayesian
-latent variable approach implemented in the probabilistic programming language
-Stan. This package contains just the core components needed to fit these two
-data sources and produce the following outputs-- estimated and forecasted
-hospital admissions, estimated and forecasted wastewater concentrations,
-global $R(t)$ estimates, local $R(t)$ estimates for the subpopulations
-represented by each wastewater catchment area.
+    approach jointly calibrating to multiple wastewater concentrations datasets from
+    subsets of a specified population and epidemioliogical indicators such as cases
+    or hospital admissions from the whole population. Our framework is an extension
+    of the widely used semi-mechanistic renewal framework EpiNow2, using a Bayesian
+    latent variable approach implemented in the probabilistic programming language
+    Stan. This package contains just the core components needed to fit these two
+    data sources and produce the following outputs-- estimated and forecasted
+    hospital admissions, estimated and forecasted wastewater concentrations,
+    global R(t) estimates, local R(t) estimates for the subpopulations
+    represented by each wastewater catchment area.
 License: Apache License (>= 2)
-URL: https://github.com/cdcgov/ww-inference-model/
+URL: https://github.com/cdcgov/ww-inference-model/, https://cdcgov.github.io/ww-inference-model/
 BugReports: https://github.com/cdcgov/ww-inference-model/issues/
 Depends:
     R (>= 4.3.0)
