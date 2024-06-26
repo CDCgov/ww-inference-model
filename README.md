@@ -1,4 +1,4 @@
-# wwinference: joint inference and forecasting from wastewater and epidemiological indicators
+# `wwinference`: joint inference and forecasting from wastewater and epidemiological indicators
 
 ## Overview
 
