@@ -72,3 +72,25 @@ wastewater catchment area of that site
 hosp_data <- wwinference::hosp_data
 ww_data <- wwinference::ww_data
 ```
+
+We'll make some plots of the data just to make sure it looks like what we'd expect:
+
+```{r}
+# Add plots
+```
+
+# Pre-processing
+We will need to set some metadata to facilitate model specification. These include:
+- the date on which we are making the forecast
+- number of days to calibrate the model for
+- number of days to forecast
+- specification of the generation interval for COVID-19
+- specification of the delay from infection to hospital admissions for COVID-19
+- setting the priors and parameters, some of which are COVID-19 specific
+```{r}
+params <- get_params(
+  system.file("extdata", "example_params.toml",
+    package = "wwinference"
+  )
+)
+```
