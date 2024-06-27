@@ -1,0 +1,74 @@
+---
+title: "Getting started with wwinference"
+description: "A quick start example demonstrating the use of wwinference to jointly fit wastewater and hospital admissions data"
+author: "Kaitlyn Johnson"
+date: "2024-06-27"
+output:
+  bookdown::html_vignette2:
+    fig_caption: yes
+    code_folding: show
+pkgdown:
+  as_is: true
+vignette: >
+  %\VignetteIndexEntry{Getting started with wwinference}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Quick start
+
+In this quick start, we demonstrate using `wwinference` to specify and fit a
+minimal model using daily COVID-19 hospital admissions from a "global" population and
+viral concentrations in wastewater from a few "local" wastewater treatment plants,
+which come from subsets of the larger population.
+This is intended to be used as a reference for those
+interested in fitting the `wwinference` model to their own data.
+
+# Package
+
+In this quick start, we also use `dplyr` `tidybayes` and `ggplot2` packages.
+These are installed as dependencies when `wwinference` is installed.
+
+```{r}
+library(wwinference)
+library(dplyr)
+library(ggplot2)
+library(tidybayes)
+```
+
+# Data
+
+The model expects two types of data: daily counts of hospital admissions data
+from the larger "global" population, and wastewater concentration
+data from wastewater treatment plants whose catchment areas are contained within
+the larger "global" population. For this quick start, we will use
+simulated data, modeled after a hypothetical US state with 6 wastewater treatment
+plants reporting data on viral concentrations of SARS-COV-2, covering about X %
+of the state's population. This simulated data is assigned to cover dates
+from September 1, 2023 to December 1, 2023. These data are provided as part
+of the package data.
+
+These data are already in a format that can be used for `wwinference`. For the
+hospital admissions data, it contains:
+- a date (column `date`): the date of the observation, in this case, the date
+the hospital admissions occurred
+- a count (column `daily_hosp_admits`): the number of hospital admissions observed on that day
+- a population size (column `state_pop`): the population size covered
+by the hospital admissions data, in this case, the size of the theoretical state.
+
+For the wastewater data, it contains:
+- a date (column `date`): the date the sample was collected
+- a site indicator (column `site`): the unique identifier for the wastewater treatment plant
+that the sample was collected from
+- a lab indicator (column `lab`): the unique identifier for the lab where the sample was processed
+- a concentration (column `genome_copies_mL`): the measured genome copies per mL from
+the sample collected, in natural scale
+- a limit of detection (column `lod`): the limit of detection of the assay used to
+process the sample, in natural scale
+- a site population size (column `site_pop`): the population size covered by the
+wastewater catchment area of that site
+
+```{r}
+hosp_data <- wwinference::hosp_data
+ww_data <- wwinference::ww_data
+```
