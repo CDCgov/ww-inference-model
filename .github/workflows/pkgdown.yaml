@@ -11,10 +11,8 @@ on:
 
 name: pkgdown
 
-permissions: read-all
-
 jobs:
-  pkgdown:
+  build:
     runs-on: ubuntu-latest
     # Only restrict concurrency for non-PR jobs
     concurrency:
@@ -23,28 +21,55 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     permissions:
       contents: write
+      id-token: write
+      pages: write
     steps:
       - uses: actions/checkout@v4
 
       - uses: r-lib/actions/setup-pandoc@v2
+        with:
+          pandoc-version: "2.19.2"
 
       - uses: r-lib/actions/setup-r@v2
         with:
+          r-version: "release"
           use-public-rspm: true
-
+          install-r: false
+          extra-repositories: "https://mc-stan.org/r-packages/"
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
+          working-directory: wwinference
+          cache: true
+          pak-version: rc
           extra-packages: any::pkgdown, local::.
           needs: website
+      - name: "Install cmdstan via cmdstanr"
+        uses: epinowcast/actions/install-cmdstan@v1
+        with:
+          cmdstan-version: "latest"
 
       - name: Build site
-        run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
+        run: "pkgdown::build_site_github_pages('wwinference', new_process = FALSE, install = FALSE)"
         shell: Rscript {0}
 
-      - name: Deploy to GitHub pages 🚀
-        if: github.event_name != 'pull_request'
-        uses: JamesIves/github-pages-deploy-action@v4.5.0
+      - name: Upload artifact for GH pages deployment
+        uses: actions/upload-pages-artifact@v2
         with:
-          clean: false
-          branch: gh-pages
-          folder: docs
+          path: "wwinference/docs/"
+
+    deploy:
+      # check builds on PRs but only deploy when main changes
+      if: ${{ github.event_name != 'pull_request' }}
+      needs: build
+      runs-on: ubuntu-latest
+      permissions:
+        pages: write
+        id-token: write
+
+      environment:
+        name: github-pages
+        url: ${{ steps.deployment.outputs.page_url }}
+
+      steps:
+        - name: Deploy to GitHub pages
+          uses: actions/deploy-pages@v2.0.4
