@@ -13,4 +13,9 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: "3.12"
-    - uses: pre-commit/action@v3.0.1
+    - uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/pre-commit
+          ~/.cache/R/renv
+        key: pre-commit-3|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
