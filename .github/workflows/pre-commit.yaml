@@ -16,6 +16,7 @@ jobs:
     - uses: actions/cache@v4
       with:
         path: |
+          ~/.cache/pre-commit
           ~/.cache/R/renv
-        key: renv-cache|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
+        key: r-precommit-cache|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
     - uses: pre-commit/action@v3.0.1
