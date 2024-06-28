@@ -111,26 +111,29 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     "Sum of wastewater site populations is greater than state pop" =
       pop_size > sum(ww_pop_sites)
   )
+  stopifnot(
+    "Insufficient population sizes provided for wastewater catchment areas" =
+      length(ww_pop_sites) >= n_sites
+  )
 
-  if (length(ww_pop_sites) < n_sites) {
-    ww_pop_sites <- rnorm(n_sites,
-      mean = (0.7 * pop_size / n_sites),
-      sd = 0.1 * (0.7 * pop_size / n_sites)
-    )
-  }
-  if (n_lab_sites < n_sites) {
-    n_lab_sites <- n_sites
-    map_site_to_lab <- 1:n_sites
-  }
+  stopifnot(
+    "Insufficient number of lab-site combinations provided" =
+      n_lab_sites >= n_sites
+  )
+  stopifnot(
+    "Mapping from sites to lab-sites not provided" =
+      length(map_site_to_lab) == n_lab_sites
+  )
 
-  # Get pop fractrions of each subpop
+
+  # Get pop fractions of each subpop. There will n_sites + 1 subpops
   pop_fraction <- c(
     ww_pop_sites / pop_size,
     (pop_size - sum(ww_pop_sites)) / pop_size
   )
 
-  # Expose the stan functions (can use any of the models here)
-  model <- cmdstan_model(
+  # Expose the stan functions into the global environment
+  model <- cmdstanr::cmdstan_model(
     stan_file = system.file(
       "stan", "wwinference.stan",
       package = "wwinference"
@@ -139,27 +142,32 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     compile_standalone = TRUE,
     force_recompile = TRUE
   )
-
   model$expose_functions(global = TRUE)
-  params <- get_params(input_params_path) # load in a data table with parameters
+
+  # Pull parameter values into memory
+  params <- get_params(input_params_path) # load in a single row tibble
   par_names <- colnames(params) # pull them into memory
   for (i in seq_along(par_names)) {
     assign(par_names[i], as.double(params[i]))
   }
 
+  # Create a tibble that maps sites, labs, and population sizes of the sites
   site_lab_map <- data.frame(
     lab_site = 1:n_lab_sites,
     site = map_site_to_lab
   ) |>
-    left_join(data.frame(site = 1:n_sites, ww_pop = ww_pop_sites))
+    dplyr::left_join(data.frame(site = 1:n_sites, ww_pop = ww_pop_sites))
 
+  # Define some time variables
   ht <- nt + forecast_horizon
-  n_weeks <- ceiling((ot + ht) / 7)
-  tot_weeks <- ceiling((uot + ot + ht) / 7)
+  n_weeks <- ceiling((ot + ht) / 7) # calibration + forecast time
+  tot_weeks <- ceiling((uot + ot + ht) / 7) # initialization time +
+  # calibration + forecast time
+
   # We need dates to get a weekday vector
   dates <- seq(
     from = sim_start_date, to =
-      (sim_start_date + days(ot + nt + ht - 1)), by = "days"
+      (sim_start_date + lubridate::days(ot + nt + ht - 1)), by = "days"
   )
   log_i0_over_n <- log(i0_over_n)
   day_of_week_vector <- lubridate::wday(dates, week_start = 1)
@@ -167,18 +175,26 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     t = 1:(ot + nt + ht),
     date = dates
   )
-  forecast_date <- date_df %>%
-    filter(t == ot + nt) %>%
-    pull(date)
-  # set the lab-site multiplier presumably from lab measurement processes
+
+  forecast_date <- date_df |>
+    dplyr::filter(t == ot + nt) |>
+    dplyr::pull(date)
+
+  # Set the lab-site multiplier presumably from lab measurement processes
   log_m_lab_sites <- rnorm(n_lab_sites,
     mean = 0, sd = sd_in_lab_level_multiplier
-  )
+  ) # This is the magnitude shift (multiplier in natural scale) on the
+  # observations, presumably from things like concentration method, PCR type,
+  # collection type, etc.
+
   # Assign a site level observation error to each site, but have it scale
-  # inversely with the catchment area of the site (this may not be the right
-  # scaling)
+  # inversely with the catchment area of the site for now. Eventually, we will
+  # want to impose the expected variability as a function of the contributing
+  # infections, but since this module isn't currently in the model we will
+  # just do this for now.
   sigma_ww_lab_site <- mean(site_lab_map$ww_pop) *
     mean_obs_error_in_ww_lab_site / site_lab_map$ww_pop
+
   # Set randomly the lab-site reporting avg frequency (per day) and the
   # reporting latency (in days). Will use this to sample times in the observed
   # data
@@ -193,20 +209,24 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   # Set a lab-site-specific LOD in log scale
   lod_lab_site <- rnorm(n_lab_sites, mean = mean_log_lod, sd = sd_log_lod)
 
-  ## Delay distributions----------------------------------------------------
+  # Delay distributions: Note, these are COVID specific, and we will
+  # generally want to specify these outside model configuration
+
+  # Double censored, zero truncated, generation interval
   generation_interval <- simulate_double_censored_pmf(
     max = gt_max, meanlog = mu_gi, sdlog = sigma_gi, fun_dist = rlnorm, n = 5e6
-  ) %>% drop_first_and_renormalize()
-
-
+  ) |> drop_first_and_renormalize()
 
   # Set infection feedback to generation interval
   infection_feedback_pmf <- generation_interval
   infection_feedback_rev_pmf <- rev(infection_feedback_pmf)
   infection_feedback <- 0
   if_feedback <- 1
+
   # Delay from infection to hospital admission: incubation period +
   # time from symptom onset to hospital admission
+
+  # Get incubation period for COVID.
   inc <- make_incubation_period_pmf(
     backward_scale, backward_shape, r
   )

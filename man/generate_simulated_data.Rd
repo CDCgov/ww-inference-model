@@ -5,18 +5,16 @@
 \title{Generate simulated data from the underlying model's generative process}
 \usage{
 generate_simulated_data(
-  site_level_inf_dynamics = TRUE,
-  site_level_conc_dynamics = FALSE,
   r_in_weeks = c(rep(1.1, 5), rep(0.9, 5), 1 + 0.007 * 1:16),
   n_sites = 4,
   ww_pop_sites = c(4e+05, 2e+05, 1e+05, 50000),
   pop_size = 1e+06,
-  n_lab_sites = 5,
-  map_site_to_lab = c(1, 1, 2, 3, 4),
+  n_lab_sites = 4,
+  map_site_to_lab = c(1, 2, 3, 4),
   ot = 90,
   nt = 9,
-  forecast_time = 28,
-  sim_start_date = ymd("2023-10-30"),
+  forecast_horizon = 28,
+  sim_start_date = lubridate::ymd("2023-09-01"),
   hosp_wday_effect = c(0.95, 1.01, 1.02, 1.02, 1.01, 1, 0.99)/7,
   i0_over_n = 5e-04,
   initial_growth = 1e-04,
@@ -33,71 +31,73 @@ generate_simulated_data(
 )
 }
 \arguments{
-\item{site_level_inf_dynamics}{if TRUE then the toy data has variation in the
-site-level R(t), if FALSE, assumes same underlying R(t) for the state as in
-each site}
+\item{r_in_weeks}{vector indcating the mean weekly R(t) that drives infection
+dynamics at the state-level. This gets jittered with random noise to add
+week-to-week variation.}
 
-\item{site_level_conc_dynamics}{if TRUE then the toy data has variation in the
-site-level concentration each day, if FALSE, then the relationship from infection
-to concentration in each site is the same across sites}
+\item{n_sites}{integer indicating the number of sites}
 
-\item{r_in_weeks}{The mean weekly R(t) that drives infection dynamics at the state-
-level. This gets jittered with random noise to add week-to-week variation.}
+\item{ww_pop_sites}{vector indicating the population size in the
+catchment area in each of those sites (order must match)}
 
-\item{n_sites}{Number of sites}
+\item{pop_size}{integer indicating the population size in the hypothetical
+state}
 
-\item{ww_pop_sites}{Catchment area in each of those sites (order must match)}
+\item{n_lab_sites}{integer indicating the nummber of unique combinations of
+labs and sites. Must be greater than or equal to \code{n_sites}}
 
-\item{pop_size}{Population size in the state}
-
-\item{n_lab_sites}{NUmber of unique combinations of labs and sites. Must be
-greater than or equal to \code{n_sites}}
-
-\item{map_site_to_lab}{Vector mapping the sites to the lab-sites in order
+\item{map_site_to_lab}{vector mapping the sites to the lab-sites in order
 of the sites}
 
-\item{ot}{observed time: length of hospital admissions calibration time in days}
+\item{ot}{integer indicating the observed time: length of hospital admissions
+calibration time in days}
 
-\item{nt}{nowcast time: length of time between last hospital admissions date
-and forecast date in days}
+\item{nt}{integer indicating the nowcast time: length of time between last
+hospital admissions date and forecast date in days}
 
-\item{forecast_time}{duration of the forecast in days e.g. 28 days}
+\item{forecast_horizon}{integer indicating the duration of the forecast in
+days e.g. 28 days}
 
-\item{sim_start_date}{the start date of the simulation, used to get a weekday
-vector}
+\item{sim_start_date}{character string formatted as "YYYY-MM-DD" indicating
+the start date of the simulation, used to get a weekday vector}
 
-\item{hosp_wday_effect}{a simplex of length 7 describing how the hospital
-admissions are spread out over a week, starting at Monday = 1}
+\item{hosp_wday_effect}{a vector that is a simplex of length 7 describing
+how the hospital admissions are spread out over a week, starting at
+Monday = 1}
 
-\item{i0_over_n}{the initial per capita infections in the state}
+\item{i0_over_n}{float between 0 and 1 indicating the initial per capita
+infections in the state}
 
-\item{initial_growth}{exponential growth rate during the unobserved time}
+\item{initial_growth}{float indicating the exponential growth rate in
+infections (daily) during the unobserved time}
 
-\item{sd_in_lab_level_multiplier}{standard deviation in the log of the site-
-lab level multiplier determining how much variation there is systematically
-in site-labs from the state mean}
+\item{sd_in_lab_level_multiplier}{float indicating the standard deviation in
+the log of the site-lab level multiplier determining how much variation
+there is systematically in site-labs from the state mean}
 
-\item{mean_obs_error_in_ww_lab_site}{mean day to day variation in observed
-wastewater concentrations across all lab-sites}
+\item{mean_obs_error_in_ww_lab_site}{float indicating the mean day-to-day
+variation in observed wastewater concentrations across all lab-sites}
 
-\item{mean_reporting_freq}{mean frequency of wastewater measurements across
-sites in per day (e.g. 1/7 is once per week)}
+\item{mean_reporting_freq}{float indicating the mean frequency of wastewater
+measurements across sites in per day (e.g. 1/7 is once per week)}
 
-\item{sd_reporting_freq}{standard deviation in the frequency of wastewater
-measurements across sites}
+\item{sd_reporting_freq}{float indicating the standard deviation in the
+frequency of wastewater measurements across sites}
 
-\item{mean_reporting_latency}{mean time from forecast date to last
-wastewater sample collection date, across sites}
+\item{mean_reporting_latency}{float indicating the mean time from forecast
+date to last wastewater sample collection date, across sites}
 
-\item{sd_reporting_latency}{standard deviation in the time from the forecast
-date to the last wastewater sample collection date, across sites}
+\item{sd_reporting_latency}{float indicating the standard deviation in the
+time from the forecast date to the last wastewater sample collection date,
+across sites}
 
-\item{mean_log_lod}{mean log of the LOD in each lab-site}
+\item{mean_log_lod}{float indicating the mean log of the LOD in each lab-site}
 
-\item{sd_log_lod}{standard deviation in the log of the LOD across sites}
+\item{sd_log_lod}{float indicating the standard deviation in the log of the
+LOD across sites}
 
-\item{example_params_path}{path to the toml file with the parameters to use to
-generate the simulated data}
+\item{input_params_path}{path to the toml file with the parameters to use
+to generate the simulated data}
 }
 \value{
 a list containing two dataframes. hosp_data is a dataframe containing
@@ -113,8 +113,10 @@ and parameters to generate from.
 \examples{
 # Generate a simulated dataset from a hypothetical state with 6 sites and 2
 # different labs
-sim_data <- generate_simulated_data(n_sites = 6,
-                                    map_site_to_lab = c(rep(1,4), rep(2,2))
+sim_data <- generate_simulated_data(
+  n_sites = 6,
+  map_site_to_lab = c(rep(1, 4), rep(2, 2))
+)
 hosp_data <- sim_data$hosp_data
 ww_data <- sim_data$ww_data
 }
