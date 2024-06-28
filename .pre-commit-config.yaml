@@ -45,6 +45,13 @@ repos:
     -   id: no-print-statement
     -   id: no-debug-statement
     -   id: deps-in-desc
+    uses: actions/cache@v3
+    with:
+      path: ~/.cache/pre-commit
+      path: |
+        ~/.cache/pre-commit
+        ~/.cache/R/renv
+      key: pre-commit-3|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
 #####
 # Java
 - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
