@@ -4,49 +4,51 @@
 #' wastewater data directly from the generative model, specifying the conditions
 #' and parameters to generate from.
 #'
-#' @param site_level_inf_dynamics if TRUE then the toy data has variation in the
-#' site-level R(t), if FALSE, assumes same underlying R(t) for the state as in
-#' each site
-#' @param site_level_conc_dynamics if TRUE then the toy data has variation in
-#' the site-level concentration each day, if FALSE, then the relationship from
-#' infectionto concentration in each site is the same across sites
-#' @param r_in_weeks The mean weekly R(t) that drives infection dynamics at the
-#'  state-level. This gets jittered with random noise to add week-to-week
-#'  variation.
-#' @param n_sites Number of sites
-#' @param ww_pop_sites Catchment area in each of those sites (order must match)
-#' @param pop_size Population size in the state
-#' @param n_lab_sites NUmber of unique combinations of labs and sites. Must be
-#' greater than or equal to `n_sites`
-#' @param map_site_to_lab Vector mapping the sites to the lab-sites in order
+#' @param r_in_weeks vector indcating the mean weekly R(t) that drives infection
+#'  dynamics at the state-level. This gets jittered with random noise to add
+#'  week-to-week variation.
+#' @param n_sites integer indicating the number of sites
+#' @param ww_pop_sites vector indicating the population size in the
+#' catchment area in each of those sites (order must match)
+#' @param pop_size integer indicating the population size in the hypothetical
+#' state
+#' @param n_lab_sites integer indicating the nummber of unique combinations of
+#' labs and sites. Must be greater than or equal to `n_sites`
+#' @param map_site_to_lab vector mapping the sites to the lab-sites in order
 #' of the sites
-#' @param ot observed time: length of hospital admissions calibration time in
-#' days
-#' @param nt nowcast time: length of time between last hospital admissions date
-#' and forecast date in days
-#' @param forecast_time duration of the forecast in days e.g. 28 days
-#' @param sim_start_date the start date of the simulation, used to get a weekday
-#' vector
-#' @param hosp_wday_effect a simplex of length 7 describing how the hospital
-#' admissions are spread out over a week, starting at Monday = 1
-#' @param i0_over_n the initial per capita infections in the state
-#' @param initial_growth exponential growth rate during the unobserved time
-#' @param sd_in_lab_level_multiplier standard deviation in the log of the site-
-#' lab level multiplier determining how much variation there is systematically
-#' in site-labs from the state mean
-#' @param mean_obs_error_in_ww_lab_site mean day to day variation in observed
-#' wastewater concentrations across all lab-sites
-#' @param mean_reporting_freq mean frequency of wastewater measurements across
-#'  sites in per day (e.g. 1/7 is once per week)
-#' @param sd_reporting_freq standard deviation in the frequency of wastewater
-#' measurements across sites
-#' @param mean_reporting_latency mean time from forecast date to last
-#' wastewater sample collection date, across sites
-#' @param sd_reporting_latency standard deviation in the time from the forecast
-#' date to the last wastewater sample collection date, across sites
-#' @param mean_log_lod mean log of the LOD in each lab-site
-#' @param sd_log_lod standard deviation in the log of the LOD across sites
-#' @param example_params_path path to the toml file with the parameters to use
+#' @param ot integer indicating the observed time: length of hospital admissions
+#'  calibration time in days
+#' @param nt integer indicating the nowcast time: length of time between last
+#' hospital admissions date and forecast date in days
+#' @param forecast_horizon integer indicating the duration of the forecast in
+#' days e.g. 28 days
+#' @param sim_start_date character string formatted as "YYYY-MM-DD" indicating
+#' the start date of the simulation, used to get a weekday vector
+#' @param hosp_wday_effect a vector that is a simplex of length 7 describing
+#' how the hospital admissions are spread out over a week, starting at
+#' Monday = 1
+#' @param i0_over_n float between 0 and 1 indicating the initial per capita
+#' infections in the state
+#' @param initial_growth float indicating the exponential growth rate in
+#' infections (daily) during the unobserved time
+#' @param sd_in_lab_level_multiplier float indicating the standard deviation in
+#' the log of the site-lab level multiplier determining how much variation
+#' there is systematically in site-labs from the state mean
+#' @param mean_obs_error_in_ww_lab_site float indicating the mean day-to-day
+#' variation in observed wastewater concentrations across all lab-sites
+#' @param mean_reporting_freq float indicating the mean frequency of wastewater
+#'  measurements across sites in per day (e.g. 1/7 is once per week)
+#' @param sd_reporting_freq float indicating the standard deviation in the
+#' frequency of wastewater measurements across sites
+#' @param mean_reporting_latency float indicating the mean time from forecast
+#' date to last wastewater sample collection date, across sites
+#' @param sd_reporting_latency float indicating the standard deviation in the
+#' time from the forecast date to the last wastewater sample collection date,
+#' across sites
+#' @param mean_log_lod float indicating the mean log of the LOD in each lab-site
+#' @param sd_log_lod float indicating the standard deviation in the log of the
+#' LOD across sites
+#' @param input_params_path path to the toml file with the parameters to use
 #' to generate the simulated data
 #'
 #' @return a list containing two dataframes. hosp_data is a dataframe containing
@@ -64,21 +66,22 @@
 #' )
 #' hosp_data <- sim_data$hosp_data
 #' ww_data <- sim_data$ww_data
-generate_simulated_data <- function(site_level_inf_dynamics = TRUE, # nolint
-                                    site_level_conc_dynamics = FALSE,
-                                    r_in_weeks = c(
-                                      rep(1.1, 5), rep(0.9, 5),
-                                      1 + 0.007 * 1:16
-                                    ),
+generate_simulated_data <- function(r_in_weeks = # nolint
+                                      c(
+                                        rep(1.1, 5), rep(0.9, 5),
+                                        1 + 0.007 * 1:16
+                                      ),
                                     n_sites = 4,
                                     ww_pop_sites = c(4e5, 2e5, 1e5, 5e4),
                                     pop_size = 1e6,
-                                    n_lab_sites = 5,
-                                    map_site_to_lab = c(1, 1, 2, 3, 4),
+                                    n_lab_sites = 4,
+                                    map_site_to_lab = c(1, 2, 3, 4),
                                     ot = 90,
                                     nt = 9,
-                                    forecast_time = 28,
-                                    sim_start_date = ymd("2023-10-30"),
+                                    forecast_horizon = 28,
+                                    sim_start_date = lubridate::ymd(
+                                      "2023-09-01"
+                                    ),
                                     hosp_wday_effect = c(
                                       0.95, 1.01, 1.02,
                                       1.02, 1.01, 1,
@@ -99,9 +102,10 @@ generate_simulated_data <- function(site_level_inf_dynamics = TRUE, # nolint
                                         "example_params.toml",
                                         package = "wwinference"
                                       )) {
+  # Some quick checks to make sure the inputs work as expected
   stopifnot(
     "weekly R(t) passed in isn't long enough" =
-      length(r_in_weeks) >= (ot + nt + forecast_time) / 7
+      length(r_in_weeks) >= (ot + nt + forecast_horizon) / 7
   )
   stopifnot(
     "Sum of wastewater site populations is greater than state pop" =
@@ -149,7 +153,7 @@ generate_simulated_data <- function(site_level_inf_dynamics = TRUE, # nolint
   ) |>
     left_join(data.frame(site = 1:n_sites, ww_pop = ww_pop_sites))
 
-  ht <- nt + forecast_time
+  ht <- nt + forecast_horizon
   n_weeks <- ceiling((ot + ht) / 7)
   tot_weeks <- ceiling((uot + ot + ht) / 7)
   # We need dates to get a weekday vector
