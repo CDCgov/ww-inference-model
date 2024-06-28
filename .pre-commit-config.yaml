@@ -35,6 +35,7 @@ repos:
     rev: v0.4.2
     hooks:
     -   id: style-files
+        args: [--style_pkg=styler, --style_fun=tidyverse_style] 
     -   id: lintr
 #####
 # Java
