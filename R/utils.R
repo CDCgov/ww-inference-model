@@ -51,3 +51,29 @@ add_pmfs <- function(pmfs) {
     })
   )
 }
+
+#' @title Get index matrix
+#' @description Get the matrix needed to convert a vetor from weekly to daily
+#' @param n_days number of days we will expand to
+#' @param n_weeks number of weeks those days correspond to
+#'
+#' @return a n_day x n_week matrix for multiplying by weekly estimated
+#' value to conver it to daily
+#' @export
+#'
+#' @examples
+#' ind_m <- get_ind_m(14, 2)
+get_ind_m <- function(n_days, n_weeks) {
+  ind_m <- matrix(nrow = n_days, ncol = n_weeks)
+  for (i in 1:n_days) {
+    for (j in 1:n_weeks) {
+      if (((i - 1) %/% 7) + 1 == j) {
+        ind_m[i, j] <- 1
+      } else {
+        ind_m[i, j] <- 0
+      }
+    }
+  }
+
+  return(ind_m)
+}

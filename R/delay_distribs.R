@@ -153,3 +153,33 @@ make_hospital_onset_delay_pmf <- function(neg_binom_mu = 6.98665,
 
   return(hosp_onset_delay_pmf)
 }
+
+#' @title Make reporting delay pmf
+#' @description
+#' Convolve the incubation period pmf with the symptom to hospital admission pmf
+#' and normalize
+#'
+#' @param incubation_period_pmf a numeric vector, sums to 1, indicating
+#' the probability of time from infection to symptom onset
+#' @param hospital_onset_delay_pmf a numeric vector, sums to 1, indicating the
+#' proabbility of time from symptom onset to hospital admissions
+#'
+#' @return convolution of incubation period and sympton onset to hospital
+#' admission pmf
+#' @export
+#'
+#' @examples
+#' inc_pmf <- make_incubation_period_pmf(3.6, 1.5, 0.15)
+#' hosp_delay_pmf <- make_hospital_onset_delay_pmf(7, 2.5)
+#' inf_to_hosp_pmf <- make_reporting_delay_pmf(inc_pmf, hosp_delay_pmf)
+make_reporting_delay_pmf <- function(incubation_period_pmf,
+                                     hospital_onset_delay_pmf) {
+  pmfs <- list(
+    "incubation_period" = incubation_period_pmf,
+    "hosp_onset_delay" = hospital_onset_delay_pmf
+  )
+
+  infection_to_hosp_delay_pmf <- add_pmfs(pmfs) |>
+    (\(x) x / sum(x))()
+  return(infection_to_hosp_delay_pmf)
+}

@@ -3,7 +3,7 @@
 \name{simulate_double_censored_pmf}
 \alias{simulate_double_censored_pmf}
 \title{Simulate daily double censored PMF. From {epinowcast}:
-https://package.epinowcast.org/dev/reference/simulate_double_censored_pmf.html}
+https://package.epinowcast.org/dev/reference/simulate_double_censored_pmf.html #nolint}
 \usage{
 simulate_double_censored_pmf(
   max,

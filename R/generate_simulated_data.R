@@ -231,86 +231,90 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     backward_scale, backward_shape, r
   )
   sym_to_hosp <- make_hospital_onset_delay_pmf(neg_binom_mu, neg_binom_size)
+
+  # Infection to hospital admissions delay distribution
   inf_to_hosp <- make_reporting_delay_pmf(inc, sym_to_hosp)
-  # shedding kinetics delay distribution
+
+  # Shedding kinetics delay distribution
   vl_trajectory <- model$functions$get_vl_trajectory(
     t_peak_mean, viral_peak_mean,
     duration_shedding_mean, gt_max
   )
 
-  # Generate the state level weekly R(t) before infection feedback-------------
+  # Generate the state level weekly R(t) before infection feedback
+  # Adds a bit of noise, can add more...
   unadj_r_weeks <- (r_in_weeks * rnorm(length(r_in_weeks), 1, 0.03))[1:n_weeks]
+
   # Convert to daily for input into renewal equation
   ind_m <- get_ind_m(ot + ht, n_weeks)
   unadj_r <- ind_m %*% unadj_r_weeks
 
 
   # Generate the site-level expected observed concentrations -----------------
-  # first by adding
-  # variation to the site-level R(t) in each site, and then by adding time
-  # varying deviations in true concentration in each site, and then adding a
-  # site level true variability, and then adding lab-site level multiplier and
-  # obersvation error
+  # first by adding variation to the site-level R(t) in each site,
+  # and then adding lab-site level multiplier and observation error
 
 
   ### Generate the site level infection dynamics-------------------------------
   new_i_over_n_site <- matrix(nrow = n_sites + 1, ncol = (uot + ot + ht))
   r_site <- matrix(nrow = n_sites + 1, ncol = (ot + ht))
   # Generate site-level R(t)
-  if (isTRUE(site_level_inf_dynamics)) {
-    log_r_state_week <- log(unadj_r_weeks)
-    log_r_site <- matrix(nrow = n_sites + 1, ncol = n_weeks)
-    initial_growth_site <- vector(length = n_sites + 1)
-    log_i0_over_n_site <- vector(length = n_sites + 1)
-    for (i in 1:(n_sites + 1)) {
-      if (i <= n_sites) {
-        log_r_site[i, ] <- rnorm(
-          n = n_weeks,
-          mean = log_r_state_week,
-          sd = 0.05
-        ) # sigma_rt
-        initial_growth_site[i] <- rnorm(
-          n = 1, mean = initial_growth,
-          sd = initial_growth_prior_sd
-        )
-        log_i0_over_n_site[i] <- rnorm(
-          n = 1, mean = log_i0_over_n,
-          sd = 0.5
-        )
-      } else {
-        log_r_site[i, ] <- log_r_state_week
-        initial_growth_site[i] <- initial_growth
-        log_i0_over_n_site[i] <- log_i0_over_n
-      }
-    }
+  log_r_state_week <- log(unadj_r_weeks)
+  log_r_site <- matrix(nrow = n_sites + 1, ncol = n_weeks)
+  initial_growth_site <- vector(length = n_sites + 1)
+  log_i0_over_n_site <- vector(length = n_sites + 1)
+  for (i in 1:(n_sites + 1)) {
+    # This creates each R(t) vector for each subpopulation, by sampling
+    # from a normal distribution centered on the state R(t).
+    # In the model, this is an AR(1) process based on the previous deviation
+    log_r_site[i, ] <- rnorm(
+      n = n_weeks,
+      mean = log_r_state_week,
+      sd = 0.05
+    ) # sigma_rt
 
-    new_i_over_n <- rep(0, (uot + ot + ht))
-    for (i in 1:(n_sites + 1)) {
-      unadj_r_site <- ind_m %*% exp(log_r_site[i, ]) # daily R site
-      site_output <- model$functions$generate_infections(
-        unadj_r_site, uot, rev(generation_interval), log_i0_over_n_site[i],
-        initial_growth_site[i], ht,
-        infection_feedback, infection_feedback_rev_pmf
-      )
-      new_i_over_n_site[i, ] <- site_output[[1]]
-      new_i_over_n <- new_i_over_n + pop_fraction[i] * site_output[[1]]
-      r_site[i, ] <- site_output[[2]]
-    }
-  } else { # site level R(t) and infections = state level R(t) and infections
-    for (i in 1:n_sites) {
-      new_i_over_n_site[i, ] <- new_i_over_n
-      r_site[i, ] <- rt
-    }
+    # Generate deviations in the initial growth rate and initial incidence
+    initial_growth_site[i] <- rnorm(
+      n = 1, mean = initial_growth,
+      sd = initial_growth_prior_sd
+    )
+    # This is I0/N at the first unobserved time
+    log_i0_over_n_site[i] <- rnorm(
+      n = 1, mean = log_i0_over_n,
+      sd = 0.5
+    )
   }
 
+
+  new_i_over_n <- rep(0, (uot + ot + ht)) # State infections
+  for (i in 1:(n_sites + 1)) {
+    unadj_r_site <- ind_m %*% exp(log_r_site[i, ]) # daily R site
+
+    site_output <- model$functions$generate_infections(
+      unadj_r_site, # Daily unadjusted R(t) in each site
+      uot, # the duration of initialization time for exponential growth
+      rev(generation_interval), # the reversed generation interval
+      log_i0_over_n_site[i], # log of the initial infections per capita
+      initial_growth_site[i], # initial exponential growth rate
+      ht, # time after last observed hospital admission
+      infection_feedback, # binary indicating whether or not inf feedback
+      infection_feedback_rev_pmf # inf feedback delay pmf
+    )
+    # matrix to hold infections
+    new_i_over_n_site[i, ] <- site_output[[1]]
+    # Cumulatively sum infections to get overall state infections
+    new_i_over_n <- new_i_over_n + pop_fraction[i] * site_output[[1]]
+    # Adjusted R(t) estimate in each site
+    r_site[i, ] <- site_output[[2]]
+  }
+
+  # State adjusted R(t) = I(t)/convolve(I(t), g(t))
   rt <- (new_i_over_n / model$functions$convolve_dot_product(
     new_i_over_n, rev(generation_interval), uot + ot + ht
   ))[(uot + 1):(uot + ot + ht)]
 
 
-  # Generate expected state level hospitalizations from subpop infections-----
-  # generate state-level incident infections using renewal equation for
-  # all time points
+  # Generate expected state level hospitalizations from subpop infections -----
 
   # Generate a time varying P(hosp|infection),
   p_hosp_int_logit <- qlogis(p_hosp_mean) # p_hosp_mean is in linear scale
@@ -330,16 +334,18 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     p_hosp_w_logit
   ) # convert to days
   p_hosp_days <- plogis(p_hosp_logit_days) # convert back to linear scale
-  # Corresponds to a standard deviation in linear scale of 0.0003
+
 
   # Get expected trajectory of hospital admissions from incident infections
   # by convolving scaled incident infections with delay from infection to
   # hospital admission
   model_hosp_over_n <- model$functions$convolve_dot_product(
-    p_hosp_days * new_i_over_n,
+    p_hosp_days * new_i_over_n, # individuals who will be hospitalized
     rev(inf_to_hosp),
     uot + ot + ht
   )[(uot + 1):(uot + ot + ht)]
+  # only care about hospital admission in observed time, but need uot infections
+
   exp_hosp <- pop_size * model$functions$day_of_week_effect(
     model_hosp_over_n,
     day_of_week_vector,
@@ -357,79 +363,73 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   log_g_over_n_site <- matrix(nrow = n_sites, ncol = (ot + ht))
 
   for (i in 1:n_sites) {
+    # Convolve infections with shedding kinetics
     model_net_i <- model$functions$convolve_dot_product(
       new_i_over_n_site[i, ],
       rev(vl_trajectory),
       (uot + ot + ht)
     )[(uot + 1):(uot + ot + ht)]
+    # Scale by average genomes shed per infection
     log_g_over_n_site[i, ] <- log(10) * log10_g_prior_mean +
       log(model_net_i + 1e-8)
   }
 
-  ## Generate site-level true genomes ------------------------------------
-  # with site multiplier and time-varying deviation
-
-  log_exp_g_over_n_site <- matrix(nrow = n_sites, ncol = (ot + ht))
-
-  for (i in 1:n_sites) {
-    if (isFALSE(site_level_conc_dynamics)) {
-      log_exp_g_over_n_site[i, ] <- log_g_over_n_site[i, ]
-    } else {
-      log_exp_g_over_n_site[i, ] <- log_g_over_n_site[i, ] +
-        rnorm(
-          n = (ot + ht), mean = 0,
-          sd = 0.01
-        ) # sigma_log_conc prior
-    }
-  }
 
   # Add on site-lab-level observation error -----------------------------------
   log_obs_g_over_n_lab_site <- matrix(nrow = n_lab_sites, ncol = (ot + ht))
   for (i in 1:n_lab_sites) {
-    log_g_w_multiplier <- log_exp_g_over_n_site[map_site_to_lab[i], ] +
-      log_m_lab_sites[i]
+    log_g_w_multiplier <- log_g_over_n_site[map_site_to_lab[i], ] +
+      log_m_lab_sites[i] # Add site level multiplier in log scale
     log_obs_g_over_n_lab_site[i, ] <- log_g_w_multiplier +
       rnorm(
         n = (ot + ht), mean = 0,
         sd = sigma_ww_lab_site[i]
-      )
+      ) # + add observation error in log scale
   }
 
   # Sample from some lab-sites more frequently than others and add different
   # latencies for each lab-site
   log_obs_conc_lab_site <- matrix(nrow = n_lab_sites, ncol = ot + ht)
   for (i in 1:n_lab_sites) {
+    # Get the indices where we observe concentrations
     st <- sample(1:(ot + nt), round((ot + nt) * lab_site_reporting_freq[i]))
+    # cut off end based on latency
     stl <- pmin((ot + nt - lab_site_reporting_latency[i]), st)
+    # Calculate log concentration for the days that we have observations
     log_obs_conc_lab_site[i, stl] <- log_obs_g_over_n_lab_site[i, stl] -
       log(ml_of_ww_per_person_day)
   }
 
   # Format the data-----------------------------------------------------------
 
-  df_long <- as.data.frame(t(log_obs_conc_lab_site)) %>%
-    dplyr::mutate(t = 1:(ot + ht)) %>%
+  ww_data <- as.data.frame(t(log_obs_conc_lab_site)) |>
+    dplyr::mutate(t = 1:(ot + ht)) |>
     tidyr::pivot_longer(!t,
-      names_to = "lab_wwtp_unique_id",
+      names_to = "lab_site",
       names_prefix = "V",
       values_to = "log_conc"
-    ) %>%
+    ) |>
     dplyr::mutate(
-      lab_wwtp_unique_id = as.integer(lab_wwtp_unique_id)
-    ) %>%
-    dplyr::left_join(date_df, by = "t") %>%
+      lab_site = as.integer(lab_site)
+    ) |>
+    dplyr::left_join(date_df, by = "t") |>
+    dplyr::left_join(site_lab_map,
+      by = c("lab_site")
+    ) |>
     dplyr::left_join(
       data.frame(
         lab_site = 1:n_lab_sites,
         lod_sewage = lod_lab_site
       ),
-      by = c("lab_wwtp_unique_id" = "lab_site")
-    ) %>%
-    dplyr::mutate(below_LOD = ifelse(log_conc >= lod_sewage, 0, 1)) %>%
-    dplyr::mutate(lod_sewage = case_when(
-      is.na(log_conc) ~ NA,
-      !is.na(log_conc) ~ lod_sewage
-    ))
+      by = c("lab_site")
+    ) |> # Remove below LOD values
+    dplyr::mutate(
+      lod_sewage =
+        dplyr::case_when(
+          is.na(log_conc) ~ NA,
+          !is.na(log_conc) ~ lod_sewage
+        )
+    )
 
   # Make a hospital admissions dataframe to bind to
   df_hosp <- data.frame(

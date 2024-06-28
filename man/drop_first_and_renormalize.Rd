@@ -23,6 +23,4 @@ manually drop the first element from the PMF vector.
 \examples{
 pmf_orig <- c(0.1, 0.1, 0.1, 0.7)
 pmf_trunc <- drop_first_and_renormalize(pmf_orig)
-pmf_trunc
-0.11, 0.11, 0.777
 }
