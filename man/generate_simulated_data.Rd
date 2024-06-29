@@ -9,8 +9,8 @@ generate_simulated_data(
   n_sites = 4,
   ww_pop_sites = c(4e+05, 2e+05, 1e+05, 50000),
   pop_size = 1e+06,
-  n_lab_sites = 4,
-  map_site_to_lab = c(1, 2, 3, 4),
+  site = c(1, 1, 2, 3, 4),
+  lab = c(1, 2, 3, 3, 3),
   ot = 90,
   nt = 9,
   forecast_horizon = 28,
@@ -43,11 +43,11 @@ catchment area in each of those sites (order must match)}
 \item{pop_size}{integer indicating the population size in the hypothetical
 state}
 
-\item{n_lab_sites}{integer indicating the nummber of unique combinations of
-labs and sites. Must be greater than or equal to \code{n_sites}}
+\item{site}{vector of integers indicating which site (WWTP) each separate
+lab-site observation comes frm}
 
-\item{map_site_to_lab}{vector mapping the sites to the lab-sites in order
-of the sites}
+\item{lab}{vector of integers indicating which lab the lab-site observations
+come from}
 
 \item{ot}{integer indicating the observed time: length of hospital admissions
 calibration time in days}
@@ -100,8 +100,12 @@ LOD across sites}
 to generate the simulated data}
 }
 \value{
-a list containing two dataframes. hosp_data is a dataframe containing
-the number of daily hospital admissions by day for a theoretical US state.
+a list containing three dataframes. hosp_data is a dataframe
+containing the number of daily hospital admissions by day for a theoretical
+US state, for the duration of the specified calibration period.
+hosp_data_eval is a dataframe containing the number of daily hospital
+admissions by day for a theoretical US state, for the entire evaluation
+period.
 ww_data is a dataframe containing the measured wastewater concentrations
 in each site alongside other metadata necessary for modeling that data.
 }

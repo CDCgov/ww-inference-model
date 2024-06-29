@@ -12,10 +12,10 @@
 #' catchment area in each of those sites (order must match)
 #' @param pop_size integer indicating the population size in the hypothetical
 #' state
-#' @param n_lab_sites integer indicating the nummber of unique combinations of
-#' labs and sites. Must be greater than or equal to `n_sites`
-#' @param map_site_to_lab vector mapping the sites to the lab-sites in order
-#' of the sites
+#' @param site vector of integers indicating which site (WWTP) each separate
+#' lab-site observation comes frm
+#' @param lab vector of integers indicating which lab the lab-site observations
+#' come from
 #' @param ot integer indicating the observed time: length of hospital admissions
 #'  calibration time in days
 #' @param nt integer indicating the nowcast time: length of time between last
@@ -51,8 +51,12 @@
 #' @param input_params_path path to the toml file with the parameters to use
 #' to generate the simulated data
 #'
-#' @return a list containing two dataframes. hosp_data is a dataframe containing
-#' the number of daily hospital admissions by day for a theoretical US state.
+#' @return a list containing three dataframes. hosp_data is a dataframe
+#' containing the number of daily hospital admissions by day for a theoretical
+#' US state, for the duration of the specified calibration period.
+#' hosp_data_eval is a dataframe containing the number of daily hospital
+#' admissions by day for a theoretical US state, for the entire evaluation
+#' period.
 #' ww_data is a dataframe containing the measured wastewater concentrations
 #' in each site alongside other metadata necessary for modeling that data.
 #' @export
@@ -74,8 +78,8 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                     n_sites = 4,
                                     ww_pop_sites = c(4e5, 2e5, 1e5, 5e4),
                                     pop_size = 1e6,
-                                    n_lab_sites = 4,
-                                    map_site_to_lab = c(1, 2, 3, 4),
+                                    site = c(1, 1, 2, 3, 4),
+                                    lab = c(1, 2, 3, 3, 3),
                                     ot = 90,
                                     nt = 9,
                                     forecast_horizon = 28,
@@ -112,17 +116,8 @@ generate_simulated_data <- function(r_in_weeks = # nolint
       pop_size > sum(ww_pop_sites)
   )
   stopifnot(
-    "Insufficient population sizes provided for wastewater catchment areas" =
-      length(ww_pop_sites) >= n_sites
-  )
-
-  stopifnot(
-    "Insufficient number of lab-site combinations provided" =
-      n_lab_sites >= n_sites
-  )
-  stopifnot(
-    "Mapping from sites to lab-sites not provided" =
-      length(map_site_to_lab) == n_lab_sites
+    "Site and lab indices don't align" =
+      length(site) == length(lab)
   )
 
 
@@ -152,11 +147,19 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   }
 
   # Create a tibble that maps sites, labs, and population sizes of the sites
+  n_sites <- length(unique(site))
   site_lab_map <- data.frame(
-    lab_site = 1:n_lab_sites,
-    site = map_site_to_lab
+    site,
+    lab
   ) |>
-    dplyr::left_join(data.frame(site = 1:n_sites, ww_pop = ww_pop_sites))
+    dplyr::mutate(
+      lab_site = dplyr::row_number()
+    ) |>
+    dplyr::left_join(data.frame(
+      site = 1:n_sites,
+      ww_pop = ww_pop_sites
+    ))
+  n_lab_sites <- nrow(site_lab_map)
 
   # Define some time variables
   ht <- nt + forecast_horizon
@@ -414,7 +417,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     ) |>
     dplyr::left_join(date_df, by = "t") |>
     dplyr::left_join(site_lab_map,
-      by = c("lab_site")
+      by = "lab_site"
     ) |>
     dplyr::left_join(
       data.frame(
@@ -429,62 +432,53 @@ generate_simulated_data <- function(r_in_weeks = # nolint
           is.na(log_conc) ~ NA,
           !is.na(log_conc) ~ lod_sewage
         )
-    )
-
-  # Make a hospital admissions dataframe to bind to
-  df_hosp <- data.frame(
-    t = 1:(ot + ht),
-    daily_hosp_admits = c(exp_obs_hosp[1:ot], rep(NA, ht)),
-    daily_hosp_admits_for_eval = exp_obs_hosp
-  )
-
-  # State infections per capita
-  df_inf <- data.frame(
-    t = 1:(ot + ht),
-    inf_per_capita = new_i_over_n[(uot + 1):(uot + ot + ht)]
-  )
-
-  example_df <- df_long %>%
-    dplyr::left_join(df_hosp,
-      by = "t"
-    ) %>%
+    ) |>
     dplyr::mutate(
-      pop = pop_size,
-      forecast_date = forecast_date,
-      hosp_calibration_time = ot
-    ) %>%
-    dplyr::left_join(site_lab_map,
-      by = c("lab_wwtp_unique_id" = "lab_site")
-    ) %>%
-    dplyr::left_join(df_inf,
+      genome_copies_per_ml = exp(log_conc),
+      lod = exp(lod_sewage)
+    ) |>
+    dplyr::filter(!is.na(genome_copies_per_ml)) |>
+    dplyr::rename(site_pop = ww_pop) |>
+    dplyr::arrange(site, lab, date) |>
+    dplyr::select(date, site, lab, genome_copies_per_ml, lod, site_pop)
+
+  # Make a hospital admissions dataframe for model calibration
+  hosp_data <- data.frame(
+    t = 1:ot,
+    daily_hosp_admits = exp_obs_hosp[1:ot],
+    state_pop = pop_size
+  ) |>
+    dplyr::left_join(
+      date_df,
       by = "t"
+    ) |>
+    dplyr::select(
+      date,
+      daily_hosp_admits,
+      state_pop
     )
 
+  # Make another one for model evaluation
+  hosp_data_eval <- data.frame(
+    t = 1:(ot + ht),
+    daily_hosp_admits_for_eval = exp_obs_hosp,
+    state_pop = pop_size
+  ) |>
+    dplyr::left_join(
+      date_df,
+      by = "t"
+    ) |>
+    dplyr::select(
+      date,
+      daily_hosp_admits_for_eval,
+      state_pop
+    )
 
-
-  # Get the true parameter dataframe, making sure this is formatted the same as
-  # as the output from get_full_param_distrib()
-  p_hosp_df <- data.frame(
-    name = "p_hosp", true_value = p_hosp_days,
-    index_rows = NA,
-    index_cols = seq_along(p_hosp_days)
-  )
-  r_df <- data.frame(
-    name = "rt", true_value = rt,
-    index_rows = NA,
-    index_cols = seq_along(rt)
-  )
-  log10_g_df <- data.frame(
-    name = "log10_g", true_value = log10_g_prior_mean,
-    index_rows = NA,
-    index_cols = NA
+  example_data <- list(
+    ww_data = ww_data,
+    hosp_data = hosp_data,
+    hosp_data_eval = hosp_data_eval
   )
 
-  param_df <- rbind(p_hosp_df, r_df, log10_g_df)
-
-  toy_data_and_params <- list(
-    param_df = param_df,
-    example_df = example_df
-  )
-  return(toy_data_and_params)
+  return(example_data)
 }
