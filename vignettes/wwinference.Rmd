@@ -70,6 +70,7 @@ wastewater catchment area of that site
 
 ```{r}
 hosp_data <- wwinference::hosp_data
+hosp_data_eval <- wwinference::hosp_data_eval
 ww_data <- wwinference::ww_data
 ```
 
