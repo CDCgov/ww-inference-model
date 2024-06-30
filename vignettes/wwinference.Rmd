@@ -108,16 +108,23 @@ forecast_date <- "2023-12-07"
 # later on. Lastly, it filters the wastewater measurements to dates before the
 # forecast date specified above, just in case the wastewater data passed in
 # isn't vintaged.
-ww_data_preprocessed <- preprocess_ww_data(ww_data, forecast_date)
+ww_data_preprocessed <- wwinference::preprocess_ww_data(ww_data, forecast_date)
 
-# Pre-process the hospital admissions dataset
+# Pre-process the hospital admissions dataset: This function adds a column to
+# indicate the forecast date and standardizes the column names.
+# Eventually we could implement outlier detection,
+# data exclusion here but we will keep as simple as we can for now.
+hosp_data_preprocessed <- wwinference::preprocess_hosp_data(
+  hosp_data,
+  forecast_date
+)
 ```
 
 We'll make some plots of the data just to make sure it looks like what we'd expect:
 
 ```{r}
 # Add plots
-ggplot(ww_data) +
+ggplot(ww_data_preprocessed) +
   geom_point(
     aes(
       x = date, y = genome_copies_per_ml,
@@ -126,11 +133,12 @@ ggplot(ww_data) +
     show.legend = FALSE
   ) +
   geom_point(
-    data = ww_data |> filter(genome_copies_per_ml <= lod),
+    data = ww_data_preprocessed |> filter(genome_copies_per_ml <= lod),
     aes(x = date, y = genome_copies_per_ml, color = "red"),
     show.legend = FALSE
   ) +
   geom_hline(aes(yintercept = lod), linetype = "dashed") +
+  geom_vline(aes(xintercept = forecast_date), linetype = "dashed") +
   facet_wrap(~lab_site_name, scales = "free") +
   xlab("") +
   ylab("Genome copies/mL") +
