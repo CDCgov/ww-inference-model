@@ -90,17 +90,25 @@ params <- get_params(
   )
 )
 
-# Pre-process the wastewater dataset
-ww_data <- ww_data |>
-  dplyr::left_join(
-    ww_data |>
-      dplyr::distinct(lab, site) |>
-      dplyr::mutate(
-        lab_site = dplyr::row_number()
-      ),
-    by = c("lab", "site")
-  ) |>
-  dplyr::mutate(lab_site_name = glue::glue("Site: {site},  Lab:  {lab}"))
+# Specify the forecast date. Let's pretend we want to make a forecast on
+# 2023-12-07, with our hospital admissions data that is available up until
+# 2023-11-29
+forecast_date <- "2023-12-07"
+
+# Pre-process the wastewater dataset: this function adds a few columns to
+# the original wastewater dataset. First, it assigns a unique identifier
+# the unique combinations of labs and sites, since this is the unit we will
+# use for estimating the observation error in the reported measurements.
+# Second it adds a column `below_lod` which is an indicator of whether the
+# reported concentration is above or below the lod. If the point is below the
+# LOD, the model will treat this observation as censored.
+# Third,  it adds a column `flag_as_ww_outlier` that indicates whether the
+# measurement is identified as an outlier by our algorithm and the default
+# thresholds. The user can still choose to include these in the fitting process
+# later on. Lastly, it filters the wastewater measurements to dates before the
+# forecast date specified above, just in case the wastewater data passed in
+# isn't vintaged.
+ww_data_preprocessed <- preprocess_ww_data(ww_data, forecast_date)
 
 # Pre-process the hospital admissions dataset
 ```
