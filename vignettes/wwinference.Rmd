@@ -75,15 +75,15 @@ ww_data <- wwinference::ww_data
 ```
 
 # Pre-processing
-We will need to set some metadata to facilitate model specification. These include:
-- the date on which we are making the forecast
-- number of days to calibrate the model for
-- number of days to forecast
-- specification of the generation interval for COVID-19
-- specification of the delay from infection to hospital admissions for COVID-19
-- setting the priors and parameters, some of which are COVID-19 specific
+The user will need to provide data that is in a similar format to the package
+data. This represents the bare minimum required data for a single location
+and a single forecast date. We will need to do some pre-processing to add
+some columns that the model will need to be able apply features such
+as outlier exclusion and censoring of values below the limit of detection.
 ```{r}
-# Get the parameters
+# Get the parameters from the package. Note that some of these are COVID
+# specific, others are more general to the model. This is indicated in the
+# .toml file.
 params <- get_params(
   system.file("extdata", "example_params.toml",
     package = "wwinference"
@@ -108,7 +108,10 @@ forecast_date <- "2023-12-07"
 # later on. Lastly, it filters the wastewater measurements to dates before the
 # forecast date specified above, just in case the wastewater data passed in
 # isn't vintaged.
-ww_data_preprocessed <- wwinference::preprocess_ww_data(ww_data, forecast_date)
+ww_data_preprocessed <- wwinference::preprocess_ww_data(
+  ww_data,
+  forecast_date
+)
 
 # Pre-process the hospital admissions dataset: This function adds a column to
 # indicate the forecast date and standardizes the column names.
@@ -123,7 +126,6 @@ hosp_data_preprocessed <- wwinference::preprocess_hosp_data(
 We'll make some plots of the data just to make sure it looks like what we'd expect:
 
 ```{r}
-# Add plots
 ggplot(ww_data_preprocessed) +
   geom_point(
     aes(
@@ -139,13 +141,14 @@ ggplot(ww_data_preprocessed) +
   ) +
   geom_hline(aes(yintercept = lod), linetype = "dashed") +
   geom_vline(aes(xintercept = forecast_date), linetype = "dashed") +
-  facet_wrap(~lab_site_name, scales = "free") +
+  facet_wrap(~lab_site_name) +
   xlab("") +
   ylab("Genome copies/mL") +
   ggtitle("Lab-site level wastewater concentration") +
   theme_bw()
 
-ggplot(hosp_data) +
+ggplot(hosp_data_preprocessed) +
+  # Plot the hospital admissions data that we will evaluate against in white
   geom_point(
     data = hosp_data_eval, aes(
       x = date,
@@ -153,9 +156,26 @@ ggplot(hosp_data) +
     ),
     shape = 21, color = "black", fill = "white"
   ) +
-  geom_point(aes(x = date, y = daily_hosp_admits)) +
+  # Plot the data we will calibrate to
+  geom_point(aes(x = date, y = count)) +
+  geom_vline(aes(xintercept = forecast_date), linetype = "dashed") +
   xlab("") +
   ylab("Daily hospital admissions") +
   ggtitle("State level hospital admissions") +
   theme_bw()
+```
+User specifications:
+We will need to set some metadata to facilitate model specification. In addition
+to assigning the forecast date (done above), this also includes:
+- number of days to calibrate the model for
+- number of days to forecast
+- specification of the generation interval, in this case for COVID-19
+- specification of the delay from infection to the count data, in this case
+ from infection to COVID-19 hospital admission
+
+```{r}
+# Let's assign some of the variables that we would expect to be in a
+# configuration file.
+
+calibration_time <- 90 # number of days to calibrate hospital admissions to
 ```
