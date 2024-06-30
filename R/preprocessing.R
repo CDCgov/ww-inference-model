@@ -6,8 +6,10 @@
 #' @param conc_col_name name of the column containing the concentration
 #' measurements in the wastewater data, default is `genome_copies_per_ml`
 #'
-#' @return a dataframe containing the transformed and clean wastewater data
-#' at the site and lab label for the forecast date and location specified
+#' @return a dataframe containing the same columns as ww_data plus the following
+#' additional columns neede for the stan model:
+#' lab_site_index, site_index, flag_as_ww_outlier, lab_site_name,
+#' forecast_date
 #' @export
 #'
 #' @examples
@@ -21,9 +23,15 @@ preprocess_ww_data <- function(ww_data,
       ww_data |>
         dplyr::distinct(lab, site) |>
         dplyr::mutate(
-          lab_site = dplyr::row_number()
+          lab_site_index = dplyr::row_number()
         ),
       by = c("lab", "site")
+    ) |>
+    dplyr::left_join(
+      ww_data |>
+        dplyr::distinct(site) |>
+        dplyr::mutate(site_index = dplyr::row_number()),
+      by = "site"
     ) |>
     dplyr::mutate(
       lab_site_name = glue::glue("Site: {site},  Lab:  {lab}"),
@@ -90,7 +98,7 @@ preprocess_hosp_data <- function(hosp_data,
 #' Flag WW outliers
 #'
 #' @param ww_data dataframe containing the following columns: site, lab,
-#' lab_site, date, a column for concentration, and below_lod
+#' lab_site_index, date, a column for concentration, and below_lod
 #' @param conc_col_name string, name of the column containing the concentration
 #' measurements in the wastewater data, default is `genome_copies_per_ml`
 #' @param rho_threshold float indicating the z-score threshold for "jump"
@@ -113,13 +121,13 @@ flag_ww_outliers <- function(ww_data,
                              threshold_n_dps = 1) {
   n_dps <- ww_data |>
     dplyr::filter(below_lod == 0) |>
-    dplyr::group_by(lab_site) |>
+    dplyr::group_by(lab_site_index) |>
     dplyr::summarise(n_data_points = dplyr::n())
 
   # Get the ww statistics we need for outlier detection
   ww_stats <- ww_data |>
     dplyr::left_join(n_dps,
-      by = "lab_site"
+      by = "lab_site_index"
     ) |>
     # exclude below LOD from z scoring and remove lab-sites with too
     # few data points
@@ -127,7 +135,7 @@ flag_ww_outliers <- function(ww_data,
       below_lod == 0,
       n_data_points > threshold_n_dps
     ) |>
-    dplyr::group_by(lab_site) |>
+    dplyr::group_by(lab_site_index) |>
     dplyr::arrange(date, "desc") |>
     dplyr::mutate(
       log_conc = log(!!sym(conc_col_name)),
@@ -137,27 +145,27 @@ flag_ww_outliers <- function(ww_data,
       diff_time = as.numeric(difftime(date, prev_date)),
       rho = diff_log_conc / diff_time
     ) |>
-    dplyr::select(date, lab_site, rho) |>
+    dplyr::select(date, lab_site_index, rho) |>
     dplyr::distinct()
 
   # Combine stats with ww data
   ww_rho <- ww_data |>
-    left_join(ww_stats, by = c("lab_site", "date"))
+    left_join(ww_stats, by = c("lab_site_index", "date"))
 
   # compute z scores and flag
   ww_z_scored <- ww_rho |>
     dplyr::left_join(
       ww_rho |>
-        dplyr::group_by(lab_site) |>
+        dplyr::group_by(lab_site_index) |>
         dplyr::summarise(
           mean_rho = mean(rho, na.rm = TRUE),
           std_rho = sd(rho, na.rm = TRUE),
           mean_conc = mean(!!sym(conc_col_name), na.rm = TRUE),
           std_conc = sd(!!sym(conc_col_name), na.rm = TRUE)
         ),
-      by = "lab_site"
+      by = "lab_site_index"
     ) |>
-    dplyr::group_by(lab_site) |>
+    dplyr::group_by(lab_site_index) |>
     mutate(
       z_score_conc = (!!sym(conc_col_name) - mean_conc) / std_conc,
       z_score_rho = (rho - mean_rho) / std_rho

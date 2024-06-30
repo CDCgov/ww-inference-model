@@ -14,7 +14,7 @@ flag_ww_outliers(
 }
 \arguments{
 \item{ww_data}{dataframe containing the following columns: site, lab,
-lab_site, date, a column for concentration, and below_lod}
+lab_site_index, date, a column for concentration, and below_lod}
 
 \item{conc_col_name}{string, name of the column containing the concentration
 measurements in the wastewater data, default is \code{genome_copies_per_ml}}

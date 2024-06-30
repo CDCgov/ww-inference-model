@@ -2,81 +2,58 @@
 % Please edit documentation in R/get_stan_data.R
 \name{get_stan_data}
 \alias{get_stan_data}
-\title{Get stan data}
+\title{Get stan data for ww + hosp model}
 \usage{
 get_stan_data(
-  model_type,
-  forecast_date,
-  forecast_time,
-  calibration_time,
+  input_count_data,
   input_ww_data,
-  input_hosp_data,
+  forecast_date,
+  forecast_horizon,
+  calibration_time,
   generation_interval,
-  inf_to_hosp,
+  inf_to_count_delay,
   infection_feedback_pmf,
   params,
-  compute_likelihood = 1,
-  ww_outlier_col_name = "flag_as_ww_outlier",
-  lod_col_name = "below_LOD",
-  ww_measurement_col_name = "ww",
-  ww_value_lod_col_name = "lod_sewage",
-  hosp_value_col_name = "daily_hosp_admits"
+  exclude_ww_outliers = TRUE,
+  compute_likelihood = 1
 )
 }
 \arguments{
-\item{model_type}{string indicating which model we are getting data for
-Options are \code{ww} or \code{hosp}}
+\item{input_count_data}{a dataframe with the input count data, must have
+the following columns: date, count, total_pop}
+
+\item{input_ww_data}{a dataframe with the input wastewater data with no gaps,
+must have the following columns: date, site, lab, genome_copies_per_ml,
+site_pop, below_lod, and if removing outliers, flag_as_ww_outlier}
 
 \item{forecast_date}{string indicating the forecast date}
 
-\item{forecast_time}{integer indicating the number of days to make a forecast
-for}
+\item{forecast_horizon}{integer indicating the number of days to make a
+forecast for}
 
 \item{calibration_time}{integer indicating the max duration in days that
-the model is calibrated to hospital admissions for}
-
-\item{input_ww_data}{a dataframe with the input wastewater data}
-
-\item{input_hosp_data}{a dataframe with the input hospital admissions data}
+the model is calibrated to the count data for}
 
 \item{generation_interval}{a vector with a zero-truncated normalized pmf of
 the generation interval}
 
-\item{inf_to_hosp}{a vector with a normalized pmf of the delay from infection
-to hospital admissions}
+\item{inf_to_count_delay}{a vector with a normalized pmf of the delay from
+infection to counts}
 
 \item{infection_feedback_pmf}{a vector with a normalized pmf dictating the
 delay of infection feedback}
 
 \item{params}{a dataframe of parameter names and numeric values}
 
+\item{exclude_ww_outliers}{boolean indicating whether or not to remove
+the flagged ww_outliers, default = \code{TRUE}}
+
 \item{compute_likelihood}{indicator variable telling stan whether or not to
 compute the likelihood, default = \code{1}}
-
-\item{ww_outlier_col_name}{A string representing the name of the
-column in the input_ww_data that provides a 0 if the data point is not an
-outlier to be excluded from the model fit, or a 1 if it is to be excluded
-default value is \code{flag_as_ww_outlier}}
-
-\item{lod_col_name}{A string representing the name of the
-column in the input_ww_data that provides a 0 if the data point is not above
-the LOD and a 1 if the data is below the LOD, default value is \code{below_LOD}}
-
-\item{ww_measurement_col_name}{A string representing the name of the column
-in the input_ww_data that indicates the wastewater measurement value in
-natural scale, default is \code{ww}}
-
-\item{ww_value_lod_col_name}{A string representing the name of the column
-in the input_ww_data that indicates the value of the LOD in natural scale,
-default is \code{lod_sewage}}
-
-\item{hosp_value_col_name}{A string representing the name of the column
-in the input_hosp-data that indicates the number of daily hospital
-admissions, default is \code{daily_hosp_admits}}
 }
 \value{
-a list named variables to pass to stan
+a list of named variables to pass to stan
 }
 \description{
-Get stan data
+Get stan data for ww + hosp model
 }

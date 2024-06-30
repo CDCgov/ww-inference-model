@@ -77,3 +77,19 @@ get_ind_m <- function(n_days, n_weeks) {
 
   return(ind_m)
 }
+
+#' @title Create a new directory if one doesn't exist
+#' @description
+#' Function to create a directory for the specified output file path if needed.
+#' dir_create won't throw a warning if its already made though!
+#'
+#'
+#' @param output_file_path file path that may or may not need to be created
+#'
+#' @export
+create_dir <- function(output_file_path) {
+  if (!file.exists(output_file_path)) {
+    fs::dir_create(output_file_path, recurse = TRUE, mode = "0777")
+    Sys.chmod(output_file_path, mode = "0777", use_umask = FALSE)
+  }
+}

@@ -12,8 +12,8 @@ functions {
 // The fixed input data
 data {
   int<lower=1> gt_max;
-  int<lower=1> hosp_delay_max;
-  vector<lower=0,upper=1>[hosp_delay_max] inf_to_hosp; // delay distribution from infecion to hospital admission
+  int<lower=1> inf_to_count_delay_max;
+  vector<lower=0,upper=1>[inf_to_count_delay_max] inf_to_count_delay; // delay distribution from infecion to hospital admission
   real<lower=0> mwpd; // mL of ww produced per person per day
   int<lower=1> if_l; // length of infection feedback pmf
   vector<lower=0,upper=1>[if_l] infection_feedback_pmf; // infection feedback pmf
@@ -31,12 +31,12 @@ data {
   int<lower=0> tot_weeks; // number of weeks for the weekly random walk on IHR (includes unobserved time)
   matrix<lower=0> [uot+ot+ht, tot_weeks] p_hosp_m; // matrix to convert p_hosp from weekly to daily
   vector<lower=0,upper=1>[gt_max] generation_interval; // generation interval distribution
-  real<lower = 1e-20> state_pop; // population size
+  real<lower = 1e-20> total_pop; // population size
   vector<lower = 1e-20>[n_subpops] subpop_size; // the population sizes for each subpopulation
-  real<lower = state_pop> norm_pop;
+  real<lower = total_pop> norm_pop;
   array[owt] int<lower=1,upper=ot + ht> ww_sampled_times; // a list of all of the days on which WW is sampled
                                    // will be mapped to the corresponding sites (ww_sampled_sites)
-  array[oht] int<lower=1, upper=ot> hosp_times; // the days on which hospital admissions are observed
+  array[oht] int<lower=1, upper=ot> count_times; // the days on which hospital admissions are observed
   array[owt] int<lower=1,upper=n_subpops> ww_sampled_sites; // vector of unique sites in order of the sampled times
   array[owt] int<lower=1,upper=n_ww_lab_sites> ww_sampled_lab_sites; // vector of unique lab-site combos i
    	     // n order of the sampled times
@@ -44,7 +44,7 @@ data {
   array[n_uncensored] int<lower=1,upper=owt> ww_uncensored; // time that WW data is above LOD
   vector[owt] ww_log_lod; // The limit of detection in that site at that time point
   array[n_ww_lab_sites] int<lower=1,upper=n_subpops> lab_site_to_site_map; // which lab sites correspond to which sites
-  array[oht] int<lower=0> hosp; // observed hospital admissions
+  array[oht] int<lower=0> counts; // observed counts
   array[ot + ht] int<lower=1,upper=7> day_of_week; // integer vector with 1-7 corresponding to the weekday
   vector[owt] log_conc; // observed concentration of viral genomes in WW
   int<lower=0,upper=1> compute_likelihood; // 1= use data to compute likelihood
@@ -169,7 +169,7 @@ transformed parameters {
   vector[ot + uot + ht] state_inf_per_capita = rep_vector(0, uot + ot + ht); // state level incident infections per capita
   matrix[n_subpops, ot + ht] model_log_v_ot; // expected observed viral genomes/mL at all observed and forecasted times
   real<lower=0> g = pow(log10_g, 10); // Estimated genomes shed per infected individual
-  real<lower=0> i0 = i0_over_n * state_pop; // Initial absolute infection incidence
+  real<lower=0> i0 = i0_over_n * total_pop; // Initial absolute infection incidence
   vector[n_subpops] i0_site_over_n; // site-level initial
   // per capita infection incidence
   vector[n_subpops] growth_site;
@@ -238,7 +238,7 @@ transformed parameters {
   // Expected hospital admissions per capita:
   // This is a convolution of incident infections and the hospital-admission delay distribution
   // generates all hospitalizations, across unobserved time, observed time, and forecast time
-  model_hosp_per_capita = convolve_dot_product(p_hosp .* state_inf_per_capita, reverse(inf_to_hosp),
+  model_hosp_per_capita = convolve_dot_product(p_hosp .* state_inf_per_capita, reverse(inf_to_count_delay),
                                     ot + uot + ht);
 
   // predicted hospital admissions per capita
@@ -246,9 +246,9 @@ transformed parameters {
   // apply the weekday effect so these are distributed with fewer admits on Sat & Sun
   // multiply by state population to convert from predicted per capita admissions to
   // predicted absolute admissions
-  exp_obs_hosp = state_pop * day_of_week_effect(
-  	       exp_obs_hosp_per_capita_no_wday_effect[hosp_times],
-	       day_of_week[hosp_times],
+  exp_obs_hosp = total_pop * day_of_week_effect(
+  	       exp_obs_hosp_per_capita_no_wday_effect[count_times],
+	       day_of_week[count_times],
 	       hosp_wday_effect);
 
   // Observations at the site level (genomes/person/day) are:
@@ -321,7 +321,7 @@ model {
     }
 
     if (include_hosp == 1) {
-      hosp ~ neg_binomial_2(exp_obs_hosp, phi_h);
+      counts ~ neg_binomial_2(exp_obs_hosp, phi_h);
     }
   } // end if for computing log likelihood
 }
@@ -341,12 +341,12 @@ generated quantities {
     exp(growth_site[i] * uot);
   }
 
-  pred_hosp = neg_binomial_2_rng(state_pop * day_of_week_effect(model_hosp_per_capita[uot + 1 :
+  pred_hosp = neg_binomial_2_rng(total_pop * day_of_week_effect(model_hosp_per_capita[uot + 1 :
                                                         uot + ot + ht],
                                                         day_of_week,
                                                         hosp_wday_effect),
                                  phi_h);
-  pred_new_i = neg_binomial_2_rng(state_pop * state_inf_per_capita[uot + 1 : uot + ot + ht], phi_h);
+  pred_new_i = neg_binomial_2_rng(total_pop * state_inf_per_capita[uot + 1 : uot + ot + ht], phi_h);
 
   // Here need to iterate through each lab-site, find the corresponding site
   // and apply the expected lab-site error

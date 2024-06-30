@@ -21,8 +21,10 @@ formatted as a character string in IS08601 format (YYYY-MM-DD).}
 measurements in the wastewater data, default is \code{genome_copies_per_ml}}
 }
 \value{
-a dataframe containing the transformed and clean wastewater data
-at the site and lab label for the forecast date and location specified
+a dataframe containing the same columns as ww_data plus the following
+additional columns neede for the stan model:
+lab_site_index, site_index, flag_as_ww_outlier, lab_site_name,
+forecast_date
 }
 \description{
 Get input wastewater data
