@@ -5,7 +5,8 @@
 #' @param input_ww_data a dataframe with the input wastewater data with no gaps,
 #' must have the following columns: date, site, lab, genome_copies_per_ml,
 #' site_pop, below_lod, and if removing outliers, flag_as_ww_outlier
-#' @param forecast_date string indicating the forecast date
+#' @param forecast_date string indicating the forecast date in ISO8 convention
+#' e.g. YYYY-MM-DD
 #' @param forecast_horizon integer indicating the number of days to make a
 #' forecast for
 #' @param calibration_time integer indicating the max duration in days that

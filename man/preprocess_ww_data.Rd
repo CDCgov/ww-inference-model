@@ -32,12 +32,13 @@ forecast_date
 Get input wastewater data
 }
 \examples{
-ww_data <- tibble::tibble(date = rep(c("2023-11-01", "2023-11-02"),2),
-                             site= c(rep(1), rep(2)),
-                             lab = c(1,1,1,1),
-                             conc = c(345.2, 784.1, 401.5, 681.8),
-                             lod = c(20, 20, 15, 15)
-                             )
+ww_data <- tibble::tibble(
+  date = rep(c("2023-11-01", "2023-11-02"), 2),
+  site = c(rep(1), rep(2)),
+  lab = c(1, 1, 1, 1),
+  conc = c(345.2, 784.1, 401.5, 681.8),
+  lod = c(20, 20, 15, 15)
+)
 ww_data_preprocessed <- preprocess_ww_data(ww_data,
                                            conc_col_name = "conc",
                                            lod_col_name = "lod"

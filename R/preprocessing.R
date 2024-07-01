@@ -53,7 +53,7 @@ preprocess_ww_data <- function(ww_data,
   # Get an extra column that identifies the wastewater outliers using the
   # default parameters
   ww_preprocessed <- flag_ww_outliers(ww_data,
-    conc_col_name = !!conc_col_name
+    conc_col_name = {{ conc_col_name }}
   ) |>
     dplyr::rename(
       genome_copies_per_ml = {{ conc_col_name }}

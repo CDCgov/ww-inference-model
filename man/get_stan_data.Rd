@@ -26,7 +26,8 @@ the following columns: date, count, total_pop}
 must have the following columns: date, site, lab, genome_copies_per_ml,
 site_pop, below_lod, and if removing outliers, flag_as_ww_outlier}
 
-\item{forecast_date}{string indicating the forecast date}
+\item{forecast_date}{string indicating the forecast date in ISO8 convention
+e.g. YYYY-MM-DD}
 
 \item{forecast_horizon}{integer indicating the number of days to make a
 forecast for}

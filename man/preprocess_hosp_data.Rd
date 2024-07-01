@@ -28,10 +28,14 @@ have the following columns \code{date}, \code{count}, and \code{total_pop}
 Get input hospital admissions data
 }
 \examples{
-hosp_data <- tibble::tibble(date = c("2023-11-01", "2023-11-02"),
-                               daily_admits = c( 10, 20),
-                               state_pop = c(1e6, 1e6))
-hosp_data_preprocessed <- preprocess_hospdata(hosp_data,
-                                              "daily_admits",
-                                              "state_pop")
+hosp_data <- tibble::tibble(
+  date = c("2023-11-01", "2023-11-02"),
+  daily_admits = c(10, 20),
+  state_pop = c(1e6, 1e6)
+)
+hosp_data_preprocessed <- preprocess_hospdata(
+  hosp_data,
+  "daily_admits",
+  "state_pop"
+)
 }
