@@ -6,8 +6,8 @@
 include directory (\code{stan}) for #include statements}
 \usage{
 compile_model(
-  model_filepath,
-  include_paths = system.file("stan", package = "cfaforecastrenewalww"),
+  model_filepath = system.file("stan", "wwinference.stan", package = "wwinference"),
+  include_paths = system.file("stan", package = "wwinference"),
   threads = FALSE,
   target_dir = tempdir(),
   stanc_options = list(),
@@ -17,12 +17,13 @@ compile_model(
 )
 }
 \arguments{
-\item{model_filepath}{path to .stan file defining the model}
+\item{model_filepath}{path to .stan file defining the model, default is
+`system.file("stan", "wwinference.stan", package = "wwinference")}
 
 \item{include_paths}{path(s) to directories to search for files
 specified in #include statements. Passed to \code{\link[cmdstanr:cmdstan_model]{cmdstanr::cmdstan_model()}}.
 Defaults to the \code{stan} subdirectory of the installed
-\code{cfaforecastrenewalww} package.}
+\code{wwinference} package.}
 
 \item{threads}{Number of threads to use in model compilation,
 as an integer. Passed to \code{\link[cmdstanr:cmdstan_model]{cmdstanr::cmdstan_model()}}.

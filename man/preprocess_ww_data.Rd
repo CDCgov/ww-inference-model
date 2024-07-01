@@ -6,19 +6,21 @@
 \usage{
 preprocess_ww_data(
   ww_data,
-  forecast_date,
-  conc_col_name = "genome_copies_per_ml"
+  conc_col_name = "genome_copies_per_ml",
+  lod_col_name = "lod"
 )
 }
 \arguments{
 \item{ww_data}{dataframe containing the following columns: site, lab,
 date, a column for concentration, and lod}
 
-\item{forecast_date}{The forecast date for this iteration,
-formatted as a character string in IS08601 format (YYYY-MM-DD).}
+\item{conc_col_name}{string indicating the name of the column containing
+the concentration measurements in the wastewater data, default is
+\code{genome_copies_per_ml}}
 
-\item{conc_col_name}{name of the column containing the concentration
-measurements in the wastewater data, default is \code{genome_copies_per_ml}}
+\item{lod_col_name}{string indicating the name of the column containing
+the concentration measurements in the wastewater data, default is
+\code{genome_copies_per_ml}}
 }
 \value{
 a dataframe containing the same columns as ww_data plus the following
@@ -30,5 +32,14 @@ forecast_date
 Get input wastewater data
 }
 \examples{
-ww_data_preprocessed <- preprocess_ww_data(ww_data, "2023-12-01")
+ww_data <- tibble::tibble(date = rep(c("2023-11-01", "2023-11-02"),2),
+                             site= c(rep(1), rep(2)),
+                             lab = c(1,1,1,1),
+                             conc = c(345.2, 784.1, 401.5, 681.8),
+                             lod = c(20, 20, 15, 15)
+                             )
+ww_data_preprocessed <- preprocess_ww_data(ww_data,
+                                           conc_col_name = "conc",
+                                           lod_col_name = "lod"
+                                           )
 }

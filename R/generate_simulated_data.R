@@ -443,7 +443,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     dplyr::select(date, site, lab, genome_copies_per_ml, lod, site_pop)
 
   # Make a hospital admissions dataframe for model calibration
-  hosp_data <- data.frame(
+  hosp_data <- tibble::tibble(
     t = 1:ot,
     daily_hosp_admits = exp_obs_hosp[1:ot],
     state_pop = pop_size
@@ -459,7 +459,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     )
 
   # Make another one for model evaluation
-  hosp_data_eval <- data.frame(
+  hosp_data_eval <- tibble::tibble(
     t = 1:(ot + ht),
     daily_hosp_admits_for_eval = exp_obs_hosp,
     state_pop = pop_size

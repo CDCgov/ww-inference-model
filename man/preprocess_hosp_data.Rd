@@ -6,7 +6,6 @@
 \usage{
 preprocess_hosp_data(
   hosp_data,
-  forecast_date,
   count_col_name = "daily_hosp_admits",
   pop_size_col_name = "state_pop"
 )
@@ -14,9 +13,6 @@ preprocess_hosp_data(
 \arguments{
 \item{hosp_data}{dataframe containing the following columns: date,
 a count column, and a population size column}
-
-\item{forecast_date}{The forecast date for this iteration,
-formatted as a character string in IS08601 format (YYYY-MM-DD).}
 
 \item{count_col_name}{name of the column containing the epidemiological
 indicator, default is \code{daily_hosp_admits}}
@@ -26,11 +22,16 @@ of that the counts are coming from, default is \code{state_pop}}
 }
 \value{
 a dataframe containing the hospital admissions data renamed to
-have the following columns \code{date}, \code{count}, \code{total_pop} and \code{forecast_date}
+have the following columns \code{date}, \code{count}, and \code{total_pop}
 }
 \description{
 Get input hospital admissions data
 }
 \examples{
-hosp_data_preprocessed <- preprocess_hospdata(hosp_data, "2023-12-01")
+hosp_data <- tibble::tibble(date = c("2023-11-01", "2023-11-02"),
+                               daily_admits = c( 10, 20),
+                               state_pop = c(1e6, 1e6))
+hosp_data_preprocessed <- preprocess_hospdata(hosp_data,
+                                              "daily_admits",
+                                              "state_pop")
 }

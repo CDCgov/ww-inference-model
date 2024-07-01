@@ -1,11 +1,12 @@
 #' Get input wastewater data
 #' @param ww_data dataframe containing the following columns: site, lab,
 #' date, a column for concentration, and lod
-#' @param forecast_date The forecast date for this iteration,
-#' formatted as a character string in IS08601 format (YYYY-MM-DD).
-#' @param conc_col_name name of the column containing the concentration
-#' measurements in the wastewater data, default is `genome_copies_per_ml`
-#'
+#' @param conc_col_name string indicating the name of the column containing
+#' the concentration measurements in the wastewater data, default is
+#'  `genome_copies_per_ml`
+#' @param lod_col_name string indicating the name of the column containing
+#' the concentration measurements in the wastewater data, default is
+#'  `genome_copies_per_ml`
 #' @return a dataframe containing the same columns as ww_data plus the following
 #' additional columns neede for the stan model:
 #' lab_site_index, site_index, flag_as_ww_outlier, lab_site_name,
@@ -13,10 +14,21 @@
 #' @export
 #'
 #' @examples
-#' ww_data_preprocessed <- preprocess_ww_data(ww_data, "2023-12-01")
+#' ww_data <- tibble::tibble(
+#'   date = rep(c("2023-11-01", "2023-11-02"), 2),
+#'   site = c(rep(1), rep(2)),
+#'   lab = c(1, 1, 1, 1),
+#'   conc = c(345.2, 784.1, 401.5, 681.8),
+#'   lod = c(20, 20, 15, 15)
+#' )
+
+#' ww_data_preprocessed <- preprocess_ww_data(ww_data,
+#'                                            conc_col_name = "conc",
+#'                                            lod_col_name = "lod"
+#'                                            )
 preprocess_ww_data <- function(ww_data,
-                               forecast_date,
-                               conc_col_name = "genome_copies_per_ml") {
+                               conc_col_name = "genome_copies_per_ml",
+                               lod_col_name = "lod") {
   # Add some columns
   ww_data <- ww_data |>
     dplyr::left_join(
@@ -35,19 +47,16 @@ preprocess_ww_data <- function(ww_data,
     ) |>
     dplyr::mutate(
       lab_site_name = glue::glue("Site: {site},  Lab:  {lab}"),
-      below_lod = ifelse({{ conc_col_name }} < lod, 1, 0)
+      below_lod = ifelse({{ conc_col_name }} < {{ lod_col_name }}, 1, 0)
     )
 
   # Get an extra column that identifies the wastewater outliers using the
   # default parameters
-  ww_preprocessed <- flag_ww_outliers(ww_data) |>
-    dplyr::mutate(
-      forecast_date = lubridate::ymd(!!forecast_date)
-    ) |>
-    # In case the wastewater data being passed in isn't vintaged, we want to
-    # make sure we don't include values that are past the forecast date
-    dplyr::filter(
-      date < forecast_date
+  ww_preprocessed <- flag_ww_outliers(ww_data,
+    conc_col_name = !!conc_col_name
+  ) |>
+    dplyr::rename(
+      genome_copies_per_ml = {{ conc_col_name }}
     )
 
 
@@ -57,37 +66,34 @@ preprocess_ww_data <- function(ww_data,
 #' Get input hospital admissions data
 #' @param hosp_data dataframe containing the following columns: date,
 #' a count column, and a population size column
-#' @param forecast_date The forecast date for this iteration,
-#' formatted as a character string in IS08601 format (YYYY-MM-DD).
 #' @param count_col_name name of the column containing the epidemiological
 #' indicator, default is `daily_hosp_admits`
 #' @param pop_size_col_name name of the column containing the population size
 #' of that the counts are coming from, default is `state_pop`
 #'
 #' @return a dataframe containing the hospital admissions data renamed to
-#' have the following columns `date`, `count`, `total_pop` and `forecast_date`
+#' have the following columns `date`, `count`, and `total_pop`
 #' @export
 #'
 #' @examples
-#' hosp_data_preprocessed <- preprocess_hospdata(hosp_data, "2023-12-01")
+#' hosp_data <- tibble::tibble(
+#'   date = c("2023-11-01", "2023-11-02"),
+#'   daily_admits = c(10, 20),
+#'   state_pop = c(1e6, 1e6)
+#' )
+#' hosp_data_preprocessed <- preprocess_hospdata(
+#'   hosp_data,
+#'   "daily_admits",
+#'   "state_pop"
+#' )
 preprocess_hosp_data <- function(hosp_data,
-                                 forecast_date,
                                  count_col_name = "daily_hosp_admits",
                                  pop_size_col_name = "state_pop") {
   hosp_data_preprocessed <- hosp_data |>
     dplyr::rename(
       count = {{ count_col_name }},
       total_pop = {{ pop_size_col_name }}
-    ) |>
-    dplyr::mutate(
-      forecast_date = lubridate::ymd(!!forecast_date)
-    ) |>
-    # In case the count data being passed in isn't vintaged, we want to
-    # make sure we don't include values that are past the forecast date
-    dplyr::filter(
-      date < forecast_date
     )
-
 
   return(hosp_data_preprocessed)
 }

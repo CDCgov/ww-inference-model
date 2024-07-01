@@ -12,11 +12,12 @@
 #' the [`epinowcast`](https://github.com/epinowcast/epinowcast)
 #' R package.
 #'
-#' @param model_filepath path to .stan file defining the model
+#' @param model_filepath path to .stan file defining the model, default is
+#' `system.file("stan", "wwinference.stan", package = "wwinference")
 #' @param include_paths path(s) to directories to search for files
 #' specified in #include statements. Passed to [cmdstanr::cmdstan_model()].
 #' Defaults to the `stan` subdirectory of the installed
-#' `cfaforecastrenewalww` package.
+#' `wwinference` package.
 #' @param threads Number of threads to use in model compilation,
 #' as an integer. Passed to [cmdstanr::cmdstan_model()].
 #' Default `FALSE` (use single-threaded compilation).
@@ -40,10 +41,13 @@
 #' @return The resulting `cmdstanr` model object, as the output
 #' of [cmdstanr::cmdstan_model()].
 #' @export
-compile_model <- function(model_filepath,
+compile_model <- function(model_filepath = system.file("stan",
+                            "wwinference.stan",
+                            package = "wwinference"
+                          ),
                           include_paths = system.file(
                             "stan",
-                            package = "cfaforecastrenewalww"
+                            package = "wwinference"
                           ),
                           threads = FALSE,
                           target_dir = tempdir(),
