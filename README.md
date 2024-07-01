@@ -1,4 +1,4 @@
-# wwinference: joint inference and forecasting from wastewater and epidemiological indicators
+# `wwinference`: joint inference and forecasting from wastewater and epidemiological indicators
 
 ## Overview
 
@@ -7,10 +7,10 @@
 >
 
 `{wwinference}` estimates latent incident infections from wastewater concentration data and data on epidemiological indicators, with an initial assumed structure that the wastewater concentration data comes from subsets of the population contributing to the global epidemiological indicator data, such as hospital admissions. This model reflects the model currently used to produce forecasts of COVID-19 hospital admissions, of which the pipeline and model code is available at
-the  [wastewater-informed-covid-forecasting](https://github.com/CDCgov/wastewater-informed-covid-forecasting) repository. 
+the  [wastewater-informed-covid-forecasting](https://github.com/CDCgov/wastewater-informed-covid-forecasting) repository.
 
-The intention is for {wwinference} to provide a user-friendly R-package interface for running forecasting models that use wastewater concentrations combined with other more traditional epidemiological signals such as cases or hospital admissions. 
-  
+The intention is for {wwinference} to provide a user-friendly R-package interface for running forecasting models that use wastewater concentrations combined with other more traditional epidemiological signals such as cases or hospital admissions.
+
 ## Public Domain Standard Notice
 This repository constitutes a work of the United States Government and is not
 subject to domestic copyright protection under 17 USC § 105. This repository is in

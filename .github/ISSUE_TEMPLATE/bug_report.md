@@ -8,10 +8,7 @@ assignees: ''
 ---
 
 **Describe the bug**
-A clear and concise description of what feature is not working.
-
-**Impact**
-Please describe the impact this bug is causing to your program or organization.
+A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
@@ -25,9 +22,6 @@ A clear and concise description of what you expected to happen.
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
-
-**Logs**
-If applicable, please attach logs to help describe your problem.
 
 **Desktop (please complete the following information):**
  - OS: [e.g. iOS]

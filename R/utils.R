@@ -1,0 +1,138 @@
+#' Add probability mass functions
+#'
+#' This function allows the addition of probability mass functions (PMFs) to
+#' produce a new PMF. This is useful for example in the context of reporting
+#' delays where the PMF of the sum of two Poisson distributions is the
+#' convolution of the PMFs.
+#'
+#' This code was adapted from code written
+#' (under an MIT license) as part of the `epinowcast`
+#' package (https://github.com/epinowcast/epinowcast)
+#'
+#' @param pmfs A list of vectors describing the probability mass functions to
+#'
+#' @return A vector describing the probability mass function of the sum of the
+#'
+#' @export
+#' @examples
+#' # Sample and analytical PMFs for two Poisson distributions
+#' x <- rpois(10000, 5)
+#' xpmf <- dpois(0:20, 5)
+#' y <- rpois(10000, 7)
+#' ypmf <- dpois(0:20, 7)
+#' # Add sampled Poisson distributions up to get combined distribution
+#' z <- x + y
+#' # Analytical convolution of PMFs
+#' conv_pmf <- add_pmfs(list(xpmf, ypmf))
+#' conv_cdf <- cumsum(conv_pmf)
+#' # Empirical convolution of PMFs
+#' cdf <- ecdf(z)(0:42)
+#' # Compare sampled and analytical CDFs
+#' plot(conv_cdf)
+#' lines(cdf, col = "black")
+add_pmfs <- function(pmfs) {
+  d <- length(pmfs)
+  if (d == 1) {
+    return(pmfs[[1]])
+  }
+  if (!is.list(pmfs)) {
+    return(pmfs)
+  }
+  # P(Z = z) = sum_over_x(P(X = x) * P(Y = z - x)) # nolint
+  return(
+    Reduce(x = pmfs, f = function(conv, pmf) {
+      lc <- length(conv)
+      wd <- seq_len(lc) - 1
+      proc <- numeric(lc + length(pmf))
+      for (j in seq_along(pmf)) {
+        proc[j + wd] <- proc[j + wd] + pmf[j] * conv
+      }
+      return(proc)
+    })
+  )
+}
+
+#' @title Get index matrix
+#' @description Get the matrix needed to convert a vetor from weekly to daily
+#' @param n_days number of days we will expand to
+#' @param n_weeks number of weeks those days correspond to
+#'
+#' @return a n_day x n_week matrix for multiplying by weekly estimated
+#' value to conver it to daily
+#' @export
+#'
+#' @examples
+#' ind_m <- get_ind_m(14, 2)
+get_ind_m <- function(n_days, n_weeks) {
+  ind_m <- matrix(nrow = n_days, ncol = n_weeks)
+  for (i in 1:n_days) {
+    for (j in 1:n_weeks) {
+      if (((i - 1) %/% 7) + 1 == j) {
+        ind_m[i, j] <- 1
+      } else {
+        ind_m[i, j] <- 0
+      }
+    }
+  }
+
+  return(ind_m)
+}
+
+#' @title Create a new directory if one doesn't exist
+#' @description
+#' Function to create a directory for the specified output file path if needed.
+#' dir_create won't throw a warning if its already made though!
+#'
+#'
+#' @param output_file_path file path that may or may not need to be created
+#'
+#' @export
+create_dir <- function(output_file_path) {
+  if (!file.exists(output_file_path)) {
+    fs::dir_create(output_file_path, recurse = TRUE, mode = "0777")
+    Sys.chmod(output_file_path, mode = "0777", use_umask = FALSE)
+  }
+}
+
+#' @title Convert to logmean in lognorm distribution
+#' @description
+#'  see arithmetic moments here
+#' https://en.wikipedia.org/wiki/Log-normal_distribution
+#'
+#' @param mean mean of the normal distribution
+#' @param sd sd of the normal distribution
+#'
+#' @return corresponding mean of the lognormal distribution
+#' @export
+convert_to_logmean <- function(mean, sd) {
+  logmean <- log(mean^2 / sqrt(sd^2 + mean^2))
+  return(logmean)
+}
+
+
+#' @title Convert to logsd in lognormal distribution
+#' @description@description see arithmetic moments here
+#' https://en.wikipedia.org/wiki/Log-normal_distribution
+#'
+#' @param mean mean of the normal distribution
+#' @param sd sd of the normal distribution
+#'
+#' @return corresponding stdev of the lognormal distribution
+#' @export
+convert_to_logsd <- function(mean, sd) {
+  logsd <- sqrt(log(1 + (sd^2 / mean^2)))
+  return(logsd)
+}
+
+#' @title Normalize vector to a simplex
+#'
+#' @param vector numeric vector
+#'
+#' @return vector whos sum adds to 1
+#' @export
+#' @examples
+#' to_simplex(c(1, 1, 1))
+#' @noRd
+to_simplex <- function(vector) {
+  return(vector / sum(vector))
+}
