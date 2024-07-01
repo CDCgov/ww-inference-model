@@ -42,7 +42,7 @@ jobs:
           pak-version: rc
           extra-packages: any::pkgdown, local::.
           needs: website
-          
+
       - name: "Install cmdstan via cmdstanr"
         uses: epinowcast/actions/install-cmdstan@v1
         with:
