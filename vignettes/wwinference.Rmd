@@ -295,9 +295,14 @@ wwinference <- function(ww_data,
     params = model_spec$params
   )
 
+  init_fun <- function() {
+    get_inits(stan_data, params)
+  }
+
 
   fit_obj <- model$sample(
     data = stan_data,
+    init = init_fun,
     seed = 123,
     iter_sampling = 500,
     iter_warmup = 750,

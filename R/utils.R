@@ -93,3 +93,46 @@ create_dir <- function(output_file_path) {
     Sys.chmod(output_file_path, mode = "0777", use_umask = FALSE)
   }
 }
+
+#' @title Convert to logmean in lognorm distribution
+#' @description
+#'  see arithmetic moments here
+#' https://en.wikipedia.org/wiki/Log-normal_distribution
+#'
+#' @param mean mean of the normal distribution
+#' @param sd sd of the normal distribution
+#'
+#' @return corresponding mean of the lognormal distribution
+#' @export
+convert_to_logmean <- function(mean, sd) {
+  logmean <- log(mean^2 / sqrt(sd^2 + mean^2))
+  return(logmean)
+}
+
+
+#' @title Convert to logsd in lognormal distribution
+#' @description@description see arithmetic moments here
+#' https://en.wikipedia.org/wiki/Log-normal_distribution
+#'
+#' @param mean mean of the normal distribution
+#' @param sd sd of the normal distribution
+#'
+#' @return corresponding stdev of the lognormal distribution
+#' @export
+convert_to_logsd <- function(mean, sd) {
+  logsd <- sqrt(log(1 + (sd^2 / mean^2)))
+  return(logsd)
+}
+
+#' @title Normalize vector to a simplex
+#'
+#' @param vector numeric vector
+#'
+#' @return vector whos sum adds to 1
+#' @export
+#' @examples
+#' to_simplex(c(1, 1, 1))
+#' @noRd
+to_simplex <- function(vector) {
+  return(vector / sum(vector))
+}
