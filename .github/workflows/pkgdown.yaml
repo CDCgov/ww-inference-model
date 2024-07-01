@@ -38,8 +38,6 @@ jobs:
           extra-repositories: "https://mc-stan.org/r-packages/"
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          cache: true
-          pak-version: rc
           extra-packages: any::pkgdown, local::.
           needs: website
 
