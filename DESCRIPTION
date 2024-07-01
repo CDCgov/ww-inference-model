@@ -1,0 +1,64 @@
+Package: wwinference
+Title: Jointly infers infection dynamics from wastewater data and epidemiological indicators
+Version: 0.0.0.9000
+Authors@R: c(
+    person(given = "Kaitlyn",
+           family = "Johnson",
+           role = c("aut", "cre"),
+           email = "uox1@cdc.gov",
+           comment = c(ORCID = "0000-0001-8011-0012")),
+    person(given = "Sam",
+           family = "Abbott",
+           role = c("aut"),
+           email = "contact@samabbott.co.uk",
+           comment = c(ORCID = "0000-0001-8057-8037")),
+    person(given = "Zachary",
+           family = "Susswein",
+           role = c("aut"),
+           email = "utb2@cdc.gov"),
+    person(given = "Andrew",
+           family = "Magee",
+           role = c("aut"),
+           email = "rzg0@cdc.gov"),
+    person(given = "Dylan",
+           family = "Morris",
+           role = c("aut"),
+           email = "dylan@dylanhmorris.com",
+           comment = c(ORCID = "0000-0002-3655-406X")),
+    person(given = "Scott",
+           family = "Olesen",
+           role = c("aut"),
+           email = "ulp7@cdc.gov"),
+    person(given = "George",
+           family = "Vega Yon",
+           role = c("ctb"),
+           email = "g.vegayon@gmail.com",
+           comment = c(ORCID = "0000-0002-3171-0844")),
+    person(given = "Damon",
+           family = "Bayer",
+           role = c("aut"),
+           email = "xum8@cdc.gov")
+	)
+Description: An implementation of a hierarchical semi-mechanistic renewal
+    approach jointly calibrating to multiple wastewater concentrations datasets from
+    subsets of a specified population and epidemioliogical indicators such as cases
+    or hospital admissions from the whole population. Our framework is an extension
+    of the widely used semi-mechanistic renewal framework EpiNow2, using a Bayesian
+    latent variable approach implemented in the probabilistic programming language
+    Stan. This package contains just the core components needed to fit these two
+    data sources and produce the following outputs-- estimated and forecasted
+    hospital admissions, estimated and forecasted wastewater concentrations,
+    global R(t) estimates, local R(t) estimates for the subpopulations
+    represented by each wastewater catchment area.
+License: Apache License (>= 2)
+URL: https://github.com/cdcgov/ww-inference-model/, https://cdcgov.github.io/ww-inference-model/
+BugReports: https://github.com/cdcgov/ww-inference-model/issues/
+Depends:
+    R (>= 4.3.0)
+SystemRequirements: CmdStan (>=2.35.0)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
