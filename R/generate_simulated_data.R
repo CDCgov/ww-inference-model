@@ -66,7 +66,7 @@
 #' # different labs
 #' sim_data <- generate_simulated_data(
 #'   n_sites = 6,
-#'   map_site_to_lab = c(rep(1, 4), rep(2, 2))
+#'   site = c(rep(1, 4), rep(2, 2))
 #' )
 #' hosp_data <- sim_data$hosp_data
 #' ww_data <- sim_data$ww_data
@@ -381,7 +381,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   # Add on site-lab-level observation error -----------------------------------
   log_obs_g_over_n_lab_site <- matrix(nrow = n_lab_sites, ncol = (ot + ht))
   for (i in 1:n_lab_sites) {
-    log_g_w_multiplier <- log_g_over_n_site[map_site_to_lab[i], ] +
+    log_g_w_multiplier <- log_g_over_n_site[site[i], ] +
       log_m_lab_sites[i] # Add site level multiplier in log scale
     log_obs_g_over_n_lab_site[i, ] <- log_g_w_multiplier +
       rnorm(

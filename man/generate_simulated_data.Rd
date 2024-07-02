@@ -119,7 +119,7 @@ and parameters to generate from.
 # different labs
 sim_data <- generate_simulated_data(
   n_sites = 6,
-  map_site_to_lab = c(rep(1, 4), rep(2, 2))
+  site = c(rep(1, 4), rep(2, 2))
 )
 hosp_data <- sim_data$hosp_data
 ww_data <- sim_data$ww_data
