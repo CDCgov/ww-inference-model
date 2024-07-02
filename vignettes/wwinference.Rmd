@@ -246,7 +246,15 @@ model_spec <- list(
   generation_interval = generation_interval,
   inf_to_count_delay = inf_to_hosp,
   infection_feedback_pmf = infection_feedback_pmf,
-  params = params
+  params = params,
+  iter_warmup = 750,
+  iter_sampling = 500,
+  n_chains = 4,
+  seed = 123,
+  adapt_delta = 0.95,
+  max_treedepth = 12,
+  exclude_ww_outliers = TRUE,
+  compute_likelihood = 1
 )
 ```
 
@@ -274,43 +282,12 @@ fit the model.
 # Next, we will get the stan data objected from the data and the model
 # specifications
 ```{r}
-wwinference <- function(ww_data,
-                        count_data,
-                        model_spec, # can provide defaults
-                        model) {
-  # Check that data is compatible with specifications
-  check_date(ww_data, model_spec$forecast_date)
-  check_date(count_data, model_spec$forecast_date)
-
-  # If checks pass, create stan data object
-  stan_data <- get_stan_data(
-    input_count_data = count_data,
-    input_ww_data = ww_data,
-    forecast_date = model_spec$forecast_date,
-    calibration_time = model_spec$calibration_time,
-    forecast_horizon = model_spec$forecast_horizon,
-    generation_interval = model_spec$generation_interval,
-    inf_to_count_delay = model_spec$inf_to_count_delay,
-    infection_feedback_pmf = model_spec$infection_feedback_pmf,
-    params = model_spec$params
-  )
-
-  init_fun <- function() {
-    get_inits(stan_data, params)
-  }
-
-
-  fit_obj <- model$sample(
-    data = stan_data,
-    init = init_fun,
-    seed = 123,
-    iter_sampling = 500,
-    iter_warmup = 750,
-    max_treedepth = 12,
-    chains = 4,
-    parallel_chains = 4
-  )
-}
+fit <- wwinference(
+  ww_data,
+  count_data,
+  model_spec,
+  model
+)
 ```
 
 # The `wwinference` object
