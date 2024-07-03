@@ -113,9 +113,13 @@ preprocess_hosp_data <- function(hosp_data,
 #' @param threshold_n_dps min number of data points above the LOD per lab-site
 #'
 #' @return ww_w_outliers_flaged dataframe containing all of the columns in
-#' ww_data input dataframe plus an additional column `flag_as_ww_outlier`
-#' which contains a 0 if the datapoint is not an outlier and a 1 if it is
-#' an outlier.
+#' ww_data input dataframe plus two additional columns:
+#'  `flag_as_ww_outlier` and `exclude`
+#' `flag as_ww_outlier` contains a 0 if the datapoint is not an outlier and a 1
+#' if it is an outlier. `exclude` tells the model whether or not to exclude that
+#' data point, which here is by default set to 0 for all data points (even
+#' those flagged as outliers). Excluding the outliers is a second optional
+#' step.
 #' @export
 #'
 #' @examples
@@ -198,12 +202,16 @@ flag_ww_outliers <- function(ww_data,
       flagged_for_removal_conc == 1 ~ 1,
       TRUE ~ 0
     )) |>
-    dplyr::ungroup()
+    dplyr::ungroup() |>
+    dplyr::mutate(
+      exclude = 0 # by default, we don't exclude anything
+    )
 
   ww_w_outliers_flagged <- ww_z_scored |>
     dplyr::select(
       colnames(ww_data),
-      flag_as_ww_outlier
+      flag_as_ww_outlier,
+      exclude
     )
 
   return(ww_w_outliers_flagged)
@@ -247,18 +255,11 @@ indicate_ww_exclusions <- function(data,
 
 
   if (isTRUE(remove_outliers)) {
-    # Copy over the column of outlier indicators to the "exclude" column.
+    # Port over the outliers flagged to the exclude column
     data_w_exclusions <- data |>
       dplyr::mutate(
-        exclude = {{ outlier_col_name }}
-      )
-  } else {
-    data_w_exclusions <- data |>
-      dplyr::mutate(
-        exclude = 0
+        exclude = ifelse({{ outlier_col_name }} == 1, 1, exclude)
       )
   }
-
-
   return(data_w_exclusions)
 }

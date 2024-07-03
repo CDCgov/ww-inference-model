@@ -30,12 +30,13 @@ This function takes in a dataframe which contains an outlier
 column name specified by the \code{outlier_col_name}.
 }
 \examples{
-data = tibble::tibble(date = c("2023-10-01", "2023-10-02"),
-                       genome_copies_per_mL = c( 300, 3e6),
-                       flag_as_ww_outlier = c(0,1)
-                       )
+data <- tibble::tibble(
+  date = c("2023-10-01", "2023-10-02"),
+  genome_copies_per_mL = c(300, 3e6),
+  flag_as_ww_outlier = c(0, 1)
+)
 data_w_exclusions <- indicate_exclusions(data,
-                       outlier_col_name = "flag_as_ww_outlier",
-                       remove_outliers = TRUE
-                       )
+  outlier_col_name = "flag_as_ww_outlier",
+  remove_outliers = TRUE
+)
 }

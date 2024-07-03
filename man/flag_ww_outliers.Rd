@@ -28,9 +28,13 @@ log concentration}
 }
 \value{
 ww_w_outliers_flaged dataframe containing all of the columns in
-ww_data input dataframe plus an additional column \code{flag_as_ww_outlier}
-which contains a 0 if the datapoint is not an outlier and a 1 if it is
-an outlier.
+ww_data input dataframe plus two additional columns:
+\code{flag_as_ww_outlier} and \code{exclude}
+\verb{flag as_ww_outlier} contains a 0 if the datapoint is not an outlier and a 1
+if it is an outlier. \code{exclude} tells the model whether or not to exclude that
+data point, which here is by default set to 0 for all data points (even
+those flagged as outliers). Excluding the outliers is a second optional
+step.
 }
 \description{
 Flag WW outliers

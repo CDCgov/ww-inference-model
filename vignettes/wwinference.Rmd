@@ -192,13 +192,13 @@ ggplot(hosp_data_preprocessed) +
   theme_bw()
 ```
 ## Data exclusion
-As an additional pre-processing step, the user can decide to exclude certain
-data points from being included in the model fit procedure. For example,
+As an optional additional pre-processing step, the user can decide to exclude
+certain data points from being included in the model fit procedure. For example,
 we recommend excluding the flagged wastewater concentration outliers. To do so
-we will add a column to each dataset to indicate whether or not it should be
-excluded (1 meaning it will be removed).
+we will use the `indicate_ww_exclusions()` function, which will add the
+flagged outliers to the exclude column where indicated.
 ```{r}
-ww_data_to_fit <- indicate_ww_exclusions(
+ww_data_to_fit <- wwinference::indicate_ww_exclusions(
   ww_data_preprocessed,
   outlier_col_name = "flag_as_ww_outlier",
   remove_outliers = TRUE
