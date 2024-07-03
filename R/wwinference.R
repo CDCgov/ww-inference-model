@@ -1,3 +1,13 @@
+#' Fit the joint inference of wastewater and count data
+#'
+#' @param ww_data
+#' @param count_data
+#' @param model_spec
+#' @param mcmc_options
+#' @param compiled_model
+#'
+#' @return
+#' @export
 wwinference <- function(ww_data,
                         count_data,
                         model_spec = get_model_spec(

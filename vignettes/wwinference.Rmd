@@ -260,7 +260,7 @@ along with the other specified parameters above.
 As `wwinference` uses `cmdstan` to fit its models, it is necessary to first
 compile the model. This can be done using the compile_model() function.
 ```{r}
-model <- compile_model()
+model <- wwinference::compile_model()
 ```
 # Fitting the model
 We're now ready to fit the model using the “No-U-Turn Sampler Markov chain
