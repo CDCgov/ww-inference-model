@@ -49,7 +49,7 @@ jobs:
       - name: Upload artifact for GH pages deployment
         uses: actions/upload-pages-artifact@v2
         with:
-          path: "wwinference/docs/"
+          path: "docs/"
 
   deploy:
     # check builds on PRs but only deploy when main changes
