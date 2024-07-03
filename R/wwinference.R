@@ -1,21 +1,71 @@
-#' Fit the joint inference of wastewater and count data
+#' @title Joint inference of count data (e.g. cases/admissions) and wastewater
+#' data
 #'
-#' @param ww_data
-#' @param count_data
-#' @param model_spec
-#' @param mcmc_options
-#' @param compiled_model
+#' @description
+#' Provides a user friendly interface around package functionality
+#' to produce estimates, nowcasts, and forecasts pertaining to user-specified
+#' delay distributions, set parameters, and priors that can be modified to
+#' handledifferent types of "global" count data and "local" wastewater
+#' concentrationdata using a Bayesian hierarchical framework applied to the two
+#' distinctdata sources. By default the model assumes a fixed generation
+#' interval and delay from infection to the event that is counted. See the
+#' getting started vignette for an example model specifications fitting
+#' COVID-19 hospital admissions from a hypothetical state and wasteawter
+#' concentration data from multiple sites within that state.
 #'
-#' @return
+#' @param ww_data A dataframe containing the pre-processed, site-level
+#' wastewater concentration data for a model run. The dataframe must contain
+#' the following columns: `date`, `site`, `lab`, `genome_copies_per_ml`,
+#' `lab_site_index`, `lod`, `below_lod`, `site_pop` `exclude`
+#' @param count_data A dataframe containing the pre-procssed, "global" (e.g.
+#' state) daily count data, pertaining to the number of events that are being
+#' counted on that day, e.g. number of daily cases or daily hospital admissions.
+#' Must contain the following columns: `date`, `count` , `total_pop`
+#' @param model_spec The model specification parameters as defined using
+#' `get_model_spec()`. The default here pertains to the `forecast_date` in the
+#' example data provided by the package, but this should be specified by the
+#' user based on the date they are producing a forecast
+#' @param mcmc_options The MCMC parameters as defined using
+#' `get_mcmc_options()`.
+#' @param compiled_model The pre-compiled model as defined using
+#' `compile_model()`
+#'
+#' @return A nested list of the following items, intended to allow the user to
+#' quickly and easily plot results from their inference, while also being able
+#' to have the full user functionality of running the model themselves in stan
+#' by providing the raw model object and diagnostics. If the model runs, this
+#' function will return:
+#' `draws_df`: A tibble containing the full set of posterior draws of the
+#' estimated, nowcasted, and forecasted: counts, site-level wastewater
+#' concentrations, "global"(e.g. state) R(t) estimate, and the  "local" (site +
+#' the one auxiliary subpopulation) R(t) estimates. In the instance where there
+#' are observations, the data will be joined to each draw of the predicted
+#' observation to facilitate plotting.
+#' `raw_fit_obj`: The CmdStan object that is returned from the call to
+#' `cmdstanr::sample()`. Can be used to access draws, summary, diagnostics, etc.
+#' `date_time_spine`: Mapping from time in stan to dates
+#' `lab_site_spine`: Mapping from lab_site_index in stan to lab and site
+#' `subpop_spine`: Mapping from site index in stan to site
+#'
+#' If the model fails to run, a list containing the follow will be returned:
+#' `error`: the error message provided from stan, indicating why the model
+#' failed to run. Note, the model might still run and produce draws even if it
+#' has major model issues. We recommend the user always run the
+#' `check_diagnostics()` function on the `diagnostic_summary` as part of any
+#' pipeline to ensure model convergence.
 #' @export
+#'
+#' @examplesIf interactive()
+#' # provide all the code and commenting in the getting started vignette
+#'
 wwinference <- function(ww_data,
                         count_data,
-                        model_spec = get_model_spec(
+                        model_spec = wwinference::get_model_spec(
                           forecast_date =
                             "2023-12-06"
                         ),
-                        mcmc_options = get_mcmc_options(),
-                        compiled_model = compile_model()) {
+                        mcmc_options = wwinference::get_mcmc_options(),
+                        compiled_model = wwinference::compile_model()) {
   # Check that data is compatible with specifications
   check_date(ww_data, model_spec$forecast_date)
   check_date(count_data, model_spec$forecast_date)
@@ -35,7 +85,7 @@ wwinference <- function(ww_data,
   )
 
   init_lists <- c()
-  for (i in 1:model_spec$n_chains) {
+  for (i in 1:mcmc_options$n_chains) {
     init_lists[[i]] <- get_inits(stan_data, params)
   }
 
@@ -47,12 +97,12 @@ wwinference <- function(ww_data,
     fit <- compiled_model$sample(
       data = stan_data,
       init = init_lists,
-      seed = model_spec$seed,
-      iter_sampling = model_spec$iter_sampling,
-      iter_warmup = model_spec$iter_warmup,
-      max_treedepth = model_spec$max_treedepth,
-      chains = model_spec$n_chains,
-      parallel_chains = model_spec$n_chains
+      seed = mcmc_options$seed,
+      iter_sampling = mcmc_options$iter_sampling,
+      iter_warmup = mcmc_options$iter_warmup,
+      max_treedepth = mcmc_options$max_treedepth,
+      chains = mcmc_options$n_chains,
+      parallel_chains = mcmc_options$n_chains
     )
     print(fit)
     return(fit)
@@ -74,18 +124,51 @@ wwinference <- function(ww_data,
     out <- list(
       error = fit$error[[1]]
     )
-    message(error)
+    message(fit$error[[1]])
   } else {
-    draws <- fit$result$draws()
-    diagnostics <- fit$result$sampler_diagnostics(format = "df")
+    # This is a bit messy, but get the spines needed to map stan data to
+    # the real data
+    # Time index to date
+    date_time_spine <- tibble::tibble(
+      date = seq(
+        from = min(count_data$date),
+        to = min(count_data$date) + stan_data$ot + stan_data$ht,
+        by = "days"
+      )
+    ) |>
+      dplyr::mutate(t = row_number())
+    # Lab-site index to corresponding lab, site, and site population size
+    lab_site_spine <- ww_data |>
+      dplyr::distinct(site, lab, lab_site_index, site_pop)
+    # Site index to corresponding site and subpopulation size
+    subpop_spine <- ww_data |>
+      dplyr::distinct(site, site_index, site_pop) |>
+      dplyr::mutate(site = as.factor(site)) |>
+      dplyr::bind_rows(tibble::tibble(
+        site = "remainder of pop",
+        site_index = max(ww_data$site_index) + 1,
+        site_pop = stan_data$subpop_size[
+          length(unique(stan_data$subpop_size))
+        ]
+      ))
+
+    draws <- postprocess(
+      ww_data = ww_data,
+      count_data = count_data,
+      fit_obj = fit,
+      date_time_spine = date_time_spine,
+      lab_site_spine = lab_site_spine,
+      subpop_spine = subpop_spine
+    )
+    diagnostics <- fit$result
     summary_diagnostics <- fit$result$diagnostic_summary()
-    summary <- fit$result$summary()
 
     out <- list(
-      draws = draws,
-      diagnostics = diagnostics,
-      summary_diagnostics = summary_diagnostics,
-      summary = summary
+      draws_df = draws,
+      raw_fit_obj = fit,
+      date_time_spine = date_time_spine,
+      lab_site_spine = lab_site_spine,
+      subpop_spine = subpop_spine
     )
 
     # Run diagnostic tests, and message if a flag doesn't pass. Still return
@@ -180,7 +263,7 @@ get_mcmc_options <- function(
 #'
 #' @examples
 #' model_spec_list <- model_spec(forecast_date = "2023-12-06")
-model_spec <- function(
+get_model_spec <- function(
     forecast_date,
     calibration_time = 90,
     forecast_horizon = 28,

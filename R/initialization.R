@@ -14,7 +14,7 @@ get_inits <- function(stan_data, params) {
     assign(par_names[i], as.double(params[i]))
   }
 
-  pop <- stan_data$total_pop
+  pop <- stan_data$state_pop
 
   n_weeks <- as.numeric(stan_data$n_weeks)
   tot_weeks <- as.numeric(stan_data$tot_weeks)
@@ -22,7 +22,7 @@ get_inits <- function(stan_data, params) {
   ht <- as.numeric(stan_data$ht)
 
   # Estimate of number of initial infections
-  i0 <- mean(stan_data$counts[1:7], na.rm = TRUE) / p_hosp_mean
+  i0 <- mean(stan_data$hosp[1:7], na.rm = TRUE) / p_hosp_mean
 
   n_subpops <- as.numeric(stan_data$n_subpops)
   n_ww_lab_sites <- as.numeric(stan_data$n_ww_lab_sites)
