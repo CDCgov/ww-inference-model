@@ -208,3 +208,57 @@ flag_ww_outliers <- function(ww_data,
 
   return(ww_w_outliers_flagged)
 }
+
+#' Indicate data that we want to exclude from model fitting
+#' @description This function takes in a dataframe which contains an outlier
+#' column name specified by the `outlier_col_name`.
+#'
+#' @param data A dataframe of preprocessed data to be used to fit the o
+#' @param outlier_col_name A character string indicating the name of the column
+#' containing the outlier indicator, must contain only 0 or 1
+#' @param remove_outliers A boolean indicating whether or not to exclude the
+#' outliers from the fitting. If TRUE, copy outliers to exclusions, if FALSE,
+#' set exclusions to none
+#'
+#' @return a dataframe with the same columns as in `data` plus an additional
+#' `exclude` column containing 0s for the data to be passed to the model
+#' and 1s where the data should be excluded
+#' @export
+#'
+#' @examples
+#' data <- tibble::tibble(
+#'   date = c("2023-10-01", "2023-10-02"),
+#'   genome_copies_per_mL = c(300, 3e6),
+#'   flag_as_ww_outlier = c(0, 1)
+#' )
+#' data_w_exclusions <- indicate_exclusions(data,
+#'   outlier_col_name = "flag_as_ww_outlier",
+#'   remove_outliers = TRUE
+#' )
+indicate_ww_exclusions <- function(data,
+                                   outlier_col_name = "flag_as_ww_outlier",
+                                   remove_outliers = TRUE) {
+  # Check for the presence of the outlier column name
+  if (!outlier_col_name %in% c(colnames(data))) {
+    cli::cli_abort(
+      "Specified name of the outlier column not present in the data"
+    )
+  }
+
+
+  if (isTRUE(remove_outliers)) {
+    # Copy over the column of outlier indicators to the "exclude" column.
+    data_w_exclusions <- data |>
+      dplyr::mutate(
+        exclude = {{ outlier_col_name }}
+      )
+  } else {
+    data_w_exclusions <- data |>
+      dplyr::mutate(
+        exclude = 0
+      )
+  }
+
+
+  return(data_w_exclusions)
+}

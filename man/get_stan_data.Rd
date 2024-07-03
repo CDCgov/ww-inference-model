@@ -14,7 +14,6 @@ get_stan_data(
   inf_to_count_delay,
   infection_feedback_pmf,
   params,
-  exclude_ww_outliers = TRUE,
   compute_likelihood = 1
 )
 }
@@ -45,9 +44,6 @@ infection to counts}
 delay of infection feedback}
 
 \item{params}{a dataframe of parameter names and numeric values}
-
-\item{exclude_ww_outliers}{boolean indicating whether or not to remove
-the flagged ww_outliers, default = \code{TRUE}}
 
 \item{compute_likelihood}{indicator variable telling stan whether or not to
 compute the likelihood, default = \code{1}}

@@ -21,8 +21,7 @@ wwinference <- function(ww_data,
                           seed = 123,
                           adapt_delta = 0.95,
                           max_treedepth = 12,
-                          # Default to excluding outliers and fitting to data
-                          exclude_ww_outliers = TRUE,
+                          # Default fitting to data
                           compute_likelihood = 1
                         ),
                         compiled_model = compile_model()) {
@@ -41,7 +40,6 @@ wwinference <- function(ww_data,
     inf_to_count_delay = model_spec$inf_to_count_delay,
     infection_feedback_pmf = model_spec$infection_feedback_pmf,
     params = model_spec$params,
-    exclude_ww_outliers = TRUE,
     compute_likelihood = 1
   )
 
@@ -85,6 +83,7 @@ wwinference <- function(ww_data,
     out <- list(
       error = fit$error[[1]]
     )
+    message(error)
   } else {
     draws <- fit$result$draws()
     diagnostics <- fit$result$sampler_diagnostics(format = "df")
@@ -97,6 +96,9 @@ wwinference <- function(ww_data,
       summary_diagnostics = summary_diagnostics,
       summary = summary
     )
+
+    # Run diagnostic tests, and message if a flag doesn't pass. Still return
+    # the same data
   }
 
   return(out)

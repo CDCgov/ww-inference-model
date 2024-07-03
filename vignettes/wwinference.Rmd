@@ -96,7 +96,7 @@ pre-processing to add some additional variables that the model will need to be
 able apply features such as outlier exclusion and censoring of values below the
 limit of detection.
 ## Parameters
-Get the parameters from the package. Note that some of these are COVID
+Get the default parameters from the package. Note that some of these are COVID
 specific, others are more general to the model. This is indicated in the
 .toml file.
 ```{r}
@@ -133,6 +133,7 @@ ww_data_preprocessed <- wwinference::preprocess_ww_data(
   lod_col_name = "lod"
 )
 ```
+
 
 ## Hospital admissions data pre-processing
 The `preprocess_hosp_data`  function standardizes the column names of the
@@ -190,6 +191,21 @@ ggplot(hosp_data_preprocessed) +
   ggtitle("State level hospital admissions") +
   theme_bw()
 ```
+## Data exclusion
+As an additional pre-processing step, the user can decide to exclude certain
+data points from being included in the model fit procedure. For example,
+we recommend excluding the flagged wastewater concentration outliers. To do so
+we will add a column to each dataset to indicate whether or not it should be
+excluded (1 meaning it will be removed).
+```{r}
+ww_data_to_fit <- indicate_ww_exclusions(
+  ww_data_preprocessed,
+  outlier_col_name = "flag_as_ww_outlier",
+  remove_outliers = TRUE
+)
+```
+
+
 # Model specification:
 We will need to set some metadata to facilitate model specification. In addition
 to assigning the forecast date (done above), this also includes:
@@ -283,8 +299,8 @@ fit the model.
 # specifications
 ```{r}
 fit <- wwinference(
-  ww_data,
-  count_data,
+  ww_data_to_fit,
+  hosp_data_preprocessed,
   model_spec,
   model
 )

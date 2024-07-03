@@ -18,8 +18,6 @@
 #' @param infection_feedback_pmf a vector with a normalized pmf dictating the
 #' delay of infection feedback
 #' @param params a dataframe of parameter names and numeric values
-#' @param exclude_ww_outliers boolean indicating whether or not to remove
-#' the flagged ww_outliers, default = `TRUE`
 #' @param compute_likelihood indicator variable telling stan whether or not to
 #' compute the likelihood, default = `1`
 #'
@@ -34,7 +32,6 @@ get_stan_data <- function(input_count_data,
                           inf_to_count_delay,
                           infection_feedback_pmf,
                           params,
-                          exclude_ww_outliers = TRUE,
                           compute_likelihood = 1) {
   # Assign parameter names
   par_names <- colnames(params)
@@ -66,21 +63,16 @@ get_stan_data <- function(input_count_data,
   )
 
 
-  if (isTRUE(exclude_ww_outliers)) {
-    # Test for presence of needed column names
-    stopifnot(
-      "Outlier column name isn't present in input dataset" =
-        "flag_as_ww_outlier" %in% colnames(input_ww_data)
-    )
+  # Test for presence of needed column names
+  stopifnot(
+    "Exclude column isn't present in input ww dataset" =
+      "exclude" %in% colnames(input_ww_data)
+  )
 
-    # Filter out wastewater outliers and arrange data for indexing
-    ww_data <- input_ww_data |>
-      dplyr::filter(flag_as_ww_outlier != 1) |>
-      dplyr::arrange(date, lab_site_index)
-  } else {
-    ww_data <- input_ww_data |>
-      dplyr::arrange(date, lab_site_index)
-  }
+  # Filter out wastewater outliers and arrange data for indexing
+  ww_data <- input_ww_data |>
+    dplyr::filter(exclude != 1) |>
+    dplyr::arrange(date, lab_site_index)
 
   # Returns a list with the numbers of elements needed for the stan model
   ww_data_sizes <- get_ww_data_sizes(
@@ -150,12 +142,11 @@ get_stan_data <- function(input_count_data,
     count_col_name = "count"
   )
 
-  if (isTRUE(exclude_ww_outliers)) {
-    message(
-      "Removed ", nrow(input_ww_data) - ww_data_sizes$owt,
-      " outliers from WW data"
-    )
-  }
+  message(
+    "Removed ", nrow(input_ww_data) - ww_data_sizes$owt,
+    " outliers from WW data"
+  )
+
 
   # matrix to transform P(count|I) from weekly to daily
   ind_m <- get_ind_m(
