@@ -59,7 +59,7 @@ postprocess <- function(ww_data,
       below_lod = NA,
       lod = NA,
       flag_as_ww_outlier = NA,
-      exlcude = NA
+      exclude = NA
     ) |>
     dplyr::select(-t)
 
