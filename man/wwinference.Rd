@@ -63,14 +63,14 @@ pipeline to ensure model convergence.
 \description{
 Provides a user friendly interface around package functionality
 to produce estimates, nowcasts, and forecasts pertaining to user-specified
-delay distributions, set parameters, and priors that can be modified to handle
-different types of "global" count data and "local" wastewater concentration
-data using a Bayesian hierarchical framework applied to the two distinct
-data sources. By default the model assumes a fixed generation interval and
-delay from infection to the event that is counted. See the getting started
-vignette for an example model specifications fitting COVID-19 hospital
-admissions from a hypothetical state and wasteawter concentration data from
-multiple sites within that state.
+delay distributions, set parameters, and priors that can be modified to
+handledifferent types of "global" count data and "local" wastewater
+concentrationdata using a Bayesian hierarchical framework applied to the two
+distinctdata sources. By default the model assumes a fixed generation
+interval and delay from infection to the event that is counted. See the
+getting started vignette for an example model specifications fitting
+COVID-19 hospital admissions from a hypothetical state and wasteawter
+concentration data from multiple sites within that state.
 }
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}

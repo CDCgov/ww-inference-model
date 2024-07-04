@@ -23,8 +23,10 @@ the concentration measurements in the wastewater data, default is
 \code{genome_copies_per_ml}}
 }
 \value{
-a dataframe containing the same columns as ww_data plus the following
-additional columns neede for the stan model:
+a dataframe containing the same columns as ww_data except
+the \code{conc_col_name} will be replaced with \code{genome_copies_per_ml} and
+the \code{lod_col_name} will be replaced with \code{lod} plus the following
+additional columns needed for the stan model:
 lab_site_index, site_index, flag_as_ww_outlier, lab_site_name,
 forecast_date
 }
