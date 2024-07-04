@@ -7,8 +7,10 @@
 #' @param lod_col_name string indicating the name of the column containing
 #' the concentration measurements in the wastewater data, default is
 #'  `genome_copies_per_ml`
-#' @return a dataframe containing the same columns as ww_data plus the following
-#' additional columns neede for the stan model:
+#' @return a dataframe containing the same columns as ww_data except
+#' the `conc_col_name` will be replaced with `genome_copies_per_ml` and
+#' the `lod_col_name` will be replaced with `lod` plus the following
+#' additional columns needed for the stan model:
 #' lab_site_index, site_index, flag_as_ww_outlier, lab_site_name,
 #' forecast_date
 #' @export
@@ -30,7 +32,7 @@ preprocess_ww_data <- function(ww_data,
                                conc_col_name = "genome_copies_per_ml",
                                lod_col_name = "lod") {
   # Add some columns
-  ww_data <- ww_data |>
+  ww_data_add_cols <- ww_data |>
     dplyr::left_join(
       ww_data |>
         dplyr::distinct(lab, site) |>
@@ -45,14 +47,18 @@ preprocess_ww_data <- function(ww_data,
         dplyr::mutate(site_index = dplyr::row_number()),
       by = "site"
     ) |>
+    dplyr::rename(
+      lod = {{ lod_col_name }},
+      genome_copies_per_ml = {{ conc_col_name }}
+    ) |>
     dplyr::mutate(
       lab_site_name = glue::glue("Site: {site},  Lab:  {lab}"),
-      below_lod = ifelse({{ conc_col_name }} < {{ lod_col_name }}, 1, 0)
+      below_lod = ifelse(genome_copies_per_ml < lod, 1, 0)
     )
 
   # Get an extra column that identifies the wastewater outliers using the
   # default parameters
-  ww_preprocessed <- flag_ww_outliers(ww_data,
+  ww_preprocessed <- flag_ww_outliers(ww_data_add_cols,
     conc_col_name = {{ conc_col_name }}
   ) |>
     dplyr::rename(
