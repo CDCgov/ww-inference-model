@@ -314,6 +314,7 @@ outputs against data. This can be useful to get a sense of if you're model is
 fitting the data well, and if the nowcasted/forecast quantities look reasonable.
 
 ```{r}
+draws_df <- fit$draws_df
 sampled_draws <- sample(1:max(draws_df$draw), 100)
 
 # Hospital admissions: fits, nowcasts, forecasts
@@ -437,7 +438,7 @@ we recommend the (bayesplot tutorial)[https://mc-stan.org/bayesplot/articles/vis
 ```{r}
 convergence_flag_df <- wwinference::get_model_diagnostic_flags(
   stan_fit_obj =
-    fit
+    fit$raw_fit_obj
 )
-parameter_diangostics <- fit$summary()
+parameter_diangostics <- fit$raw_fit_object$summary()
 ```
