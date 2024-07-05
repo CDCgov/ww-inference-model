@@ -104,7 +104,7 @@ wwinference <- function(ww_data,
       chains = mcmc_options$n_chains,
       parallel_chains = mcmc_options$n_chains
     )
-    print(fit)
+    # print(fit)#nolint
     return(fit)
   }
 
@@ -177,7 +177,7 @@ wwinference <- function(ww_data,
     # Message if a flag doesn't pass. Still return
     # the same data, but we want user to know the issue
     if (any(convergence_flag_df[1, ])) {
-      message("Model flagged for convergence issues, run model diagnostics
+      warning("Model flagged for convergence issues, run model diagnostics
       on the output stanfit object for more information")
     }
   }
