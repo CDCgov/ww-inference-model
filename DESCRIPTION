@@ -76,6 +76,8 @@ Imports:
     tidyr,
     purrr,
     withr,
-    cmdstanr (>= 0.8.0)
+    cmdstanr (>= 0.8.0),
+    rlang,
+    scales
 Remotes:
     stan-dev/cmdstanr
