@@ -2,7 +2,7 @@ repos:
 #####
 # Basic file cleanliness
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
     -   id: check-added-large-files
     -   id: check-yaml
@@ -13,20 +13,20 @@ repos:
 #####
 # Python
 -   repo: https://github.com/psf/black
-    rev: 23.10.0
+    rev: 24.4.2
     hooks:
         # if you have ipython notebooks, consider using
         # `black-jupyter` hook instead
     -   id: black
         args: ['--line-length', '79']
 -   repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
+    rev: 5.13.2
     hooks:
     -   id: isort
         args: ['--profile', 'black',
                '--line-length', '79']
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.1.0
+  rev: v0.5.0
   hooks:
     - id: ruff
 #####
@@ -35,11 +35,21 @@ repos:
     rev: v0.4.2
     hooks:
     -   id: style-files
+        args: [--style_pkg=styler, --style_fun=tidyverse_style,
+               --cache-root=styler-perm]
+    #-   id: roxygenize
+    -   id: use-tidy-description
     -   id: lintr
+    -   id: readme-rmd-rendered
+    -   id: parsable-R
+    -   id: no-browser-statement
+    -   id: no-print-statement
+    -   id: no-debug-statement
+    -   id: deps-in-desc
 #####
 # Java
 - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-  rev: v2.11.0
+  rev: v2.13.0
   hooks:
   - id: pretty-format-java
     args: [--aosp,--autofix]
@@ -54,7 +64,7 @@ repos:
 #####
 # Secrets
 -   repo: https://github.com/Yelp/detect-secrets
-    rev: v1.4.0
+    rev: v1.5.0
     hooks:
     -   id: detect-secrets
         args: ['--baseline', '.secrets.baseline']

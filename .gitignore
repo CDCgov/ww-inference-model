@@ -238,6 +238,7 @@ cython_debug/
 
 # RStudio files
 .Rproj.user/
+
 *.Rproj
 
 # produced vignettes
