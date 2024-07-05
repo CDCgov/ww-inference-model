@@ -78,6 +78,7 @@ Imports:
     withr,
     cmdstanr (>= 0.8.0),
     rlang,
-    scales
+    scales,
+    bookdown
 Remotes:
     stan-dev/cmdstanr
