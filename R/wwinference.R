@@ -55,7 +55,7 @@
 #' pipeline to ensure model convergence.
 #' @export
 #'
-#' @examplesIf interactive()
+#' @examples
 #' # provide all the code and commenting in the getting started vignette
 #'
 wwinference <- function(ww_data,

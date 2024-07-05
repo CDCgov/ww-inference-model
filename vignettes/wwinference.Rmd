@@ -169,7 +169,7 @@ ggplot(ww_data_preprocessed) +
     show.legend = FALSE
   ) +
   geom_hline(aes(yintercept = lod), linetype = "dashed") +
-  facet_wrap(~lab_site_name) +
+  facet_wrap(~lab_site_name, scales = "free") +
   xlab("") +
   ylab("Genome copies/mL") +
   ggtitle("Lab-site level wastewater concentration") +
@@ -440,5 +440,5 @@ convergence_flag_df <- wwinference::get_model_diagnostic_flags(
   stan_fit_obj =
     fit$raw_fit_obj
 )
-parameter_diangostics <- fit$raw_fit_object$summary()
+parameter_diangostics <- fit$raw_fit_obj$summary()
 ```
