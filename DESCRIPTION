@@ -64,6 +64,13 @@ Suggests:
 Config/testthat/edition: 3
 LazyData: true
 Imports:
-    fs
+    fs,
+    dplyr,
+    lubridate,
+    glue,
+    RcppTOML,
+    cli,
+    tibble,
+    usethis
 Remotes:
     stan-dev/cmdstanr
