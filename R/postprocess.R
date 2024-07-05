@@ -107,7 +107,11 @@ postprocess <- function(ww_data,
       lab_site_index = NA,
       subpop = NA,
       lab = NA,
-      site_pop = NA
+      site_pop = NA,
+      below_lod = NA,
+      lod = NA,
+      flag_as_ww_outlier = NA,
+      exclude = NA
     ) |>
     dplyr::select(-t)
 
@@ -127,6 +131,10 @@ postprocess <- function(ww_data,
       observed_value = NA,
       lab_site_index = NA,
       lab = NA,
+      below_lod = NA,
+      lod = NA,
+      flag_as_ww_outlier = NA,
+      exclude = NA,
       observation_type = "latent variable",
       type_of_quantity = "local",
       total_pop = NA,

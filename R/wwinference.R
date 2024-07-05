@@ -160,19 +160,26 @@ wwinference <- function(ww_data,
       lab_site_spine = lab_site_spine,
       subpop_spine = subpop_spine
     )
-    diagnostics <- fit$result
     summary_diagnostics <- fit$result$diagnostic_summary()
+    convergence_flag_df <- get_model_diagnostic_flags(
+      stan_fit_object =
+        fit$result
+    )
 
     out <- list(
       draws_df = draws,
-      raw_fit_obj = fit,
+      raw_fit_obj = fit$result,
       date_time_spine = date_time_spine,
       lab_site_spine = lab_site_spine,
       subpop_spine = subpop_spine
     )
 
-    # Run diagnostic tests, and message if a flag doesn't pass. Still return
-    # the same data
+    # Message if a flag doesn't pass. Still return
+    # the same data, but we want user to know the issue
+    if (any(convergence_flag_df[1, ])) {
+      message("Model flagged for convergence issues, run model diagnostics
+      on the output stanfit object for more information")
+    }
   }
 
   return(out)
