@@ -8,7 +8,7 @@ generation_interval <- withr::with_seed(42, {
   wwinference::simulate_double_censored_pmf(
     max = params$gt_max, meanlog = params$mu_gi,
     sdlog = params$sigma_gi, fun_dist = rlnorm, n = 5e6
-  ) |> cfaforecastrenewalww::drop_first_and_renormalize()
+  ) |> wwinference::drop_first_and_renormalize()
 })
 
 inc <- wwinference::make_incubation_period_pmf(
