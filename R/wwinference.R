@@ -55,9 +55,6 @@
 #' pipeline to ensure model convergence.
 #' @export
 #'
-#' @examples
-#' # provide all the code and commenting in the getting started vignette
-#'
 wwinference <- function(ww_data,
                         count_data,
                         model_spec = wwinference::get_model_spec(
