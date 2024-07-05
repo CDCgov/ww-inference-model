@@ -356,11 +356,13 @@ ggplot(draws_df |> dplyr::filter(
   theme_bw()
 
 
-
 ggplot(draws_df |> dplyr::filter(
   name == "pred_ww",
   draw %in% sampled_draws
-)) +
+) |>
+  dplyr::mutate(
+    site_lab_name = glue::glue("{subpop}, Lab: {lab}")
+  )) +
   geom_line(
     aes(
       x = date, y = log(pred_value),
@@ -373,8 +375,10 @@ ggplot(draws_df |> dplyr::filter(
   geom_point(aes(x = date, y = log(observed_value)),
     color = "black", show.legend = FALSE
   ) +
-  facet_wrap(~subpop, scales = "free") +
-  geom_vline(aes(xintercept = forecast_date), linetype = "dashed") +
+  facet_wrap(~site_lab_name, scales = "free") +
+  geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
+    linetype = "dashed"
+  ) +
   xlab("") +
   ylab("Log(Genome copies/mL)") +
   ggtitle("Lab-site level wastewater concentration") +
@@ -397,7 +401,43 @@ ggplot(draws_df |> dplyr::filter(
   facet_wrap(~subpop, scales = "free") +
   geom_hline(aes(yintercept = 1), linetype = "dashed") +
   xlab("") +
-  ylab("R(t) of hypothetical state") +
+  ylab("Subpopulation R(t)") +
   ggtitle("R(t) estimate") +
   theme_bw()
+```
+
+Alternatively, we can create each of these plots with the fitting wrapper
+functions.
+```{r}
+plot_hosp <- get_plot_forecasted_counts(
+  draws = draws_df,
+  count_data_eval = hosp_data_eval,
+  forecast_date = forecast_date
+)
+plot_hosp
+plot_ww <- get_plot_ww_conc(draws_df, forecast_date)
+plot_ww
+plot_state_rt <- get_plot_global_rt(draws_df, forecast_date)
+plot_state_rt
+plot_subpop_rt <- get_plot_subpop_rt(draws_df, forecast_date)
+plot_subpop_rt
+```
+
+## Diagnostics
+While the `wwinference()` function will print out messaging if any of the
+diagnostics flags fail, we recommend running diagnostics as a separate
+post-processing step on the `CmdStan` fit object. Start by running function
+`get_model_diagnostic_flags()` on the stan fit object. Then, we recommend
+looking at the `raw_fit_obj$summary()` which will show the diagnostic
+metrics for each parameter in the model and can help identify which parameters
+are likely to be driving any convergence issues. We have set default thresholds
+on the model diagnostics for production-level runs, we recommend adjusting
+as needed. For further information on troubleshooting the model diagnostics,
+we recommend the (bayesplot tutorial)[https://mc-stan.org/bayesplot/articles/visual-mcmc-diagnostics.html].
+```{r}
+convergence_flag_df <- wwinference::get_model_diagnostic_flags(
+  stan_fit_obj =
+    fit
+)
+parameter_diangostics <- fit$summary()
 ```
