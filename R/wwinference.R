@@ -104,7 +104,7 @@ wwinference <- function(ww_data,
       chains = mcmc_options$n_chains,
       parallel_chains = mcmc_options$n_chains
     )
-    # print(fit)#nolint
+    # print(fit) # nolint
     return(fit)
   }
 
