@@ -80,6 +80,7 @@ Imports:
     rlang,
     scales,
     bookdown,
+    ggplot2,
     rcmdcheck
 Remotes:
     stan-dev/cmdstanr
