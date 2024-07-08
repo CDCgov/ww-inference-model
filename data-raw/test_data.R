@@ -53,17 +53,18 @@ fit <- wwinference::wwinference(
   ww_data_to_fit,
   hosp_data_preprocessed,
   model_spec = model_spec,
-  mcmc_options = get_mcmc_options(
+  mcmc_options = wwinference::get_mcmc_options(
     n_chains = 1,
     iter_sampling = 25,
     iter_warmup = 25
   ),
+  spec_inits = FALSE,
   compiled_model = model
 )
 
 
 # Create the toy stan data object for testing
-toy_stan_data <- get_stan_data(
+toy_stan_data <- wwinference::get_stan_data(
   input_count_data = hosp_data_preprocessed,
   input_ww_data = ww_data_to_fit,
   forecast_date = model_spec$forecast_date,
@@ -75,6 +76,8 @@ toy_stan_data <- get_stan_data(
   params = model_spec$params,
   compute_likelihood = 1
 )
+
+
 # Generate the last draw of a very short run for testing
 toy_stan_fit_last_draw <- posterior::subset_draws(fit$raw_fit_obj$draws(),
   draw = 25
