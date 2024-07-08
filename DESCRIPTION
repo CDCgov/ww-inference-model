@@ -79,6 +79,7 @@ Imports:
     cmdstanr (>= 0.8.0),
     rlang,
     scales,
-    bookdown
+    bookdown,
+    rcmdcheck
 Remotes:
     stan-dev/cmdstanr
