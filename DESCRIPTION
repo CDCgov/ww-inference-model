@@ -85,3 +85,5 @@ Imports:
     posterior
 Remotes:
     stan-dev/cmdstanr
+VignetteBuilder:
+    knitr
