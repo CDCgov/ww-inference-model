@@ -156,7 +156,7 @@ flag_ww_outliers <- function(ww_data,
     dplyr::group_by(lab_site_index) |>
     dplyr::arrange(date, "desc") |>
     dplyr::mutate(
-      log_conc = log(!!sym(conc_col_name)),
+      log_conc = log(!!rlang::sym(conc_col_name)),
       prev_log_conc = lag(log_conc, 1),
       prev_date = lag(date, 1),
       diff_log_conc = log_conc - prev_log_conc,
@@ -178,14 +178,14 @@ flag_ww_outliers <- function(ww_data,
         dplyr::summarise(
           mean_rho = mean(rho, na.rm = TRUE),
           std_rho = sd(rho, na.rm = TRUE),
-          mean_conc = mean(!!sym(conc_col_name), na.rm = TRUE),
-          std_conc = sd(!!sym(conc_col_name), na.rm = TRUE)
+          mean_conc = mean(!!rlang::sym(conc_col_name), na.rm = TRUE),
+          std_conc = sd(!!rlang::sym(conc_col_name), na.rm = TRUE)
         ),
       by = "lab_site_index"
     ) |>
     dplyr::group_by(lab_site_index) |>
     mutate(
-      z_score_conc = (!!sym(conc_col_name) - mean_conc) / std_conc,
+      z_score_conc = (!!rlang::sym(conc_col_name) - mean_conc) / std_conc,
       z_score_rho = (rho - mean_rho) / std_rho
     ) |>
     dplyr::mutate(

@@ -12,4 +12,5 @@
 #' @importFrom cmdstanr cmdstan_model
 #' @importFrom posterior subset_draws
 #' @importFrom fs path_package
+#' @importFrom rlang sym
 NULL
