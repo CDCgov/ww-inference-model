@@ -72,8 +72,3 @@ getting started vignette for an example model specifications fitting
 COVID-19 hospital admissions from a hypothetical state and wasteawter
 concentration data from multiple sites within that state.
 }
-\examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-# provide all the code and commenting in the getting started vignette
-\dontshow{\}) # examplesIf}
-}

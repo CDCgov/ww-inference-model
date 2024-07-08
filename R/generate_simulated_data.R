@@ -22,8 +22,8 @@
 #' hospital admissions date and forecast date in days
 #' @param forecast_horizon integer indicating the duration of the forecast in
 #' days e.g. 28 days
-#' @param sim_start_date character string formatted as "YYYY-MM-DD" indicating
-#' the start date of the simulation, used to get a weekday vector
+#' @param sim_start_date character string in ISO8601 format YYYY-MM-DD
+#'  indicating the start date of the simulation, used to get a weekday vector
 #' @param hosp_wday_effect a vector that is a simplex of length 7 describing
 #' how the hospital admissions are spread out over a week, starting at
 #' Monday = 1

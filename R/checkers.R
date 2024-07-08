@@ -1,7 +1,7 @@
 #' Check that all dates in dataframe passed in are before a specified date
 #'
 #' @param df dataframe with `date` column
-#' @param max_date string indicating the maximum date in ISO8 convention
+#' @param max_date string indicating the maximum date in ISO8601 convention
 #' e.g. YYYY-MM-DD
 #' @param call Calling environment to be passed to the type checker
 #'

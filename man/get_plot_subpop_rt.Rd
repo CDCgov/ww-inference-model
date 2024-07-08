@@ -11,7 +11,7 @@ get_plot_subpop_rt(draws, forecast_date)
 to it. This is \code{draws_df} output of the call to \code{wwinference()}}
 
 \item{forecast_date}{A string indicating the date we made the forecast, for
-plotting, in ISO8 format YYYY-MM-DD}
+plotting, in ISO8601 format YYYY-MM-DD}
 }
 \value{
 A ggplot object containing faceted plots of the R(t) estimate in each

@@ -19,7 +19,7 @@ to it. This is \code{draws_df} output of the call to \code{wwinference()}}
 evaluate the forecasts against.}
 
 \item{forecast_date}{A string indicating the date we made the forecast, for
-plotting, in ISO8 format YYYY-MM-DD}
+plotting, in ISO8601 format YYYY-MM-DD}
 
 \item{count_type}{A string indicating what data the counts refer to,
 default is \verb{hospital admissions}}

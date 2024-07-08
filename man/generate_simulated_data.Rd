@@ -19,11 +19,11 @@ generate_simulated_data(
   i0_over_n = 5e-04,
   initial_growth = 1e-04,
   sd_in_lab_level_multiplier = 0.25,
-  mean_obs_error_in_ww_lab_site = 0.3,
-  mean_reporting_freq = 1/7,
-  sd_reporting_freq = 1/14,
+  mean_obs_error_in_ww_lab_site = 0.2,
+  mean_reporting_freq = 1/5,
+  sd_reporting_freq = 1/20,
   mean_reporting_latency = 7,
-  sd_reporting_latency = 5,
+  sd_reporting_latency = 3,
   mean_log_lod = 3.8,
   sd_log_lod = 0.2,
   input_params_path = fs::path_package("extdata", "example_params.toml", package =
@@ -58,8 +58,8 @@ hospital admissions date and forecast date in days}
 \item{forecast_horizon}{integer indicating the duration of the forecast in
 days e.g. 28 days}
 
-\item{sim_start_date}{character string formatted as "YYYY-MM-DD" indicating
-the start date of the simulation, used to get a weekday vector}
+\item{sim_start_date}{character string in ISO8601 format YYYY-MM-DD
+indicating the start date of the simulation, used to get a weekday vector}
 
 \item{hosp_wday_effect}{a vector that is a simplex of length 7 describing
 how the hospital admissions are spread out over a week, starting at

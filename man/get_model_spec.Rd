@@ -16,7 +16,7 @@ get_model_spec(
 )
 }
 \arguments{
-\item{forecast_date}{a character string in ISO8 format (YYYY-MM-DD)
+\item{forecast_date}{a character string in ISO8601 format (YYYY-MM-DD)
 indicating the date that the forecast is to be made. Default is}
 
 \item{calibration_time}{integer indicating the number of days to calibrate

@@ -5,7 +5,7 @@
 #' @param count_data_eval A dataframe containing the count data we will
 #' evaluate the forecasts against.
 #' @param forecast_date A string indicating the date we made the forecast, for
-#' plotting, in ISO8 format YYYY-MM-DD
+#' plotting, in ISO8601 format YYYY-MM-DD
 #' @param count_type A string indicating what data the counts refer to,
 #' default is `hospital admissions`
 #'
@@ -63,7 +63,7 @@ get_plot_forecasted_counts <- function(draws,
 #' @param draws A dataframe containing the posterior draws with the data joined
 #' to it. This is `draws_df` output of the call to `wwinference()`
 #' @param forecast_date A string indicating the date we made the forecast, for
-#' plotting, in ISO8 format YYYY-MM-DD
+#' plotting, in ISO8601 format YYYY-MM-DD
 #'
 #' @return a ggplot object containing faceted plots of the wastewaster
 #' concentrations in each site and lab combination
@@ -122,7 +122,7 @@ get_plot_ww_conc <- function(draws,
 #' @param draws A dataframe containing the posterior draws with the data joined
 #' to it. This is `draws_df` output of the call to `wwinference()`
 #' @param forecast_date A string indicating the date we made the forecast, for
-#' plotting, in ISO8 format YYYY-MM-DD
+#' plotting, in ISO8601 format YYYY-MM-DD
 #'
 #' @return A ggplot object containing the posterior draws of the global R(t)
 #' estimate
@@ -170,7 +170,7 @@ get_plot_global_rt <- function(draws,
 #' @param draws A dataframe containing the posterior draws with the data joined
 #' to it. This is `draws_df` output of the call to `wwinference()`
 #' @param forecast_date A string indicating the date we made the forecast, for
-#' plotting, in ISO8 format YYYY-MM-DD
+#' plotting, in ISO8601 format YYYY-MM-DD
 #'
 #' @return A ggplot object containing faceted plots of the R(t) estimate in each
 #' subpopulation (so wastewater sites + those not on wastewater)

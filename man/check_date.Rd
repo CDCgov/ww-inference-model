@@ -9,7 +9,7 @@ check_date(df, max_date, call = rlang::caller_env())
 \arguments{
 \item{df}{dataframe with \code{date} column}
 
-\item{max_date}{string indicating the maximum date in ISO8 convention
+\item{max_date}{string indicating the maximum date in ISO8601 convention
 e.g. YYYY-MM-DD}
 
 \item{call}{Calling environment to be passed to the type checker}
