@@ -129,7 +129,9 @@ preprocess_hosp_data <- function(hosp_data,
 #' @export
 #'
 #' @examples
-#' ww_data_outliers_flagged <- flag_ww_outliers(ww_data)
+#' ww_data <- wwinference::ww_data
+#' ww_data_preprocessed <- wwinference::preprocess_ww_data(ww_data)
+#' ww_data_outliers_flagged <- flag_ww_outliers(ww_data_preprocessed)
 flag_ww_outliers <- function(ww_data,
                              conc_col_name = "genome_copies_per_ml",
                              rho_threshold = 2,
