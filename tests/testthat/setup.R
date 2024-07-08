@@ -20,3 +20,9 @@ compiled_site_inf_model <- cmdstanr::cmdstan_model(
   include = testthat_stan_include(),
   dir = tempdir()
 )
+
+params <- wwinference::get_params(
+  system.file("extdata", "example_params.toml",
+    package = "wwinference"
+  )
+)
