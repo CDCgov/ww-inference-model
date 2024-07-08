@@ -157,8 +157,8 @@ flag_ww_outliers <- function(ww_data,
     dplyr::arrange(date, "desc") |>
     dplyr::mutate(
       log_conc = log(!!rlang::sym(conc_col_name)),
-      prev_log_conc = lag(log_conc, 1),
-      prev_date = lag(date, 1),
+      prev_log_conc = dplyr::lag(log_conc, 1),
+      prev_date = dplyr::lag(date, 1),
       diff_log_conc = log_conc - prev_log_conc,
       diff_time = as.numeric(difftime(date, prev_date)),
       rho = diff_log_conc / diff_time
@@ -189,7 +189,7 @@ flag_ww_outliers <- function(ww_data,
       z_score_rho = (rho - mean_rho) / std_rho
     ) |>
     dplyr::mutate(
-      z_score_rho_t_plus_1 = lead(z_score_rho, 1),
+      z_score_rho_t_plus_1 = dplyr::lead(z_score_rho, 1),
       flagged_for_removal_conc = dplyr::case_when(
         abs(z_score_conc) >= log_conc_threshold ~ 1,
         is.na(z_score_conc) ~ 0,
