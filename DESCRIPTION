@@ -81,6 +81,7 @@ Imports:
     scales,
     bookdown,
     ggplot2,
-    rcmdcheck
+    rcmdcheck,
+    posterior
 Remotes:
     stan-dev/cmdstanr

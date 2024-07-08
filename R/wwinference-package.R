@@ -10,4 +10,6 @@
 #' geom_bar theme scale_y_continuous scale_colour_discrete scale_fill_discrete
 #' geom_ribbon scale_x_date facet_grid geom_vline labs aes
 #' @importFrom cmdstanr cmdstan_model
+#' @importFrom posterior susbet_draws
+#' @importFrom fs path_package
 NULL
