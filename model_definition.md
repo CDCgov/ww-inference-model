@@ -146,7 +146,7 @@ $$H(t) = \omega(t) p_\mathrm{hosp}(t) \sum_{\tau = 0}^{T_d} d(\tau) I(t-\tau)$$
 
 Where $T_d$ is the maximum delay from infection to hospitalization that we consider.
 
-We define the discrete hospital admissions delay distribution $d(\tau)$ as a convolution of the incubation period distribution [^Park2023] and a separate estimate of the distribution of time from symptom onset to hospital admission (see [Parameter section](#model-parameters) below for further details).
+We define the discrete hospital admissions delay distribution $d(\tau)$ as a convolution of the incubation period distribution [^Park2023] and a separate estimate of the distribution of time from symptom onset to hospital admission (see [Parameter section](#example-model-parameters-for-covid-19) below for further details).
 #### Infection-hospitalization rate
 In the models that include fits to wastewater data, we allow the population-level infection-hospitalization rate (IHR) to change over time. An inferred change in the IHR could reflect either a true change in the rate at which infections result in hospital admissions (e.g. the age distribution of cases could shift, a more or less severe variant could emerge, or vaccine coverage could shift) or a change in the relationship between infections and genomes shed in wastewater $G$ (which we currently treat as fixed, but which could change in time if, for example, immunity reduces wastewater shedding without reducing transmission, or a variant emerges with a different per infection wastewater shedding profile).
 
@@ -169,7 +169,7 @@ See [Prior Distributions](#prior-distributions) for the specified prior on $\mu_
 
 In the version of the model where we do not fit the wastewater data (which we refer to as the "hospital admissiosn only" model), we model the IHR as constant. We assign this constant IHR the same prior distribution that we assign $\mu_{p_\mathrm{hosp}}$ in the wastewater-informed model.
 
-### Hospital admissions observation model
+#### Hospital admissions observation model
 We model the observed hospital admission counts $h_t$ as:
 
 $$h_t \sim \mathrm{NegBinom}(n H(t), \phi)$$
@@ -181,16 +181,16 @@ In reality, corrections (upwards or downwards) in the admissions data after the 
 This is an active area of further development, but for now, we advise the user to manually exclude hospital admissions data points that appear implausible. 
 Future work will include incorporation of a simple model for right-truncation when data is rolling in in real-time with incomplete reporting in recent days. 
 However, the current workflow assumes mandatory and for the most part complete reporting of hospital admissions. 
-See [outlier detection and removal](#appendix-wastewater-data-pre-processing) for further details.
 
 ### Viral genome concentration in wastewater component
 
-We model viral genome concentrations in wastewater $C(t)$ as a convolution of the _expected_ latent incident infections per capita $I(t)$ and a normalized shedding kinetics function $s(\tau)$, multiplied by  $G$ the number of genomes shed per infected individual over the course of their infection and divided by $\alpha$ the volume of wastewater generated per person per day:
+We model site-specific viral genome concentrations in wastewater $C_i(t)$ independently for each site $i$, with the latent incident infections in subpopulation $k$ being mapped to the corresponding site $i$.
+We model viral genome concentrations in wastewater in site $i$, $C_i(t)$ as a convolution of the _expected_ latent incident infections per capita in the corresponding subpopulation $k$ $I_k(t)$ and a normalized shedding kinetics function $s(\tau)$, multiplied by  $G$ the number of genomes shed per infected individual over the course of their infection and divided by $\alpha$ the volume of wastewater generated per person per day:
 
-$$C(t) = \frac{G}{\alpha} \sum_{\tau = 0}^{\tau_\mathrm{shed}} s(\tau) I(t-\tau)$$
+$$C_i(t) = \frac{G}{\alpha} \sum_{\tau = 0}^{\tau_\mathrm{shed}} s(\tau) I_k(t-\tau)$$
 
-where $\tau_\mathrm{shed}$ is the total duration of fecal shedding.
-Note there is no need to scale by wastewater catchment population size because $I(t)$ is measured as new infections per capita.
+where $\tau_\mathrm{shed}$ is the total duration of fecal shedding and $i = k$ for all  $K_\mathrm{sites}$  wastewater sites. 
+Note there is no need to scale by wastewater catchment population size because $I_k(t)$ is measured as new infections per capita.
 
 This approach assumes that $G$ and $\alpha$ are constant through time and across individuals.
 In fact, there is substantial inter-individual variability in shedding kinetics and total shedding.
@@ -211,9 +211,7 @@ where $V_\mathrm{peak}$ is the peak number or viral genomes shed on any day, $\t
 
 Future iterations of this model will evaluate the utility of mechanistic modeling of wastewater collection and processing.
 
-### Viral genome concentration observation model
-
-We model site-specific viral genome concentrations in wastewater $C_i(t)$ independently for each site $i$ using the same model as described in [the wastewater component](#wastewater-viral-concentration-component). The latent incident infections in subpopulation $k$ are mapped to the corresponding site $i$.
+#### Viral genome concentration observation model
 
 Genome concentration measurements can vary between sites, and even within a site through time, because of differences in sample collection and lab processing methods. To account for this variability, we add a scaling term $M_{ij}$ and a variablity term $\sigma_{cij}$ that vary across sites $i$ and also within sites across labs $j$:
 
@@ -243,11 +241,97 @@ When the observed value is below the LOD, we use a censored likelihood:
 
 (This is mathematically equivalent to integrating the probability density function of the log-normal distribution from zero to the LOD.)
 
-If a sample is flagged in the NWSS data as below the LOD (field `pcr_target_below_lod`) but is missing a reported LOD (field `lod_sewage`), the 95th percentile of LOD values across the entire data is used as the integral's upper limit.
 
-If a sample has a reported concentration (field `pcr_target_avg_conc`) above the corresponding reported LOD, but the sample is nevertheless flagged as below the LOD (field `pct_target_below_lod`), we assume the flag takes precedence and treat the sample as below LOD for the purposes of censoring.
+## Example model parameters for COVID-19 
+
+The default parameters provided by the `wwinference` package are used to fit a model of COVID-19 hospital admissions and wastewater concentrations in terms of reported SARS-CoV-2 genome copies per mL.
+Below we will describe the priors and parameters provided. If fitting the model to a different epidemiological indicator (e.g. cases) or a different pathogen (e.g. flu) a number of these will have to be modified accordingly. 
+
+### Prior distributions
+
+We use informative priors for parameters that have been well characterized in the literature and weakly informative priors for parameters that have been less well characterized.
+
+| Parameter | Prior distribution | Source |
+|---|---|---|
+| Initial hospitalization probability | $\mathrm{logit}[p_{\mathrm{hosp}}(t_0)] \sim \mathrm{Normal}(\mathrm{logit}[0.01], 0.3)$ | Perez-Guzman et al. 2023 [^Perez] |
+| Time to peak fecal shedding |  $\tau_\mathrm{peak} \sim \mathrm{Normal}(5 \text{ days}, 1 \text{ day})$ | Russell et al. 2023 [^Russell], Huisman et al. 2022 [^Huisman], Cavany et al. 2022 [^Cavany] |
+| Peak viral shedding $V_\mathrm{peak}$| $\log_{10}[V_\mathrm{peak}] \sim \mathrm{Normal}(5.1, 0.5)$ | Miura et al. 2021 [^Muira] |
+| Duration of shedding | $\tau_\mathrm{shed} \sim \mathrm{Normal}(17 \text{ days}, 3 \text{ days})$  | Cevik et al. 2021 [^Cevik], Russell et al. 2023 [^Russell]   |
+| Total genomes shed per infected individual | $\log_{10}[G] \sim \mathrm{Normal}(9, 2)$ | Watson et al 2023[^Watson]   |
+| Initial infections per capita $I_0$ | $I_0 \sim \mathrm{Beta}(1 + k i_\mathrm{est}, 1 + k (1-i_\mathrm{est}))$ | where $i_\mathrm{est}$ is the sum of the last 7 days of hospital admissions, divided by jurisdiction population, and divided by the prior mode for $p_\mathrm{hosp}$, and $k = 5$ is a parameter governing the informativeness ("certainty") of the Beta distribution |
+| Initial exponential growth rate | $r \sim \mathrm{Normal}(0, 0.01)$ | Chosen to assume flat dynamics prior to observations |
+| Infection feedback term | $\gamma \sim \mathrm{logNormal}(6.37, 0.4)$ | Weakly informative prior chosen to have a mode of 500 in natural scale, based on posterior estimates of peaks from prior seasons in a few jurisdictions |
+
+### Scalar parameters
+
+| Parameter | Value | Source |
+|---|---|---|
+| Maximum generation interval | $T_g = 15$ days | |
+| Maximum infection to hospital admissions delay | $T_d = 55$ days| |
+| Wastewater produced per person-day | $\alpha=$ 378,500 mL per person-day | Ortiz 2024[^Ortiz] |
+
+### Distributional parameters
+
+The discrete generation interval probability mass function $g(\tau)$ approximates a log-normal distribution[^Park2023] with log-mean 2.9 and log-standard deviation of 1.64.
+To approximate the double censoring process necessary to discretize the continuous log-normal distribution, we use a simulation-based approach as recommended by Park et al.[^Park2024].
+This assumes that the primary event is uniformly distributed (this ignores the influence of the growth rate within the primary interval but is a good approximation in most settings). The secondary event is then a sum of this primary interval and the continuous distribution and is observed within a day (see Figure 9 in [^Park2024]).
+As the renewal process is not defined if there is probability mass on day zero we further left truncate this distribution.
+For more details refer to [^Park2024].
+
+We derive the distribution $\delta(\tau)$ of the delay from infection to hospital admission as the sum of the incubation period (delay from infection to symptom onset) and the period from symptom onset to hospital admission.
+
+We model the incubation period with a discretized, modified Weibull distribution[^Park2023] with probability mass function $\delta(\tau)$:
+
+$$
+\delta^\mathrm{cont}(\tau) = \exp[0.15\tau] f_\mathrm{Weibull}(\tau; \mathrm{shape}=1.5, \mathrm{scale}=3.6)
+$$
+
+```math
+\delta(\tau) = \begin{cases}
+\delta^\mathrm{cont}(\tau) / \left( {\sum}_{\tau'=0}^{23} g^\mathrm{cont}(\delta') \right) & 0 \leq \tau \leq 23 \\
+0 & \text{otherwise}
+\end{cases}
+```
+
+We model the symptom onset to hospital admission delay distribution with a Negative Binomial distribution with probability mass function $\gamma(\tau)$ fit to line list patient data from Dananché et al. 2022[^Danache2022].
+
+$$
+\gamma(\tau) = f_\mathrm{NegBin}(\tau; 6.99 \text{ days}, 2.49 \text{ days})
+$$
+
+The infection-to-hospitalization delay distribution $d(\tau)$ is the convolution:
+
+$$
+d(\tau) = \sum_{x=0}^\tau \delta(x) \gamma(\tau - x)
+$$
+
+This resulting infection to hospital admission delay distribution has a mean of 12.2 days and a standard deviation of 5.67 days.
 
 
+## Implementation
+
+Our framework is an extension of the widely used [^CDCRtestimates] [^CDCtechnicalblog], semi-mechanistic renewal framework `{EpiNow2}` [^epinow2paper][^EpiNow2], using a Bayesian latent variable approach implemented in the probabilistic programming language Stan [^stan] using [^cmdstanr] to interface with R.
+For submission to the [COVID-19 Forecast Hub](https://github.com/reichlab/covid19-forecast-hub/tree/master), the model is run on Saturday to generate forecasts each Monday.
+
+For each jurisdiction, we run 4 chains for 750 warm-up iterations and 500 sampling iterations, with a target average acceptance probability of 0.95 and a maximum tree depth of 12.
+
+To generate forecasts per the hub submission guidelines, we calculate the necessary quantiles from the 2,000 draws from the posterior of the expected observed hospital admissions 28 days ahead of the Monday forecast date.
+
+## Appendix: Notation
+
+The notation $X \sim \mathrm{Distribution}$ indicates that a random variable $X$ is distributed according to a given distribution.
+
+We parameterize Normal distributions in terms of their mean and standard deviation: $\mathrm{Normal}(\mathrm{mean, standard\ deviation})$.
+
+We parameterize Beta distributions in terms of their two standard shape parameters $\alpha$ and $\beta$, which can be [interpreted in terms of the counts of observed successes and failures](https://stats.stackexchange.com/questions/47771/what-is-the-intuition-behind-beta-distribution), respectively, in a Binomial experiment to infer a probability: $\mathrm{Beta}(\alpha, \beta)$.
+
+We parameterize Negative Binomial distributions in terms of their mean and their positive-constrained dispersion parameter (often denoted $\phi$): $\mathrm{NegBinom}(\mathrm{mean, dispersion})$. As the dispersion parameter goes to 0, a Negative Binomial distribution becomes increasingly over-dispersed. As it goes to positive infinity, the Negative Binomial approximates a Poisson distribution with the same mean.
+
+We write $\mathrm{logit}(x)$ to refer to the logistic transform: $\mathrm{logit}(x) \equiv \log(x) - \log(1 - x)$.
+
+Observed data are labeled by data source: $c$ for wastewater concentrations, $h$ for hospital admissions.
+Hospitalization data are indexed by day $t$ (i.e., $h_t$).
+Wastewater data are indexed by site $i$, wastewater testing lab $j$, and day $t$ (e.g., $c_{ijt}$).
 
 
 ## References
