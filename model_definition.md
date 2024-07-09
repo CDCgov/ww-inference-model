@@ -19,10 +19,14 @@ The general flow of the model can be visualized as follows:
 
 ```mermaid
 flowchart LR;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
+    GlobalR --> GlobalI;
+    GlobalR --> LocalR;
+    LocalR --> GlobalR;
+    LocalR --> LocalIX
+    LocalR --> LocalIY
+    LocalIX --> LocalWWX
+    LocalIY --> LocalWWY
+    GlobalI --> Globalhosp
 ```
 See the [notation](#appendix-notation) section for an overview of the mathematical notation we use to describe the model components, including how probability distributions are parameterized.
 
