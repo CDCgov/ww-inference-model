@@ -1,9 +1,10 @@
 ## Model overview: wastewater-informed, site-level infection dynamics 
 
-This document details the generative model used by `wwinference` to infer global and local infection dynamics from count data (e.g. cases or hospital admissions) and wastewater concentration data and use that to produce nowcasts and forecasts. 
-The `wwinference` model assumes that wastewater concentration data is available for one or more "local" sites that represent a subset of the total population that produce the "global" epidemiological indicator (cases or admissions).
-In the future, we plan to provide the user with functionality for other types of data structures, e.g. multiple data streams of hospital admissions and multiple wastewater concentration data streams.
-The model is structured into three models: infections(#infection-component), hospital admissions(#hospital-admissions-component), and viral genome concentrations in wastewater(#wastewater-component)
+This document details the generative model used by `wwinference` to infer global and local infection dynamics from count data (e.g. cases or hospital admissions) and wastewater concentration data, and use that to produce nowcasts and forecasts. 
+The `wwinference` model assumes that wastewater concentration data is available for one or more "local" sites that represent a subset of the total population that produce the "global" epidemiological indicators (cases or admissions).
+In the future, we plan to provide the user with functionality for other types of data structures, e.g. multiple data streams of hospital admissions in addition to multiple wastewater concentration data streams, but for now this structure is the only option provided to the user. 
+The model is structured into three generative components: infections(#infection-component), hospital admissions(#hospital-admissions-component), and viral genome concentrations in wastewater(#wastewater-component). 
+The model imposes a hierarchical structure where the infection dynamics in the subpopulations represented by the wastewater concentration data are assumed to be localized outbreaks similar to one another and centered around the "global" infection dynamics that give rise to the hospital admissions. Note, we will describe the model in terms of the generation of hospital admissions, but the user can choose to replace this with any "count" dataset with a delay distribution from infection to the generation of that count data, e.g. cases would also work well here. 
 
 ### Model components
 
@@ -12,8 +13,6 @@ Our models are constructed from a set of generative components. These are:
 - [**Infection component:**](#infection-component) A renewal model for the infection dynamics, which generates estimates of incident latent infections per capita.
 - [**Hospital admissions component:**](#hospital-admissions-component) A model for the expected number of hospital admissions given incident latent infections per capita.
 - [**Viral genome concentration in wastewater:**](#wastewater-component) A model for the expected genome concentration given incident infections per capita.
-
-Depending on the model, these components are implemented at different spatial scales and with different observation processes. In particular, the link to the observables depends on the model and the form of the observables, see below for detailed descriptions of each component and the following sections for model-specific details.
 
 See the [notation](#appendix-notation) section for an overview of the mathematical notation we use to describe the model components, including how probability distributions are parameterized.
 
@@ -231,3 +230,29 @@ When the observed value is below the LOD, we use a censored likelihood:
 If a sample is flagged in the NWSS data as below the LOD (field `pcr_target_below_lod`) but is missing a reported LOD (field `lod_sewage`), the 95th percentile of LOD values across the entire data is used as the integral's upper limit.
 
 If a sample has a reported concentration (field `pcr_target_avg_conc`) above the corresponding reported LOD, but the sample is nevertheless flagged as below the LOD (field `pct_target_below_lod`), we assume the flag takes precedence and treat the sample as below LOD for the purposes of censoring.
+
+## References
+
+[^epinow2paper]: Abbott, S. et al. Estimating the time-varying reproduction number of SARS-CoV-2 using national and subnational case counts. _Wellcome Open Res_. 5:112 (2020). https://doi.org/10.12688/wellcomeopenres.16006.2
+[^Asher2018]: Asher, J. Forecasting Ebola with a regression transmission model. _Epidemics._ **22**, 50-55 (2018). https://doi.org/10.1016/j.epidem.2017.02.009
+[^stan]: Stan Development Team. _Stan Modeling Language Users Guide and Reference Manual_. (2023). https://mc-stan.org
+[^CDCRtestimates]: US Centers for Disease Control and Prevention. _Current Epidemic Growth Status (Based on Rt) for States and Territories_. https://www.cdc.gov/forecast-outbreak-analytics/about/rt-estimates.html (2024).
+[^CDCtechnicalblog]: US Centers for Disease Control and Prevention. _Technical Blog: Improving CDC’s Tools for Assessing Epidemic Growth_ (2024). https://www.cdc.gov/forecast-outbreak-analytics/about/technical-blog-rt.html
+[^Park2023]: Park, S.W. et al. Inferring the differences in incubation-period and generation-interval distributions of the Delta and Omicron variants of SARS-CoV-2. _Proc Natl Acad Sci U S A_. 120(22):e2221887120 (2023). https://doi.org/10.1073/pnas.2221887120
+[^Danache2022]: Danaché, C. et al. Baseline clinical features of COVID-19 patients, delay of hospital admission and clinical outcome: A complex relationship. _PLoS One_ 17(1):e0261428 (2022). https://doi.org/10.1371/journal.pone.0261428
+[^Perez]: Perez-Guzman, P.N. et al. Epidemiological drivers of transmissibility and severity of SARS-CoV-2 in England. _Nat Commun_ 14, 4279 (2023). https://doi.org/10.1038/s41467-023-39661-5
+[^Muira]: Miura F, Kitajima M, Omori R. Duration of SARS-CoV-2 viral shedding in faeces as a parameter for wastewater-based epidemiology: Re-analysis of patient data using a shedding dynamics model. _Sci Total Environ_ 769:144549 (2021). https://doi.org/10.1016/j.scitotenv.2020.144549
+[^Huisman]: Huisman, J.S. et al. Estimation and worldwide monitoring of the effective reproductive number of SARS-CoV-2 _eLife_ 11:e71345 (2022). https://doi.org/10.7554/eLife.71345
+[^Cavany]: Cavany S, et al. Inferring SARS-CoV-2 RNA shedding into wastewater relative to the time of infection. _Epidemiology and Infection_ 150:e21 (2022). https://doi.org/10.1017/S0950268821002752
+[^Russell]: Russell, T.W. et al. Within-host SARS-CoV-2 viral kinetics informed by complex life course exposures reveals different intrinsic properties of Omicron and Delta variants. _medRxiv_ (2023).  https://doi.org/10.1101/2023.05.17.23290105
+[^Cevik]: Cevik, M. et al. SARS-CoV-2, SARS-CoV, and MERS-CoV viral load dynamics, duration of viral shedding, and infectiousness: a systematic review and meta-analysis. _Lancet Microbe_ **2(1)**,e13-e22 (2021). https://doi.org/10.1016/S2666-5247(20)30172-5
+[^Watson]: Leighton, M. et al. Improving estimates of epidemiological quantities by combining reported cases with wastewater data: a statistical framework with applications to COVID-19 in Aotearoa New Zealand. _medRxiv_ (2023). https://doi.org/10.1101/2023.08.14.23294060
+[^Ortiz]: Ortiz, P. _Wastewater facts - statistics and household data in 2024_. https://housegrail.com/wastewater-facts-statistics/
+[^Larremore2021]: Larremore, D.B. et al. Test sensitivity is secondary to frequency and turnaround time for COVID-19 screening. _Science Advances_ (2021). https://doi.org/10.1126/sciadv.abd5393
+[^Cori]: Cori, A., Ferguson, N. M., Fraser, C., & Cauchemez, S. A new framework and software to estimate time-varying reproduction numbers during epidemics. _Am. J. Epidemiol._ **178**, 1505-1512 (2013). https://doi.org/10.1093/aje/kwt133
+[^EpiNow2]: Abbott, S. et al. _EpiNow2: Estimate real-time case counts and time-varying epidemiological parameters._ https://doi.org/10.5281/zenodo.3957489
+[^Epidemia]: Fraser, C. (2007). Estimating individual and household reproduction numbers in an emerging epidemic. _PLoS One_, **2**(8), e758 (2007). https://doi.org/10.1371/journal.pone.0000758
+[^cmdstanr]: _CmdStanR: the R interface to CmdStan_. (2024). https://mc-stan.org/cmdstanr/index.html
+[^Park2024]: Park, S.W. et al. Estimating epidemiological delay distributions for infectious diseases.
+_medRxiv_ (2024). https://doi.org/10.1101/2024.01.12.24301247
+[^Gostic2020]: Gostic, K.M. et al. Practical Considerations for Measuring the Effective Reproductive Number, Rt. _PLoS Comput Biol_. **16**(12) (2020). https://doi.org/10.1371/journal.pcbi.1008409
