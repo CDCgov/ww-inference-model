@@ -11,9 +11,9 @@ The model imposes a hierarchical structure where the infection dynamics in the s
 Our models are constructed from a set of generative components. These are:
 
 - [**Infection component:**](#infection-component) A renewal model for the infection dynamics, which generates estimates of incident latent infections per capita.
+- [**Hierarchical subpopulation-level infection dynamics:**](#hierarchical-subpopulation-infection-dynamics-component) A model for the relation between the subpopulation infection dynamics and the "global" infection dynamics
 - [**Hospital admissions component:**](#hospital-admissions-component) A model for the expected number of hospital admissions given incident latent infections per capita.
-- [**Hierarchical suubpopulation-level infection dynamics:**](#hierarchical-infection-component) A model for the relation between the subpopulation infection dynamics and the "global" infection dynamics
-- [**Viral genome concentration in wastewater:**](#wastewater-component) A model for the expected genome concentration given incident infections per capita.
+- [**Viral genome concentration in wastewater:**](#viral-genome-concentration-in-wastewater-component) A model for the expected genome concentration given incident infections per capita.
 
 The general flow of the model can be visualized as follows: 
 
@@ -62,6 +62,76 @@ The damping term we use is based on Asher et al. 2018[^Asher2018] but extended t
 $$ \mathcal{R}(t) = \mathcal{R}^\mathrm{u}(t) \exp \left( -\gamma \sum_{\tau = 1}^{T_f}I(t-\tau)g(\tau) \right) $$
 
 where $\gamma$ is the _infection feedback term_ controlling the strength of the damping on $\mathcal{R}(t)$, and the summation is analogous to the "force of infection." See [Prior Distributions](#prior-distributions) below for description of prior choice on $\gamma$.
+
+### Hierarchical subpopulation infection dynamics component
+
+The structure of this model assumes that we have hospital admissions data coming from a larger "global" population (e.g. an entire state or county) and localized wastewater concentration measurements coming from subsets of the global population. We therefore divide the "global" population into subpopulations representing sampled wastewater sites' catchment populations, with an additional subpopulation to represent
+individuals who do not contribute to the sampled wastewater. 
+
+We model infection dynamics in these subpopulations hierarchically: subpopulation infection dynamics are distributed about a central jurisdiction-level infection dynamic, and the total infections that generate the hospital admissions observations are simply the sum of the subpopulation-level infections.
+
+#### Subpopulation definition
+The total population consists of $K_\mathrm{total}$ subpopulations $k$ with corresponding population sizes $n_k$. We associate one subpopulation to each of the $K_\mathrm{sites}$ wastewater sampling sites in the jurisdiction and assign that subpopulation a population size $n_k$ equal to the wastewater catchment population size reported for that wastewater catchment area.
+
+Whenever the sum of the wastewater catchment population sizes $\sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k$ is less than the total population size $n$, we use an additional subpopulation of size $n - \sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k$ to model individuals in the population who are not covered by wastewater sampling.
+
+The total number of subpopulations is then $K_\mathrm{total} = K_\mathrm{sites} + 1$: the $K_\mathrm{sites}$ subpopulations with sampled wastewater, and the final subpopulation to account for individuals not covered by wastewater sampling.
+
+This amounts to modeling the wastewater catchments populations as approximately non-overlapping; every infected individual either does not contribute to measured wastewater or contributes principally to one wastewater catchment.
+This approximation is reasonable if we restrict our analyses to primary wastewaster treatment plants, which avoids the possibility that an individual might be sampled once in a sample taken upstream and then sampled again in a more aggregated sample taken further downstream. 
+
+If the sum of the wastewater site catchment populations meets or exceeds the reported jurisdiction population ($\sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k \ge n$) we do not use a final subpopulation without sampled wastewater. In that case, the total number of subpopulations $K_\mathrm{total} = K_\mathrm{sites}$.
+
+When converting from predicted per capita incident hospital admissions $H(t)$ to predicted hospitalization counts, we use the jurisdiction population size $n$, even in the case where $\sum n_k > n$.
+
+This amounts to making two key additional modeling assumptions:
+- Any individuals who contribute to wastewaster measurements but are not part of the total population are distributed among the catchment populations approximately proportional to catchment population size.
+- Whenever $\sum n_k \ge n$, the fraction of individuals in the jurisdiction not covered by wastewater is small enough to have minimal impact on the jurisdiction-wide per capita infection dynamics.
+
+#### Subpopulation-level infections
+We couple the subpopulation and total population infection dynamics at the level of the un-damped instantaneous reproduction number $\mathcal{R}^\mathrm{u}(t)$.
+
+We model the subpopulations as having infection dynamics that are _similar_ to one another but can differ from the overall "global" dynamic.
+
+We represent this with a hierarchical model where we first model a "global" un-damped effective reproductive number $\mathcal{R}^\mathrm{u}(t)$, but then allow individual subpopulations $k$ to have individual subpopulation values of $\mathcal{R}^\mathrm{u}_{k}(t)$
+
+The "global" model for the undamped instantaneous reproductive number $\mathcal{R}^\mathrm{u}(t)$ follows the time-evolution described above.
+Subpopulation deviations from the "global" reproduction number are modeled via a log-scale AR(1) process. Specifically, for subpopulation $k$:
+
+$$
+\log[\mathcal{R}^\mathrm{u}_{k}(t)] = \log[\mathcal{R}^\mathrm{u}(t)] + \delta_k(t)
+$$
+
+where $\delta_k(t)$ is the time-varying subpopulation effect on $\mathcal{R}(t)$, modeled as,
+
+$$\delta_k(t) = \varphi_{R(t)} \delta_k(t-1) + \epsilon_{kt}$$
+
+where $0 < \varphi_{R(t)} < 1$ and $\epsilon_{kt} \sim \mathrm{Normal}(0, \sigma_{R(t)\delta})$.
+
+We chose a prior of $\varphi_{R(t)} \sim \mathrm{beta}(2,40)$ to impose limited autocorrelation in the week-by-week deviations.
+We set a weakly informative prior $\sigma_{R(t)\delta} \sim \mathrm{Normal}(0, 0.3)$ to allow for either limited or substantial site-site heterogeneity in $\mathcal{R}(t)$, with the degree of heterogeneity inferred from the data.
+
+The subpopulation $\mathcal{R}_{k}(t)$ is subject to the infection feedback described above such that:
+
+```math
+\mathcal{R}_k(t) = \mathcal{R}^\mathrm{u}_k(t) \exp \left(-\gamma \sum_{\tau = 1}^{T_f} I_k(t-\tau) g(\tau) \right)
+```
+
+From $\mathcal{R}_{k}(t)$, we generate values of the supopulation-level _expected_ latent incident infections per capita $I_k(t)$ using the renewal process described in [the infection component](#infection-component).
+
+To obtain the number of infections per capita $I(t)$ in the total population as a whole, we sum the $K_\mathrm{total}$ subpopulation per capita infection counts $I_k(t)$ weighted by their population sizes:
+
+```math
+I(t) = \frac{1}{\sum\nolimits_{k=1}^{K_\mathrm{total}} n_k} \sum_{k=1}^{K_\mathrm{total}} n_k I_k(t)
+```
+
+We infer the site level initial per capita incidence $I_k(0)$ hierarchically. Specifically, we treat $\mathrm{logit}[I_k(0)]$ as Normally distributed about the corresponding jurisdiction-level value $\mathrm{logit}[I(0)]$, with an estimated standard deviation $\sigma_{i0}$:
+
+$$
+\mathrm{logit}[I_k(0)] \sim \mathrm{Normal}(\mathrm{logit}[I(0)], \sigma_{k0})
+$$
+
+
 
 ### Hospital admissions component
 
@@ -112,74 +182,6 @@ This is an active area of further development, but for now, we advise the user t
 Future work will include incorporation of a simple model for right-truncation when data is rolling in in real-time with incomplete reporting in recent days. 
 However, the current workflow assumes mandatory and for the most part complete reporting of hospital admissions. 
 See [outlier detection and removal](#appendix-wastewater-data-pre-processing) for further details.
-
-### Hierarchical structure: supopulation-level infection dynamics centered around global infection dynamics 
-
-In this model, we represent hospital admissions at the jurisdictional level and viral genome concentrations at the site level. We use the components described above but divide the jurisdiction's total population into subpopulations representing sampled wastewater sites' catchment populations, with an additional subpopulation to represent individuals who do not contribute to sampled wastewater.
-
-We model infection dynamics in these subpopulations hierarchically: subpopulation infection dynamics are distributed about a central jurisdiction-level infection dynamic, and jurisdiction's total infections are simply the sum of the subpopulation-level infections.
-
-### Subpopulation definition
-In Model 1, a jurisdiction consists of $K_\mathrm{total}$ subpopulations $k$ with corresponding population sizes $n_k$. We associate one subpopulation to each of the $K_\mathrm{sites}$ wastewater sampling sites in the jurisdiction and assign that subpopulation a population size $n_k$ equal to the wastewater catchment population size reported to NWSS for that site.
-
-Whenever the sum of the wastewater catchment population sizes $\sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k$ is less than the total jurisdiction population size $n$, we use an additional subpopulation of size $n - \sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k$ to model individuals in the jurisdiction who are not covered by wastewater sampling.
-
-The total number of subpopulations is then $K_\mathrm{total} = K_\mathrm{sites} + 1$: the $K_\mathrm{sites}$ subpopulations with sampled wastewater, and the final subpopulation to account for individuals not covered by wastewater sampling.
-
-This amounts to modeling the wastewater catchments populations as approximately non-overlapping; every infected individual either does not contribute to measured wastewater or contributes principally to one wastewater catchment.
-This approximation is reasonable because we only use samples taken from primary wastewaster treatment plants, which avoids the possibility that an individual might be sampled once in a sample taken upstream and then sampled again in a more aggregated sample taken further downstream; see [data filtering](#appendix-wastewater-data-pre-processing) for further details.
-
-If the sum of the wastewater site catchment populations meets or exceeds the reported jurisdiction population ($\sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k \ge n$) we do not use a final subpopulation without sampled wastewater. In that case, the total number of subpopulations $K_\mathrm{total} = K_\mathrm{sites}$. In our data, this is true only for the District of Columbia.
-
-When converting from predicted per capita incident hospital admissions $H(t)$ to predicted hospitalization counts, we use the jurisdiction population size $n$, even in the case of the District of Columbia where $\sum n_k > n$.
-
-This amounts to making two key additional modeling assumptions:
-- Any individuals who contribute to wastewaster measurements but are not part of the jurisdiction population are distributed among the catchment populations approximately proportional to catchment population size.
-- Whenever $\sum n_k \ge n$, the fraction of individuals in the jurisdiction not covered by wastewater is small enough to have minimal impact on the jurisdiction-wide per capita infection dynamics.
-
-### Subpopulation-level infection dynamics
-We couple the subpopulation- and jurisdiction-level infection dynamics at the level of the un-damped instantaneous reproduction number $\mathcal{R}^\mathrm{u}(t)$.
-
-We model the subpopulations as having infection dynamics that are _similar_ to one another but can differ from the overall jurisdiction-level dynamic.
-
-We represent this with a hierarchical model where we first model a jurisdiction-level un-damped effective reproductive number $\mathcal{R}^\mathrm{u}(t)$, but then allow individual subpopulations $k$ to have individual subpopulation values of $\mathcal{R}^\mathrm{u}_{k}(t)$
-
-The jurisdiction-level model for the undamped instantaneous reproductive number $\mathcal{R}^\mathrm{u}(t)$ follows the time-evolution described above.
-Subpopulation deviations from the jurisdiction-level reproduction number are modeled via a log-scale AR(1) process. Specifically, for subpopulation $k$:
-
-$$
-\log[\mathcal{R}^\mathrm{u}_{k}(t)] = \log[\mathcal{R}^\mathrm{u}(t)] + \delta_k(t)
-$$
-
-where $\delta_k(t)$ is the time-varying subpopulation effect on $\mathcal{R}(t)$, modeled as,
-
-$$\delta_k(t) = \varphi_{R(t)} \delta_k(t-1) + \epsilon_{kt}$$
-
-where $0 < \varphi_{R(t)} < 1$ and $\epsilon_{kt} \sim \mathrm{Normal}(0, \sigma_{R(t)\delta})$.
-
-We chose a prior of $\varphi_{R(t)} \sim \mathrm{beta}(2,40)$ to impose limited autocorrelation in the week-by-week deviations.
-We set a weakly informative prior $\sigma_{R(t)\delta} \sim \mathrm{Normal}(0, 0.3)$ to allow for either limited or substantial site-site heterogeneity in $\mathcal{R}(t)$, with the degree of heterogeneity inferred from the data.
-
-The subpopulation $\mathcal{R}_{k}(t)$ is subject to the infection feedback described above such that:
-
-```math
-\mathcal{R}_k(t) = \mathcal{R}^\mathrm{u}_k(t) \exp \left(-\gamma \sum_{\tau = 1}^{T_f} I_k(t-\tau) g(\tau) \right)
-```
-
-From $\mathcal{R}_{k}(t)$, we generate values of the supopulation-level _expected_ latent incident infections per capita $I_k(t)$ using the renewal process described in [the infection component](#infection-component).
-
-To obtain the number of infections per capita $I(t)$ in the jurisdiction as a whole, we sum the $K_\mathrm{total}$ subpopulation per capita infection counts $I_k(t)$ weighted by their population sizes:
-
-```math
-I(t) = \frac{1}{\sum\nolimits_{k=1}^{K_\mathrm{total}} n_k} \sum_{k=1}^{K_\mathrm{total}} n_k I_k(t)
-```
-
-We infer the site level initial per capita incidence $I_k(0)$ hierarchically. Specifically, we treat $\mathrm{logit}[I_k(0)]$ as Normally distributed about the corresponding jurisdiction-level value $\mathrm{logit}[I(0)]$, with an estimated standard deviation $\sigma_{i0}$:
-
-$$
-\mathrm{logit}[I_k(0)] \sim \mathrm{Normal}(\mathrm{logit}[I(0)], \sigma_{k0})
-$$
-
 
 ### Viral genome concentration in wastewater component
 
