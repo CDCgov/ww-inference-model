@@ -286,7 +286,7 @@ get_mcmc_options <- function(
 #' @export
 #'
 #' @examples
-#' model_spec_list <- model_spec(forecast_date = "2023-12-06")
+#' model_spec_list <- get_model_spec(forecast_date = "2023-12-06")
 get_model_spec <- function(
     forecast_date,
     calibration_time = 90,
