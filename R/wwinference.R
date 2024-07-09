@@ -88,7 +88,7 @@ wwinference <- function(ww_data,
 
 
   fit_model <- function(compiled_model,
-                        standata,
+                        stan_data,
                         model_spec,
                         init_lists) {
     fit <- compiled_model$sample(
@@ -101,7 +101,7 @@ wwinference <- function(ww_data,
       chains = mcmc_options$n_chains,
       parallel_chains = mcmc_options$n_chains
     )
-    # print(fit) # nolint
+
     return(fit)
   }
 
@@ -111,7 +111,7 @@ wwinference <- function(ww_data,
 
   fit <- safe_fit_model(
     compiled_model,
-    standata,
+    stan_data,
     model_spec,
     init_lists
   )
