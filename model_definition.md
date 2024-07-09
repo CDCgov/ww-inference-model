@@ -12,8 +12,18 @@ Our models are constructed from a set of generative components. These are:
 
 - [**Infection component:**](#infection-component) A renewal model for the infection dynamics, which generates estimates of incident latent infections per capita.
 - [**Hospital admissions component:**](#hospital-admissions-component) A model for the expected number of hospital admissions given incident latent infections per capita.
+- [**Hierarchical suubpopulation-level infection dynamics:**](#hierarchical-infection-component) A model for the relation between the subpopulation infection dynamics and the "global" infection dynamics
 - [**Viral genome concentration in wastewater:**](#wastewater-component) A model for the expected genome concentration given incident infections per capita.
 
+The general flow of the model can be visualized as follows: 
+
+```mermaid
+flowchart LR;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
 See the [notation](#appendix-notation) section for an overview of the mathematical notation we use to describe the model components, including how probability distributions are parameterized.
 
 ### Infection component
