@@ -245,7 +245,8 @@ flag_ww_outliers <- function(ww_data,
 #' data <- tibble::tibble(
 #'   date = c("2023-10-01", "2023-10-02"),
 #'   genome_copies_per_mL = c(300, 3e6),
-#'   flag_as_ww_outlier = c(0, 1)
+#'   flag_as_ww_outlier = c(0, 1),
+#'   exclude = c(0, 0)
 #' )
 #' data_w_exclusions <- indicate_ww_exclusions(data,
 #'   outlier_col_name = "flag_as_ww_outlier",
