@@ -19,7 +19,7 @@ Get parameters for model run
 }
 \examples{
 params <- get_params(param_file = fs::path_package("extdata",
-                                  "example_params.toml",
-                                  package = "wwinference"
-                                 ))
+  "example_params.toml",
+  package = "wwinference"
+))
 }

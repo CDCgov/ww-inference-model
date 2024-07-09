@@ -247,7 +247,7 @@ flag_ww_outliers <- function(ww_data,
 #'   genome_copies_per_mL = c(300, 3e6),
 #'   flag_as_ww_outlier = c(0, 1)
 #' )
-#' data_w_exclusions <- indicate_exclusions(data,
+#' data_w_exclusions <- indicate_ww_exclusions(data,
 #'   outlier_col_name = "flag_as_ww_outlier",
 #'   remove_outliers = TRUE
 #' )
