@@ -37,10 +37,10 @@ We decompose the instantaneous reproduction number $\mathcal{R}(t)$ into two com
 We assume that the unadjusted reproduction number $\mathcal{R}^\mathrm{u}(t)$ is a piecewise-constant function with weekly change points (i.e., if $t$ and $t'$ are days in the same week, then $\mathcal{R}^\mathrm{u}(t)$ = $\mathcal{R}^\mathrm{u}(t')$ ). To account for the dependence of the unadjusted reproduction number in a given week on the previous week, we use a differenced auto-regressive process for the log-scale reproduction number. A log-scale representation is used to ensure that the reproduction number is positive and so that week-to-week changes are multiplicative rather than additive.
 
 $$
-\log[\mathcal{R}^\mathrm{u}(t_3)] \sim \mathrm{Normal}\left(\log[\mathcal{R}^\mathrm{u}(t_2)] + \beta \left(\log[\mathcal{R}^\mathrm{u}(t_2)] - \log[\mathcal{R}^\mathrm{u}(t_1)]\right), \sigma_r \right)
+\log[\mathcal{R}^\mathrm{u}(t_i)] \sim \mathrm{Normal}\left(\log[\mathcal{R}^\mathrm{u}(t_{i-1})] + \beta \left(\log[\mathcal{R}^\mathrm{u}(t_{i-2})] - \log[\mathcal{R}^\mathrm{u}(t_1)]\right), \sigma_r \right)
 $$
 
-where $t_1$, $t_2$, and $t_3$ are days in three successive weeks, $\beta$ is an autoregression coefficient which serves to make week-to-week changes correlated, and $\sigma_r$ determines the overall variation in week-to-week changes.
+where $t_i$, $t_{i-1}$, and $t_{i-2}$ are days in three successive weeks, $\beta$ is an autoregression coefficient which serves to make week-to-week changes correlated, and $\sigma_r$ determines the overall variation in week-to-week changes.
 We bound $\beta$ to be between 0 and 1 so that any changes in trend in $\mathcal{R}^\mathrm{u}(t)$ are damped over time to a degree determined by $\beta$.
 
 The damping term we use is based on Asher et al. 2018[^Asher2018] but extended to be applicable to a renewal process. It assumes that the instantaneous reproduction number is damped by recent infections weighted by the generation interval. This is a simple way to account for the fact that the instantaneous reproduction number is likely to decrease when there are many infections in the population, due to factors such as immunity, behavioral changes, and public health interventions. The damping term is defined as:
@@ -53,7 +53,8 @@ where $\gamma$ is the _infection feedback term_ controlling the strength of the 
 
 Following other semi-mechanistic renewal frameworks, we model the _expected_ hospital admissions per capita $H(t)$ as a convolution of the _expected_ latent incident infections per capita $I(t)$, and a discrete infection to hospitalization distribution $d(\tau)$, scaled by the probability of being hospitalized $p_\mathrm{hosp}(t)$.
 
-To account for day-of-week effects in hospital reporting, we use an estimated _weekday effect_ $\omega(t)$. If $t$ and $t'$ are the same day of the week, $\omega(t) = \omega(t')$.
+To account for day-of-week effects in hospital reporting, we use an estimated _weekday effect_ $\omega(t)$.
+If $t$ and $t'$ are the same day of the week, $\omega(t) = \omega(t')$.
 The seven values that $\omega(t)$ takes on are constrained to be non-negative and have a mean of 1.
 This allows us to model the possibility that certain days of the week could have systematically high or low admissions reporting while holding the predicted weekly total reported admissions constant (i.e. the predicted weekly total is the same with and without these day-of-week reporting effects).
 
@@ -82,53 +83,23 @@ where $0 < \varphi_H < 1$ and $\epsilon_{Ht} \sim \mathrm{Normal}(0, \sigma_{H\d
 We chose a relatively strong prior of $\varphi_H \sim \mathrm{beta}(1,100)$ to impose minimal autocorrelation, and similarly chose a small prior on $\sigma_{H\delta} \sim \mathrm{Normal}(0, 0.01)$ to impose our believe that the IHR should only change in time if the data strongly suggests it.
 See [Prior Distributions](#prior-distributions) for the specified prior on $\mu_{p_\mathrm{hosp}}$.
 
-In hospital admissions only models, we model the IHR as constant. We assign this constant IHR the same prior distribution that we assign $\mu_{p_\mathrm{hosp}}$ in the wastewater model.
+In the version of the model where we do not fit the wastewater data (which we refer to as the "hospital admissiosn only" model), we model the IHR as constant. We assign this constant IHR the same prior distribution that we assign $\mu_{p_\mathrm{hosp}}$ in the wastewater-informed model.
 
 ### Hospital admissions observation model
 We model the observed hospital admission counts $h_t$ as:
 
 $$h_t \sim \mathrm{NegBinom}(n H(t), \phi)$$
 
-where the jurisdiction population size $n$ is used to convert from per-capita hospitalization rate $H(t)$ to hospitalization counts.
+where the "global" population size $n$ (e.g. that of the state or county representing the catchment area population producing the hospital admissions) is used to convert from per-capita hospitalization rate $H(t)$ to hospitalization counts.
 
-Currently, we do not explicitly model the delay from hospital admission to reporting of hospital admissions. In reality, corrections (upwards or downwards) in the admissions data after the report date are possible and do happen. See [outlier detection and removal](#appendix-wastewater-data-pre-processing) for further details.
+Currently, we do not explicitly model the delay from hospital admission to reporting of hospital admissions.
+In reality, corrections (upwards or downwards) in the admissions data after the report date are possible and do happen. 
+This is an active area of further development, but for now, we advise the user to manually exclude hospital admissions data points that appear implausible. 
+Future work will include incorporation of a simple model for right-truncation when data is rolling in in real-time with incomplete reporting in recent days. 
+However, the current workflow assumes mandatory and for the most part complete reporting of hospital admissions. 
+See [outlier detection and removal](#appendix-wastewater-data-pre-processing) for further details.
 
-### Viral genome concentration in wastewater component
-
-We model viral genome concentrations in wastewater $C(t)$ as a convolution of the _expected_ latent incident infections per capita $I(t)$ and a normalized shedding kinetics function $s(\tau)$, multiplied by  $G$ the number of genomes shed per infected individual over the course of their infection and divided by $\alpha$ the volume of wastewater generated per person per day:
-
-$$C(t) = \frac{G}{\alpha} \sum_{\tau = 0}^{\tau_\mathrm{shed}} s(\tau) I(t-\tau)$$
-
-where $\tau_\mathrm{shed}$ is the total duration of fecal shedding.
-Note there is no need to scale by wastewater catchment population size because $I(t)$ is measured as new infections per capita.
-
-This approach assumes that $G$ and $\alpha$ are constant through time and across individuals.
-In fact, there is substantial inter-individual variability in shedding kinetics and total shedding.
-This approximation is more accurate when population sizes are large.
-
-We model the shedding kinetics $s(\tau)$ as a discretized, scaled triangular distribution[^Larremore2021]:
-
-```math
-\log_{10}[s^\mathrm{cont}(\tau)] = \begin{cases}
-  V_\mathrm{peak} \frac{\tau}{\tau_\mathrm{peak}} & \tau \leq \tau_\mathrm{peak} \\
-  V_\mathrm{peak} \left( 1 - \frac{\tau - \tau_\mathrm{peak}}{\tau_\mathrm{shed} - \tau_\mathrm{peak}} \right) & \tau_\mathrm{peak} < \tau \leq \tau_\mathrm{shed} \\
-  0 & \tau > \tau_\mathrm{shed}
-\end{cases}
-```
-
-where $V_\mathrm{peak}$ is the peak number or viral genomes shed on any day, $\tau_\mathrm{peak}$ is the time from infection to peak shedding, and $\tau_\mathrm{shed}$ is the total duration of shedding. Then:
-
-We model the log observed genome concentrations as Normally distributed:
-
-$$
-\log[c_t] \sim \mathrm{Normal}(C(t), \sigma_c)
-$$
-
-This component does not mechanistically simulate each step involved in sample collection, processing, and reporting.
-Instead, it aims to to account for these processes, at a summary level.
-Future iterations of this model will evaluate the utility of mechanistic modeling of wastewater collection and processing.
-
-## Model 1: Site-level infection dynamics
+### Hierarchical structure: supopulation-level infection dynamics centered around global infection dynamics 
 
 In this model, we represent hospital admissions at the jurisdictional level and viral genome concentrations at the site level. We use the components described above but divide the jurisdiction's total population into subpopulations representing sampled wastewater sites' catchment populations, with an additional subpopulation to represent individuals who do not contribute to sampled wastewater.
 
@@ -195,7 +166,36 @@ $$
 \mathrm{logit}[I_k(0)] \sim \mathrm{Normal}(\mathrm{logit}[I(0)], \sigma_{k0})
 $$
 
-### Viral genome concentration in wastewater
+
+### Viral genome concentration in wastewater component
+
+We model viral genome concentrations in wastewater $C(t)$ as a convolution of the _expected_ latent incident infections per capita $I(t)$ and a normalized shedding kinetics function $s(\tau)$, multiplied by  $G$ the number of genomes shed per infected individual over the course of their infection and divided by $\alpha$ the volume of wastewater generated per person per day:
+
+$$C(t) = \frac{G}{\alpha} \sum_{\tau = 0}^{\tau_\mathrm{shed}} s(\tau) I(t-\tau)$$
+
+where $\tau_\mathrm{shed}$ is the total duration of fecal shedding.
+Note there is no need to scale by wastewater catchment population size because $I(t)$ is measured as new infections per capita.
+
+This approach assumes that $G$ and $\alpha$ are constant through time and across individuals.
+In fact, there is substantial inter-individual variability in shedding kinetics and total shedding.
+This approximation is more accurate when population sizes are large.
+Incorporating the expected variability in the observed concentrations as a function of the number of contributing infected individduals is an area of active development.
+
+We model the shedding kinetics $s(\tau)$ as a discretized, scaled triangular distribution[^Larremore2021]:
+
+```math
+\log_{10}[s^\mathrm{cont}(\tau)] = \begin{cases}
+  V_\mathrm{peak} \frac{\tau}{\tau_\mathrm{peak}} & \tau \leq \tau_\mathrm{peak} \\
+  V_\mathrm{peak} \left( 1 - \frac{\tau - \tau_\mathrm{peak}}{\tau_\mathrm{shed} - \tau_\mathrm{peak}} \right) & \tau_\mathrm{peak} < \tau \leq \tau_\mathrm{shed} \\
+  0 & \tau > \tau_\mathrm{shed}
+\end{cases}
+```
+
+where $V_\mathrm{peak}$ is the peak number or viral genomes shed on any day, $\tau_\mathrm{peak}$ is the time from infection to peak shedding, and $\tau_\mathrm{shed}$ is the total duration of shedding. Then:
+
+Future iterations of this model will evaluate the utility of mechanistic modeling of wastewater collection and processing.
+
+### Viral genome concentration observation model
 
 We model site-specific viral genome concentrations in wastewater $C_i(t)$ independently for each site $i$ using the same model as described in [the wastewater component](#wastewater-viral-concentration-component). The latent incident infections in subpopulation $k$ are mapped to the corresponding site $i$.
 
@@ -230,6 +230,9 @@ When the observed value is below the LOD, we use a censored likelihood:
 If a sample is flagged in the NWSS data as below the LOD (field `pcr_target_below_lod`) but is missing a reported LOD (field `lod_sewage`), the 95th percentile of LOD values across the entire data is used as the integral's upper limit.
 
 If a sample has a reported concentration (field `pcr_target_avg_conc`) above the corresponding reported LOD, but the sample is nevertheless flagged as below the LOD (field `pct_target_below_lod`), we assume the flag takes precedence and treat the sample as below LOD for the purposes of censoring.
+
+
+
 
 ## References
 
