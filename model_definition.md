@@ -1,10 +1,10 @@
-## Model overview: wastewater-informed, site-level infection dynamics 
+## Model overview: wastewater-informed, site-level infection dynamics
 
-This document details the generative model used by `wwinference` to infer global and local infection dynamics from count data (e.g. cases or hospital admissions) and wastewater concentration data, and use that to produce nowcasts and forecasts. 
+This document details the generative model used by `wwinference` to infer global and local infection dynamics from count data (e.g. cases or hospital admissions) and wastewater concentration data, and use that to produce nowcasts and forecasts.
 The `wwinference` model assumes that wastewater concentration data is available for one or more "local" sites that represent a subset of the total population that produce the "global" epidemiological indicators (cases or admissions).
-In the future, we plan to provide the user with functionality for other types of data structures, e.g. multiple data streams of hospital admissions in addition to multiple wastewater concentration data streams, but for now this structure is the only option provided to the user. 
-The model is structured into three generative components: infections(#infection-component), hospital admissions(#hospital-admissions-component), and viral genome concentrations in wastewater(#wastewater-component). 
-The model imposes a hierarchical structure where the infection dynamics in the subpopulations represented by the wastewater concentration data are assumed to be localized outbreaks similar to one another and centered around the "global" infection dynamics that give rise to the hospital admissions. Note, we will describe the model in terms of the generation of hospital admissions, but the user can choose to replace this with any "count" dataset with a delay distribution from infection to the generation of that count data, e.g. cases would also work well here. 
+In the future, we plan to provide the user with functionality for other types of data structures, e.g. multiple data streams of hospital admissions in addition to multiple wastewater concentration data streams, but for now this structure is the only option provided to the user.
+The model is structured into three generative components: infections(#infection-component), hospital admissions(#hospital-admissions-component), and viral genome concentrations in wastewater(#wastewater-component).
+The model imposes a hierarchical structure where the infection dynamics in the subpopulations represented by the wastewater concentration data are assumed to be localized outbreaks similar to one another and centered around the "global" infection dynamics that give rise to the hospital admissions. Note, we will describe the model in terms of the generation of hospital admissions, but the user can choose to replace this with any "count" dataset with a delay distribution from infection to the generation of that count data, e.g. cases would also work well here.
 
 ### Model components
 
@@ -15,7 +15,7 @@ Our models are constructed from a set of generative components. These are:
 - [**Hospital admissions component:**](#hospital-admissions-component) A model for the expected number of hospital admissions given incident latent infections per capita.
 - [**Viral genome concentration in wastewater:**](#viral-genome-concentration-in-wastewater-component) A model for the expected genome concentration given incident infections per capita.
 
-The general flow of the model can be visualized as follows: 
+The general flow of the model can be visualized as follows:
 
 ```mermaid
 flowchart LR;
@@ -66,7 +66,7 @@ where $\gamma$ is the _infection feedback term_ controlling the strength of the 
 ### Hierarchical subpopulation infection dynamics component
 
 The structure of this model assumes that we have hospital admissions data coming from a larger "global" population (e.g. an entire state or county) and localized wastewater concentration measurements coming from subsets of the global population. We therefore divide the "global" population into subpopulations representing sampled wastewater sites' catchment populations, with an additional subpopulation to represent
-individuals who do not contribute to the sampled wastewater. 
+individuals who do not contribute to the sampled wastewater.
 
 We model infection dynamics in these subpopulations hierarchically: subpopulation infection dynamics are distributed about a central jurisdiction-level infection dynamic, and the total infections that generate the hospital admissions observations are simply the sum of the subpopulation-level infections.
 
@@ -78,7 +78,7 @@ Whenever the sum of the wastewater catchment population sizes $\sum\nolimits_{k=
 The total number of subpopulations is then $K_\mathrm{total} = K_\mathrm{sites} + 1$: the $K_\mathrm{sites}$ subpopulations with sampled wastewater, and the final subpopulation to account for individuals not covered by wastewater sampling.
 
 This amounts to modeling the wastewater catchments populations as approximately non-overlapping; every infected individual either does not contribute to measured wastewater or contributes principally to one wastewater catchment.
-This approximation is reasonable if we restrict our analyses to primary wastewaster treatment plants, which avoids the possibility that an individual might be sampled once in a sample taken upstream and then sampled again in a more aggregated sample taken further downstream. 
+This approximation is reasonable if we restrict our analyses to primary wastewaster treatment plants, which avoids the possibility that an individual might be sampled once in a sample taken upstream and then sampled again in a more aggregated sample taken further downstream.
 
 If the sum of the wastewater site catchment populations meets or exceeds the reported jurisdiction population ($\sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k \ge n$) we do not use a final subpopulation without sampled wastewater. In that case, the total number of subpopulations $K_\mathrm{total} = K_\mathrm{sites}$.
 
@@ -177,10 +177,10 @@ $$h_t \sim \mathrm{NegBinom}(n H(t), \phi)$$
 where the "global" population size $n$ (e.g. that of the state or county representing the catchment area population producing the hospital admissions) is used to convert from per-capita hospitalization rate $H(t)$ to hospitalization counts.
 
 Currently, we do not explicitly model the delay from hospital admission to reporting of hospital admissions.
-In reality, corrections (upwards or downwards) in the admissions data after the report date are possible and do happen. 
-This is an active area of further development, but for now, we advise the user to manually exclude hospital admissions data points that appear implausible. 
-Future work will include incorporation of a simple model for right-truncation when data is rolling in in real-time with incomplete reporting in recent days. 
-However, the current workflow assumes mandatory and for the most part complete reporting of hospital admissions. 
+In reality, corrections (upwards or downwards) in the admissions data after the report date are possible and do happen.
+This is an active area of further development, but for now, we advise the user to manually exclude hospital admissions data points that appear implausible.
+Future work will include incorporation of a simple model for right-truncation when data is rolling in in real-time with incomplete reporting in recent days.
+However, the current workflow assumes mandatory and for the most part complete reporting of hospital admissions.
 
 ### Viral genome concentration in wastewater component
 
@@ -189,7 +189,7 @@ We model viral genome concentrations in wastewater in site $i$, $C_i(t)$ as a co
 
 $$C_i(t) = \frac{G}{\alpha} \sum_{\tau = 0}^{\tau_\mathrm{shed}} s(\tau) I_k(t-\tau)$$
 
-where $\tau_\mathrm{shed}$ is the total duration of fecal shedding and $i = k$ for all  $K_\mathrm{sites}$  wastewater sites. 
+where $\tau_\mathrm{shed}$ is the total duration of fecal shedding and $i = k$ for all  $K_\mathrm{sites}$  wastewater sites.
 Note there is no need to scale by wastewater catchment population size because $I_k(t)$ is measured as new infections per capita.
 
 This approach assumes that $G$ and $\alpha$ are constant through time and across individuals.
@@ -242,10 +242,10 @@ When the observed value is below the LOD, we use a censored likelihood:
 (This is mathematically equivalent to integrating the probability density function of the log-normal distribution from zero to the LOD.)
 
 
-## Example model parameters for COVID-19 
+## Example model parameters for COVID-19
 
 The default parameters provided by the `wwinference` package are used to fit a model of COVID-19 hospital admissions and wastewater concentrations in terms of reported SARS-CoV-2 genome copies per mL.
-Below we will describe the priors and parameters provided. If fitting the model to a different epidemiological indicator (e.g. cases) or a different pathogen (e.g. flu) a number of these will have to be modified accordingly. 
+Below we will describe the priors and parameters provided. If fitting the model to a different epidemiological indicator (e.g. cases) or a different pathogen (e.g. flu) a number of these will have to be modified accordingly.
 
 ### Prior distributions
 

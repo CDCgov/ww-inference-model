@@ -6,13 +6,13 @@
 
 ## Overview
 
-This project is an in-development R package, `{wwinference}` that estimates latent incident infections from wastewater concentration data and data on epidemiological indicators, with an initial assumed structure that the wastewater concentration data comes from subsets of the population contributing to the "global" epidemiological indicator data, such as hospital admissions. 
-In brief, our model builds upon [EpiNow2](https://github.com/epiforecasts/EpiNow2/tree/main), a widely used [R](https://www.r-project.org/) and [Stan](https://mc-stan.org/) package for Bayesian epidemiological inference. 
-We modify EpiNow2 to add model for the observed viral RNA concentration in wastewater, adding hierarchical structure to link the subpopulations represented by the osberved wastewater concentrations in each wastewater catchment area. 
-See our Model Definition page for a mathematical description of the generative model, and the Getting Stated vignette to see an example of how to run the inference model on simulated data. 
+This project is an in-development R package, `{wwinference}` that estimates latent incident infections from wastewater concentration data and data on epidemiological indicators, with an initial assumed structure that the wastewater concentration data comes from subsets of the population contributing to the "global" epidemiological indicator data, such as hospital admissions.
+In brief, our model builds upon [EpiNow2](https://github.com/epiforecasts/EpiNow2/tree/main), a widely used [R](https://www.r-project.org/) and [Stan](https://mc-stan.org/) package for Bayesian epidemiological inference.
+We modify EpiNow2 to add model for the observed viral RNA concentration in wastewater, adding hierarchical structure to link the subpopulations represented by the osberved wastewater concentrations in each wastewater catchment area.
+See our Model Definition page for a mathematical description of the generative model, and the Getting Stated vignette to see an example of how to run the inference model on simulated data.
 
 The intention is for {wwinference} to provide a user-friendly R-package interface for running forecasting models that use wastewater concentrations combined with other more traditional epidemiological signals such as cases or hospital admissions. It aims to be a re-implementation of the modeling components contained in the [wastewater-informed-covid-forecasting](https://github.com/CDCgov/wastewater-informed-covid-forecasting) project repository, with
-an emphasis here on making it easier for users to supply their own data. 
+an emphasis here on making it easier for users to supply their own data.
 
 ## Project Admin
 - Kaitlyn Johnson (kaitejohnson)
