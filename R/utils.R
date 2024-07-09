@@ -132,7 +132,6 @@ convert_to_logsd <- function(mean, sd) {
 #' @export
 #' @examples
 #' to_simplex(c(1, 1, 1))
-#' @noRd
 to_simplex <- function(vector) {
   return(vector / sum(vector))
 }

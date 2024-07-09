@@ -32,7 +32,7 @@
 #'   \item{site_pop}{The population size of the wastewater catchment area
 #'   represented by the site variable}
 #'   }
-#' @source generate_simulated_data.R
+#' @source vignette_data.R
 "ww_data"
 
 
@@ -66,7 +66,7 @@
 #'   \item{state_pop}{The number of people contributing to the daily hospital
 #'   admissions}
 #'   }
-#' @source generate_simulated_data.R
+#' @source vignette_data.R
 "hosp_data"
 
 #' Example hospital admissions dataset for evaluation
@@ -90,5 +90,29 @@
 #'   \item{state_pop}{The number of people contributing to the daily hospital
 #'   admissions}
 #'   }
-#' @source generate_simulated_data.R
+#' @source vignette_data.R
 "hosp_data_eval"
+
+#' COVID-19 post-Omicron generation interval probability mass function
+#'
+#' \describe{
+#' A vector that sums to 1, with each element representing the daily
+#' probability of secondary onward transmission occurring on that day. The
+#' first element of this vector represents the day after primary transmission
+#' occurred, it is assumed to be impossible for primary and secondary
+#' transmission to occur on the same day.
+#' }
+#' @source covid_pmfs.R
+"generation_interval"
+
+#' COVID-19 time delay distribution from infection to hospital admission
+#'
+#' \describe{
+#' A vector that sums to 1, with each element representing the daily
+#' probabilty of transitioning from infected to hospitalized, conditioned on
+#' being infected and eventually ending up hospitalized. The first element
+#' represents the probability of being infected and admitted to the hospital
+#' on the same day
+#' }
+#' @source covid_pmfs.R
+"inf_to_hosp"

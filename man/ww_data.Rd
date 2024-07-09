@@ -26,7 +26,7 @@ represented by the site variable}
 }
 }
 \source{
-generate_simulated_data.R
+vignette_data.R
 }
 \usage{
 ww_data

@@ -13,4 +13,6 @@
 #' @importFrom posterior subset_draws as_draws_list
 #' @importFrom fs path_package
 #' @importFrom rlang sym
+#' @importFrom stats dnbinom dweibull ecdf plogis qlogis rlnorm rnbinom rnorm
+#' rt sd time
 NULL
