@@ -234,7 +234,7 @@ get_mcmc_options <- function(
   return(mcmc_settings)
 }
 
-#' Get model specificaitons
+#' Get model specifications
 #' @description
 #' This function returns a nested list containing the model specifications
 #' in the function arguments. All defaults are set for the case of fitting a
