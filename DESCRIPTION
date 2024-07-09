@@ -71,7 +71,6 @@ Imports:
     RcppTOML,
     cli,
     tibble,
-    usethis,
     tidybayes,
     tidyr,
     purrr,
