@@ -82,7 +82,8 @@ Imports:
     scales,
     ggplot2,
     rcmdcheck,
-    posterior
+    posterior,
+    knitr
 Remotes:
     stan-dev/cmdstanr
 VignetteBuilder:
