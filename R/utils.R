@@ -118,10 +118,10 @@ convert_to_logmean <- function(mean, sd) {
 #' @description@description see arithmetic moments here
 #' https://en.wikipedia.org/wiki/Log-normal_distribution
 #'
-#' @param mean mean of the normal distribution
-#' @param sd sd of the normal distribution
+#' @param mean target mean for the Log-Normal distribution of X
+#' @param sd target sd for the Log-Normal distribution of X
 #'
-#' @return corresponding stdev of the lognormal distribution
+#' @return corresponding sd for the underlying Normal distribution of Y = log(X)
 #' @export
 convert_to_logsd <- function(mean, sd) {
   logsd <- sqrt(log(1 + (sd^2 / mean^2)))
