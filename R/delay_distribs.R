@@ -180,6 +180,6 @@ make_reporting_delay_pmf <- function(incubation_period_pmf,
   )
 
   infection_to_hosp_delay_pmf <- add_pmfs(pmfs) |>
-    (\(x) x / sum(x))()
+     to_simplex()
   return(infection_to_hosp_delay_pmf)
 }
