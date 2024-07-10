@@ -69,7 +69,7 @@ preprocess_ww_data <- function(ww_data,
   return(ww_preprocessed)
 }
 
-#' Get input hospital admissions data
+#' Pre-process hospital admissions data, converting column names to those that [get_stan_data()] expects.
 #' @param hosp_data dataframe containing the following columns: date,
 #' a count column, and a population size column
 #' @param count_col_name name of the column containing the epidemiological
