@@ -413,6 +413,7 @@ functions.
 plot_hosp <- get_plot_forecasted_counts(
   draws = draws_df,
   count_data_eval = hosp_data_eval,
+  count_data_eval_col_name = "daily_hosp_admits_for_eval",
   forecast_date = forecast_date
 )
 plot_hosp
