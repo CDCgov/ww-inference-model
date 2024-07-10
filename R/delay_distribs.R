@@ -1,4 +1,4 @@
-#' Drop the first element of a simplex
+#' Drop the first element of a simplex and re-normalize the result to sum to 1.
 #'
 #' When this vector corresponds to the generation interval distribution, we
 #' want to drop this first bin. The renewal equation assumes that same-day
