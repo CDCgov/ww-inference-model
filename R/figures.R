@@ -4,6 +4,8 @@
 #' to it. This is the `draws_df` output of a call to [wwinference()]
 #' @param count_data_eval A dataframe containing the count data we will
 #' evaluate the forecasts against.
+#' @param count_data_eval_col_name string indicating the name of the count
+#' data to evaluate against the forecasted count data
 #' @param forecast_date A string indicating the date we made the forecast, for
 #' plotting, in ISO8601 format YYYY-MM-DD
 #' @param count_type A string indicating what data the counts refer to,
@@ -11,12 +13,13 @@
 #'
 #' @return A ggplot object containing the posterior draw of the estimated,
 #' nowcasted, and forecasted counts alongside the data used to
-#' calibrate the model and subsequently observed counts (if any) against which 
+#' calibrate the model and subsequently observed counts (if any) against which
 #' to evaluate the forecast performance.
 #' @export
 #'
 get_plot_forecasted_counts <- function(draws,
                                        count_data_eval,
+                                       count_data_eval_col_name,
                                        forecast_date,
                                        count_type = "hospital admissions") {
   p <- ggplot(draws |> dplyr::filter(
@@ -28,7 +31,7 @@ get_plot_forecasted_counts <- function(draws,
     ) +
     geom_point(
       data = count_data_eval,
-      aes(x = date, y = daily_hosp_admits_for_eval),
+      aes(x = date, y = .data[[count_data_eval_col_name]]),
       shape = 21, color = "black", fill = "white"
     ) +
     geom_point(aes(x = date, y = observed_value)) +

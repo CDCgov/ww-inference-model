@@ -7,6 +7,7 @@
 get_plot_forecasted_counts(
   draws,
   count_data_eval,
+  count_data_eval_col_name,
   forecast_date,
   count_type = "hospital admissions"
 )
@@ -17,6 +18,9 @@ to it. This is the \code{draws_df} output of a call to \code{\link[=wwinference]
 
 \item{count_data_eval}{A dataframe containing the count data we will
 evaluate the forecasts against.}
+
+\item{count_data_eval_col_name}{string indicating the name of the count
+data to evaluate against the forecasted count data}
 
 \item{forecast_date}{A string indicating the date we made the forecast, for
 plotting, in ISO8601 format YYYY-MM-DD}
