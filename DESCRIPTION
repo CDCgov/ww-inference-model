@@ -72,13 +72,18 @@ Imports:
     RcppTOML,
     cli,
     tibble,
+    usethis,
     tidybayes,
     tidyr,
     purrr,
     withr,
-    posterior,
     cmdstanr (>= 0.8.0),
     rlang,
-    scales
+    scales,
+    ggplot2,
+    rcmdcheck,
+    posterior
 Remotes:
     stan-dev/cmdstanr
+VignetteBuilder:
+    knitr
