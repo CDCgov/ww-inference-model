@@ -8,7 +8,7 @@ get_model_diagnostic_flags(
   stan_fit_object,
   ebmfi_tolerance = 0.2,
   divergences_tolerance = 0.01,
-  p_high_rhat_tolerance = 0.05,
+  frac_high_rhat_tolerance = 0.05,
   rhat_tolerance = 1.05,
   max_tree_depth_tol = 0.01
 )
@@ -22,7 +22,7 @@ get_model_diagnostic_flags(
 \item{divergences_tolerance}{float indicating the tolerance for the
 proportion of sampling iterations that are divergent, default is \code{0.01}}
 
-\item{p_high_rhat_tolerance}{float indicating the tolerance for the
+\item{frac_high_rhat_tolerance}{float indicating the tolerance for the
 proportion of parameters rhats>rhat_tolderance, default is \code{0.05}}
 
 \item{rhat_tolerance}{float indicating the tolerance for the rhat for
