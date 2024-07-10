@@ -58,7 +58,7 @@ add_pmfs <- function(pmfs) {
 #' @param n_weeks number of weeks those days correspond to
 #'
 #' @return a n_day x n_week matrix for multiplying by weekly estimated
-#' value to conver it to daily
+#' value to broadcast it to daily
 #' @export
 #'
 #' @examples
