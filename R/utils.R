@@ -53,7 +53,7 @@ add_pmfs <- function(pmfs) {
 }
 
 #' @title Get index matrix
-#' @description Get the matrix needed to convert a vetor from weekly to daily
+#' @description Get a matrix to broadcast a vector from weekly to daily
 #' @param n_days number of days we will expand to
 #' @param n_weeks number of weeks those days correspond to
 #'
