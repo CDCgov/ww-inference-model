@@ -94,7 +94,9 @@ create_dir <- function(output_file_path) {
   }
 }
 
-#' @title Convert to logmean in lognorm distribution
+#' @title Get the mean of a Normal distribution for a random variable Y 
+#' needed to ensure that the distribution of X = exp(Y) (which is Log-Normal) 
+#' has a specified mean and sd.
 #' @description
 #'  see arithmetic moments here
 #' https://en.wikipedia.org/wiki/Log-normal_distribution
