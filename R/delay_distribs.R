@@ -77,9 +77,9 @@ simulate_double_censored_pmf <- function(
 }
 
 #' @title Make incubation period pmf
-#' @description When the default arguments are used, this returns a pmf corresponding to
-#' the incubation period for COVID after Omicron used in Park et al 2023
-#' These estimates are from early Omicron.
+#' @description When the default arguments are used, this returns a pmf
+#' corresponding to the incubation period for COVID after Omicron used in
+#' Park et al 2023. These estimates are from early Omicron.
 #' @param backward_scale numeric indicating the scale parameter for the Weibull
 #' used in producing the incubation period distribution. default is `3.60` for
 #' COVID
@@ -113,7 +113,7 @@ make_incubation_period_pmf <- function(backward_scale = 3.60,
   # Relies on fundamental assumption about epidemic growth rate.
 
 
-  discretized_growth_adjusted_weibull <- tibble::tibble(
+  discr_gr_adj_weibull <- tibble::tibble(
     time = seq(0, 23, by = 1), # 23 seems to get most of the distribution mass
     density0 = dweibull(time,
       shape = backward_shape,
@@ -121,7 +121,7 @@ make_incubation_period_pmf <- function(backward_scale = 3.60,
     ) * exp(r * time)
   )
 
-  inc_period_pmf <- to_simplex(discretized_growth_adjusted_weibull$density0)
+  inc_period_pmf <- to_simplex(discr_gr_adj_weibull$density0)
   return(inc_period_pmf)
 }
 
@@ -180,6 +180,6 @@ make_reporting_delay_pmf <- function(incubation_period_pmf,
   )
 
   infection_to_hosp_delay_pmf <- add_pmfs(pmfs) |>
-     to_simplex()
+    to_simplex()
   return(infection_to_hosp_delay_pmf)
 }
