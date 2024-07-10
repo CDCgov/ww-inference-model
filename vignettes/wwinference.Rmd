@@ -278,7 +278,7 @@ We also pass our preprocessed datasets (`ww_data_to_fit` and
 `hosp_data_preprocessed`), specify our model using `get_model_spec()`,
 set the MCMC settings using `get_mcmc_options()`, and pass in our
 pre-compiled model(`model`) to `wwinference()` where they are combined and
-used tobfit the model.
+used to fit the model.
 
 ```{r, message = FALSE}
 fit <- wwinference::wwinference(
