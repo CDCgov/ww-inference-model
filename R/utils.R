@@ -112,7 +112,9 @@ convert_to_logmean <- function(mean, sd) {
 }
 
 
-#' @title Convert to logsd in lognormal distribution
+#' @title Get the sd of a Normal distribution for a random variable Y 
+#' needed to ensure that the distribution of X = exp(Y) (which is Log-Normal) 
+#' has a specified mean and sd.
 #' @description@description see arithmetic moments here
 #' https://en.wikipedia.org/wiki/Log-normal_distribution
 #'
