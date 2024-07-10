@@ -8,7 +8,7 @@
 #' @importFrom tidyr pivot_wider pivot_longer
 #' @importFrom ggplot2 ggplot facet_wrap geom_line geom_hline geom_point
 #' geom_bar theme scale_y_continuous scale_colour_discrete scale_fill_discrete
-#' geom_ribbon scale_x_date facet_grid geom_vline labs aes
+#' geom_ribbon scale_x_date facet_grid geom_vline labs aes ggtitle
 #' @importFrom cmdstanr cmdstan_model
 #' @importFrom posterior subset_draws as_draws_list
 #' @importFrom fs path_package
