@@ -198,7 +198,7 @@ make_reporting_delay_pmf <- function(incubation_period_pmf,
 
 # Put it all together
 generation_interval <- withr::with_seed(42, {
-  wwinference::simulate_double_censored_pmf(
+  simulate_double_censored_pmf(
     max = params$gt_max, meanlog = params$mu_gi,
     sdlog = params$sigma_gi, fun_dist = rlnorm, n = 5e6
   ) |> wdrop_first_and_renormalize()
