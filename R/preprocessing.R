@@ -1,4 +1,4 @@
-#' Get input wastewater data
+#' Pre-process wastewater input data, adding needed indices and flagging potential outliers
 #' @param ww_data dataframe containing the following columns: site, lab,
 #' date, a column for concentration, and lod
 #' @param conc_col_name string indicating the name of the column containing
