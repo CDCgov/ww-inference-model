@@ -76,6 +76,7 @@ Imports:
     tidyr,
     purrr,
     withr,
+    posterior,
     cmdstanr (>= 0.8.0),
     rlang,
     scales
