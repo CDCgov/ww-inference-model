@@ -8,7 +8,7 @@ get_plot_global_rt(draws, forecast_date)
 }
 \arguments{
 \item{draws}{A dataframe containing the posterior draws with the data joined
-to it. This is \code{draws_df} output of the call to \code{wwinference()}}
+to it. This is the \code{draws_df} output of a call to \code{\link[=wwinference]{wwinference()}}}
 
 \item{forecast_date}{A string indicating the date we made the forecast, for
 plotting, in ISO8601 format YYYY-MM-DD}

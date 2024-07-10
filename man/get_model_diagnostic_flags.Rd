@@ -9,6 +9,7 @@ get_model_diagnostic_flags(
   ebmfi_tolerance = 0.2,
   divergences_tolerance = 0.01,
   p_high_rhat_tolerance = 0.05,
+  rhat_tolerance = 1.05,
   max_tree_depth_tol = 0.01
 )
 }
@@ -22,7 +23,10 @@ get_model_diagnostic_flags(
 proportion of sampling iterations that are divergent, default is \code{0.01}}
 
 \item{p_high_rhat_tolerance}{float indicating the tolerance for the
-proportion of parameters rhats>1.05, default is \code{0.05}}
+proportion of parameters rhats>rhat_tolderance, default is \code{0.05}}
+
+\item{rhat_tolerance}{float indicating the tolerance for the rhat for
+individual parameters, default is \code{1.05}}
 
 \item{max_tree_depth_tol}{float indicating the tolerance for the proportion
 of iterations that exceed the maximum tree depth, default is \code{0.01}}

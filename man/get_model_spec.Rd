@@ -2,7 +2,7 @@
 % Please edit documentation in R/wwinference.R
 \name{get_model_spec}
 \alias{get_model_spec}
-\title{Get model specificaitons}
+\title{Get model specifications}
 \usage{
 get_model_spec(
   forecast_date,

@@ -26,7 +26,7 @@ correction on the incubaion period distribution, default is \code{0.15} for COVI
 pmf of incubation period
 }
 \description{
-This makes a pmf corresponding to
+When the default arguments are used, this returns a pmf corresponding to
 the incubation period for COVID after Omicron used in Park et al 2023
 These estimates are from early Omicron.
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/delay_distribs.R
 \name{drop_first_and_renormalize}
 \alias{drop_first_and_renormalize}
-\title{Drop the first element of a simplex}
+\title{Drop the first element of a simplex and re-normalize the result to sum to 1.}
 \usage{
 drop_first_and_renormalize(x)
 }
