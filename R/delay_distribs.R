@@ -77,7 +77,7 @@ simulate_double_censored_pmf <- function(
 }
 
 #' @title Make incubation period pmf
-#' @description This makes a pmf corresponding to
+#' @description When the default arguments are used, this returns a pmf corresponding to
 #' the incubation period for COVID after Omicron used in Park et al 2023
 #' These estimates are from early Omicron.
 #' @param backward_scale numeric indicating the scale parameter for the Weibull
