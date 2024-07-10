@@ -3,7 +3,7 @@
 This document details the generative model used by `wwinference` to infer global and local infection dynamics from count data (e.g. cases or hospital admissions) and wastewater concentration data, and use that to produce nowcasts and forecasts.
 The `wwinference` model assumes that wastewater concentration data is available for one or more "local" sites that represent a subset of the total population that produce the "global" epidemiological indicators (cases or admissions).
 In the future, we plan to provide the user with functionality for other types of data structures, e.g. multiple data streams of hospital admissions in addition to multiple wastewater concentration data streams, but for now this structure is the only option provided to the user.
-The model is structured into three generative components: infections(#infection-component), hospital admissions(#hospital-admissions-component), and viral genome concentrations in wastewater(#wastewater-component).
+The model is structured into four generative components: [infections](#infection-component), [hierarchical subpopulation-level infection dynamics](#hierarchical-subpopulation-infection-dynamics-component), [hospital admissions](#hospital-admissions-component), and [viral genome concentrations in wastewater](#viral-genome-concentration-in-wastewater-component).
 The model imposes a hierarchical structure where the infection dynamics in the subpopulations represented by the wastewater concentration data are assumed to be localized outbreaks similar to one another and centered around the "global" infection dynamics that give rise to the hospital admissions. Note, we will describe the model in terms of the generation of hospital admissions, but the user can choose to replace this with any "count" dataset with a delay distribution from infection to the generation of that count data, e.g. cases would also work well here.
 
 ### Model components
@@ -310,11 +310,10 @@ This resulting infection to hospital admission delay distribution has a mean of 
 ## Implementation
 
 Our framework is an extension of the widely used [^CDCRtestimates] [^CDCtechnicalblog], semi-mechanistic renewal framework `{EpiNow2}` [^epinow2paper][^EpiNow2], using a Bayesian latent variable approach implemented in the probabilistic programming language Stan [^stan] using [^cmdstanr] to interface with R.
-For submission to the [COVID-19 Forecast Hub](https://github.com/reichlab/covid19-forecast-hub/tree/master), the model is run on Saturday to generate forecasts each Monday.
 
-For each jurisdiction, we run 4 chains for 750 warm-up iterations and 500 sampling iterations, with a target average acceptance probability of 0.95 and a maximum tree depth of 12.
-
-To generate forecasts per the hub submission guidelines, we calculate the necessary quantiles from the 2,000 draws from the posterior of the expected observed hospital admissions 28 days ahead of the Monday forecast date.
+We fit the model using the “No-U-Turn Sampler Markov chain Monte Carlo” method. This is a type of Hamiltonian Monte Carlo (HMC) algorithm and is the core fitting method used by `cmdstan`.
+The dfault parameter settings are set to run 4 chains for 750 warm-up iterations and 500 sampling iterations, with a target average acceptance probability of 0.95 and a maximum tree depth of 12. 
+The user can adjust these settings using the `get_mcmc_options()` function. 
 
 ## Appendix: Wastewater data pre-processing
 
