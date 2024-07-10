@@ -312,8 +312,8 @@ This resulting infection to hospital admission delay distribution has a mean of 
 Our framework is an extension of the widely used [^CDCRtestimates] [^CDCtechnicalblog], semi-mechanistic renewal framework `{EpiNow2}` [^epinow2paper][^EpiNow2], using a Bayesian latent variable approach implemented in the probabilistic programming language Stan [^stan] using [^cmdstanr] to interface with R.
 
 We fit the model using the “No-U-Turn Sampler Markov chain Monte Carlo” method. This is a type of Hamiltonian Monte Carlo (HMC) algorithm and is the core fitting method used by `cmdstan`.
-The dfault parameter settings are set to run 4 chains for 750 warm-up iterations and 500 sampling iterations, with a target average acceptance probability of 0.95 and a maximum tree depth of 12. 
-The user can adjust these settings using the `get_mcmc_options()` function. 
+The dfault parameter settings are set to run 4 chains for 750 warm-up iterations and 500 sampling iterations, with a target average acceptance probability of 0.95 and a maximum tree depth of 12.
+The user can adjust these settings using the `get_mcmc_options()` function.
 
 ## Appendix: Wastewater data pre-processing
 
