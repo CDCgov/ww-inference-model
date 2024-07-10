@@ -53,12 +53,12 @@ add_pmfs <- function(pmfs) {
 }
 
 #' @title Get index matrix
-#' @description Get the matrix needed to convert a vetor from weekly to daily
+#' @description Get a matrix to broadcast a vector from weekly to daily
 #' @param n_days number of days we will expand to
 #' @param n_weeks number of weeks those days correspond to
 #'
 #' @return a n_day x n_week matrix for multiplying by weekly estimated
-#' value to conver it to daily
+#' value to broadcast it to daily
 #' @export
 #'
 #' @examples
@@ -81,7 +81,7 @@ get_ind_m <- function(n_days, n_weeks) {
 #' @title Create a new directory if one doesn't exist
 #' @description
 #' Function to create a directory for the specified output file path if needed.
-#' dir_create won't throw a warning if its already made though!
+#' Does nothing if the target directory already exists.
 #'
 #'
 #' @param output_file_path file path that may or may not need to be created
@@ -94,15 +94,17 @@ create_dir <- function(output_file_path) {
   }
 }
 
-#' @title Convert to logmean in lognorm distribution
+#' @title Get the mean of a Normal distribution for a random variable Y 
+#' needed to ensure that the distribution of X = exp(Y) (which is Log-Normal) 
+#' has a specified mean and sd.
 #' @description
 #'  see arithmetic moments here
 #' https://en.wikipedia.org/wiki/Log-normal_distribution
 #'
-#' @param mean mean of the normal distribution
-#' @param sd sd of the normal distribution
+#' @param mean target mean for the Log-Normal distribution of X
+#' @param sd target sd for the Log-Normal distribution X
 #'
-#' @return corresponding mean of the lognormal distribution
+#' @return corresponding mean for the underlying Normal distribution of Y = log(X).
 #' @export
 convert_to_logmean <- function(mean, sd) {
   logmean <- log(mean^2 / sqrt(sd^2 + mean^2))
@@ -110,14 +112,16 @@ convert_to_logmean <- function(mean, sd) {
 }
 
 
-#' @title Convert to logsd in lognormal distribution
+#' @title Get the sd of a Normal distribution for a random variable Y 
+#' needed to ensure that the distribution of X = exp(Y) (which is Log-Normal) 
+#' has a specified mean and sd.
 #' @description@description see arithmetic moments here
 #' https://en.wikipedia.org/wiki/Log-normal_distribution
 #'
-#' @param mean mean of the normal distribution
-#' @param sd sd of the normal distribution
+#' @param mean target mean for the Log-Normal distribution of X
+#' @param sd target sd for the Log-Normal distribution of X
 #'
-#' @return corresponding stdev of the lognormal distribution
+#' @return corresponding sd for the underlying Normal distribution of Y = log(X)
 #' @export
 convert_to_logsd <- function(mean, sd) {
   logsd <- sqrt(log(1 + (sd^2 / mean^2)))
