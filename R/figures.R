@@ -1,7 +1,7 @@
 #' Get plot of fit and forecasted counts
 #'
 #' @param draws A dataframe containing the posterior draws with the data joined
-#' to it. This is `draws_df` output of the call to `wwinference()`
+#' to it. This is the `draws_df` output of a call to [wwinference()]
 #' @param count_data_eval A dataframe containing the count data we will
 #' evaluate the forecasts against.
 #' @param forecast_date A string indicating the date we made the forecast, for
