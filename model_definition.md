@@ -22,11 +22,11 @@ flowchart LR;
     GlobalR --> GlobalI;
     GlobalR --> LocalR;
     LocalR --> GlobalR;
-    LocalR --> LocalIX
-    LocalR --> LocalIY
-    LocalIX --> LocalWWX
-    LocalIY --> LocalWWY
-    GlobalI --> Globalhosp
+    LocalR --> LocalIX;
+    LocalR --> LocalIY;
+    LocalIX --> LocalWWX;
+    LocalIY --> LocalWWY;
+    GlobalI --> Globalhosp;
 ```
 See the [notation](#appendix-notation) section for an overview of the mathematical notation we use to describe the model components, including how probability distributions are parameterized.
 
@@ -185,7 +185,7 @@ However, the current workflow assumes mandatory and for the most part complete r
 ### Viral genome concentration in wastewater component
 
 We model site-specific viral genome concentrations in wastewater $C_i(t)$ independently for each site $i$, with the latent incident infections in subpopulation $k$ being mapped to the corresponding site $i$.
-We model viral genome concentrations in wastewater in site $i$, $C_i(t)$ as a convolution of the _expected_ latent incident infections per capita in the corresponding subpopulation $k$ $I_k(t)$ and a normalized shedding kinetics function $s(\tau)$, multiplied by  $G$ the number of genomes shed per infected individual over the course of their infection and divided by $\alpha$ the volume of wastewater generated per person per day:
+We model viral genome concentrations in wastewater in site $i$, $C_i(t)$ as a convolution of the _expected_ latent incident infections per capita in the corresponding subpopulation $k$, $I_k(t)$ and a normalized shedding kinetics function $s(\tau)$, multiplied by  $G$ the number of genomes shed per infected individual over the course of their infection and divided by $\alpha$ the volume of wastewater generated per person per day:
 
 $$C_i(t) = \frac{G}{\alpha} \sum_{\tau = 0}^{\tau_\mathrm{shed}} s(\tau) I_k(t-\tau)$$
 
@@ -307,7 +307,6 @@ $$
 
 This resulting infection to hospital admission delay distribution has a mean of 12.2 days and a standard deviation of 5.67 days.
 
-
 ## Implementation
 
 Our framework is an extension of the widely used [^CDCRtestimates] [^CDCtechnicalblog], semi-mechanistic renewal framework `{EpiNow2}` [^epinow2paper][^EpiNow2], using a Bayesian latent variable approach implemented in the probabilistic programming language Stan [^stan] using [^cmdstanr] to interface with R.
@@ -316,6 +315,22 @@ For submission to the [COVID-19 Forecast Hub](https://github.com/reichlab/covid1
 For each jurisdiction, we run 4 chains for 750 warm-up iterations and 500 sampling iterations, with a target average acceptance probability of 0.95 and a maximum tree depth of 12.
 
 To generate forecasts per the hub submission guidelines, we calculate the necessary quantiles from the 2,000 draws from the posterior of the expected observed hospital admissions 28 days ahead of the Monday forecast date.
+
+## Appendix: Wastewater data pre-processing
+
+### Viral genome concentration in wastewater outlier detection and removal
+
+We identify potential outlier genome concentrations for each unique site and lab pair with an approach based on $z$-scores.
+
+Briefly, we compute $z$-scores for the concentrations and their finite differences and remove any observations above a threshold values for either metric. In detail:
+
+1. For purposes of outlier detection, exclude wastewater observations below the LOD.
+1. For purposes of outlier detection, exclude observations more than 90 days before the forecast date.
+1. For each site $i$, compute the change per unit time between successive observations $t$ and $t'$: $(\log[c_{it'}] - \log[c_{it}])/(t' - t)$.
+1. Compute $z$-scores for $\log[c_{it}]$ across all sites $i$ and timepoints $t$. Flag values with $z$-scores over 3 as outliers and remove them from model calibration.
+1. Compute $z$-scores for the change per unit time values across all sites and pairs of timepoints. For values with $z$-scores over 2, flag the corresponding wastewater concentrations $c_{it}$ as outliers and remove them from model calibration.
+
+The $z$-score thresholds were chosen by visual inspection of the data.
 
 ## Appendix: Notation
 
