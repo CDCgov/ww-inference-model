@@ -81,7 +81,7 @@ get_ind_m <- function(n_days, n_weeks) {
 #' @title Create a new directory if one doesn't exist
 #' @description
 #' Function to create a directory for the specified output file path if needed.
-#' dir_create won't throw a warning if its already made though!
+#' Does nothing if the target directory already exists.
 #'
 #'
 #' @param output_file_path file path that may or may not need to be created
