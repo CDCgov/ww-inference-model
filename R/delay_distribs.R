@@ -113,7 +113,7 @@ make_incubation_period_pmf <- function(backward_scale = 3.60,
   # Relies on fundamental assumption about epidemic growth rate.
 
 
-  corrected_sgtf <- tibble::tibble(
+  discretized_growth_adjusted_weibull <- tibble::tibble(
     time = seq(0, 23, by = 1), # 23 seems to get most of the distribution mass
     density0 = dweibull(time,
       shape = backward_shape,
