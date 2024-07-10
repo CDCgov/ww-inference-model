@@ -141,33 +141,3 @@ convert_to_logsd <- function(mean, sd) {
 to_simplex <- function(vector) {
   return(vector / sum(vector))
 }
-
-#' Drop the first element of a simplex and re-normalize the result to sum to 1.
-#'
-#' When this vector corresponds to the generation interval distribution, we
-#' want to drop this first bin. The renewal equation assumes that same-day
-#' infection and onward transmission does not occur, and we assume
-#' everything is 1 indexed not 0 indeced. We need to
-#' manually drop the first element from the PMF vector.
-#'
-#' @param x A numeric vector, sums to 1. Corresponds to a discretized PDF or PMF
-#'   (usually the GI distribution).
-#'
-#' @return A numeric vector, sums to 1.
-#' @export
-#' @examples
-#' pmf_orig <- c(0.1, 0.1, 0.1, 0.7)
-#' pmf_trunc <- drop_first_and_renormalize(pmf_orig)
-drop_first_and_renormalize <- function(x) {
-  # Check input sums to 1
-  stopifnot(abs(sum(x) - 1) < 1e-8)
-  # Drop and renormalize
-  y <- x[2:length(x)] / sum(x[2:length(x)])
-  vec_outside_tol <- abs(sum(y) - 1L) > 1e-10
-  # Normalize until within tolerance
-  while (vec_outside_tol) {
-    y <- y / sum(y)
-    vec_outside_tol <- abs(sum(y) - 1L) > 1e-10
-  }
-  return(y)
-}

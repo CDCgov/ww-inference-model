@@ -8,16 +8,33 @@ params <- get_params(
 
 
 
-# Simulate daily double censored PMF. From {epinowcast}:
-# https://package.epinowcast.org/dev/reference/simulate_double_censored_pmf.html #nolint
-#
-# This function simulates the probability mass function of a  daily
-# double-censored process. The process involves two distributions: a primary
-# distribution which represents the censoring process for the primary event
-# and another distribution (which is offset by the primary).
-#
-# Based off of:
-# https://www.medrxiv.org/content/10.1101/2024.01.12.24301247v1
+#' Simulate daily double censored PMF. From {epinowcast}:
+#' https://package.epinowcast.org/dev/reference/simulate_double_censored_pmf.html #nolint
+#'
+#' This function simulates the probability mass function of a  daily
+#' double-censored process. The process involves two distributions: a primary
+#' distribution which represents the censoring process for the primary event
+#' and another distribution (which is offset by the primary).
+#'
+#' Based off of:
+#' https://www.medrxiv.org/content/10.1101/2024.01.12.24301247v1
+#'
+#' @param max Maximum value for the computed CDF. If not specified, the maximum
+#' value is the maximum simulated delay.
+#' @param fun_primary Primary distribution function (default is \code{runif}).
+#' @param fun_dist Distribution function to be added to the primary (default is
+#' \code{rlnorm}).
+#' @param n Number of simulations (default is 1e6).
+#' @param primary_args List of additional arguments to be passed to the primary
+#' distribution function.
+#' @param dist_args List of additional arguments to be passed to the
+#' distribution function.
+#' @param ... Additional arguments to be passed to the distribution function.
+#' This is an alternative to `dist_args`.
+#'
+#' @return A numeric vector representing the PMF.
+#' @examples
+#' simulate_double_censored_pmf(10, meanlog = 0, sdlog = 1)
 simulate_double_censored_pmf <- function(
     max, fun_primary = stats::runif, primary_args = list(),
     fun_dist = stats::rlnorm,
@@ -38,11 +55,52 @@ simulate_double_censored_pmf <- function(
   return(pmf)
 }
 
+#' Drop the first element of a simplex and re-normalize the result to sum to 1.
+#'
+#' When this vector corresponds to the generation interval distribution, we
+#' want to drop this first bin. The renewal equation assumes that same-day
+#' infection and onward transmission does not occur, and we assume
+#' everything is 1 indexed not 0 indeced. We need to
+#' manually drop the first element from the PMF vector.
+#'
+#' @param x A numeric vector, sums to 1. Corresponds to a discretized PDF or PMF
+#'   (usually the GI distribution).
+#'
+#' @return A numeric vector, sums to 1.
+#' @examples
+#' pmf_orig <- c(0.1, 0.1, 0.1, 0.7)
+#' pmf_trunc <- drop_first_and_renormalize(pmf_orig)
+drop_first_and_renormalize <- function(x) {
+  # Check input sums to 1
+  stopifnot(abs(sum(x) - 1) < 1e-8)
+  # Drop and renormalize
+  y <- x[2:length(x)] / sum(x[2:length(x)])
+  vec_outside_tol <- abs(sum(y) - 1L) > 1e-10
+  # Normalize until within tolerance
+  while (vec_outside_tol) {
+    y <- y / sum(y)
+    vec_outside_tol <- abs(sum(y) - 1L) > 1e-10
+  }
+  return(y)
+}
 
-# This retruns an incubation period pmf corresponding to the incubation period
-# for COVID after Omicron used in
-# Park et al 2023. These estimates are from early Omicron.
-
+#' @title Make incubation period pmf
+#' @description When the default arguments are used, this returns a pmf
+#' corresponding to the incubation period for COVID after Omicron used in
+#' Park et al 2023. These estimates are from early Omicron.
+#' @param backward_scale numeric indicating the scale parameter for the Weibull
+#' used in producing the incubation period distribution. default is `3.60` for
+#' COVID
+#' @param backward_shape numeric indicating the shape parameter for the Weibull
+#' used in producing the incubation period distribution, default is `1.50` for
+#' COVID
+#' @param r numeric indicating the exponential rate used in producing the
+#' correction on the incubaion period distribution, default is `0.15` for COVID
+#'
+#' @return pmf of incubation period
+#'
+#' @examples
+#' inc_pmf <- make_incubation_period_pmf(3.6, 1.5, 0.15)
 make_incubation_period_pmf <- function(backward_scale = 3.60,
                                        backward_shape = 1.50,
                                        r = 0.15) {
@@ -70,15 +128,28 @@ make_incubation_period_pmf <- function(backward_scale = 3.60,
     ) * exp(r * time)
   )
 
-  inc_period_pmf <- to_simplex(discr_gr_adj_weibull$density0)
+  inc_period_pmf <- wwinference::to_simplex(discr_gr_adj_weibull$density0)
   return(inc_period_pmf)
 }
 
-# Makes the hospital onset delay pmf using the parameter estimates based on
-# Danache et al linelist data from symptom onset to hospital
-# admission. See below:
-# https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0261428
 
+#' @title Make hospital onset delay pmf
+#' @description Uses the parameter estimates from cfa-parameter-estimates,
+#' which is based on Danache et al linelist data from symptom onset to hospital
+#' admission. See below:
+#' https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0261428
+#'
+#' @param neg_binom_mu float indicating the mean of the negative binomial shaped
+#' delay from symptom onset to hospital admissions, default is `6.98665` from
+#' fit to data in above paper
+#' @param neg_binom_size float indicating the dispersion parameter in the
+#' negative binomial delay from symptom onset to hospital admissions, default
+#' is `2.490848` from fit to data in above paper
+#'
+#' @return pmf of distribution from symptom onset to hospital admission
+#'
+#' @examples
+#' delay_pmf <- make_hospital_onset_delay_pmf(7, 2.5)
 make_hospital_onset_delay_pmf <- function(neg_binom_mu = 6.98665,
                                           neg_binom_size = 2.490848) {
   density <- dnbinom(
@@ -91,9 +162,24 @@ make_hospital_onset_delay_pmf <- function(neg_binom_mu = 6.98665,
 }
 
 
-# Makes the reporting delay pmf by convolving the incubation period pmf with
-# the symptom to hospital admission pmf and normalizing
 
+#' @title Make reporting delay pmf
+#' @description
+#' Convolve the incubation period pmf with the symptom to hospital admission pmf
+#' and normalize
+#'
+#' @param incubation_period_pmf a numeric vector, sums to 1, indicating
+#' the probability of time from infection to symptom onset
+#' @param hospital_onset_delay_pmf a numeric vector, sums to 1, indicating the
+#' proabbility of time from symptom onset to hospital admissions
+#'
+#' @return convolution of incubation period and sympton onset to hospital
+#' admission pmf
+#'
+#' @examples
+#' inc_pmf <- make_incubation_period_pmf(3.6, 1.5, 0.15)
+#' hosp_delay_pmf <- make_hospital_onset_delay_pmf(7, 2.5)
+#' inf_to_hosp_pmf <- make_reporting_delay_pmf(inc_pmf, hosp_delay_pmf)
 make_reporting_delay_pmf <- function(incubation_period_pmf,
                                      hospital_onset_delay_pmf) {
   pmfs <- list(
@@ -102,7 +188,7 @@ make_reporting_delay_pmf <- function(incubation_period_pmf,
   )
 
   infection_to_hosp_delay_pmf <- add_pmfs(pmfs) |>
-    to_simplex()
+    wwinference::to_simplex()
   return(infection_to_hosp_delay_pmf)
 }
 
@@ -115,17 +201,17 @@ generation_interval <- withr::with_seed(42, {
   wwinference::simulate_double_censored_pmf(
     max = params$gt_max, meanlog = params$mu_gi,
     sdlog = params$sigma_gi, fun_dist = rlnorm, n = 5e6
-  ) |> wwinference::drop_first_and_renormalize()
+  ) |> wdrop_first_and_renormalize()
 })
 
-inc <- wwinference::make_incubation_period_pmf(
+inc <- make_incubation_period_pmf(
   params$backward_scale, params$backward_shape, params$r
 )
-sym_to_hosp <- wwinference::make_hospital_onset_delay_pmf(
+sym_to_hosp <- make_hospital_onset_delay_pmf(
   params$neg_binom_mu,
   params$neg_binom_size
 )
-inf_to_hosp <- wwinference::make_reporting_delay_pmf(inc, sym_to_hosp)
+inf_to_hosp <- make_reporting_delay_pmf(inc, sym_to_hosp)
 
 usethis::use_data(generation_interval, overwrite = TRUE)
 usethis::use_data(inf_to_hosp, overwrite = TRUE)
