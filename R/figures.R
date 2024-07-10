@@ -146,8 +146,8 @@ get_plot_global_rt <- function(draws,
     ) +
     geom_hline(aes(yintercept = 1), linetype = "dashed") +
     xlab("") +
-    ylab("R(t) of hypothetical state") +
-    ggtitle("R(t) estimate") +
+    ylab("Global R(t)") +
+    ggtitle("Global R(t) estimate") +
     scale_x_date(
       date_breaks = "2 weeks",
       labels = scales::date_format("%Y-%m-%d")

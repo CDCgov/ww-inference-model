@@ -352,8 +352,8 @@ ggplot(draws_df |> dplyr::filter(
   ) +
   geom_hline(aes(yintercept = 1), linetype = "dashed") +
   xlab("") +
-  ylab("R(t) of hypothetical state") +
-  ggtitle("R(t) estimate") +
+  ylab("Global R(t) ") +
+  ggtitle("Global R(t) estimate") +
   theme_bw()
 
 
