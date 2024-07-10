@@ -121,7 +121,7 @@ make_incubation_period_pmf <- function(backward_scale = 3.60,
     ) * exp(r * time)
   )
 
-  inc_period_pmf <- corrected_sgtf$density0 / sum(corrected_sgtf$density0)
+  inc_period_pmf <- to_simplex(discretized_growth_adjusted_weibull$density0)
   return(inc_period_pmf)
 }
 
