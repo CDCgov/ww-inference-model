@@ -13,10 +13,10 @@ get_ind_m(n_days, n_weeks)
 }
 \value{
 a n_day x n_week matrix for multiplying by weekly estimated
-value to conver it to daily
+value to broadcast it to daily
 }
 \description{
-Get the matrix needed to convert a vetor from weekly to daily
+Get a matrix to broadcast a vector from weekly to daily
 }
 \examples{
 ind_m <- get_ind_m(14, 2)

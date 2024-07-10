@@ -2,7 +2,8 @@
 % Please edit documentation in R/preprocessing.R
 \name{preprocess_ww_data}
 \alias{preprocess_ww_data}
-\title{Get input wastewater data}
+\title{Pre-process wastewater input data, adding needed indices and flagging
+potential outliers}
 \usage{
 preprocess_ww_data(
   ww_data,
@@ -31,7 +32,8 @@ lab_site_index, site_index, flag_as_ww_outlier, lab_site_name,
 forecast_date
 }
 \description{
-Get input wastewater data
+Pre-process wastewater input data, adding needed indices and flagging
+potential outliers
 }
 \examples{
 ww_data <- tibble::tibble(

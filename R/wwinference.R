@@ -120,7 +120,6 @@ wwinference <- function(ww_data,
       )
     }
 
-    # print(fit) # nolint
     return(fit)
   }
 
@@ -169,7 +168,7 @@ wwinference <- function(ww_data,
         ]
       ))
 
-    draws <- postprocess(
+    draws <- get_draws_df(
       ww_data = ww_data,
       count_data = count_data,
       fit_obj = fit,
@@ -254,7 +253,8 @@ get_mcmc_options <- function(
   return(mcmc_settings)
 }
 
-#' Get model specificaitons
+
+#' Get model specifications
 #' @description
 #' This function returns a nested list containing the model specifications
 #' in the function arguments. All defaults are set for the case of fitting a

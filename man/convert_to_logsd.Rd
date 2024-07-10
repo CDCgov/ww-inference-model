@@ -2,19 +2,21 @@
 % Please edit documentation in R/utils.R
 \name{convert_to_logsd}
 \alias{convert_to_logsd}
-\title{Convert to logsd in lognormal distribution}
+\title{Get the sd of a Normal distribution for a random variable Y
+needed to ensure that the distribution of X = exp(Y) (which is Log-Normal)
+has a specified mean and sd.}
 \usage{
 convert_to_logsd(mean, sd)
 }
 \arguments{
-\item{mean}{mean of the normal distribution}
+\item{mean}{target mean for the Log-Normal distribution of X}
 
-\item{sd}{sd of the normal distribution}
+\item{sd}{target sd for the Log-Normal distribution of X}
 }
 \value{
-corresponding stdev of the lognormal distribution
+corresponding sd for the underlying Normal distribution of Y = log(X)
 }
 \description{
-@description see arithmetic moments here
+see arithmetic moments here
 https://en.wikipedia.org/wiki/Log-normal_distribution
 }

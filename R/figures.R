@@ -1,22 +1,28 @@
 #' Get plot of fit and forecasted counts
 #'
 #' @param draws A dataframe containing the posterior draws with the data joined
-#' to it. This is `draws_df` output of the call to `wwinference()`
+#' to it. This is the `draws_df` output of a call to [wwinference()]
 #' @param count_data_eval A dataframe containing the count data we will
-#' evaluate the forecasts against.
+#' evaluate the forecasts against. Must contain the columns `date` and
+#' a column indicating the count data to evaluate against, with the name
+#' of that column specified as the `count_data_eval_col_name`
+#' @param count_data_eval_col_name string indicating the name of the count
+#' data to evaluate against the forecasted count data
 #' @param forecast_date A string indicating the date we made the forecast, for
 #' plotting, in ISO8601 format YYYY-MM-DD
 #' @param count_type A string indicating what data the counts refer to,
 #' default is `hospital admissions`
 #'
 #' @return A ggplot object containing the posterior draw of the estimated,
-#' nowcasted, and forecasted hospital admissions alongside the data used to
-#' calibrate the hospital admissions model and the later observed hospital
-#' admissions used to evaluate the forecast performance
+#' nowcasted, and forecasted counts alongside the data used to
+#' calibrate the model and subsequently observed counts (if any) against which
+#' to evaluate the forecast performance.
+
 #' @export
 #'
 get_plot_forecasted_counts <- function(draws,
                                        count_data_eval,
+                                       count_data_eval_col_name,
                                        forecast_date,
                                        count_type = "hospital admissions") {
   p <- ggplot(draws |> dplyr::filter(
@@ -28,7 +34,7 @@ get_plot_forecasted_counts <- function(draws,
     ) +
     geom_point(
       data = count_data_eval,
-      aes(x = date, y = daily_hosp_admits_for_eval),
+      aes(x = date, y = .data[[count_data_eval_col_name]]),
       shape = 21, color = "black", fill = "white"
     ) +
     geom_point(aes(x = date, y = observed_value)) +
@@ -61,7 +67,7 @@ get_plot_forecasted_counts <- function(draws,
 #' Get plot of fit and forecasted wastewater concentrations
 #'
 #' @param draws A dataframe containing the posterior draws with the data joined
-#' to it. This is `draws_df` output of the call to `wwinference()`
+#' to it. This is the `draws_df` output of a call to [wwinference()]
 #' @param forecast_date A string indicating the date we made the forecast, for
 #' plotting, in ISO8601 format YYYY-MM-DD
 #'
@@ -120,7 +126,7 @@ get_plot_ww_conc <- function(draws,
 #' Get plot of fit, nowcasted, and forecasted "global" R(t)
 #'
 #' @param draws A dataframe containing the posterior draws with the data joined
-#' to it. This is `draws_df` output of the call to `wwinference()`
+#' to it. This is the `draws_df` output of a call to [wwinference()]
 #' @param forecast_date A string indicating the date we made the forecast, for
 #' plotting, in ISO8601 format YYYY-MM-DD
 #'
@@ -143,8 +149,8 @@ get_plot_global_rt <- function(draws,
     ) +
     geom_hline(aes(yintercept = 1), linetype = "dashed") +
     xlab("") +
-    ylab("R(t) of hypothetical state") +
-    ggtitle("R(t) estimate") +
+    ylab("Global R(t)") +
+    ggtitle("Global R(t) estimate") +
     scale_x_date(
       date_breaks = "2 weeks",
       labels = scales::date_format("%Y-%m-%d")

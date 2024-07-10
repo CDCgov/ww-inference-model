@@ -11,5 +11,5 @@ create_dir(output_file_path)
 }
 \description{
 Function to create a directory for the specified output file path if needed.
-dir_create won't throw a warning if its already made though!
+Does nothing if the target directory already exists.
 }

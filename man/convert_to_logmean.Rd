@@ -2,17 +2,20 @@
 % Please edit documentation in R/utils.R
 \name{convert_to_logmean}
 \alias{convert_to_logmean}
-\title{Convert to logmean in lognorm distribution}
+\title{Get the mean of a Normal distribution for a random variable Y
+needed to ensure that the distribution of X = exp(Y) (which is Log-Normal)
+has a specified mean and sd.}
 \usage{
 convert_to_logmean(mean, sd)
 }
 \arguments{
-\item{mean}{mean of the normal distribution}
+\item{mean}{target mean for the Log-Normal distribution of X}
 
-\item{sd}{sd of the normal distribution}
+\item{sd}{target sd for the Log-Normal distribution X}
 }
 \value{
-corresponding mean of the lognormal distribution
+corresponding mean for the underlying Normal
+distribution of Y = log(X).
 }
 \description{
 see arithmetic moments here

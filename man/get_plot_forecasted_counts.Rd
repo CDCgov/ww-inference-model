@@ -7,16 +7,22 @@
 get_plot_forecasted_counts(
   draws,
   count_data_eval,
+  count_data_eval_col_name,
   forecast_date,
   count_type = "hospital admissions"
 )
 }
 \arguments{
 \item{draws}{A dataframe containing the posterior draws with the data joined
-to it. This is \code{draws_df} output of the call to \code{wwinference()}}
+to it. This is the \code{draws_df} output of a call to \code{\link[=wwinference]{wwinference()}}}
 
 \item{count_data_eval}{A dataframe containing the count data we will
-evaluate the forecasts against.}
+evaluate the forecasts against. Must contain the columns \code{date} and
+a column indicating the count data to evaluate against, with the name
+of that column specified as the \code{count_data_eval_col_name}}
+
+\item{count_data_eval_col_name}{string indicating the name of the count
+data to evaluate against the forecasted count data}
 
 \item{forecast_date}{A string indicating the date we made the forecast, for
 plotting, in ISO8601 format YYYY-MM-DD}
@@ -26,9 +32,9 @@ default is \verb{hospital admissions}}
 }
 \value{
 A ggplot object containing the posterior draw of the estimated,
-nowcasted, and forecasted hospital admissions alongside the data used to
-calibrate the hospital admissions model and the later observed hospital
-admissions used to evaluate the forecast performance
+nowcasted, and forecasted counts alongside the data used to
+calibrate the model and subsequently observed counts (if any) against which
+to evaluate the forecast performance.
 }
 \description{
 Get plot of fit and forecasted counts

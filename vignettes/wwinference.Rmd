@@ -266,7 +266,8 @@ model <- wwinference::compile_model()
 We're now ready to fit the model using the “No-U-Turn Sampler Markov chain
 Monte Carlo” method. This is a type of Hamiltonian Monte Carlo (HMC) algorithm
 and is the core fitting method used by `cmdstan`. The user can adjust the MCMC
-settings (see the documentation for `fit_model`), however this vignette will use
+settings (see the documentation for `get_mcmc_options()`),
+however this vignette will use
 the default parameter settings which includes running 4 parallel chains with
 750 warm up iterations, 500 sampling iterations for each chain, a target average
 acceptance probability of 0.95 and a maximum tree depth of 12. The user may wish
@@ -275,9 +276,10 @@ better convergence on a real-world use case.
 
 We also pass our preprocessed datasets (`ww_data_to_fit` and
 `hosp_data_preprocessed`), specify our model using `get_model_spec()`,
-set the MCMC settings using `get_mcmc_optins()`, and pass in our
-pre-compiled model(`model`) to `wwinference` where they are combined and used to
-fit the model.
+set the MCMC settings using `get_mcmc_options()`, and pass in our
+pre-compiled model(`model`) to `wwinference()` where they are combined and
+used to fit the model.
+
 
 ```{r, message = FALSE}
 fit <- wwinference::wwinference(
@@ -352,8 +354,8 @@ ggplot(draws_df |> dplyr::filter(
   ) +
   geom_hline(aes(yintercept = 1), linetype = "dashed") +
   xlab("") +
-  ylab("R(t) of hypothetical state") +
-  ggtitle("R(t) estimate") +
+  ylab("Global R(t) ") +
+  ggtitle("Global R(t) estimate") +
   theme_bw()
 
 
@@ -413,6 +415,7 @@ functions.
 plot_hosp <- get_plot_forecasted_counts(
   draws = draws_df,
   count_data_eval = hosp_data_eval,
+  count_data_eval_col_name = "daily_hosp_admits_for_eval",
   forecast_date = forecast_date
 )
 plot_hosp

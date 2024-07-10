@@ -2,7 +2,8 @@
 % Please edit documentation in R/preprocessing.R
 \name{preprocess_hosp_data}
 \alias{preprocess_hosp_data}
-\title{Get input hospital admissions data}
+\title{Pre-process hospital admissions data, converting column names to those
+that \code{\link[=get_stan_data]{get_stan_data()}} expects.}
 \usage{
 preprocess_hosp_data(
   hosp_data,
@@ -25,7 +26,8 @@ a dataframe containing the hospital admissions data renamed to
 have the following columns \code{date}, \code{count}, and \code{total_pop}
 }
 \description{
-Get input hospital admissions data
+Pre-process hospital admissions data, converting column names to those
+that \code{\link[=get_stan_data]{get_stan_data()}} expects.
 }
 \examples{
 hosp_data <- tibble::tibble(

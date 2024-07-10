@@ -13,8 +13,10 @@
 #' (estimated bayesian fraction of missing information), default is `0.2`
 #' @param divergences_tolerance float indicating the tolerance for the
 #' proportion of sampling iterations that are divergent, default is `0.01`
-#' @param p_high_rhat_tolerance float indicating the tolerance for the
-#' proportion of parameters rhats>1.05, default is `0.05`
+#' @param frac_high_rhat_tolerance float indicating the tolerance for the
+#' proportion of parameters rhats>rhat_tolderance, default is `0.05`
+#' @param rhat_tolerance float indicating the tolerance for the rhat for
+#' individual parameters, default is `1.05`
 #' @param max_tree_depth_tol float indicating the tolerance for the proportion
 #' of iterations that exceed the maximum tree depth, default is `0.01`
 #'
@@ -25,7 +27,8 @@
 get_model_diagnostic_flags <- function(stan_fit_object,
                                        ebmfi_tolerance = 0.2,
                                        divergences_tolerance = 0.01,
-                                       p_high_rhat_tolerance = 0.05,
+                                       frac_high_rhat_tolerance = 0.05,
+                                       rhat_tolerance = 1.05,
                                        max_tree_depth_tol = 0.01) {
   n_chains <- stan_fit_object$num_chains()
   iter_sampling <- stan_fit_object$metadata()$iter_sampling
@@ -39,9 +42,10 @@ get_model_diagnostic_flags <- function(stan_fit_object,
   flag_too_many_divergences <- any(
     diagnostic_summary$num_divergent >= max_n_divergences
   )
-  p_high_rhat <- as.numeric(mean(summary[, "rhat"]$rhat > 1.05, na.rm = TRUE))
-  flag_high_rhat <- p_high_rhat >=
-    p_high_rhat_tolerance
+  frac_high_rhat <- as.numeric(mean(summary[, "rhat"]$rhat > rhat_tolerance,
+    na.rm = TRUE
+  ))
+  flag_high_rhat <- frac_high_rhat >= frac_high_rhat_tolerance
   max_n_max_treedepth <- n_chains * iter_sampling * max_tree_depth_tol
   flag_high_max_treedepth <- any(
     diagnostic_summary$num_max_tree_depth >= max_n_max_treedepth
