@@ -61,7 +61,7 @@ get_plot_forecasted_counts <- function(draws,
 #' Get plot of fit and forecasted wastewater concentrations
 #'
 #' @param draws A dataframe containing the posterior draws with the data joined
-#' to it. This is `draws_df` output of the call to `wwinference()`
+#' to it. This is the `draws_df` output of a call to [wwinference()]
 #' @param forecast_date A string indicating the date we made the forecast, for
 #' plotting, in ISO8601 format YYYY-MM-DD
 #'
