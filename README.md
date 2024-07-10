@@ -12,11 +12,16 @@ We modify EpiNow2 to add model for the observed viral RNA concentration in waste
 See our Model Definition page for a mathematical description of the generative model, and the Getting Stated vignette to see an example of how to run the inference model on simulated data.
 
 The intention is for {wwinference} to provide a user-friendly R-package interface for running forecasting models that use wastewater concentrations combined with other more traditional epidemiological signals such as cases or hospital admissions. It aims to be a re-implementation of the modeling components contained in the [wastewater-informed-covid-forecasting](https://github.com/CDCgov/wastewater-informed-covid-forecasting) project repository, with
-an emphasis here on making it easier for users to supply their own data.
+an emphasis here on making it easier for users to supply their own data. 
+
+We recommend reading the [model definition](model_definition.md) to learn more about how the model is structured and running the ["Getting Started" vignette](vignettes/wwinference.Rmd) for an example of how to fit the model to simulated data of COVID-19 hospital admissions and wastewater concentrations.
+This will help make clear the data requirements and how to structure this data to fit the model. 
 
 ## Project Admin
 - Kaitlyn Johnson (kaitejohnson)
 - Dylan Morris (dylanhmorris)
+- Sam Abbott (seabbs)
+- Damon Bayer (damonbayer)
 
 # Installing and running code
 
