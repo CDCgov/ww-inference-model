@@ -3,7 +3,9 @@
 #' @param draws A dataframe containing the posterior draws with the data joined
 #' to it. This is the `draws_df` output of a call to [wwinference()]
 #' @param count_data_eval A dataframe containing the count data we will
-#' evaluate the forecasts against.
+#' evaluate the forecasts against. Must contain the columns `date` and
+#' a column indicating the count data to evaluate against, with the name
+#' of that column specified as the `count_data_eval_col_name`
 #' @param count_data_eval_col_name string indicating the name of the count
 #' data to evaluate against the forecasted count data
 #' @param forecast_date A string indicating the date we made the forecast, for

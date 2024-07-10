@@ -17,7 +17,9 @@ get_plot_forecasted_counts(
 to it. This is the \code{draws_df} output of a call to \code{\link[=wwinference]{wwinference()}}}
 
 \item{count_data_eval}{A dataframe containing the count data we will
-evaluate the forecasts against.}
+evaluate the forecasts against. Must contain the columns \code{date} and
+a column indicating the count data to evaluate against, with the name
+of that column specified as the \code{count_data_eval_col_name}}
 
 \item{count_data_eval_col_name}{string indicating the name of the count
 data to evaluate against the forecasted count data}
