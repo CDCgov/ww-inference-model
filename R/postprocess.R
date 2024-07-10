@@ -29,12 +29,12 @@
 #' are observations, the data will be joined to each draw of the predicted
 #' observation to facilitate plotting.
 #' @export
-postprocess <- function(ww_data,
-                        count_data,
-                        fit_obj,
-                        date_time_spine,
-                        lab_site_spine,
-                        subpop_spine) {
+get_draws_df <- function(ww_data,
+                         count_data,
+                         fit_obj,
+                         date_time_spine,
+                         lab_site_spine,
+                         subpop_spine) {
   draws <- fit_obj$result$draws()
 
   count_draws <- draws |>

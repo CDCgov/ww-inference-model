@@ -149,7 +149,7 @@ wwinference <- function(ww_data,
         ]
       ))
 
-    draws <- postprocess(
+    draws <- get_draws_df(
       ww_data = ww_data,
       count_data = count_data,
       fit_obj = fit,
