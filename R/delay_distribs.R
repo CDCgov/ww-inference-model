@@ -23,8 +23,6 @@
 #' This is an alternative to `dist_args`.
 #'
 #' @return A numeric vector representing the PMF.
-#' @examples
-#' simulate_double_censored_pmf(10, meanlog = 0, sdlog = 1)
 simulate_double_censored_pmf <- function(
     max, fun_primary = stats::runif, primary_args = list(),
     fun_dist = stats::rlnorm,
@@ -85,9 +83,6 @@ drop_first_and_renormalize <- function(x) {
 #' correction on the incubaion period distribution, default is `0.15` for COVID
 #'
 #' @return pmf of incubation period
-#'
-#' @examples
-#' inc_pmf <- make_incubation_period_pmf(3.6, 1.5, 0.15)
 make_incubation_period_pmf <- function(backward_scale = 3.60,
                                        backward_shape = 1.50,
                                        r = 0.15) {
@@ -134,9 +129,6 @@ make_incubation_period_pmf <- function(backward_scale = 3.60,
 #' is `2.490848` from fit to data in above paper
 #'
 #' @return pmf of distribution from symptom onset to hospital admission
-#'
-#' @examples
-#' delay_pmf <- make_hospital_onset_delay_pmf(7, 2.5)
 make_hospital_onset_delay_pmf <- function(neg_binom_mu = 6.98665,
                                           neg_binom_size = 2.490848) {
   density <- dnbinom(
@@ -162,11 +154,6 @@ make_hospital_onset_delay_pmf <- function(neg_binom_mu = 6.98665,
 #'
 #' @return convolution of incubation period and sympton onset to hospital
 #' admission pmf
-#'
-#' @examples
-#' inc_pmf <- make_incubation_period_pmf(3.6, 1.5, 0.15)
-#' hosp_delay_pmf <- make_hospital_onset_delay_pmf(7, 2.5)
-#' inf_to_hosp_pmf <- make_reporting_delay_pmf(inc_pmf, hosp_delay_pmf)
 make_reporting_delay_pmf <- function(incubation_period_pmf,
                                      hospital_onset_delay_pmf) {
   pmfs <- list(

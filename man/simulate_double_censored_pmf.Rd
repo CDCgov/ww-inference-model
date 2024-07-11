@@ -48,6 +48,3 @@ and another distribution (which is offset by the primary).
 Based off of:
 https://www.medrxiv.org/content/10.1101/2024.01.12.24301247v1
 }
-\examples{
-simulate_double_censored_pmf(10, meanlog = 0, sdlog = 1)
-}

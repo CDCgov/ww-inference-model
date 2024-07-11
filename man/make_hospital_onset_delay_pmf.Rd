@@ -27,6 +27,3 @@ which is based on Danache et al linelist data from symptom onset to hospital
 admission. See below:
 https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0261428
 }
-\examples{
-delay_pmf <- make_hospital_onset_delay_pmf(7, 2.5)
-}

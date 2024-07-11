@@ -21,8 +21,3 @@ admission pmf
 Convolve the incubation period pmf with the symptom to hospital admission pmf
 and normalize
 }
-\examples{
-inc_pmf <- make_incubation_period_pmf(3.6, 1.5, 0.15)
-hosp_delay_pmf <- make_hospital_onset_delay_pmf(7, 2.5)
-inf_to_hosp_pmf <- make_reporting_delay_pmf(inc_pmf, hosp_delay_pmf)
-}
