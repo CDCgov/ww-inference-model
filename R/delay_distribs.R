@@ -57,10 +57,6 @@ simulate_double_censored_pmf <- function(
 #'   (usually the GI distribution).
 #'
 #' @return A numeric vector, sums to 1.
-#'
-#' @examples
-#' pmf_orig <- c(0.1, 0.1, 0.1, 0.7)
-#' pmf_trunc <- drop_first_and_renormalize(pmf_orig)
 drop_first_and_renormalize <- function(x) {
   # Check input sums to 1
   stopifnot(abs(sum(x) - 1) < 1e-8)

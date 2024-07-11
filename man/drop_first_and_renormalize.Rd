@@ -20,7 +20,3 @@ infection and onward transmission does not occur, and we assume
 everything is 1 indexed not 0 indeced. We need to
 manually drop the first element from the PMF vector.
 }
-\examples{
-pmf_orig <- c(0.1, 0.1, 0.1, 0.7)
-pmf_trunc <- drop_first_and_renormalize(pmf_orig)
-}
