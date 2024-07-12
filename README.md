@@ -17,7 +17,7 @@ an emphasis here on making it easier for users to supply their own data.
 We recommend reading the [model definition](model_definition.md) to learn more about how the model is structured and running the ["Getting Started" vignette](vignettes/wwinference.Rmd) for an example of how to fit the model to simulated data of COVID-19 hospital admissions and wastewater concentrations.
 This will help make clear the data requirements and how to structure this data to fit the model.
 
-## Project Admin
+## Project Admins
 - Kaitlyn Johnson (kaitejohnson)
 - Dylan Morris (dylanhmorris)
 - Sam Abbott (seabbs)
