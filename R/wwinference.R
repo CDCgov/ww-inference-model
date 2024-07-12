@@ -29,7 +29,7 @@
 #' `get_mcmc_options()`.
 #' @param generate_initial_values Boolean indicating whether or not to specify
 #' the initialization of the sampler, default is `TRUE`, meaning that
-#' initialization lists will be generated and passed as the `init` argument 
+#' initialization lists will be generated and passed as the `init` argument
 #' to the model object [`$sample()`][cmdstanr::model-method-sample] call.
 #' function
 #' @param compiled_model The pre-compiled model as defined using
