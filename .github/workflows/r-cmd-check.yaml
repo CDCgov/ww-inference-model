@@ -1,0 +1,28 @@
+name: R CMD check project packages
+
+on:
+  pull_request:
+  push:
+    branches: [main, prod]
+
+jobs:
+  check-package:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
+    - uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: "release"
+        use-public-rspm: true
+        extra-repositories: "https://mc-stan.org/r-packages/"
+    - name: "Set up dependencies for wwinference"
+      uses: r-lib/actions/setup-r-dependencies@v2
+      with:
+        needs: check
+    - name: "Install cmdstan via cmdstanr"
+      uses: epinowcast/actions/install-cmdstan@v1
+      with:
+        cmdstan-version: "latest"
+    - name: "Check wwinference package"
+      uses: r-lib/actions/check-r-package@v2

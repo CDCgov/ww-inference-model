@@ -45,8 +45,7 @@ get_model_diagnostic_flags <- function(stan_fit_object,
   frac_high_rhat <- as.numeric(mean(summary[, "rhat"]$rhat > rhat_tolerance,
     na.rm = TRUE
   ))
-  flag_high_rhat <- frac_high_rhat >=
-    frac_high_rhat_tolerance
+  flag_high_rhat <- frac_high_rhat >= frac_high_rhat_tolerance
   max_n_max_treedepth <- n_chains * iter_sampling * max_tree_depth_tol
   flag_high_max_treedepth <- any(
     diagnostic_summary$num_max_tree_depth >= max_n_max_treedepth

@@ -17,6 +17,7 @@
 #' nowcasted, and forecasted counts alongside the data used to
 #' calibrate the model and subsequently observed counts (if any) against which
 #' to evaluate the forecast performance.
+
 #' @export
 #'
 get_plot_forecasted_counts <- function(draws,

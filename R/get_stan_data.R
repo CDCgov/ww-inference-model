@@ -476,9 +476,10 @@ get_ww_values <- function(ww_data,
 
     # Get the vector of log wastewater concentrations
     log_conc <- ww_data |>
-      dplyr::mutate(log_conc = as.numeric(log(!!sym(
-        ww_measurement_col_name
-      ) + 1e-8))) |>
+      dplyr::mutate(
+        log_conc =
+          (log(.data[[ww_measurement_col_name]] + 1e-8))
+      ) |>
       dplyr::pull(log_conc)
 
     ww_values <- list(
@@ -572,7 +573,7 @@ get_subpop_data <- function(add_auxiliary_site,
 
 #' Get count data integer sizes for stan
 #'
-#' @param input_cout_data a dataframe with the input count data
+#' @param input_count_data a dataframe with the input count data
 #' @param forecast_date string indicating the forecast date
 #' @param forecast_horizon integer indicating the number of days to make a
 #' forecast for

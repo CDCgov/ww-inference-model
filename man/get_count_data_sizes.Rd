@@ -15,6 +15,8 @@ get_count_data_sizes(
 )
 }
 \arguments{
+\item{input_count_data}{a dataframe with the input count data}
+
 \item{forecast_date}{string indicating the forecast date}
 
 \item{forecast_horizon}{integer indicating the number of days to make a
@@ -32,8 +34,6 @@ no observations}
 \item{count_col_name}{A string represeting the name of the column in the
 input_count_data that indicates the number of daily counts,
 default is \code{count}}
-
-\item{input_cout_data}{a dataframe with the input count data}
 }
 \value{
 A list containing the integer sizes of the follow variables that

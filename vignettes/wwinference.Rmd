@@ -280,6 +280,7 @@ set the MCMC settings using `get_mcmc_options()`, and pass in our
 pre-compiled model(`model`) to `wwinference()` where they are combined and
 used to fit the model.
 
+
 ```{r, message = FALSE}
 fit <- wwinference::wwinference(
   ww_data_to_fit,
