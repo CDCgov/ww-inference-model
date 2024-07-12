@@ -80,8 +80,7 @@ Imports:
     rlang,
     scales,
     ggplot2,
-    posterior,
-    knitr
+    posterior
 Remotes:
     stan-dev/cmdstanr
 VignetteBuilder:
