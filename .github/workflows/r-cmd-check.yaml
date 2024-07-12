@@ -16,7 +16,7 @@ jobs:
         r-version: "release"
         use-public-rspm: true
         extra-repositories: "https://mc-stan.org/r-packages/"
-    - name: "Set up dependencies for wweval"
+    - name: "Set up dependencies for wwinference"
       uses: r-lib/actions/setup-r-dependencies@v2
       with:
         needs: check
