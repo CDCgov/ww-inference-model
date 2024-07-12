@@ -15,19 +15,6 @@ Our models are constructed from a set of generative components. These are:
 - [**Hospital admissions component:**](#hospital-admissions-component) A model for the expected number of hospital admissions given incident latent infections per capita.
 - [**Viral genome concentration in wastewater:**](#viral-genome-concentration-in-wastewater-component) A model for the expected genome concentration given incident infections per capita.
 
-The general flow of the model can be visualized as follows:
-
-```mermaid
-flowchart LR;
-    GlobalR --> GlobalI;
-    GlobalR --> LocalR;
-    LocalR --> GlobalR;
-    LocalR --> LocalIX;
-    LocalR --> LocalIY;
-    LocalIX --> LocalWWX;
-    LocalIY --> LocalWWY;
-    GlobalI --> Globalhosp;
-```
 See the [notation](#appendix-notation) section for an overview of the mathematical notation we use to describe the model components, including how probability distributions are parameterized.
 
 ### Infection component
