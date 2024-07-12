@@ -27,8 +27,8 @@
 #' user based on the date they are producing a forecast
 #' @param mcmc_options The MCMC parameters as defined using
 #' `get_mcmc_options()`.
-#' @param spec_inits Boolean indicating whether or not to specify the
-#' initialization of the sampler, default is `TRUE`, meaning that the
+#' @param generate_initial_values Boolean indicating whether or not to specify
+#' the initialization of the sampler, default is `TRUE`, meaning that the
 #' initialization lists will be passed to the `cmdstanr::sample()`
 #' function
 #' @param compiled_model The pre-compiled model as defined using
@@ -66,7 +66,7 @@ wwinference <- function(ww_data,
                             "2023-12-06"
                         ),
                         mcmc_options = wwinference::get_mcmc_options(),
-                        spec_inits = TRUE,
+                        generate_initial_values = TRUE,
                         compiled_model = wwinference::compile_model()) {
   # Check that data is compatible with specifications
   check_date(ww_data, model_spec$forecast_date)
@@ -86,39 +86,29 @@ wwinference <- function(ww_data,
     compute_likelihood = 1
   )
 
-  init_lists <- c()
-  for (i in 1:mcmc_options$n_chains) {
-    init_lists[[i]] <- get_inits(stan_data, params)
+  init_lists <- NULL
+  if (generate_initial_values) {
+    init_lists <- c()
+    for (i in 1:mcmc_options$n_chains) {
+      init_lists[[i]] <- get_inits(stan_data, params)
+    }
   }
 
 
   fit_model <- function(compiled_model,
                         standata,
                         model_spec,
-                        init_lists,
-                        spec_inits) {
-    if (isTRUE(spec_inits)) {
-      fit <- compiled_model$sample(
-        data = stan_data,
-        init = init_lists,
-        seed = mcmc_options$seed,
-        iter_sampling = mcmc_options$iter_sampling,
-        iter_warmup = mcmc_options$iter_warmup,
-        max_treedepth = mcmc_options$max_treedepth,
-        chains = mcmc_options$n_chains,
-        parallel_chains = mcmc_options$n_chains
-      )
-    } else {
-      fit <- compiled_model$sample(
-        data = stan_data,
-        seed = mcmc_options$seed,
-        iter_sampling = mcmc_options$iter_sampling,
-        iter_warmup = mcmc_options$iter_warmup,
-        max_treedepth = mcmc_options$max_treedepth,
-        chains = mcmc_options$n_chains,
-        parallel_chains = mcmc_options$n_chains
-      )
-    }
+                        init_lists) {
+    fit <- compiled_model$sample(
+      data = stan_data,
+      init = init_lists,
+      seed = mcmc_options$seed,
+      iter_sampling = mcmc_options$iter_sampling,
+      iter_warmup = mcmc_options$iter_warmup,
+      max_treedepth = mcmc_options$max_treedepth,
+      chains = mcmc_options$n_chains,
+      parallel_chains = mcmc_options$n_chains
+    )
 
     return(fit)
   }
@@ -131,8 +121,7 @@ wwinference <- function(ww_data,
     compiled_model,
     standata,
     model_spec,
-    init_lists,
-    spec_inits
+    init_lists
   )
 
   if (!is.null(fit$error)) { # If the model errors, return a list with the

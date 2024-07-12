@@ -10,7 +10,7 @@ wwinference(
   count_data,
   model_spec = wwinference::get_model_spec(forecast_date = "2023-12-06"),
   mcmc_options = wwinference::get_mcmc_options(),
-  spec_inits = TRUE,
+  generate_initial_values = TRUE,
   compiled_model = wwinference::compile_model()
 )
 }
@@ -33,8 +33,8 @@ user based on the date they are producing a forecast}
 \item{mcmc_options}{The MCMC parameters as defined using
 \code{get_mcmc_options()}.}
 
-\item{spec_inits}{Boolean indicating whether or not to specify the
-initialization of the sampler, default is \code{TRUE}, meaning that the
+\item{generate_initial_values}{Boolean indicating whether or not to specify
+the initialization of the sampler, default is \code{TRUE}, meaning that the
 initialization lists will be passed to the \code{cmdstanr::sample()}
 function}
 

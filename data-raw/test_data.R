@@ -58,7 +58,7 @@ fit <- wwinference::wwinference(
     iter_sampling = 25,
     iter_warmup = 25
   ),
-  spec_inits = FALSE,
+  generate_initial_values = FALSE,
   compiled_model = model
 )
 
