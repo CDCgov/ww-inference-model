@@ -19,7 +19,7 @@
 #' @examples
 #' ww_data <- tibble::tibble(
 #'   date = rep(c("2023-11-01", "2023-11-02"), 2),
-#'   site = c(rep(1), rep(2)),
+#'   site = c(rep(1, 2), rep(2, 2)),
 #'   lab = c(1, 1, 1, 1),
 #'   conc = c(345.2, 784.1, 401.5, 681.8),
 #'   lod = c(20, 20, 15, 15)
@@ -60,15 +60,12 @@ preprocess_ww_data <- function(ww_data,
   # Get an extra column that identifies the wastewater outliers using the
   # default parameters
   ww_preprocessed <- flag_ww_outliers(ww_data_add_cols,
-    conc_col_name = {{ conc_col_name }}
-  ) |>
-    dplyr::rename(
-      genome_copies_per_ml = {{ conc_col_name }}
-    )
-
+    conc_col_name = "genome_copies_per_ml"
+  )
 
   return(ww_preprocessed)
 }
+
 
 #' Pre-process hospital admissions data, converting column names to those
 #' that [get_stan_data()] expects.
@@ -89,7 +86,7 @@ preprocess_ww_data <- function(ww_data,
 #'   daily_admits = c(10, 20),
 #'   state_pop = c(1e6, 1e6)
 #' )
-#' hosp_data_preprocessed <- preprocess_hospdata(
+#' hosp_data_preprocessed <- preprocess_hosp_data(
 #'   hosp_data,
 #'   "daily_admits",
 #'   "state_pop"
@@ -131,7 +128,9 @@ preprocess_hosp_data <- function(hosp_data,
 #' @export
 #'
 #' @examples
-#' ww_data_outliers_flagged <- flag_ww_outliers(ww_data)
+#' ww_data <- wwinference::ww_data
+#' ww_data_preprocessed <- wwinference::preprocess_ww_data(ww_data)
+#' ww_data_outliers_flagged <- flag_ww_outliers(ww_data_preprocessed)
 flag_ww_outliers <- function(ww_data,
                              conc_col_name = "genome_copies_per_ml",
                              rho_threshold = 2,
@@ -156,9 +155,9 @@ flag_ww_outliers <- function(ww_data,
     dplyr::group_by(lab_site_index) |>
     dplyr::arrange(date, "desc") |>
     dplyr::mutate(
-      log_conc = log(!!sym(conc_col_name)),
-      prev_log_conc = lag(log_conc, 1),
-      prev_date = lag(date, 1),
+      log_conc = log(!!rlang::sym(conc_col_name)),
+      prev_log_conc = dplyr::lag(log_conc, 1),
+      prev_date = dplyr::lag(date, 1),
       diff_log_conc = log_conc - prev_log_conc,
       diff_time = as.numeric(difftime(date, prev_date)),
       rho = diff_log_conc / diff_time
@@ -178,18 +177,18 @@ flag_ww_outliers <- function(ww_data,
         dplyr::summarise(
           mean_rho = mean(rho, na.rm = TRUE),
           std_rho = sd(rho, na.rm = TRUE),
-          mean_conc = mean(!!sym(conc_col_name), na.rm = TRUE),
-          std_conc = sd(!!sym(conc_col_name), na.rm = TRUE)
+          mean_conc = mean(!!rlang::sym(conc_col_name), na.rm = TRUE),
+          std_conc = sd(!!rlang::sym(conc_col_name), na.rm = TRUE)
         ),
       by = "lab_site_index"
     ) |>
     dplyr::group_by(lab_site_index) |>
     mutate(
-      z_score_conc = (!!sym(conc_col_name) - mean_conc) / std_conc,
+      z_score_conc = (!!rlang::sym(conc_col_name) - mean_conc) / std_conc,
       z_score_rho = (rho - mean_rho) / std_rho
     ) |>
     dplyr::mutate(
-      z_score_rho_t_plus_1 = lead(z_score_rho, 1),
+      z_score_rho_t_plus_1 = dplyr::lead(z_score_rho, 1),
       flagged_for_removal_conc = dplyr::case_when(
         abs(z_score_conc) >= log_conc_threshold ~ 1,
         is.na(z_score_conc) ~ 0,
@@ -245,9 +244,10 @@ flag_ww_outliers <- function(ww_data,
 #' data <- tibble::tibble(
 #'   date = c("2023-10-01", "2023-10-02"),
 #'   genome_copies_per_mL = c(300, 3e6),
-#'   flag_as_ww_outlier = c(0, 1)
+#'   flag_as_ww_outlier = c(0, 1),
+#'   exclude = c(0, 0)
 #' )
-#' data_w_exclusions <- indicate_exclusions(data,
+#' data_w_exclusions <- indicate_ww_exclusions(data,
 #'   outlier_col_name = "flag_as_ww_outlier",
 #'   remove_outliers = TRUE
 #' )

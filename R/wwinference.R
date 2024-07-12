@@ -27,6 +27,11 @@
 #' user based on the date they are producing a forecast
 #' @param mcmc_options The MCMC parameters as defined using
 #' `get_mcmc_options()`.
+#' @param generate_initial_values Boolean indicating whether or not to specify
+#' the initialization of the sampler, default is `TRUE`, meaning that
+#' initialization lists will be generated and passed as the `init` argument
+#' to the model object [`$sample()`][cmdstanr::model-method-sample] call.
+#' function
 #' @param compiled_model The pre-compiled model as defined using
 #' `compile_model()`
 #'
@@ -62,6 +67,7 @@ wwinference <- function(ww_data,
                             "2023-12-06"
                         ),
                         mcmc_options = wwinference::get_mcmc_options(),
+                        generate_initial_values = TRUE,
                         compiled_model = wwinference::compile_model()) {
   # Check that data is compatible with specifications
   check_date(ww_data, model_spec$forecast_date)
@@ -81,14 +87,17 @@ wwinference <- function(ww_data,
     compute_likelihood = 1
   )
 
-  init_lists <- c()
-  for (i in 1:mcmc_options$n_chains) {
-    init_lists[[i]] <- get_inits(stan_data, params)
+  init_lists <- NULL
+  if (generate_initial_values) {
+    init_lists <- c()
+    for (i in 1:mcmc_options$n_chains) {
+      init_lists[[i]] <- get_inits(stan_data, params)
+    }
   }
 
 
   fit_model <- function(compiled_model,
-                        stan_data,
+                        standata,
                         model_spec,
                         init_lists) {
     fit <- compiled_model$sample(
@@ -111,7 +120,7 @@ wwinference <- function(ww_data,
 
   fit <- safe_fit_model(
     compiled_model,
-    stan_data,
+    standata,
     model_spec,
     init_lists
   )
@@ -234,6 +243,7 @@ get_mcmc_options <- function(
   return(mcmc_settings)
 }
 
+
 #' Get model specifications
 #' @description
 #' This function returns a nested list containing the model specifications
@@ -266,7 +276,7 @@ get_mcmc_options <- function(
 #' @export
 #'
 #' @examples
-#' model_spec_list <- model_spec(forecast_date = "2023-12-06")
+#' model_spec_list <- get_model_spec(forecast_date = "2023-12-06")
 get_model_spec <- function(
     forecast_date,
     calibration_time = 90,

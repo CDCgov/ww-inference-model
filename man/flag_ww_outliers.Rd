@@ -40,5 +40,7 @@ step.
 Flag WW outliers
 }
 \examples{
-ww_data_outliers_flagged <- flag_ww_outliers(ww_data)
+ww_data <- wwinference::ww_data
+ww_data_preprocessed <- wwinference::preprocess_ww_data(ww_data)
+ww_data_outliers_flagged <- flag_ww_outliers(ww_data_preprocessed)
 }

@@ -22,9 +22,11 @@ check_date <- function(df, max_date, call = rlang::caller_env()) {
   invisible()
 }
 
+
 #' Check that all elements of a vector are non-negative
 #'
 #' @param x vector of arguments to check for negativity
+#' @param arg string to print the name of the element your checking
 #' @param call Calling environment to be passed to the type checker
 #'
 #' @return NULL, invisibly

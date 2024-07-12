@@ -58,6 +58,7 @@ add_pmfs <- function(pmfs) {
 #' @param n_weeks number of weeks those days correspond to
 #'
 #' @return a n_day x n_week matrix for multiplying by weekly estimated
+
 #' value to broadcast it to daily
 #' @export
 #'
@@ -94,6 +95,7 @@ create_dir <- function(output_file_path) {
   }
 }
 
+
 #' @title Get the mean of a Normal distribution for a random variable Y
 #' needed to ensure that the distribution of X = exp(Y) (which is Log-Normal)
 #' has a specified mean and sd.
@@ -106,11 +108,13 @@ create_dir <- function(output_file_path) {
 #'
 #' @return corresponding mean for the underlying Normal
 #' distribution of Y = log(X).
+
 #' @export
 convert_to_logmean <- function(mean, sd) {
   logmean <- log(mean^2 / sqrt(sd^2 + mean^2))
   return(logmean)
 }
+
 
 
 #' @title Get the sd of a Normal distribution for a random variable Y
@@ -137,7 +141,6 @@ convert_to_logsd <- function(mean, sd) {
 #' @export
 #' @examples
 #' to_simplex(c(1, 1, 1))
-#' @noRd
 to_simplex <- function(vector) {
   return(vector / sum(vector))
 }

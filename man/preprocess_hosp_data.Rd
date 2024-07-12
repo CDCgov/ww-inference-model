@@ -35,7 +35,7 @@ hosp_data <- tibble::tibble(
   daily_admits = c(10, 20),
   state_pop = c(1e6, 1e6)
 )
-hosp_data_preprocessed <- preprocess_hospdata(
+hosp_data_preprocessed <- preprocess_hosp_data(
   hosp_data,
   "daily_admits",
   "state_pop"

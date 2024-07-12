@@ -9,6 +9,8 @@ check_elements_non_neg(x, arg = "x", call = rlang::caller_env())
 \arguments{
 \item{x}{vector of arguments to check for negativity}
 
+\item{arg}{string to print the name of the element your checking}
+
 \item{call}{Calling environment to be passed to the type checker}
 }
 \value{

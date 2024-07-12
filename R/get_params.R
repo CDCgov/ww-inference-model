@@ -9,7 +9,10 @@
 #' @export
 #'
 #' @examples
-#' params <- get_params("input/params.toml")
+#' params <- get_params(param_file = fs::path_package("extdata",
+#'   "example_params.toml",
+#'   package = "wwinference"
+#' ))
 get_params <- function(param_file) {
   paramlist <- RcppTOML::parseTOML(param_file)
   validate_paramlist(paramlist)
