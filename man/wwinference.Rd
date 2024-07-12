@@ -34,8 +34,9 @@ user based on the date they are producing a forecast}
 \code{get_mcmc_options()}.}
 
 \item{generate_initial_values}{Boolean indicating whether or not to specify
-the initialization of the sampler, default is \code{TRUE}, meaning that the
-initialization lists will be passed to the \code{cmdstanr::sample()}
+the initialization of the sampler, default is \code{TRUE}, meaning that
+initialization lists will be generated and passed as the \code{init} argument
+to the model object \code{\link[cmdstanr:model-method-sample]{$sample()}} call.
 function}
 
 \item{compiled_model}{The pre-compiled model as defined using
