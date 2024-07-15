@@ -443,5 +443,13 @@ convergence_flag_df <- wwinference::get_model_diagnostic_flags(
   stan_fit_obj =
     fit$raw_fit_obj
 )
-parameter_diangostics <- fit$raw_fit_obj$summary()
+parameter_diagnostics <- fit$raw_fit_obj$summary()
+diagnostic_summary <- fit$raw_fit_obj$diagnostic_summary(quiet = TRUE)
 ```
+
+## Fit to only hospital admissions data
+The package also has functionality to fit the model without wastewater data.
+This can be useful when doing comparisons of the impact the wastewater data
+has on the forecast, or as a part of a pipeline where one might choose to
+rely on the admissions only model if their are covergence or known data issues
+with the wastewater data.

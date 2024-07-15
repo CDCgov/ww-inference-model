@@ -18,6 +18,8 @@
 #' @param infection_feedback_pmf a vector with a normalized pmf dictating the
 #' delay of infection feedback
 #' @param params a dataframe of parameter names and numeric values
+#' @param include_ww integer either 1 or 0 indicating whether to fit the
+#' wastewater data or not
 #' @param compute_likelihood indicator variable telling stan whether or not to
 #' compute the likelihood, default = `1`
 #'
@@ -32,6 +34,7 @@ get_stan_data <- function(input_count_data,
                           inf_to_count_delay,
                           infection_feedback_pmf,
                           params,
+                          include_ww,
                           compute_likelihood = 1) {
   # Assign parameter names
   par_names <- colnames(params)
