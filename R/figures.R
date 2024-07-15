@@ -84,7 +84,7 @@ get_plot_forecasted_counts <- function(draws,
 #'
 get_plot_ww_conc <- function(draws,
                              forecast_date,
-                             n_draw_to_plot = 100) {
+                             n_draws_to_plot = 100) {
   sampled_draws <- sample(1:max(draws_df$draw), n_draws_to_plot)
 
   p <- ggplot(draws |> dplyr::filter(
@@ -201,7 +201,7 @@ get_plot_global_rt <- function(draws,
 #'
 get_plot_subpop_rt <- function(draws,
                                forecast_date,
-                               n_draw_to_plot = 100) {
+                               n_draws_to_plot = 100) {
   sampled_draws <- sample(1:max(draws_df$draw), n_draws_to_plot)
 
   p <- ggplot(draws |> dplyr::filter(
