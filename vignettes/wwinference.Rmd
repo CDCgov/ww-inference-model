@@ -282,7 +282,7 @@ pre-compiled model(`model`) to `wwinference()` where they are combined and
 used to fit the model.
 
 
-```{r warning=FALSE, message=FALSE}}
+```{r warning=FALSE, message=FALSE}
 fit <- wwinference::wwinference(
   ww_data_to_fit,
   hosp_data_preprocessed,
@@ -387,7 +387,7 @@ has on the forecast, or as a part of a pipeline where one might choose to
 rely on the admissions only model if their are covergence or known data issues
 with the wastewater data.
 
-```{r warning=FALSE, message=FALSE}}
+```{r warning=FALSE, message=FALSE}
 fit_hosp_only <- wwinference::wwinference(
   ww_data_to_fit,
   hosp_data_preprocessed,
