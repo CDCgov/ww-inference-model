@@ -396,7 +396,3 @@ plot_hosp_hosp_only <- get_plot_forecasted_counts(
 )
 plot_hosp_hosp_only
 ```
-<div class="figure">
-<img src="figures/getting-started-hosp-forecasts-hosp-only.png" alt="plot of forecasted hospital admissions fit only to hospital admissions" width="100%" />
-<p class="caption">plot of forecasted hospital admissions fit only to hospital admissions</p>
-</div>
