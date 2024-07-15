@@ -47,7 +47,7 @@ delay of infection feedback}
 \item{params}{a dataframe of parameter names and numeric values}
 
 \item{include_ww}{integer either 1 or 0 indicating whether to fit the
-wastewater data or not}
+wastewater data or not, default is 1}
 
 \item{compute_likelihood}{indicator variable telling stan whether or not to
 compute the likelihood, default = \code{1}}

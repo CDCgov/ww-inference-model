@@ -29,7 +29,7 @@ interested in fitting the `wwinference` model to their own data.
 In this quick start, we also use `dplyr` `tidybayes` and `ggplot2` packages.
 These are installed as dependencies when `wwinference` is installed.
 
-```{r}
+```{r warning=FALSE, message=FALSE}}
 library(wwinference)
 library(dplyr)
 library(ggplot2)
@@ -191,6 +191,7 @@ ggplot(hosp_data_preprocessed) +
   ggtitle("State level hospital admissions") +
   theme_bw()
 ```
+
 ## Data exclusion
 As an optional additional pre-processing step, the user can decide to exclude
 certain data points from being included in the model fit procedure. For example,
@@ -281,7 +282,7 @@ pre-compiled model(`model`) to `wwinference()` where they are combined and
 used to fit the model.
 
 
-```{r, message = FALSE}
+```{r warning=FALSE, message=FALSE}}
 fit <- wwinference::wwinference(
   ww_data_to_fit,
   hosp_data_preprocessed,
@@ -291,7 +292,8 @@ fit <- wwinference::wwinference(
     forecast_horizon = forecast_horizon,
     generation_interval = generation_interval,
     inf_to_count_delay = inf_to_hosp,
-    infection_feedback_pmf = infection_feedback_pmf
+    infection_feedback_pmf = infection_feedback_pmf,
+    params = params
   ),
   mcmc_options = get_mcmc_options(),
   compiled_model = model
@@ -314,104 +316,12 @@ head(fit)
 The `draws_df` object is intended to be used to easily plot relevant model
 outputs against data. This can be useful to get a sense of if you're model is
 fitting the data well, and if the nowcasted/forecast quantities look reasonable.
+We can create the plots using the fitting wrapper functions (figures can
+also created directly using the `draws_df`)
 
 ```{r}
 draws_df <- fit$draws_df
-sampled_draws <- sample(1:max(draws_df$draw), 100)
 
-# Hospital admissions: fits, nowcasts, forecasts
-ggplot(draws_df |> dplyr::filter(
-  name == "pred_counts",
-  draw %in% sampled_draws
-)) +
-  geom_line(aes(x = date, y = pred_value, group = draw),
-    color = "red4", alpha = 0.1, size = 0.2
-  ) +
-  geom_point(
-    data = hosp_data_eval,
-    aes(x = date, y = daily_hosp_admits_for_eval),
-    shape = 21, color = "black", fill = "white"
-  ) +
-  geom_point(aes(x = date, y = observed_value)) +
-  geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
-    linetype = "dashed"
-  ) +
-  xlab("") +
-  ylab("Daily hospital admissions") +
-  ggtitle("Fit and forecasted hospital admissions ") +
-  theme_bw()
-
-# R(t) of the hypothetical state
-ggplot(draws_df |> dplyr::filter(
-  name == "global R(t)",
-  draw %in% sampled_draws
-)) +
-  geom_line(aes(x = date, y = pred_value, group = draw),
-    color = "blue4", alpha = 0.1, size = 0.2
-  ) +
-  geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
-    linetype = "dashed"
-  ) +
-  geom_hline(aes(yintercept = 1), linetype = "dashed") +
-  xlab("") +
-  ylab("Global R(t) ") +
-  ggtitle("Global R(t) estimate") +
-  theme_bw()
-
-
-ggplot(draws_df |> dplyr::filter(
-  name == "pred_ww",
-  draw %in% sampled_draws
-) |>
-  dplyr::mutate(
-    site_lab_name = glue::glue("{subpop}, Lab: {lab}")
-  )) +
-  geom_line(
-    aes(
-      x = date, y = log(pred_value),
-      color = subpop,
-      group = draw
-    ),
-    alpha = 0.1, size = 0.2,
-    show.legend = FALSE
-  ) +
-  geom_point(aes(x = date, y = log(observed_value)),
-    color = "black", show.legend = FALSE
-  ) +
-  facet_wrap(~site_lab_name, scales = "free") +
-  geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
-    linetype = "dashed"
-  ) +
-  xlab("") +
-  ylab("Log(Genome copies/mL)") +
-  ggtitle("Lab-site level wastewater concentration") +
-  theme_bw()
-
-ggplot(draws_df |> dplyr::filter(
-  name == "subpop R(t)",
-  draw %in% sampled_draws
-)) +
-  geom_line(
-    aes(
-      x = date, y = pred_value, group = draw,
-      color = subpop
-    ),
-    alpha = 0.1, size = 0.2
-  ) +
-  geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
-    linetype = "dashed"
-  ) +
-  facet_wrap(~subpop, scales = "free") +
-  geom_hline(aes(yintercept = 1), linetype = "dashed") +
-  xlab("") +
-  ylab("Subpopulation R(t)") +
-  ggtitle("R(t) estimate") +
-  theme_bw()
-```
-
-Alternatively, we can create each of these plots with the fitting wrapper
-functions.
-```{r}
 plot_hosp <- get_plot_forecasted_counts(
   draws = draws_df,
   count_data_eval = hosp_data_eval,
@@ -419,13 +329,36 @@ plot_hosp <- get_plot_forecasted_counts(
   forecast_date = forecast_date
 )
 plot_hosp
+```
+<div class="figure">
+<img src="figures/getting-started-hosp-forecasts.png" alt="plot of wastewater-informed forecast of hospital admissions" width="100%" />
+<p class="caption">plot of wastewater-informed forecast of hospital admissions</p>
+</div>
+
+```{r}
 plot_ww <- get_plot_ww_conc(draws_df, forecast_date)
 plot_ww
+```
+<div class="figure">
+<img src="figures/getting-started-ww-conc.png" alt="plot of fit and forecasted wastewater concentrations" width="100%" />
+<p class="caption">plot of fit and forecasted wastewater concentrations</p>
+</div>
+```{r}
 plot_state_rt <- get_plot_global_rt(draws_df, forecast_date)
 plot_state_rt
+```
+<div class="figure">
+<img src="figures/getting-started-global-rt.png" alt="plot of global R(t) estimate" width="100%" />
+<p class="caption">plot of global R(t) estimate</p>
+</div>
+```{r}
 plot_subpop_rt <- get_plot_subpop_rt(draws_df, forecast_date)
 plot_subpop_rt
 ```
+<div class="figure">
+<img src="figures/getting-started-subpop-rt.png" alt="plot of subpopulation level R(t) estimates" width="100%" />
+<p class="caption">plot of subpopulation level R(t) estimates</p>
+</div>
 
 ## Diagnostics
 While the `wwinference()` function will print out messaging if any of the
@@ -453,3 +386,37 @@ This can be useful when doing comparisons of the impact the wastewater data
 has on the forecast, or as a part of a pipeline where one might choose to
 rely on the admissions only model if their are covergence or known data issues
 with the wastewater data.
+
+```{r warning=FALSE, message=FALSE}}
+fit_hosp_only <- wwinference::wwinference(
+  ww_data_to_fit,
+  hosp_data_preprocessed,
+  model_spec = get_model_spec(
+    forecast_date = forecast_date,
+    calibration_time = calibration_time,
+    forecast_horizon = forecast_horizon,
+    generation_interval = generation_interval,
+    inf_to_count_delay = inf_to_hosp,
+    infection_feedback_pmf = infection_feedback_pmf,
+    include_ww = FALSE,
+    params = params
+  ),
+  mcmc_options = get_mcmc_options(),
+  compiled_model = model
+)
+```
+
+```{r}
+draws_df_hosp_only <- fit_hosp_only$draws_df
+plot_hosp_hosp_only <- get_plot_forecasted_counts(
+  draws = draws_df_hosp_only,
+  count_data_eval = hosp_data_eval,
+  count_data_eval_col_name = "daily_hosp_admits_for_eval",
+  forecast_date = forecast_date
+)
+plot_hosp_hosp_only
+```
+<div class="figure">
+<img src="figures/getting-started-hosp-forecasts-hosp-only.png" alt="plot of forecasted hospital admissions fit only to hospital admissions" width="100%" />
+<p class="caption">plot of forecasted hospital admissions fit only to hospital admissions</p>
+</div>

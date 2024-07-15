@@ -12,6 +12,8 @@
 #' plotting, in ISO8601 format YYYY-MM-DD
 #' @param count_type A string indicating what data the counts refer to,
 #' default is `hospital admissions`
+#' @param n_draws_to_plot An integer indicating how many draws from the
+#' posterior to include in the plot, default is `100`
 #'
 #' @return A ggplot object containing the posterior draw of the estimated,
 #' nowcasted, and forecasted counts alongside the data used to
@@ -24,7 +26,10 @@ get_plot_forecasted_counts <- function(draws,
                                        count_data_eval,
                                        count_data_eval_col_name,
                                        forecast_date,
-                                       count_type = "hospital admissions") {
+                                       count_type = "hospital admissions",
+                                       n_draws_to_plot = 100) {
+  sampled_draws <- sample(1:max(draws_df$draw), n_draws_to_plot)
+
   p <- ggplot(draws |> dplyr::filter(
     name == "pred_counts",
     draw %in% sampled_draws
@@ -70,13 +75,18 @@ get_plot_forecasted_counts <- function(draws,
 #' to it. This is the `draws_df` output of a call to [wwinference()]
 #' @param forecast_date A string indicating the date we made the forecast, for
 #' plotting, in ISO8601 format YYYY-MM-DD
+#' @param n_draws_to_plot An integer indicating how many draws from the
+#' posterior to include in the plot, default is `100`
 #'
 #' @return a ggplot object containing faceted plots of the wastewaster
 #' concentrations in each site and lab combination
 #' @export
 #'
 get_plot_ww_conc <- function(draws,
-                             forecast_date) {
+                             forecast_date,
+                             n_draw_to_plot = 100) {
+  sampled_draws <- sample(1:max(draws_df$draw), n_draws_to_plot)
+
   p <- ggplot(draws |> dplyr::filter(
     name == "pred_ww",
     draw %in% sampled_draws
@@ -129,13 +139,18 @@ get_plot_ww_conc <- function(draws,
 #' to it. This is the `draws_df` output of a call to [wwinference()]
 #' @param forecast_date A string indicating the date we made the forecast, for
 #' plotting, in ISO8601 format YYYY-MM-DD
+#' @param n_draws_to_plot An integer indicating how many draws from the
+#' posterior to include in the plot, default is `100`
 #'
 #' @return A ggplot object containing the posterior draws of the global R(t)
 #' estimate
 #' @export
 #'
 get_plot_global_rt <- function(draws,
-                               forecast_date) {
+                               forecast_date,
+                               n_darws_to_plot = 100) {
+  sampled_draws <- sample(1:max(draws_df$draw), n_draws_to_plot)
+
   # R(t) of the hypothetical state
   p <- ggplot(draws |> dplyr::filter(
     name == "global R(t)",
@@ -177,13 +192,18 @@ get_plot_global_rt <- function(draws,
 #' to it. This is `draws_df` output of the call to `wwinference()`
 #' @param forecast_date A string indicating the date we made the forecast, for
 #' plotting, in ISO8601 format YYYY-MM-DD
+#' @param n_draws_to_plot An integer indicating how many draws from the
+#' posterior to include in the plot, default is `100`
 #'
 #' @return A ggplot object containing faceted plots of the R(t) estimate in each
 #' subpopulation (so wastewater sites + those not on wastewater)
 #' @export
 #'
 get_plot_subpop_rt <- function(draws,
-                               forecast_date) {
+                               forecast_date,
+                               n_draw_to_plot = 100) {
+  sampled_draws <- sample(1:max(draws_df$draw), n_draws_to_plot)
+
   p <- ggplot(draws |> dplyr::filter(
     name == "subpop R(t)",
     draw %in% sampled_draws
@@ -197,7 +217,8 @@ get_plot_subpop_rt <- function(draws,
       show.legend = FALSE
     ) +
     geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
-      linetype = "dashed"
+      linetype = "dashed",
+      show.legend = FALSE
     ) +
     facet_wrap(~subpop, scales = "free") +
     geom_hline(aes(yintercept = 1), linetype = "dashed") +

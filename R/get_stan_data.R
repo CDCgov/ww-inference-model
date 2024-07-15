@@ -19,7 +19,7 @@
 #' delay of infection feedback
 #' @param params a dataframe of parameter names and numeric values
 #' @param include_ww integer either 1 or 0 indicating whether to fit the
-#' wastewater data or not
+#' wastewater data or not, default is 1
 #' @param compute_likelihood indicator variable telling stan whether or not to
 #' compute the likelihood, default = `1`
 #'
@@ -207,7 +207,7 @@ get_stan_data <- function(input_count_data,
     day_of_week = count_values$day_of_week,
     log_conc = ww_values$log_conc,
     compute_likelihood = compute_likelihood,
-    include_ww = 1, # hardcoding that we include ww
+    include_ww = include_ww,
     include_hosp = 1,
     if_l = length(infection_feedback_pmf),
     infection_feedback_pmf = infection_feedback_pmf,

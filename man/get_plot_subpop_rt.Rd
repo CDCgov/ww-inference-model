@@ -4,7 +4,7 @@
 \alias{get_plot_subpop_rt}
 \title{Get plot of fit, nowcasted, and forecasted R(t) in each subpopulation}
 \usage{
-get_plot_subpop_rt(draws, forecast_date)
+get_plot_subpop_rt(draws, forecast_date, n_draw_to_plot = 100)
 }
 \arguments{
 \item{draws}{A dataframe containing the posterior draws with the data joined
@@ -12,6 +12,9 @@ to it. This is \code{draws_df} output of the call to \code{wwinference()}}
 
 \item{forecast_date}{A string indicating the date we made the forecast, for
 plotting, in ISO8601 format YYYY-MM-DD}
+
+\item{n_draws_to_plot}{An integer indicating how many draws from the
+posterior to include in the plot, default is \code{100}}
 }
 \value{
 A ggplot object containing faceted plots of the R(t) estimate in each

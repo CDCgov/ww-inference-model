@@ -4,7 +4,7 @@
 \alias{get_plot_ww_conc}
 \title{Get plot of fit and forecasted wastewater concentrations}
 \usage{
-get_plot_ww_conc(draws, forecast_date)
+get_plot_ww_conc(draws, forecast_date, n_draw_to_plot = 100)
 }
 \arguments{
 \item{draws}{A dataframe containing the posterior draws with the data joined
@@ -12,6 +12,9 @@ to it. This is the \code{draws_df} output of a call to \code{\link[=wwinference]
 
 \item{forecast_date}{A string indicating the date we made the forecast, for
 plotting, in ISO8601 format YYYY-MM-DD}
+
+\item{n_draws_to_plot}{An integer indicating how many draws from the
+posterior to include in the plot, default is \code{100}}
 }
 \value{
 a ggplot object containing faceted plots of the wastewaster

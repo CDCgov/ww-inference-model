@@ -9,7 +9,8 @@ get_plot_forecasted_counts(
   count_data_eval,
   count_data_eval_col_name,
   forecast_date,
-  count_type = "hospital admissions"
+  count_type = "hospital admissions",
+  n_draws_to_plot = 100
 )
 }
 \arguments{
@@ -29,6 +30,9 @@ plotting, in ISO8601 format YYYY-MM-DD}
 
 \item{count_type}{A string indicating what data the counts refer to,
 default is \verb{hospital admissions}}
+
+\item{n_draws_to_plot}{An integer indicating how many draws from the
+posterior to include in the plot, default is \code{100}}
 }
 \value{
 A ggplot object containing the posterior draw of the estimated,
