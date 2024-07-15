@@ -4,7 +4,7 @@
 \alias{get_plot_ww_conc}
 \title{Get plot of fit and forecasted wastewater concentrations}
 \usage{
-get_plot_ww_conc(draws, forecast_date, n_draw_to_plot = 100)
+get_plot_ww_conc(draws, forecast_date, n_draws_to_plot = 100)
 }
 \arguments{
 \item{draws}{A dataframe containing the posterior draws with the data joined

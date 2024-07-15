@@ -4,7 +4,7 @@
 \alias{get_plot_global_rt}
 \title{Get plot of fit, nowcasted, and forecasted "global" R(t)}
 \usage{
-get_plot_global_rt(draws, forecast_date, n_darws_to_plot = 100)
+get_plot_global_rt(draws, forecast_date, n_draws_to_plot = 100)
 }
 \arguments{
 \item{draws}{A dataframe containing the posterior draws with the data joined
