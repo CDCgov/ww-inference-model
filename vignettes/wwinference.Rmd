@@ -29,7 +29,7 @@ interested in fitting the `wwinference` model to their own data.
 In this quick start, we also use `dplyr` `tidybayes` and `ggplot2` packages.
 These are installed as dependencies when `wwinference` is installed.
 
-```{r warning=FALSE, message=FALSE}}
+```{r warning=FALSE, message=FALSE}
 library(wwinference)
 library(dplyr)
 library(ggplot2)
