@@ -27,7 +27,13 @@ generate_simulated_data(
   mean_log_lod = 3.8,
   sd_log_lod = 0.2,
   input_params_path = fs::path_package("extdata", "example_params.toml", package =
-    "wwinference")
+    "wwinference"),
+  corr_function = independence_corr_func,
+  corr_fun_params = NULL,
+  phi_rt = 0.6,
+  sigma_eps = sqrt(0.02),
+  scaling_factor = NULL,
+  aux_site_bool = FALSE
 )
 }
 \arguments{
@@ -97,7 +103,21 @@ across sites}
 LOD across sites}
 
 \item{input_params_path}{path to the toml file with the parameters to use
-to generate the simulated data}
+to generate the simulated data
+#' @param corr_function Correlation function for spatial site correlations}
+
+\item{corr_fun_params}{Parameters required for correlation function}
+
+\item{phi_rt}{Coefficient for AR(1) temporal correlation on subpopulation
+deviations.}
+
+\item{sigma_eps}{Parameter for construction of covariance matrix of spatial
+epsilon.}
+
+\item{scaling_factor}{Scaling factor for aux site.}
+
+\item{aux_site_bool}{Boolean to use the aux site framework with
+scaling factor.}
 }
 \value{
 a list containing three dataframes. hosp_data is a dataframe
