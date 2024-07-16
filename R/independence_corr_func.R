@@ -19,6 +19,6 @@ independence_corr_func <- function(
              List should be {int}" =
       is.numeric(corr_function_params$num_sites)
   )
-  
+
   return(diag(x = 1, nrow = corr_function_params$num_sites))
 }

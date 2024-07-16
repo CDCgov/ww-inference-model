@@ -31,20 +31,20 @@ exponential_decay_corr_func <- function(
              Make sure dist_matrix is square" =
       nrow(dist_matrix) == ncol(dist_matrix)
   )
-  
+
   # presets
   corr_matrix <- matrix(
     data = 0,
     nrow = nrow(dist_matrix),
     ncol = ncol(dist_matrix)
   )
-  
+
   for (i in seq_len(nrow(dist_matrix))) {
     for (j in seq_len(ncol(dist_matrix))) {
       d_ij <- dist_matrix[i, j]
       corr_matrix[i, j] <- exp(-(d_ij / phi)^l)
     }
   }
-  
+
   return(corr_matrix)
 }

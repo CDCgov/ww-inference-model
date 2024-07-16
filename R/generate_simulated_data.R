@@ -137,7 +137,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     "Site and lab indices don't align" =
       length(site) == length(lab)
   )
-  
+
   # presetting corr_fun_params
   if (is.null(corr_fun_params)) {
     corr_fun_params <- list(num_sites = n_sites)
@@ -288,7 +288,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   initial_growth_site <- vector(length = n_sites + 1)
   log_i0_over_n_site <- vector(length = n_sites + 1)
   for (i in 1:(n_sites + 1)) {
-
     # Generate deviations in the initial growth rate and initial incidence
     initial_growth_site[i] <- rnorm(
       n = 1, mean = initial_growth,

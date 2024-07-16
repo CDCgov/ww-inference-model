@@ -20,13 +20,13 @@ spatial_rt_process <- function(log_state_rt,
   # correlation matrix constr.
   omega_matrix_eps <- corr_function(corr_function_params)
   sigma_matrix_eps <- sigma_eps^2 * omega_matrix_eps
-  
+
   # presets
   n_subpopulations <- nrow(sigma_matrix_eps)
   n_time <- length(log_state_rt)
   log_site_rt <- matrix(data = 0, nrow = n_subpopulations, ncol = n_time)
   delta <- matrix(data = 0, nrow = n_subpopulations, ncol = n_time)
-  
+
   # delta constr.
   delta[, 1] <- mvrnorm(
     n = 1,
@@ -41,7 +41,7 @@ spatial_rt_process <- function(log_state_rt,
     )
     delta[, t_i] <- phi_Rt * delta[, t_i - 1] + eps_vec
   }
-  
+
   # Subpopulation unadjusted Rt constr.
   for (t_i in 1:n_time) {
     log_site_rt[, t_i] <- (log_state_rt[t_i] * matrix(
@@ -51,6 +51,6 @@ spatial_rt_process <- function(log_state_rt,
     )) +
       delta[, t_i]
   }
-  
+
   return(log_site_rt)
 }
