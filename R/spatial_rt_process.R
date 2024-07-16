@@ -39,7 +39,7 @@ spatial_rt_process <- function(log_state_rt,
       mu = matrix(data = 0, nrow = 1, ncol = n_subpopulations),
       Sigma = sigma_matrix_eps
     )
-    delta[, t_i] <- phi_Rt * delta[, t_i - 1] + eps_vec
+    delta[, t_i] <- phi_rt * delta[, t_i - 1] + eps_vec
   }
 
   # Subpopulation unadjusted Rt constr.

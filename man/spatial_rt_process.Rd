@@ -13,6 +13,8 @@ spatial_rt_process(
 )
 }
 \arguments{
+\item{log_state_rt}{"State" level unadjusted Rt, on log scale.}
+
 \item{corr_function}{Function for the correlation structure desired.}
 
 \item{corr_function_params}{List of parameters of desired correlation
@@ -23,8 +25,6 @@ subpopulation deviations.}
 
 \item{sigma_eps}{Parameter for construction of covariance matrix
 of spatial epsilon.}
-
-\item{state_rt}{"State" level unadjusted Rt, on log scale.}
 }
 \value{
 A matrix for unadjusted Rt where rows are subpopulations
