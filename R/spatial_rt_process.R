@@ -1,6 +1,6 @@
 #' Generates the subpopulation Rt trajectories for a spatially correlated model
 #'
-#' @param state_rt "State" level unadjusted Rt, on log scale.
+#' @param log_state_rt "State" level unadjusted Rt, on log scale.
 #' @param corr_function Function for the correlation structure desired.
 #' @param corr_function_params List of parameters of desired correlation
 #' function, should contain dist matrix.
