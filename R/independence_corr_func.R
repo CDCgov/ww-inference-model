@@ -1,6 +1,7 @@
 #' Generates the correlation matrix for a non-spatial process.
 #'
 #' @param corr_function_params NULL
+#' @export
 #'
 #' @return Correlation matrix of diagonal ones.
 #'

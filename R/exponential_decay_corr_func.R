@@ -5,6 +5,7 @@
 #' Ensure that this list follows this structure. Distance matrix is constructed
 #' externally, phi is a numeric value, l is also a numeric value.  Defaults are
 #' set to NULL.
+#' @export
 #'
 #' @return Correlation matrix.
 #'

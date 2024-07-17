@@ -8,6 +8,7 @@
 #' subpopulation deviations.
 #' @param sigma_eps Parameter for construction of covariance matrix
 #' of spatial epsilon.
+#' @export
 #'
 #' @return A matrix for unadjusted Rt where rows are subpopulations
 #' and columns are time points.
