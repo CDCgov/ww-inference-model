@@ -101,7 +101,7 @@
 #'   phi_rt = 0.6,
 #'   sigma_eps = sqrt(0.02),
 #'   scaling_factor = 0.01,
-#'   aux_site_bool = TRUE
+#'   aux_site_bool = FALSE
 #' )
 #' hosp_data <- sim_data$hosp_data
 #' ww_data <- sim_data$ww_data
@@ -179,8 +179,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   if (!use_spatial_corr) {
     corr_function <- independence_corr_func
     corr_fun_params <- list(num_sites = n_sites + 1)
-    scaling_factor <- NULL
-    aux_site_bool <- FALSE
   }
 
   # Get pop fractions of each subpop. There will n_sites + 1 subpops
@@ -364,8 +362,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
       mean = 0,
       sd = sqrt(scaling_factor) * sigma_eps
     )
-    n_t <- ncol(log_r_site)
-    for (i in 2:n_t) {
+    for (i in 2:n_weeks) {
       eps_temp <- rnorm(
         n = 1,
         mean = 0,
@@ -373,7 +370,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
       )
       delta[i] <- phi_rt * delta[i - 1] + eps_temp
     }
-    for (i in 1:n_t) {
+    for (i in 1:n_weeks) {
       log_r_site_aux[i] <- log_r_state_week[i] + delta[i]
     }
     log_r_site <- rbind(
