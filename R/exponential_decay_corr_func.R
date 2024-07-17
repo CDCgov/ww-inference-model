@@ -1,7 +1,10 @@
 #' Generates the correlation matrix for an exponential
 #' decay correlation function.
 #'
-#' @param corr_function_params Sturcuted as follows : {dist.matrix, phi, l}.
+#' @param corr_function_params Structured as follows : {dist_matrix, phi, l}.
+#' Ensure that this list follows this structure. Distance matrix is constructed
+#' externally, phi is a numeric value, l is also a numeric value.  Defaults are
+#' set to NULL.
 #'
 #' @return Correlation matrix.
 #'
@@ -32,19 +35,6 @@ exponential_decay_corr_func <- function(
       nrow(dist_matrix) == ncol(dist_matrix)
   )
 
-  # presets
-  corr_matrix <- matrix(
-    data = 0,
-    nrow = nrow(dist_matrix),
-    ncol = ncol(dist_matrix)
-  )
 
-  for (i in seq_len(nrow(dist_matrix))) {
-    for (j in seq_len(ncol(dist_matrix))) {
-      d_ij <- dist_matrix[i, j]
-      corr_matrix[i, j] <- exp(-(d_ij / phi)^l)
-    }
-  }
-
-  return(corr_matrix)
+  return(exp(-(dist_matrix / phi)^l))
 }
