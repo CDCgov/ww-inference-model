@@ -364,7 +364,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
       mean = 0,
       sd = sqrt(scaling_factor) * sigma_eps
     )
-    n_t <- seq_len(ncol(log_r_site))
+    n_t <- ncol(log_r_site)
     for (i in 2:n_t) {
       eps_temp <- rnorm(
         n = 1,
