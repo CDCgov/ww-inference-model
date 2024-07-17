@@ -101,7 +101,7 @@
 #'   phi_rt = 0.6,
 #'   sigma_eps = sqrt(0.02),
 #'   scaling_factor = 0.01,
-#'   aux_site_bool = FALSE
+#'   aux_site_bool = TRUE
 #' )
 #' hosp_data <- sim_data$hosp_data
 #' ww_data <- sim_data$ww_data
