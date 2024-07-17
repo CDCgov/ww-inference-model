@@ -110,18 +110,9 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                         package = "wwinference"
                                       )) {
   # Some quick checks to make sure the inputs work as expected
-  stopifnot(
-    "weekly R(t) passed in isn't long enough" =
-      length(r_in_weeks) >= (ot + nt + forecast_horizon) / 7
-  )
-  stopifnot(
-    "Sum of wastewater site populations is greater than state pop" =
-      pop_size > sum(ww_pop_sites)
-  )
-  stopifnot(
-    "Site and lab indices don't align" =
-      length(site) == length(lab)
-  )
+  check_rt_length(r_in_weeks, ot, nt, forecast_horizon)
+  check_ww_site_pops(pop_size, ww_pop_sites)
+  check_site_and_lab_indices(site, lab)
 
 
   # Get pop fractions of each subpop. There will n_sites + 1 subpops
