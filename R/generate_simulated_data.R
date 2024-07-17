@@ -48,6 +48,10 @@
 #' @param mean_log_lod float indicating the mean log of the LOD in each lab-site
 #' @param sd_log_lod float indicating the standard deviation in the log of the
 #' LOD across sites
+#' @param global_rt_sd float indicating the ammount of standard deviation to
+#' add to the passed in weekly R(t) to add variability
+#' @param infection_feedback Boolean indicating whether or not to include
+#' infection feedback into the infection process, default is `TRUE`
 #' @param input_params_path path to the toml file with the parameters to use
 #' to generate the simulated data
 #'
@@ -104,24 +108,19 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                     sd_reporting_latency = 3,
                                     mean_log_lod = 3.8,
                                     sd_log_lod = 0.2,
+                                    global_rt_sd = 0.03,
+                                    infection_feedback = TRUE,
                                     input_params_path =
                                       fs::path_package("extdata",
                                         "example_params.toml",
                                         package = "wwinference"
                                       )) {
-  # Some quick checks to make sure the inputs work as expected
+  # Some quick checks to make sure the inputs work as expected-----------------
   check_rt_length(r_in_weeks, ot, nt, forecast_horizon)
   check_ww_site_pops(pop_size, ww_pop_sites)
   check_site_and_lab_indices(site, lab)
 
-
-  # Get pop fractions of each subpop. There will n_sites + 1 subpops
-  pop_fraction <- c(
-    ww_pop_sites / pop_size,
-    (pop_size - sum(ww_pop_sites)) / pop_size
-  )
-
-  # Expose the stan functions into the global environment
+  # Expose the stan functions into the global environment--------------------
   model <- cmdstanr::cmdstan_model(
     stan_file = system.file(
       "stan", "wwinference.stan",
@@ -133,6 +132,13 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   )
   model$expose_functions(global = TRUE)
 
+  # Get other variables needed for forward simulation ------------------------
+
+  # Get pop fractions of each subpop. There will n_sites + 1 subpops
+  pop_fraction <- c(
+    ww_pop_sites / pop_size,
+    (pop_size - sum(ww_pop_sites)) / pop_size
+  )
   # Pull parameter values into memory
   params <- get_params(input_params_path) # load in a single row tibble
   par_names <- colnames(params) # pull them into memory
@@ -206,10 +212,12 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   # Set a lab-site-specific LOD in log scale
   lod_lab_site <- rnorm(n_lab_sites, mean = mean_log_lod, sd = sd_log_lod)
 
-  # Delay distributions: Note, these are COVID specific, and we will
+  # Delay distributions ------------------------------------------------------
+  # Note, these are COVID specific, and we will
   # generally want to specify these outside model configuration
 
-  # Double censored, zero truncated, generation interval
+  ## Generation interval------------------------------------------------------
+  # Double censored and zero-truncated
   generation_interval <- simulate_double_censored_pmf(
     max = gt_max, meanlog = mu_gi, sdlog = sigma_gi, fun_dist = rlnorm, n = 5e6
   ) |> drop_first_and_renormalize()
@@ -217,11 +225,9 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   # Set infection feedback to generation interval
   infection_feedback_pmf <- generation_interval
   infection_feedback_rev_pmf <- rev(infection_feedback_pmf)
-  infection_feedback <- 0
-  if_feedback <- 1
 
-  # Delay from infection to hospital admission: incubation period +
-  # time from symptom onset to hospital admission
+  ## Delay from infection to hospital admission ----------------------------
+  # incubation period + # time from symptom onset to hospital admission
 
   # Get incubation period for COVID.
   inc <- make_incubation_period_pmf(
@@ -229,22 +235,23 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   )
   sym_to_hosp <- make_hospital_onset_delay_pmf(neg_binom_mu, neg_binom_size)
 
-  # Infection to hospital admissions delay distribution
+  # Final infection to hospital admissions delay distribution
   inf_to_hosp <- make_reporting_delay_pmf(inc, sym_to_hosp)
 
-  # Shedding kinetics delay distribution
+  ## Shedding kinetics delay distribution-------------------------------
   vl_trajectory <- model$functions$get_vl_trajectory(
     t_peak_mean, viral_peak_mean,
     duration_shedding_mean, gt_max
   )
 
-  # Generate the state level weekly R(t) before infection feedback
-  # Adds a bit of noise, can add more...
-  unadj_r_weeks <- (r_in_weeks * rnorm(length(r_in_weeks), 1, 0.03))[1:n_weeks]
+  # Global R(t) ---------------------------------------------------------
+  unadj_r <- get_global_rt(
+    r_in_weeks = r_in_weeks,
+    n_weeks = n_weeks,
+    n_days = ot + ht,
+    global_rt_sd = global_rt_sd
+  )
 
-  # Convert to daily for input into renewal equation
-  ind_m <- get_ind_m(ot + ht, n_weeks)
-  unadj_r <- ind_m %*% unadj_r_weeks
 
 
   # Generate the site-level expected observed concentrations -----------------
@@ -294,7 +301,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
       log_i0_over_n_site[i], # log of the initial infections per capita
       initial_growth_site[i], # initial exponential growth rate
       ht, # time after last observed hospital admission
-      infection_feedback, # binary indicating whether or not inf feedback
+      as.numeric(infection_feedback), # binary indicating if infection feedback
       infection_feedback_rev_pmf # inf feedback delay pmf
     )
     # matrix to hold infections

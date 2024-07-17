@@ -34,6 +34,7 @@ mean_reporting_latency <- 7
 sd_reporting_latency <- 3
 mean_log_lod <- 3.8
 sd_log_lod <- 0.2
+global_rt_sd <- 0.03
 input_params_path <-
   fs::path_package("extdata",
     "example_params.toml",
