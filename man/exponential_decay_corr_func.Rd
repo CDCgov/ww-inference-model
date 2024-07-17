@@ -10,7 +10,10 @@ exponential_decay_corr_func(
 )
 }
 \arguments{
-\item{corr_function_params}{Sturcuted as follows : {dist.matrix, phi, l}.}
+\item{corr_function_params}{Structured as follows : {dist_matrix, phi, l}.
+Ensure that this list follows this structure. Distance matrix is constructed
+externally, phi is a numeric value, l is also a numeric value.  Defaults are
+set to NULL.}
 }
 \value{
 Correlation matrix.
