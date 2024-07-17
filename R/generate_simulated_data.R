@@ -76,6 +76,7 @@
 #' @examples
 #' # Generate a simulated dataset from a hypothetical state with 6 sites and 2
 #' # different labs
+#' source("R/exponential_decay_corr_func.R")
 #' sim_data <- generate_simulated_data(
 #'   n_sites = 6,
 #'   site = c(1, 2, 3, 4, 5, 6, 6),

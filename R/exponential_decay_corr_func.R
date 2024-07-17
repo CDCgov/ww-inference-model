@@ -1,7 +1,7 @@
 #' Generates the correlation matrix for an exponential
 #' decay correlation function.
 #'
-#' @param corr_function_params Structured as follows : {dist_matrix, phi, l}.
+#' @param corr_function_params Structured as follows : dist_matrix, phi, l.
 #' Ensure that this list follows this structure. Distance matrix is constructed
 #' externally, phi is a numeric value, l is also a numeric value.  Defaults are
 #' set to NULL.
