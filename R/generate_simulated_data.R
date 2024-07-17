@@ -49,7 +49,10 @@
 #' @param sd_log_lod float indicating the standard deviation in the log of the
 #' LOD across sites
 #' @param global_rt_sd float indicating the ammount of standard deviation to
-#' add to the passed in weekly R(t) to add variability
+#' add to the passed in weekly R(t) to add variability. Default is `0.03`
+#' @param sigma_eps float indicating the standard deviation between the log of
+#' the state R(t) and the log of the subpopulation R(t) across time, in log
+#' scale. Default is `0.05`
 #' @param infection_feedback Boolean indicating whether or not to include
 #' infection feedback into the infection process, default is `TRUE`
 #' @param input_params_path path to the toml file with the parameters to use
@@ -109,6 +112,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                     mean_log_lod = 3.8,
                                     sd_log_lod = 0.2,
                                     global_rt_sd = 0.03,
+                                    sigma_eps = 0.05,
                                     infection_feedback = TRUE,
                                     input_params_path =
                                       fs::path_package("extdata",
@@ -244,22 +248,24 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     duration_shedding_mean, gt_max
   )
 
-  # Global R(t) ---------------------------------------------------------
-  unadj_r <- get_global_rt(
+  # Global undadjusted R(t) ---------------------------------------------------
+  unadj_r_weeks <- get_global_rt(
     r_in_weeks = r_in_weeks,
     n_weeks = n_weeks,
-    n_days = ot + ht,
     global_rt_sd = global_rt_sd
   )
 
+  # Subpopulation level R(t)-----------------------------------------------
+  # get the matrix of subpop level R(t) estimates, assuming normally distributed
+  # around the the log of the state R(t) with stdev of sigma_eps
+  unadj_r_site <- subpop_rt_process(
+    n_sites = n_sites,
+    r_weeks = unadj_r_weeks,
+    site_level_rt_variation = sigma_eps
+  )
+  # Alternatively, can replace this with
+  # r_site <- spatial_rt_process(input_params) #nolint
 
-
-  # Generate the site-level expected observed concentrations -----------------
-  # first by adding variation to the site-level R(t) in each site,
-  # and then adding lab-site level multiplier and observation error
-
-
-  ### Generate the site level infection dynamics-------------------------------
   new_i_over_n_site <- matrix(nrow = n_sites + 1, ncol = (uot + ot + ht))
   r_site <- matrix(nrow = n_sites + 1, ncol = (ot + ht))
   # Generate site-level R(t)
