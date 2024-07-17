@@ -4,11 +4,11 @@
 \alias{subpop_rt_process}
 \title{Get subpopulation level R(t) estimates assuming time and space independence}
 \usage{
-subpop_rt_process(n_sites, r_weeks, subpop_level_rt_variation)
+subpop_rt_process(n_subpops, r_weeks, subpop_level_rt_variation)
 }
 \arguments{
-\item{n_sites}{integer indicating the number of wastewater sites, assumes
-we will always have n_sites + 1 subpopulations}
+\item{n_subpops}{integer indicating the number of subpopulations,
+usually this will be n_sites + 1}
 
 \item{r_weeks}{The "global" R(t) in weeks}
 

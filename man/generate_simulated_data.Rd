@@ -28,6 +28,7 @@ generate_simulated_data(
   sd_log_lod = 0.2,
   global_rt_sd = 0.03,
   sigma_eps = 0.05,
+  sd_i0_over_n = 0.5,
   infection_feedback = TRUE,
   input_params_path = fs::path_package("extdata", "example_params.toml", package =
     "wwinference")
@@ -102,9 +103,12 @@ LOD across sites}
 \item{global_rt_sd}{float indicating the ammount of standard deviation to
 add to the passed in weekly R(t) to add variability. Default is \code{0.03}}
 
-\item{sigma_eps}{float indicating the standard deviation between the log of the
-state R(t) and the log of the subpopulation R(t) across time, in log scale.
-Default is \code{0.05}}
+\item{sigma_eps}{float indicating the standard deviation between the log of
+the state R(t) and the log of the subpopulation R(t) across time, in log
+scale. Default is \code{0.05}}
+
+\item{sd_i0_over_n}{float indicating the standard deviation between log of
+initial infections per capita, default is \code{0.5}}
 
 \item{infection_feedback}{Boolean indicating whether or not to include
 infection feedback into the infection process, default is \code{TRUE}}

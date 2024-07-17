@@ -36,6 +36,8 @@ mean_log_lod <- 3.8
 sd_log_lod <- 0.2
 global_rt_sd <- 0.03
 sigma_eps <- 0.05
+sd_i0_over_n <- 0.5
+infection_feedback <- TRUE
 input_params_path <-
   fs::path_package("extdata",
     "example_params.toml",
