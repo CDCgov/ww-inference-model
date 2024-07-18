@@ -61,7 +61,7 @@
 #' epsilon
 #' @param scaling_factor Scaling factor for aux site
 #' @param aux_site_bool Boolean to use the aux site framework with
-#' scaling factor
+#' scaling factor.
 #'
 #' @return a list containing three dataframes. hosp_data is a dataframe
 #' containing the number of daily hospital admissions by day for a theoretical
