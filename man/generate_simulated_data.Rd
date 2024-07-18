@@ -124,7 +124,7 @@ epsilon}
 \item{scaling_factor}{Scaling factor for aux site}
 
 \item{aux_site_bool}{Boolean to use the aux site framework with
-scaling factor}
+scaling factor.}
 }
 \value{
 a list containing three dataframes. hosp_data is a dataframe
