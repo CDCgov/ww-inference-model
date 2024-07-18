@@ -50,6 +50,18 @@
 #' LOD across sites
 #' @param input_params_path path to the toml file with the parameters to use
 #' to generate the simulated data
+#' @param use_spatial_corr Boolean to use spatial process, default is TRUE
+#' @param corr_function Correlation function for spatial site correlations,
+#' defaulted to exponential decay correlation function
+#' @param corr_fun_params Parameters required for correlation function,
+#' defaulted to presets for exponential decay correlation function
+#' @param phi_rt Coefficient for AR(1) temporal correlation on subpopulation
+#' deviations
+#' @param sigma_eps Parameter for construction of covariance matrix of spatial
+#' epsilon
+#' @param scaling_factor Scaling factor for aux site
+#' @param aux_site_bool Boolean to use the aux site framework with
+#' scaling factor
 #'
 #' @return a list containing three dataframes. hosp_data is a dataframe
 #' containing the number of daily hospital admissions by day for a theoretical
@@ -69,7 +81,27 @@
 #'   site = c(1, 2, 3, 4, 5, 6, 6),
 #'   lab = c(1, 1, 1, 1, 2, 2, 3),
 #'   ww_pop_sites = c(1e5, 4e5, 2e5, 1.5e5, 5e4, 3e5),
-#'   pop_size = 2e6
+#'   pop_size = 2e6,
+#'   use_spatial_corr = TRUE,
+#'   corr_function = exponential_decay_corr_func,
+#'   corr_fun_params = list(
+#'     dist_matrix = as.matrix(
+#'       dist(
+#'         data.frame(
+#'           x = c(85, 37, 48, 7, 45, 36),
+#'           y = c(12, 75, 81, 96, 24, 43),
+#'           diag = TRUE,
+#'           upper = TRUE
+#'         )
+#'       )
+#'     ),
+#'     phi = 25,
+#'     l = 1
+#'   ),
+#'   phi_rt = 0.6,
+#'   sigma_eps = sqrt(0.02),
+#'   scaling_factor = 0.01,
+#'   aux_site_bool = TRUE
 #' )
 #' hosp_data <- sim_data$hosp_data
 #' ww_data <- sim_data$ww_data
@@ -108,7 +140,27 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                       fs::path_package("extdata",
                                         "example_params.toml",
                                         package = "wwinference"
-                                      )) {
+                                      ),
+                                    use_spatial_corr = TRUE,
+                                    corr_function = exponential_decay_corr_func,
+                                    corr_fun_params = list(
+                                      dist_matrix = as.matrix(
+                                        dist(
+                                          data.frame(
+                                            x = c(85, 37, 48, 7),
+                                            y = c(12, 75, 81, 96),
+                                            diag = TRUE,
+                                            upper = TRUE
+                                          )
+                                        )
+                                      ),
+                                      phi = 25,
+                                      l = 1
+                                    ),
+                                    phi_rt = 0.6,
+                                    sigma_eps = sqrt(0.02),
+                                    scaling_factor = 0.01,
+                                    aux_site_bool = TRUE) {
   # Some quick checks to make sure the inputs work as expected
   stopifnot(
     "weekly R(t) passed in isn't long enough" =
@@ -123,6 +175,11 @@ generate_simulated_data <- function(r_in_weeks = # nolint
       length(site) == length(lab)
   )
 
+  # Spatial bool check, if no spatial use ind. corr. func. with n+1 sites.
+  if (!use_spatial_corr) {
+    corr_function <- independence_corr_func
+    corr_fun_params <- list(num_sites = n_sites + 1)
+  }
 
   # Get pop fractions of each subpop. There will n_sites + 1 subpops
   pop_fraction <- c(
@@ -266,19 +323,9 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   r_site <- matrix(nrow = n_sites + 1, ncol = (ot + ht))
   # Generate site-level R(t)
   log_r_state_week <- log(unadj_r_weeks)
-  log_r_site <- matrix(nrow = n_sites + 1, ncol = n_weeks)
   initial_growth_site <- vector(length = n_sites + 1)
   log_i0_over_n_site <- vector(length = n_sites + 1)
   for (i in 1:(n_sites + 1)) {
-    # This creates each R(t) vector for each subpopulation, by sampling
-    # from a normal distribution centered on the state R(t).
-    # In the model, this is an AR(1) process based on the previous deviation
-    log_r_site[i, ] <- rnorm(
-      n = n_weeks,
-      mean = log_r_state_week,
-      sd = 0.05
-    ) # sigma_rt
-
     # Generate deviations in the initial growth rate and initial incidence
     initial_growth_site[i] <- rnorm(
       n = 1, mean = initial_growth,
@@ -291,6 +338,46 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     )
   }
 
+  log_r_site <- spatial_rt_process(
+    log_r_state_week,
+    corr_function,
+    corr_fun_params,
+    phi_rt,
+    sigma_eps
+  )
+  # Auxiliary Site
+  if (aux_site_bool) {
+    log_r_site_aux <- matrix(
+      data = 0,
+      nrow = 1,
+      ncol = ncol(log_r_site)
+    )
+    delta <- matrix(
+      data = 0,
+      nrow = 1,
+      ncol = ncol(log_r_site)
+    )
+    delta[1] <- rnorm(
+      n = 1,
+      mean = 0,
+      sd = sqrt(scaling_factor) * sigma_eps
+    )
+    for (i in 2:n_weeks) {
+      eps_temp <- rnorm(
+        n = 1,
+        mean = 0,
+        sd = sqrt(scaling_factor) * sigma_eps
+      )
+      delta[i] <- phi_rt * delta[i - 1] + eps_temp
+    }
+    for (i in 1:n_weeks) {
+      log_r_site_aux[i] <- log_r_state_week[i] + delta[i]
+    }
+    log_r_site <- rbind(
+      log_r_site,
+      log_r_site_aux
+    )
+  }
 
   new_i_over_n <- rep(0, (uot + ot + ht)) # State infections
   for (i in 1:(n_sites + 1)) {

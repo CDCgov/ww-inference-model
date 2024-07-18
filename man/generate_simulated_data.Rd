@@ -27,7 +27,15 @@ generate_simulated_data(
   mean_log_lod = 3.8,
   sd_log_lod = 0.2,
   input_params_path = fs::path_package("extdata", "example_params.toml", package =
-    "wwinference")
+    "wwinference"),
+  use_spatial_corr = TRUE,
+  corr_function = exponential_decay_corr_func,
+  corr_fun_params = list(dist_matrix = as.matrix(dist(data.frame(x = c(85, 37, 48, 7), y
+    = c(12, 75, 81, 96), diag = TRUE, upper = TRUE))), phi = 25, l = 1),
+  phi_rt = 0.6,
+  sigma_eps = sqrt(0.02),
+  scaling_factor = 0.01,
+  aux_site_bool = TRUE
 )
 }
 \arguments{
@@ -98,6 +106,25 @@ LOD across sites}
 
 \item{input_params_path}{path to the toml file with the parameters to use
 to generate the simulated data}
+
+\item{use_spatial_corr}{Boolean to use spatial process, default is TRUE}
+
+\item{corr_function}{Correlation function for spatial site correlations,
+defaulted to exponential decay correlation function}
+
+\item{corr_fun_params}{Parameters required for correlation function,
+defaulted to presets for exponential decay correlation function}
+
+\item{phi_rt}{Coefficient for AR(1) temporal correlation on subpopulation
+deviations}
+
+\item{sigma_eps}{Parameter for construction of covariance matrix of spatial
+epsilon}
+
+\item{scaling_factor}{Scaling factor for aux site}
+
+\item{aux_site_bool}{Boolean to use the aux site framework with
+scaling factor}
 }
 \value{
 a list containing three dataframes. hosp_data is a dataframe
@@ -122,7 +149,27 @@ sim_data <- generate_simulated_data(
   site = c(1, 2, 3, 4, 5, 6, 6),
   lab = c(1, 1, 1, 1, 2, 2, 3),
   ww_pop_sites = c(1e5, 4e5, 2e5, 1.5e5, 5e4, 3e5),
-  pop_size = 2e6
+  pop_size = 2e6,
+  use_spatial_corr = TRUE,
+  corr_function = exponential_decay_corr_func,
+  corr_fun_params = list(
+    dist_matrix = as.matrix(
+      dist(
+        data.frame(
+          x = c(85, 37, 48, 7, 45, 36),
+          y = c(12, 75, 81, 96, 24, 43),
+          diag = TRUE,
+          upper = TRUE
+        )
+      )
+    ),
+    phi = 25,
+    l = 1
+  ),
+  phi_rt = 0.6,
+  sigma_eps = sqrt(0.02),
+  scaling_factor = 0.01,
+  aux_site_bool = TRUE
 )
 hosp_data <- sim_data$hosp_data
 ww_data <- sim_data$ww_data

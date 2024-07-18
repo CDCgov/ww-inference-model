@@ -15,4 +15,5 @@
 #' @importFrom rlang sym
 #' @importFrom stats dnbinom dweibull ecdf plogis qlogis rlnorm rnbinom rnorm
 #' rt sd time
+#' @importFrom MASS mvrnorm
 NULL
