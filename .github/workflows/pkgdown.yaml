@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, prod]
   pull_request:
-    branches: [main, prod]
+    branches: [spatial-main, main, prod]
   release:
     types: [published]
   workflow_dispatch:
