@@ -32,7 +32,7 @@ get_plot_forecasted_counts <- function(draws,
                                        n_draws_to_plot = 100) {
   sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
-  draws_to_plot <- dplyr::filter(
+  draws_to_plot <- sampled_draws |> dplyr::filter(
     name == "pred_counts",
     draw %in% sampled_draws
   )
