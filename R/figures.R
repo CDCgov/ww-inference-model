@@ -32,7 +32,7 @@ get_plot_forecasted_counts <- function(draws,
                                        n_draws_to_plot = 100) {
   sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
-  draws_to_plot <- sampled_draws |> dplyr::filter(
+  draws_to_plot <- draws |> dplyr::filter(
     name == "pred_counts",
     draw %in% sampled_draws
   )
@@ -93,13 +93,16 @@ get_plot_ww_conc <- function(draws,
                              n_draws_to_plot = 100) {
   sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
-  p <- ggplot(draws |> dplyr::filter(
-    name == "pred_ww",
-    draw %in% sampled_draws
-  ) |>
+  draws_to_plot <- draws |>
+    dplyr::filter(
+      name == "pred_ww",
+      draw %in% sampled_draws
+    ) |>
     dplyr::mutate(
       site_lab_name = glue::glue("{subpop}, Lab: {lab}")
-    )) +
+    )
+
+  p <- ggplot(draws_to_plot) +
     geom_line(
       aes(
         x = date, y = log(pred_value),
@@ -159,11 +162,13 @@ get_plot_global_rt <- function(draws,
                                n_draws_to_plot = 100) {
   sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
-  # R(t) of the hypothetical state
-  p <- ggplot(draws |> dplyr::filter(
-    name == "global R(t)",
+  draws_to_plot <- draws |> dplyr::filter(
+    name == "pred_counts",
     draw %in% sampled_draws
-  )) +
+  )
+
+  # R(t) of the hypothetical state
+  p <- ggplot(draws_to_plot) +
     geom_line(aes(x = date, y = pred_value, group = draw),
       color = "blue4", alpha = 0.1, size = 0.2
     ) +
@@ -214,10 +219,12 @@ get_plot_subpop_rt <- function(draws,
                                n_draws_to_plot = 100) {
   sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
-  p <- ggplot(draws |> dplyr::filter(
-    name == "subpop R(t)",
+  draws_to_plot <- draws |> dplyr::filter(
+    name == "pred_counts",
     draw %in% sampled_draws
-  )) +
+  )
+
+  p <- ggplot(draws_to_plot) +
     geom_line(
       aes(
         x = date, y = pred_value, group = draw,
