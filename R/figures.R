@@ -85,7 +85,7 @@ get_plot_forecasted_counts <- function(draws,
 get_plot_ww_conc <- function(draws,
                              forecast_date,
                              n_draws_to_plot = 100) {
-  sampled_draws <- sample(1:max(draws_df$draw), n_draws_to_plot)
+  sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
   p <- ggplot(draws |> dplyr::filter(
     name == "pred_ww",
