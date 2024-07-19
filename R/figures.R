@@ -28,7 +28,7 @@ get_plot_forecasted_counts <- function(draws,
                                        forecast_date,
                                        count_type = "hospital admissions",
                                        n_draws_to_plot = 100) {
-  sampled_draws <- sample(1:max(draws_df$draw), n_draws_to_plot)
+  sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
   p <- ggplot(draws |> dplyr::filter(
     name == "pred_counts",
