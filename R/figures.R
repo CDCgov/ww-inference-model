@@ -1,7 +1,9 @@
 #' Get plot of fit and forecasted counts
 #'
 #' @param draws A dataframe containing the posterior draws with the data joined
-#' to it. This is the `draws_df` output of a call to [wwinference()]
+#' to it. This is the `draws_df` output of a call to [wwinference()]. It
+#' expects the following column names: `date`, `pred_value`, `draw`,
+#' and `name`
 #' @param count_data_eval A dataframe containing the count data we will
 #' evaluate the forecasts against. Must contain the columns `date` and
 #' a column indicating the count data to evaluate against, with the name
@@ -30,10 +32,12 @@ get_plot_forecasted_counts <- function(draws,
                                        n_draws_to_plot = 100) {
   sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
-  p <- ggplot(draws |> dplyr::filter(
+  draws_to_plot <- dplyr::filter(
     name == "pred_counts",
     draw %in% sampled_draws
-  )) +
+  )
+
+  p <- ggplot(draws_to_plot) +
     geom_line(aes(x = date, y = pred_value, group = draw),
       color = "red4", alpha = 0.1, size = 0.2
     ) +
@@ -72,7 +76,9 @@ get_plot_forecasted_counts <- function(draws,
 #' Get plot of fit and forecasted wastewater concentrations
 #'
 #' @param draws A dataframe containing the posterior draws with the data joined
-#' to it. This is the `draws_df` output of a call to [wwinference()]
+#' to it. This is the `draws_df` output of a call to [wwinference()]. It
+#' expects the following column names: `date`, `pred_value`, `draw`,
+#' and `name`.
 #' @param forecast_date A string indicating the date we made the forecast, for
 #' plotting, in ISO8601 format YYYY-MM-DD
 #' @param n_draws_to_plot An integer indicating how many draws from the
@@ -136,7 +142,9 @@ get_plot_ww_conc <- function(draws,
 #' Get plot of fit, nowcasted, and forecasted "global" R(t)
 #'
 #' @param draws A dataframe containing the posterior draws with the data joined
-#' to it. This is the `draws_df` output of a call to [wwinference()]
+#' to it. This is the `draws_df` output of a call to [wwinference()]. It
+#' expects the following column names: `date`, `pred_value`, `draw`,
+#' and `name`.
 #' @param forecast_date A string indicating the date we made the forecast, for
 #' plotting, in ISO8601 format YYYY-MM-DD
 #' @param n_draws_to_plot An integer indicating how many draws from the
@@ -189,7 +197,9 @@ get_plot_global_rt <- function(draws,
 #' Get plot of fit, nowcasted, and forecasted R(t) in each subpopulation
 #'
 #' @param draws A dataframe containing the posterior draws with the data joined
-#' to it. This is `draws_df` output of the call to `wwinference()`
+#' to it. This is `draws_df` output of the call to [`wwinference()`]. It
+#' expects the following column names: `date`, `pred_value`, `draw`,
+#' and `name`.
 #' @param forecast_date A string indicating the date we made the forecast, for
 #' plotting, in ISO8601 format YYYY-MM-DD
 #' @param n_draws_to_plot An integer indicating how many draws from the

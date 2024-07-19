@@ -8,7 +8,9 @@ get_plot_global_rt(draws, forecast_date, n_draws_to_plot = 100)
 }
 \arguments{
 \item{draws}{A dataframe containing the posterior draws with the data joined
-to it. This is the \code{draws_df} output of a call to \code{\link[=wwinference]{wwinference()}}}
+to it. This is the \code{draws_df} output of a call to \code{\link[=wwinference]{wwinference()}}. It
+expects the following column names: \code{date}, \code{pred_value}, \code{draw},
+and \code{name}.}
 
 \item{forecast_date}{A string indicating the date we made the forecast, for
 plotting, in ISO8601 format YYYY-MM-DD}
