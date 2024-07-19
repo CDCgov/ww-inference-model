@@ -202,7 +202,7 @@ get_plot_global_rt <- function(draws,
 get_plot_subpop_rt <- function(draws,
                                forecast_date,
                                n_draws_to_plot = 100) {
-  sampled_draws <- sample(1:max(draws_df$draw), n_draws_to_plot)
+  sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
   p <- ggplot(draws |> dplyr::filter(
     name == "subpop R(t)",
