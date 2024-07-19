@@ -316,6 +316,7 @@ head(fit)
 The `draws_df` object is intended to be used to easily plot relevant model
 outputs against data. This can be useful to get a sense of if you're model is
 fitting the data well, and if the nowcasted/forecast quantities look reasonable.
+
 We can create the plots using the fitting wrapper functions (figures can
 also created directly using the `draws_df`)
 
