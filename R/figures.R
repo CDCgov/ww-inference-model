@@ -149,7 +149,7 @@ get_plot_ww_conc <- function(draws,
 get_plot_global_rt <- function(draws,
                                forecast_date,
                                n_draws_to_plot = 100) {
-  sampled_draws <- sample(1:max(draws_df$draw), n_draws_to_plot)
+  sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
   # R(t) of the hypothetical state
   p <- ggplot(draws |> dplyr::filter(
