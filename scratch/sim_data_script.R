@@ -5,7 +5,7 @@
 list.files(file.path("R"), full.names = TRUE) |>
   purrr::walk(source)
 
-#test
+# test
 
 r_in_weeks <- c(
   rep(1.1, 5), rep(0.9, 5),
