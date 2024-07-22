@@ -164,7 +164,7 @@ get_plot_global_rt <- function(draws,
 
   draws_to_plot <- draws |> dplyr::filter(
     name == "pred_counts",
-    draw %in% sampled_draws
+    draw %in% !!sampled_draws
   )
 
   # R(t) of the hypothetical state
