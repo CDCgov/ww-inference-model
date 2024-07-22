@@ -80,7 +80,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                       ),
                                     n_sites = 4,
                                     ww_pop_sites = c(4e5, 2e5, 1e5, 5e4),
-                                    pop_size = 1e6,
+                                    pop_size = 3e6,
                                     site = c(1, 1, 2, 3, 4),
                                     lab = c(1, 2, 3, 3, 3),
                                     ot = 90,
