@@ -241,6 +241,7 @@ get_pred_subpop_gen_per_n <- function(n_sites,
 #' @param ht integer indicating the time after the last observed time to
 #' @param log_g_over_n_site matrix of n_site rows and ot + ht columns indicating
 #' the genomes per person each day in each site
+#' @param log_m_lab_sites vector of the lab-site mutlipliers
 #' @param site vector of integers indicating which site (WWTP) each separate
 #' lab-site observation comes from
 #' @param ml_of_ww_per_person_day Scalar indicating the number of mL of
@@ -253,7 +254,7 @@ get_pred_obs_conc <- function(n_lab_sites,
                               ot,
                               ht,
                               log_g_over_n_site,
-                              log_g_w_multiplier,
+                              log_m_lab_sites,
                               sigma_ww_lab_site,
                               site,
                               ml_of_ww_per_person_day) {
@@ -261,14 +262,14 @@ get_pred_obs_conc <- function(n_lab_sites,
   for (i in 1:n_lab_sites) {
     log_g_w_multiplier <- log_g_over_n_site[site[i], ] +
       log_m_lab_sites[i] # Add site level multiplier in log scale
-    log_obs_conc_lab_site[i, ] <- log_g_w_multiplier +
+    log_conc_lab_site[i, ] <- log_g_w_multiplier +
       rnorm(
         n = (ot + ht), mean = 0,
         sd = sigma_ww_lab_site[i]
       ) - log(ml_of_ww_per_person_day)
   }
 
-  return(log_conc_n_lab_site)
+  return(log_conc_lab_site)
 }
 
 #' Downsample the predicted wastewater concentrations based on the
@@ -306,7 +307,7 @@ downsample_ww_obs <- function(log_conc_lab_site,
     # cut off end based on latency
     stl <- pmin((ot + nt - lab_site_reporting_latency[i]), st)
     # Calculate log concentration for the days that we have observations
-    log_obs_conc_lab_site[i, stl] <- log_obs_conc_lab_site[i, stl]
+    log_obs_conc_lab_site[i, stl] <- log_conc_lab_site[i, stl]
   }
 
   return(log_obs_conc_lab_site)

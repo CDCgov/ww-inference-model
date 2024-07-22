@@ -337,33 +337,36 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   ## Genomes per person per day in each site----------------------------------
 
   log_g_over_n_site <- get_pred_subpop_gen_per_n(
-    n_sites,
-    uot,
-    ot,
-    ht,
-    new_i_over_n_site,
-    log10_g_prior_mean,
-    vl_trajectory
+    n_sites = n_sites,
+    uot = uot,
+    ot = ot,
+    ht = ht,
+    new_i_over_n_site = new_i_over_n_site,
+    log10_g_prior_mean = log10_g_prior_mean,
+    vl_trajectory = vl_trajectory
   )
   ## Site-lab level observation error----------------------------------------
   log_conc_lab_site <- get_pred_obs_conc(
-    n_lab_sites,
-    ot,
-    ht,
-    log_g_over_n_site,
-    site,
-    ml_of_ww_per_person_day
+    n_lab_sites = n_lab_sites,
+    ot = ot,
+    ht = ht,
+    log_g_over_n_site = log_g_over_n_site,
+    log_m_lab_sites = log_m_lab_sites,
+    sigma_ww_lab_site = sigma_ww_lab_site,
+    site = site,
+    ml_of_ww_per_person_day = ml_of_ww_per_person_day
   )
 
   ## Downsample to simulate reporting/collection process---------------------
 
   log_obs_conc_lab_site <- downsample_ww_obs(
-    log_conc_lab_site,
-    n_lab_sites,
-    ot,
-    ht,
-    nt,
-    lab_site_reporting_freq
+    log_conc_lab_site = log_conc_lab_site,
+    n_lab_sites = n_lab_sites,
+    ot = ot,
+    ht = ht,
+    nt = nt,
+    lab_site_reporting_freq = lab_site_reporting_freq,
+    lab_site_reporting_latency = lab_site_reporting_latency
   )
 
 

@@ -9,7 +9,7 @@ get_pred_obs_conc(
   ot,
   ht,
   log_g_over_n_site,
-  log_g_w_multiplier,
+  log_m_lab_sites,
   sigma_ww_lab_site,
   site,
   ml_of_ww_per_person_day
@@ -26,6 +26,8 @@ for in the calibration period}
 
 \item{log_g_over_n_site}{matrix of n_site rows and ot + ht columns indicating
 the genomes per person each day in each site}
+
+\item{log_m_lab_sites}{vector of the lab-site mutlipliers}
 
 \item{site}{vector of integers indicating which site (WWTP) each separate
 lab-site observation comes from}
