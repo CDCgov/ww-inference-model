@@ -8,7 +8,7 @@ generate_simulated_data(
   r_in_weeks = c(rep(1.1, 5), rep(0.9, 5), 1 + 0.007 * 1:16),
   n_sites = 4,
   ww_pop_sites = c(4e+05, 2e+05, 1e+05, 50000),
-  pop_size = 1e+06,
+  pop_size = 3e+06,
   site = c(1, 1, 2, 3, 4),
   lab = c(1, 2, 3, 3, 3),
   ot = 90,
