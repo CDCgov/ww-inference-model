@@ -3,8 +3,6 @@
 #' @param r_in_weeks The mean R(t) for each week of the simulation, can be
 #' longer than the 7*n_weeks
 #' @param n_weeks The number of weeks that we want to simulate the data for
-#' @param n_days The number of days to generate an R(t) estimate for,
-#' can be less than `n_weeks` *7
 #' @param global_rt_sd The variation in the R(t) estimate to add
 #' intrinsic variability to the infection dynamics
 #'
@@ -36,7 +34,7 @@ subpop_rt_process <- function(n_subpops,
                               r_weeks,
                               subpop_level_rt_variation) {
   # Initialize output matrix
-  log_r_site <- matrix(nrow = n_sites + 1, ncol = length(r_weeks))
+  log_r_site <- matrix(nrow = n_subpops, ncol = length(r_weeks))
 
   log_r_global_week <- log(r_weeks)
   for (i in 1:(n_subpops)) {
@@ -56,6 +54,7 @@ subpop_rt_process <- function(n_subpops,
 
 #' Get the subpopulation level incident infections
 #'
+#' @param generate_inf_fxn function indicating how to generate infections
 #' @param n_subpops integer indicating the number of subpopulations
 #' @param uot integer indicating the days for exponential growth initialization
 #' to occur (referred to as unobserved time)
@@ -87,7 +86,8 @@ subpop_rt_process <- function(n_subpops,
 #' subpopulation level R(t) estimate, i_n_global: vector of daily incident
 #' infections per capita in the global population
 #' @export
-subpop_inf_process <- function(n_subpops,
+subpop_inf_process <- function(generate_inf_fxn,
+                               n_subpops,
                                uot,
                                ot,
                                ht,
@@ -109,17 +109,18 @@ subpop_inf_process <- function(n_subpops,
     sd = initial_growth_prior_sd
   )
   log_i0_over_n_site <- rnorm(
-    n = n_subpops, mean = log_i0_over_n,
+    n = n_subpops, mean = log(i0_over_n),
     sd = sd_i0_over_n
   )
 
+  n_weeks <- ncol(unadj_r_site)
   # Set up matrix to convert from weekly to daily
   ind_m <- get_ind_m((ot + ht), n_weeks)
   i_n_global <- rep(0, (uot + ot + ht)) # Global infections
   for (i in 1:(n_subpops)) {
     unadj_r_site_daily <- ind_m %*% unadj_r_site[i, ] # daily R site
 
-    site_output <- model$functions$generate_infections(
+    site_output <- generate_inf_fxn(
       unadj_r_site_daily, # Daily unadjusted R(t) in each site
       uot, # the duration of initialization time for exponential growth
       rev(generation_interval), # the reversed generation interval
@@ -192,6 +193,7 @@ get_time_varying_daily_ihr <- function(p_hosp_mean,
 
 #' Get the predicted genomes per person in each subpopulation
 #'
+#' @param convolve_fxn function used to convolve infections with delay pmf
 #' @param n_sites integer indicating the number of sites
 #' @param uot integer indicating the days for exponential growth initialization
 #' to occur (referred to as unobserved time)
@@ -208,7 +210,8 @@ get_time_varying_daily_ihr <- function(p_hosp_mean,
 #' @return A matrix of `n_sites` rows and `ot`+ `ht` columns indicating
 #' the predicted number of genomes per person per day in each site each day
 #' @export
-get_pred_subpop_gen_per_n <- function(n_sites,
+get_pred_subpop_gen_per_n <- function(convolve_fxn,
+                                      n_sites,
                                       uot,
                                       ot,
                                       ht,
@@ -219,7 +222,7 @@ get_pred_subpop_gen_per_n <- function(n_sites,
 
   for (i in 1:n_sites) {
     # Convolve infections with shedding kinetics
-    model_net_i <- model$functions$convolve_dot_product(
+    model_net_i <- convolve_fxn(
       new_i_over_n_site[i, ],
       rev(vl_trajectory),
       (uot + ot + ht)

@@ -5,6 +5,7 @@
 \title{Get the subpopulation level incident infections}
 \usage{
 subpop_inf_process(
+  generate_inf_fxn,
   n_subpops,
   uot,
   ot,
@@ -21,6 +22,8 @@ subpop_inf_process(
 )
 }
 \arguments{
+\item{generate_inf_fxn}{function indicating how to generate infections}
+
 \item{n_subpops}{integer indicating the number of subpopulations}
 
 \item{uot}{integer indicating the days for exponential growth initialization

@@ -89,7 +89,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                       ),
                                     n_sites = 4,
                                     ww_pop_sites = c(4e5, 2e5, 1e5, 5e4),
-                                    pop_size = 1e6,
+                                    pop_size = 3e6,
                                     site = c(1, 1, 2, 3, 4),
                                     lab = c(1, 2, 3, 3, 3),
                                     ot = 90,
@@ -273,6 +273,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   # Function takes in all of the requirements to generation incident infections
   # and R(t) estimates for the unobserved time, calibration, and forecast time
   inf_and_subpop_rt <- subpop_inf_process(
+    generate_inf_fxn = model$functions$generate_infections,
     n_subpops = n_subpops,
     uot = uot,
     ot = ot,
@@ -337,6 +338,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   ## Genomes per person per day in each site----------------------------------
 
   log_g_over_n_site <- get_pred_subpop_gen_per_n(
+    convolve_fxn = model$functions$convolve_dot_product,
     n_sites = n_sites,
     uot = uot,
     ot = ot,

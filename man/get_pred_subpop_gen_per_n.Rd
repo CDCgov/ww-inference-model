@@ -5,6 +5,7 @@
 \title{Get the predicted genomes per person in each subpopulation}
 \usage{
 get_pred_subpop_gen_per_n(
+  convolve_fxn,
   n_sites,
   uot,
   ot,
@@ -15,6 +16,8 @@ get_pred_subpop_gen_per_n(
 )
 }
 \arguments{
+\item{convolve_fxn}{function used to convolve infections with delay pmf}
+
 \item{n_sites}{integer indicating the number of sites}
 
 \item{uot}{integer indicating the days for exponential growth initialization

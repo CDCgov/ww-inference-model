@@ -14,9 +14,6 @@ longer than the 7*n_weeks}
 
 \item{global_rt_sd}{The variation in the R(t) estimate to add
 intrinsic variability to the infection dynamics}
-
-\item{n_days}{The number of days to generate an R(t) estimate for,
-can be less than \code{n_weeks} *7}
 }
 \value{
 a weekly R(t) estimate with added noise
