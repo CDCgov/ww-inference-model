@@ -11,7 +11,7 @@
 #' @param ww_pop_sites vector indicating the population size in the
 #' catchment area in each of those sites (order must match)
 #' @param pop_size integer indicating the population size in the hypothetical
-#' state
+#' state, default is `3e6`
 #' @param site vector of integers indicating which site (WWTP) each separate
 #' lab-site observation comes from
 #' @param lab vector of integers indicating which lab the lab-site observations

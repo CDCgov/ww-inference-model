@@ -29,6 +29,8 @@ the genomes per person each day in each site}
 
 \item{log_m_lab_sites}{vector of the lab-site mutlipliers}
 
+\item{sigma_ww_lab_site}{vector of the lab_site observation errors}
+
 \item{site}{vector of integers indicating which site (WWTP) each separate
 lab-site observation comes from}
 

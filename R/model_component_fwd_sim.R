@@ -245,6 +245,7 @@ get_pred_subpop_gen_per_n <- function(convolve_fxn,
 #' @param log_g_over_n_site matrix of n_site rows and ot + ht columns indicating
 #' the genomes per person each day in each site
 #' @param log_m_lab_sites vector of the lab-site mutlipliers
+#' @param sigma_ww_lab_site vector of the lab_site observation errors
 #' @param site vector of integers indicating which site (WWTP) each separate
 #' lab-site observation comes from
 #' @param ml_of_ww_per_person_day Scalar indicating the number of mL of
