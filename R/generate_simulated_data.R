@@ -13,7 +13,7 @@
 #' @param pop_size integer indicating the population size in the hypothetical
 #' state
 #' @param site vector of integers indicating which site (WWTP) each separate
-#' lab-site observation comes frm
+#' lab-site observation comes from
 #' @param lab vector of integers indicating which lab the lab-site observations
 #' come from
 #' @param ot integer indicating the observed time: length of hospital admissions
@@ -334,47 +334,40 @@ generate_simulated_data <- function(r_in_weeks = # nolint
 
 
   # Generate expected observed concentrations from infections in each site-----
-  log_g_over_n_site <- matrix(nrow = n_sites, ncol = (ot + ht))
+  ## Genomes per person per day in each site----------------------------------
 
-  for (i in 1:n_sites) {
-    # Convolve infections with shedding kinetics
-    model_net_i <- model$functions$convolve_dot_product(
-      new_i_over_n_site[i, ],
-      rev(vl_trajectory),
-      (uot + ot + ht)
-    )[(uot + 1):(uot + ot + ht)]
-    # Scale by average genomes shed per infection
-    log_g_over_n_site[i, ] <- log(10) * log10_g_prior_mean +
-      log(model_net_i + 1e-8)
-  }
+  log_g_over_n_site <- get_pred_subpop_gen_per_n(
+    n_sites,
+    uot,
+    ot,
+    ht,
+    new_i_over_n_site,
+    log10_g_prior_mean,
+    vl_trajectory
+  )
+  ## Site-lab level observation error----------------------------------------
+  log_conc_lab_site <- get_pred_obs_conc(
+    n_lab_sites,
+    ot,
+    ht,
+    log_g_over_n_site,
+    site,
+    ml_of_ww_per_person_day
+  )
+
+  ## Downsample to simulate reporting/collection process---------------------
+
+  log_obs_conc_lab_site <- downsample_ww_obs(
+    log_conc_lab_site,
+    n_lab_sites,
+    ot,
+    ht,
+    nt,
+    lab_site_reporting_freq
+  )
 
 
-  # Add on site-lab-level observation error -----------------------------------
-  log_obs_g_over_n_lab_site <- matrix(nrow = n_lab_sites, ncol = (ot + ht))
-  for (i in 1:n_lab_sites) {
-    log_g_w_multiplier <- log_g_over_n_site[site[i], ] +
-      log_m_lab_sites[i] # Add site level multiplier in log scale
-    log_obs_g_over_n_lab_site[i, ] <- log_g_w_multiplier +
-      rnorm(
-        n = (ot + ht), mean = 0,
-        sd = sigma_ww_lab_site[i]
-      ) # + add observation error in log scale
-  }
-
-  # Sample from some lab-sites more frequently than others and add different
-  # latencies for each lab-site
-  log_obs_conc_lab_site <- matrix(nrow = n_lab_sites, ncol = ot + ht)
-  for (i in 1:n_lab_sites) {
-    # Get the indices where we observe concentrations
-    st <- sample(1:(ot + nt), round((ot + nt) * lab_site_reporting_freq[i]))
-    # cut off end based on latency
-    stl <- pmin((ot + nt - lab_site_reporting_latency[i]), st)
-    # Calculate log concentration for the days that we have observations
-    log_obs_conc_lab_site[i, stl] <- log_obs_g_over_n_lab_site[i, stl] -
-      log(ml_of_ww_per_person_day)
-  }
-
-  ## Global adjusted R(t) --------------------------------------------------
+  # Global adjusted R(t) --------------------------------------------------
   # I(t)/convolve(I(t), g(t)) #nolint
   # This is not used directly, but we want to have it for comparing to the
   # fit.

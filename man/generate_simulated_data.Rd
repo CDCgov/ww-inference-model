@@ -48,7 +48,7 @@ catchment area in each of those sites (order must match)}
 state}
 
 \item{site}{vector of integers indicating which site (WWTP) each separate
-lab-site observation comes frm}
+lab-site observation comes from}
 
 \item{lab}{vector of integers indicating which lab the lab-site observations
 come from}

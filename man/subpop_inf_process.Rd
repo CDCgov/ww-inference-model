@@ -16,7 +16,8 @@ subpop_inf_process(
   sd_i0_over_n,
   generation_interval,
   infection_feedback,
-  infection_feedback_pmf
+  infection_feedback_pmf,
+  pop_fraction
 )
 }
 \arguments{
@@ -54,6 +55,9 @@ infection feedback}
 
 \item{infection_feedback_pmf}{vector of simplex describing the delay from
 incident infections to feedback on incident infections}
+
+\item{pop_fraction}{vector of a simplex of length n_subpops, indicating
+the proportion of the global population that subpopulation represents}
 }
 \value{
 A list containing 3 outputs: i_n: n_subpop X total days matrix of
