@@ -6,6 +6,9 @@ functions {
 #include functions/infections.stan
 #include functions/observation_model.stan
 #include functions/utils.stan
+#include functions/exponential_decay_corr_func.stan
+#include functions/independence_corr_func.stan
+#include functions/spatial_rt_process_rng.stan
 
 }
 
