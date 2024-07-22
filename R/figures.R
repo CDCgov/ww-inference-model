@@ -96,7 +96,7 @@ get_plot_ww_conc <- function(draws,
   draws_to_plot <- draws |>
     dplyr::filter(
       name == "pred_ww",
-      draw %in% sampled_draws
+      draw %in% !!sampled_draws
     ) |>
     dplyr::mutate(
       site_lab_name = glue::glue("{subpop}, Lab: {lab}")
