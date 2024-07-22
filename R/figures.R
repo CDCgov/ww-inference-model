@@ -34,7 +34,7 @@ get_plot_forecasted_counts <- function(draws,
 
   draws_to_plot <- draws |> dplyr::filter(
     name == "pred_counts",
-    draw %in% sampled_draws
+    draw %in% !!sampled_draws
   )
 
   p <- ggplot(draws_to_plot) +
