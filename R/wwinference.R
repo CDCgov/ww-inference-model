@@ -84,6 +84,7 @@ wwinference <- function(ww_data,
     inf_to_count_delay = model_spec$inf_to_count_delay,
     infection_feedback_pmf = model_spec$infection_feedback_pmf,
     params = model_spec$params,
+    include_ww = as.numeric(model_spec$include_ww),
     compute_likelihood = 1
   )
 
@@ -268,6 +269,9 @@ get_mcmc_options <- function(
 #' @param infection_feedback_pmf vector of a simplex (must sum to 1) describing
 #' the delay from incident infection to feedback in the transmission dynamics.
 #' The default is the COVID-19 generation interval
+#' @param include_ww Boolean indicating whether or not to include the wastewater
+#' data into the model, default is `TRUE` which will get passed to stan and
+#' tell the model to evaluate the likelihood with the wastewater data
 #' @param params a 1 row dataframe of parameters corresponding to model
 #' priors and disease/data specific parameters. Default is for COVID-19 hospital
 #' admissions and viral concentrations in wastewater
@@ -284,6 +288,7 @@ get_model_spec <- function(
     generation_interval = wwinference::generation_interval,
     inf_to_count_delay = wwinference::inf_to_hosp,
     infection_feedback_pmf = wwinference::generation_interval,
+    include_ww = TRUE,
     params = get_params(
       system.file("extdata", "example_params.toml",
         package = "wwinference"
@@ -296,6 +301,7 @@ get_model_spec <- function(
     generation_interval = generation_interval,
     inf_to_count_delay = inf_to_hosp,
     infection_feedback_pmf = infection_feedback_pmf,
+    include_ww = include_ww,
     params = params
   )
   return(model_specs)

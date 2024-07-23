@@ -11,6 +11,7 @@ get_model_spec(
   generation_interval = wwinference::generation_interval,
   inf_to_count_delay = wwinference::inf_to_hosp,
   infection_feedback_pmf = wwinference::generation_interval,
+  include_ww = TRUE,
   params = get_params(system.file("extdata", "example_params.toml", package =
     "wwinference"))
 )
@@ -37,6 +38,10 @@ delay distribution from COVID-19 infection to hospital admission}
 \item{infection_feedback_pmf}{vector of a simplex (must sum to 1) describing
 the delay from incident infection to feedback in the transmission dynamics.
 The default is the COVID-19 generation interval}
+
+\item{include_ww}{Boolean indicating whether or not to include the wastewater
+data into the model, default is \code{TRUE} which will get passed to stan and
+tell the model to evaluate the likelihood with the wastewater data}
 
 \item{params}{a 1 row dataframe of parameters corresponding to model
 priors and disease/data specific parameters. Default is for COVID-19 hospital

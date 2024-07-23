@@ -1,4 +1,7 @@
 # wwinference
 
 This will serve as our change-log
-- Add functionality to fit the wastewater-informed model to an example fitting COVID-19 hospital admissions and wastewater from a few sites
+- 2024-07-12: Add functionality to fit the wastewater-informed model to an example fitting COVID-19 hospital admissions and wastewater from a few sites
+- 2024-07-19: Add an example in the vignette to fit the model to only the hospital admissions. Plus a few small tweaks to the vignette.
+- 2024-07-23: Update `generate_simulated_data()` function to modularize the model components, adding additional
+forward simulation functions.

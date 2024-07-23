@@ -4,14 +4,19 @@
 \alias{get_plot_global_rt}
 \title{Get plot of fit, nowcasted, and forecasted "global" R(t)}
 \usage{
-get_plot_global_rt(draws, forecast_date)
+get_plot_global_rt(draws, forecast_date, n_draws_to_plot = 100)
 }
 \arguments{
 \item{draws}{A dataframe containing the posterior draws with the data joined
-to it. This is the \code{draws_df} output of a call to \code{\link[=wwinference]{wwinference()}}}
+to it. This is the \code{draws_df} output of a call to \code{\link[=wwinference]{wwinference()}}. It
+expects the following column names: \code{date}, \code{pred_value}, \code{draw},
+and \code{name}.}
 
 \item{forecast_date}{A string indicating the date we made the forecast, for
 plotting, in ISO8601 format YYYY-MM-DD}
+
+\item{n_draws_to_plot}{An integer indicating how many draws from the
+posterior to include in the plot, default is \code{100}}
 }
 \value{
 A ggplot object containing the posterior draws of the global R(t)

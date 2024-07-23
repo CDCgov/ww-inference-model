@@ -1,7 +1,9 @@
 #' Get plot of fit and forecasted counts
 #'
 #' @param draws A dataframe containing the posterior draws with the data joined
-#' to it. This is the `draws_df` output of a call to [wwinference()]
+#' to it. This is the `draws_df` output of a call to [wwinference()]. It
+#' expects the following column names: `date`, `pred_value`, `draw`,
+#' and `name`
 #' @param count_data_eval A dataframe containing the count data we will
 #' evaluate the forecasts against. Must contain the columns `date` and
 #' a column indicating the count data to evaluate against, with the name
@@ -12,6 +14,8 @@
 #' plotting, in ISO8601 format YYYY-MM-DD
 #' @param count_type A string indicating what data the counts refer to,
 #' default is `hospital admissions`
+#' @param n_draws_to_plot An integer indicating how many draws from the
+#' posterior to include in the plot, default is `100`
 #'
 #' @return A ggplot object containing the posterior draw of the estimated,
 #' nowcasted, and forecasted counts alongside the data used to
@@ -24,11 +28,16 @@ get_plot_forecasted_counts <- function(draws,
                                        count_data_eval,
                                        count_data_eval_col_name,
                                        forecast_date,
-                                       count_type = "hospital admissions") {
-  p <- ggplot(draws |> dplyr::filter(
+                                       count_type = "hospital admissions",
+                                       n_draws_to_plot = 100) {
+  sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
+
+  draws_to_plot <- draws |> dplyr::filter(
     name == "pred_counts",
-    draw %in% sampled_draws
-  )) +
+    draw %in% !!sampled_draws
+  )
+
+  p <- ggplot(draws_to_plot) +
     geom_line(aes(x = date, y = pred_value, group = draw),
       color = "red4", alpha = 0.1, size = 0.2
     ) +
@@ -67,23 +76,33 @@ get_plot_forecasted_counts <- function(draws,
 #' Get plot of fit and forecasted wastewater concentrations
 #'
 #' @param draws A dataframe containing the posterior draws with the data joined
-#' to it. This is the `draws_df` output of a call to [wwinference()]
+#' to it. This is the `draws_df` output of a call to [wwinference()]. It
+#' expects the following column names: `date`, `pred_value`, `draw`,
+#' and `name`.
 #' @param forecast_date A string indicating the date we made the forecast, for
 #' plotting, in ISO8601 format YYYY-MM-DD
+#' @param n_draws_to_plot An integer indicating how many draws from the
+#' posterior to include in the plot, default is `100`
 #'
 #' @return a ggplot object containing faceted plots of the wastewaster
 #' concentrations in each site and lab combination
 #' @export
 #'
 get_plot_ww_conc <- function(draws,
-                             forecast_date) {
-  p <- ggplot(draws |> dplyr::filter(
-    name == "pred_ww",
-    draw %in% sampled_draws
-  ) |>
+                             forecast_date,
+                             n_draws_to_plot = 100) {
+  sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
+
+  draws_to_plot <- draws |>
+    dplyr::filter(
+      name == "pred_ww",
+      draw %in% !!sampled_draws
+    ) |>
     dplyr::mutate(
       site_lab_name = glue::glue("{subpop}, Lab: {lab}")
-    )) +
+    )
+
+  p <- ggplot(draws_to_plot) +
     geom_line(
       aes(
         x = date, y = log(pred_value),
@@ -126,21 +145,30 @@ get_plot_ww_conc <- function(draws,
 #' Get plot of fit, nowcasted, and forecasted "global" R(t)
 #'
 #' @param draws A dataframe containing the posterior draws with the data joined
-#' to it. This is the `draws_df` output of a call to [wwinference()]
+#' to it. This is the `draws_df` output of a call to [wwinference()]. It
+#' expects the following column names: `date`, `pred_value`, `draw`,
+#' and `name`.
 #' @param forecast_date A string indicating the date we made the forecast, for
 #' plotting, in ISO8601 format YYYY-MM-DD
+#' @param n_draws_to_plot An integer indicating how many draws from the
+#' posterior to include in the plot, default is `100`
 #'
 #' @return A ggplot object containing the posterior draws of the global R(t)
 #' estimate
 #' @export
 #'
 get_plot_global_rt <- function(draws,
-                               forecast_date) {
+                               forecast_date,
+                               n_draws_to_plot = 100) {
+  sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
+
+  draws_to_plot <- draws |> dplyr::filter(
+    name == "pred_counts",
+    draw %in% !!sampled_draws
+  )
+
   # R(t) of the hypothetical state
-  p <- ggplot(draws |> dplyr::filter(
-    name == "global R(t)",
-    draw %in% sampled_draws
-  )) +
+  p <- ggplot(draws_to_plot) +
     geom_line(aes(x = date, y = pred_value, group = draw),
       color = "blue4", alpha = 0.1, size = 0.2
     ) +
@@ -174,20 +202,29 @@ get_plot_global_rt <- function(draws,
 #' Get plot of fit, nowcasted, and forecasted R(t) in each subpopulation
 #'
 #' @param draws A dataframe containing the posterior draws with the data joined
-#' to it. This is `draws_df` output of the call to `wwinference()`
+#' to it. This is `draws_df` output of the call to [`wwinference()`]. It
+#' expects the following column names: `date`, `pred_value`, `draw`,
+#' and `name`.
 #' @param forecast_date A string indicating the date we made the forecast, for
 #' plotting, in ISO8601 format YYYY-MM-DD
+#' @param n_draws_to_plot An integer indicating how many draws from the
+#' posterior to include in the plot, default is `100`
 #'
 #' @return A ggplot object containing faceted plots of the R(t) estimate in each
 #' subpopulation (so wastewater sites + those not on wastewater)
 #' @export
 #'
 get_plot_subpop_rt <- function(draws,
-                               forecast_date) {
-  p <- ggplot(draws |> dplyr::filter(
-    name == "subpop R(t)",
-    draw %in% sampled_draws
-  )) +
+                               forecast_date,
+                               n_draws_to_plot = 100) {
+  sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
+
+  draws_to_plot <- draws |> dplyr::filter(
+    name == "pred_counts",
+    draw %in% !!sampled_draws
+  )
+
+  p <- ggplot(draws_to_plot) +
     geom_line(
       aes(
         x = date, y = pred_value, group = draw,
@@ -197,7 +234,8 @@ get_plot_subpop_rt <- function(draws,
       show.legend = FALSE
     ) +
     geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
-      linetype = "dashed"
+      linetype = "dashed",
+      show.legend = FALSE
     ) +
     facet_wrap(~subpop, scales = "free") +
     geom_hline(aes(yintercept = 1), linetype = "dashed") +

@@ -14,6 +14,7 @@ get_stan_data(
   inf_to_count_delay,
   infection_feedback_pmf,
   params,
+  include_ww,
   compute_likelihood = 1
 )
 }
@@ -44,6 +45,9 @@ infection to counts}
 delay of infection feedback}
 
 \item{params}{a dataframe of parameter names and numeric values}
+
+\item{include_ww}{integer either 1 or 0 indicating whether to fit the
+wastewater data or not, default is 1}
 
 \item{compute_likelihood}{indicator variable telling stan whether or not to
 compute the likelihood, default = \code{1}}
