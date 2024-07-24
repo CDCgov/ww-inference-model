@@ -1,0 +1,484 @@
+## making gen_sim_data with stan functions
+generate_simulated_data_stan <- function(r_in_weeks = # nolint
+                                           c(
+                                             rep(1.1, 5), rep(0.9, 5),
+                                             1 + 0.007 * 1:16
+                                           ),
+                                         n_sites = 4,
+                                         ww_pop_sites = c(4e5, 2e5, 1e5, 5e4),
+                                         pop_size = 1e6,
+                                         site = c(1, 1, 2, 3, 4),
+                                         lab = c(1, 2, 3, 3, 3),
+                                         ot = 90,
+                                         nt = 9,
+                                         forecast_horizon = 28,
+                                         sim_start_date = lubridate::ymd(
+                                           "2023-09-01"
+                                         ),
+                                         hosp_wday_effect = c(
+                                           0.95, 1.01, 1.02,
+                                           1.02, 1.01, 1,
+                                           0.99
+                                         ) / 7,
+                                         i0_over_n = 5e-4,
+                                         initial_growth = 1e-4,
+                                         sd_in_lab_level_multiplier = 0.25,
+                                         mean_obs_error_in_ww_lab_site = 0.2,
+                                         mean_reporting_freq = 1 / 5,
+                                         sd_reporting_freq = 1 / 20,
+                                         mean_reporting_latency = 7,
+                                         sd_reporting_latency = 3,
+                                         mean_log_lod = 3.8,
+                                         sd_log_lod = 0.2,
+                                         input_params_path =
+                                           fs::path_package("extdata",
+                                             "example_params.toml",
+                                             package = "wwinference"
+                                           ),
+                                         use_spatial_corr = TRUE,
+                                         corr_function =
+                                           exponential_decay_corr_func,
+                                         corr_fun_params = list(
+                                           dist_matrix = as.matrix(
+                                             dist(
+                                               data.frame(
+                                                 x = c(85, 37, 48, 7),
+                                                 y = c(12, 75, 81, 96),
+                                                 diag = TRUE,
+                                                 upper = TRUE
+                                               )
+                                             )
+                                           ),
+                                           phi = 25,
+                                           l = 1
+                                         ),
+                                         phi_rt = 0.6,
+                                         sigma_eps = sqrt(0.02),
+                                         scaling_factor = 0.01,
+                                         aux_site_bool = TRUE) {
+  # Some quick checks to make sure the inputs work as expected
+  stopifnot(
+    "weekly R(t) passed in isn't long enough" =
+      length(r_in_weeks) >= (ot + nt + forecast_horizon) / 7
+  )
+  stopifnot(
+    "Sum of wastewater site populations is greater than state pop" =
+      pop_size > sum(ww_pop_sites)
+  )
+  stopifnot(
+    "Site and lab indices don't align" =
+      length(site) == length(lab)
+  )
+
+  # Spatial bool check, if no spatial use ind. corr. func. with n+1 sites.
+  if (!use_spatial_corr) {
+    corr_function <- independence_corr_func
+    corr_fun_params <- list(num_sites = n_sites + 1)
+  }
+
+  # Get pop fractions of each subpop. There will n_sites + 1 subpops
+  pop_fraction <- c(
+    ww_pop_sites / pop_size,
+    (pop_size - sum(ww_pop_sites)) / pop_size
+  )
+
+  # Expose the stan functions into the global environment
+  model <- cmdstanr::cmdstan_model(
+    stan_file = file.path("inst", "stan", "wwinference.stan"),
+    compile = TRUE,
+    compile_standalone = TRUE,
+    force_recompile = TRUE
+  )
+  model$expose_functions(global = TRUE)
+
+  # Pull parameter values into memory
+  params <- get_params(input_params_path) # load in a single row tibble
+  par_names <- colnames(params) # pull them into memory
+  for (i in seq_along(par_names)) {
+    assign(par_names[i], as.double(params[i]))
+  }
+
+  # Create a tibble that maps sites, labs, and population sizes of the sites
+  n_sites <- length(unique(site))
+  site_lab_map <- data.frame(
+    site,
+    lab
+  ) |>
+    dplyr::mutate(
+      lab_site = dplyr::row_number()
+    ) |>
+    dplyr::left_join(data.frame(
+      site = 1:n_sites,
+      ww_pop = ww_pop_sites
+    ))
+  n_lab_sites <- nrow(site_lab_map)
+
+  # Define some time variables
+  ht <- nt + forecast_horizon
+  n_weeks <- ceiling((ot + ht) / 7) # calibration + forecast time
+  tot_weeks <- ceiling((uot + ot + ht) / 7) # initialization time +
+  # calibration + forecast time
+
+  # We need dates to get a weekday vector
+  dates <- seq(
+    from = sim_start_date, to =
+      (sim_start_date + lubridate::days(ot + nt + ht - 1)), by = "days"
+  )
+  log_i0_over_n <- log(i0_over_n)
+  day_of_week_vector <- lubridate::wday(dates, week_start = 1)
+  date_df <- data.frame(
+    t = 1:(ot + nt + ht),
+    date = dates
+  )
+
+  forecast_date <- date_df |>
+    dplyr::filter(t == ot + nt) |>
+    dplyr::pull(date)
+
+  # Set the lab-site multiplier presumably from lab measurement processes
+  log_m_lab_sites <- rnorm(n_lab_sites,
+    mean = 0, sd = sd_in_lab_level_multiplier
+  ) # This is the magnitude shift (multiplier in natural scale) on the
+  # observations, presumably from things like concentration method, PCR type,
+  # collection type, etc.
+
+  # Assign a site level observation error to each site, but have it scale
+  # inversely with the catchment area of the site for now. Eventually, we will
+  # want to impose the expected variability as a function of the contributing
+  # infections, but since this module isn't currently in the model we will
+  # just do this for now.
+  sigma_ww_lab_site <- mean(site_lab_map$ww_pop) *
+    mean_obs_error_in_ww_lab_site / site_lab_map$ww_pop
+
+  # Set randomly the lab-site reporting avg frequency (per day) and the
+  # reporting latency (in days). Will use this to sample times in the observed
+  # data
+  lab_site_reporting_freq <- abs(rnorm(
+    n = n_lab_sites, mean = mean_reporting_freq,
+    sd = sd_reporting_freq
+  ))
+  lab_site_reporting_latency <- pmax(1, ceiling(rnorm(
+    n = n_lab_sites,
+    mean = mean_reporting_latency, sd = sd_reporting_latency
+  )))
+  # Set a lab-site-specific LOD in log scale
+  lod_lab_site <- rnorm(n_lab_sites, mean = mean_log_lod, sd = sd_log_lod)
+
+  # Delay distributions: Note, these are COVID specific, and we will
+  # generally want to specify these outside model configuration
+
+  # Double censored, zero truncated, generation interval
+  generation_interval <- simulate_double_censored_pmf(
+    max = gt_max, meanlog = mu_gi, sdlog = sigma_gi, fun_dist = rlnorm, n = 5e6
+  ) |> drop_first_and_renormalize()
+
+  # Set infection feedback to generation interval
+  infection_feedback_pmf <- generation_interval
+  infection_feedback_rev_pmf <- rev(infection_feedback_pmf)
+  infection_feedback <- 0
+  if_feedback <- 1
+
+  # Delay from infection to hospital admission: incubation period +
+  # time from symptom onset to hospital admission
+
+  # Get incubation period for COVID.
+  inc <- make_incubation_period_pmf(
+    backward_scale, backward_shape, r
+  )
+  sym_to_hosp <- make_hospital_onset_delay_pmf(neg_binom_mu, neg_binom_size)
+
+  # Infection to hospital admissions delay distribution
+  inf_to_hosp <- make_reporting_delay_pmf(inc, sym_to_hosp)
+
+  # Shedding kinetics delay distribution
+  vl_trajectory <- model$functions$get_vl_trajectory(
+    t_peak_mean, viral_peak_mean,
+    duration_shedding_mean, gt_max
+  )
+
+  # Generate the state level weekly R(t) before infection feedback
+  # Adds a bit of noise, can add more...
+  unadj_r_weeks <- (r_in_weeks * rnorm(length(r_in_weeks), 1, 0.03))[1:n_weeks]
+
+  # Convert to daily for input into renewal equation
+  ind_m <- get_ind_m(ot + ht, n_weeks)
+  unadj_r <- ind_m %*% unadj_r_weeks
+
+
+  # Generate the site-level expected observed concentrations -----------------
+  # first by adding variation to the site-level R(t) in each site,
+  # and then adding lab-site level multiplier and observation error
+
+
+  ### Generate the site level infection dynamics-------------------------------
+  new_i_over_n_site <- matrix(nrow = n_sites + 1, ncol = (uot + ot + ht))
+  r_site <- matrix(nrow = n_sites + 1, ncol = (ot + ht))
+  # Generate site-level R(t)
+  log_r_state_week <- log(unadj_r_weeks)
+  initial_growth_site <- vector(length = n_sites + 1)
+  log_i0_over_n_site <- vector(length = n_sites + 1)
+  for (i in 1:(n_sites + 1)) {
+    # Generate deviations in the initial growth rate and initial incidence
+    initial_growth_site[i] <- rnorm(
+      n = 1, mean = initial_growth,
+      sd = initial_growth_prior_sd
+    )
+    # This is I0/N at the first unobserved time
+    log_i0_over_n_site[i] <- rnorm(
+      n = 1, mean = log_i0_over_n,
+      sd = 0.5
+    )
+  }
+
+  log_r_site <- spatial_rt_process_rng(
+    log_state_rt = log_r_state_week,
+    dist_matrix = corr_fun_params$dist_matrix,
+    sigma_eps = sigma_eps,
+    phi = corr_fun_params$phi,
+    l = corr_fun_params$l,
+    spatial_deviation_ar_coeff = phi_rt,
+    spatial_deviation_init = MASS::mvrnorm(
+      n = 1,
+      mu = matrix(data = 0, nrow = 1, ncol = n_sites),
+      Sigma = corr_function(corr_fun_params) * sigma_eps^2
+    )
+  )
+  # Auxiliary Site
+  if (aux_site_bool) {
+    log_r_site_aux <- aux_site_process_rng(
+      log_state_rt = log_r_state_week,
+      scaling_factor = scaling_factor,
+      sigma_eps = sigma_eps,
+      state_deviation_ar_coeff = phi_rt,
+      state_deviation_init = rnorm(
+        n = 1,
+        mean = 0,
+        sd = sqrt(scaling_factor) * sigma_eps
+      )
+    )
+    log_r_site <- rbind(
+      log_r_site,
+      log_r_site_aux
+    )
+  }
+
+  new_i_over_n <- rep(0, (uot + ot + ht)) # State infections
+  for (i in 1:(n_sites + 1)) {
+    unadj_r_site <- ind_m %*% exp(log_r_site[i, ]) # daily R site
+
+    site_output <- model$functions$generate_infections(
+      unadj_r_site, # Daily unadjusted R(t) in each site
+      uot, # the duration of initialization time for exponential growth
+      rev(generation_interval), # the reversed generation interval
+      log_i0_over_n_site[i], # log of the initial infections per capita
+      initial_growth_site[i], # initial exponential growth rate
+      ht, # time after last observed hospital admission
+      infection_feedback, # binary indicating whether or not inf feedback
+      infection_feedback_rev_pmf # inf feedback delay pmf
+    )
+    # matrix to hold infections
+    new_i_over_n_site[i, ] <- site_output[[1]]
+    # Cumulatively sum infections to get overall state infections
+    new_i_over_n <- new_i_over_n + pop_fraction[i] * site_output[[1]]
+    # Adjusted R(t) estimate in each site
+    r_site[i, ] <- site_output[[2]]
+  }
+
+  # State adjusted R(t) = I(t)/convolve(I(t), g(t))
+  rt <- (new_i_over_n / model$functions$convolve_dot_product(
+    new_i_over_n, rev(generation_interval), uot + ot + ht
+  ))[(uot + 1):(uot + ot + ht)]
+
+
+  # Generate expected state level hospitalizations from subpop infections -----
+
+  # Generate a time varying P(hosp|infection),
+  p_hosp_int_logit <- qlogis(p_hosp_mean) # p_hosp_mean is in linear scale
+  p_hosp_m <- get_ind_m(uot + ot + ht, tot_weeks) # matrix needed to convert
+  # from weekly to daily
+  p_hosp_w_logit <- p_hosp_int_logit + rnorm(
+    tot_weeks - 1, 0,
+    p_hosp_w_sd_sd
+  )
+  # random walk on p_hosp in logit scale
+  p_hosp_logit_weeks <- c(
+    p_hosp_int_logit,
+    p_hosp_w_logit
+  ) # combine with intercept
+  p_hosp_logit_days <- p_hosp_m %*% c(
+    p_hosp_int_logit,
+    p_hosp_w_logit
+  ) # convert to days
+  p_hosp_days <- plogis(p_hosp_logit_days) # convert back to linear scale
+
+
+  # Get expected trajectory of hospital admissions from incident infections
+  # by convolving scaled incident infections with delay from infection to
+  # hospital admission
+  model_hosp_over_n <- model$functions$convolve_dot_product(
+    p_hosp_days * new_i_over_n, # individuals who will be hospitalized
+    rev(inf_to_hosp),
+    uot + ot + ht
+  )[(uot + 1):(uot + ot + ht)]
+  # only care about hospital admission in observed time, but need uot infections
+
+  exp_hosp <- pop_size * model$functions$day_of_week_effect(
+    model_hosp_over_n,
+    day_of_week_vector,
+    hosp_wday_effect
+  )
+  # Add observation error, get hospital admissions in the forecast period
+  exp_obs_hosp <- rnbinom(
+    n = length(exp_hosp), mu = exp_hosp,
+    size = 1 / ((inv_sqrt_phi_prior_mean)^2)
+  )
+
+
+
+  ## Generate site-level mean genomes from infections in each site-------
+  log_g_over_n_site <- matrix(nrow = n_sites, ncol = (ot + ht))
+
+  for (i in 1:n_sites) {
+    # Convolve infections with shedding kinetics
+    model_net_i <- model$functions$convolve_dot_product(
+      new_i_over_n_site[i, ],
+      rev(vl_trajectory),
+      (uot + ot + ht)
+    )[(uot + 1):(uot + ot + ht)]
+    # Scale by average genomes shed per infection
+    log_g_over_n_site[i, ] <- log(10) * log10_g_prior_mean +
+      log(model_net_i + 1e-8)
+  }
+
+
+  # Add on site-lab-level observation error -----------------------------------
+  log_obs_g_over_n_lab_site <- matrix(nrow = n_lab_sites, ncol = (ot + ht))
+  for (i in 1:n_lab_sites) {
+    log_g_w_multiplier <- log_g_over_n_site[site[i], ] +
+      log_m_lab_sites[i] # Add site level multiplier in log scale
+    log_obs_g_over_n_lab_site[i, ] <- log_g_w_multiplier +
+      rnorm(
+        n = (ot + ht), mean = 0,
+        sd = sigma_ww_lab_site[i]
+      ) # + add observation error in log scale
+  }
+
+  # Sample from some lab-sites more frequently than others and add different
+  # latencies for each lab-site
+  log_obs_conc_lab_site <- matrix(nrow = n_lab_sites, ncol = ot + ht)
+  for (i in 1:n_lab_sites) {
+    # Get the indices where we observe concentrations
+    st <- sample(1:(ot + nt), round((ot + nt) * lab_site_reporting_freq[i]))
+    # cut off end based on latency
+    stl <- pmin((ot + nt - lab_site_reporting_latency[i]), st)
+    # Calculate log concentration for the days that we have observations
+    log_obs_conc_lab_site[i, stl] <- log_obs_g_over_n_lab_site[i, stl] -
+      log(ml_of_ww_per_person_day)
+  }
+
+  # Format the data-----------------------------------------------------------
+
+  ww_data <- as.data.frame(t(log_obs_conc_lab_site)) |>
+    dplyr::mutate(t = 1:(ot + ht)) |>
+    tidyr::pivot_longer(!t,
+      names_to = "lab_site",
+      names_prefix = "V",
+      values_to = "log_conc"
+    ) |>
+    dplyr::mutate(
+      lab_site = as.integer(lab_site)
+    ) |>
+    dplyr::left_join(date_df, by = "t") |>
+    dplyr::left_join(site_lab_map,
+      by = "lab_site"
+    ) |>
+    dplyr::left_join(
+      data.frame(
+        lab_site = 1:n_lab_sites,
+        lod_sewage = lod_lab_site
+      ),
+      by = c("lab_site")
+    ) |> # Remove below LOD values
+    dplyr::mutate(
+      lod_sewage =
+        dplyr::case_when(
+          is.na(log_conc) ~ NA,
+          !is.na(log_conc) ~ lod_sewage
+        )
+    ) |>
+    dplyr::mutate(
+      genome_copies_per_ml = exp(log_conc),
+      lod = exp(lod_sewage)
+    ) |>
+    dplyr::filter(!is.na(genome_copies_per_ml)) |>
+    dplyr::rename(site_pop = ww_pop) |>
+    dplyr::arrange(site, lab, date) |>
+    dplyr::select(date, site, lab, genome_copies_per_ml, lod, site_pop)
+
+  # Make a hospital admissions dataframe for model calibration
+  hosp_data <- tibble::tibble(
+    t = 1:ot,
+    daily_hosp_admits = exp_obs_hosp[1:ot],
+    state_pop = pop_size
+  ) |>
+    dplyr::left_join(
+      date_df,
+      by = "t"
+    ) |>
+    dplyr::select(
+      date,
+      daily_hosp_admits,
+      state_pop
+    )
+
+  # Make another one for model evaluation
+  hosp_data_eval <- tibble::tibble(
+    t = 1:(ot + ht),
+    daily_hosp_admits_for_eval = exp_obs_hosp,
+    state_pop = pop_size
+  ) |>
+    dplyr::left_join(
+      date_df,
+      by = "t"
+    ) |>
+    dplyr::select(
+      date,
+      daily_hosp_admits_for_eval,
+      state_pop
+    )
+
+  example_data <- list(
+    ww_data = ww_data,
+    hosp_data = hosp_data,
+    hosp_data_eval = hosp_data_eval
+  )
+
+  return(example_data)
+}
+
+# exp cor r
+exponential_decay_corr_func_r <- function(
+    corr_function_params = list(
+      dist_matrix = NULL,
+      phi = NULL,
+      l = NULL
+    )) {
+  # presets
+  dist_matrix <- corr_function_params$dist_matrix
+  phi <- corr_function_params$phi
+  l <- corr_function_params$l
+  return(exp(-(dist_matrix / phi)^l))
+}
+#############################
+#############################
+#############################
+# testing - Make sure to run all R functions first!!!
+
+set.seed(1)
+
+data_stan <- generate_simulated_data_stan(
+  corr_function = exponential_decay_corr_func_r
+)
+data_r <- generate_simulated_data(
+  corr_function = exponential_decay_corr_func_r
+)
