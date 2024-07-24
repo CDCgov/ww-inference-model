@@ -29,7 +29,7 @@ generate_simulated_data(
   input_params_path = fs::path_package("extdata", "example_params.toml", package =
     "wwinference"),
   use_spatial_corr = TRUE,
-  corr_function = exponential_decay_corr_func,
+  corr_function = exponential_decay_corr_func_r,
   corr_fun_params = list(dist_matrix = as.matrix(dist(data.frame(x = c(85, 37, 48, 7), y
     = c(12, 75, 81, 96), diag = TRUE, upper = TRUE))), phi = 25, l = 1),
   phi_rt = 0.6,
