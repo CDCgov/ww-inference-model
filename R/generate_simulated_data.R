@@ -142,7 +142,8 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                         package = "wwinference"
                                       ),
                                     use_spatial_corr = TRUE,
-                                    corr_function = exponential_decay_corr_func,
+                                    corr_function =
+                                      exponential_decay_corr_func_r,
                                     corr_fun_params = list(
                                       dist_matrix = as.matrix(
                                         dist(
