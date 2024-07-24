@@ -151,7 +151,7 @@ sim_data <- generate_simulated_data(
   ww_pop_sites = c(1e5, 4e5, 2e5, 1.5e5, 5e4, 3e5),
   pop_size = 2e6,
   use_spatial_corr = TRUE,
-  corr_function = exponential_decay_corr_func,
+  corr_function = exponential_decay_corr_func_r,
   corr_fun_params = list(
     dist_matrix = as.matrix(
       dist(
