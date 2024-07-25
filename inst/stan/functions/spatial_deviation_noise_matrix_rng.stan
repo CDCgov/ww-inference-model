@@ -1,6 +1,6 @@
 /**
   * Generates a matrix where columns are random vectors for spatial process.
-  * Currently this is for an exponential correaltion function.
+  * Currently this is for an exponential correlation function.
   * @param dist_matrix Distance matrix for correlation constr.
   * @param sigma_eps Parameter for construction of covariance matrix
   * of spatial epsilon.

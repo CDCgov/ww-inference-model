@@ -1,6 +1,5 @@
 /**
-  * Generates a vector for state deviation noise for aux site.
-  * Currently this is for an exponential correaltion function.
+  * Generates a vector for aux site's state deviation noise.
   * @param scaling_factor Scaling factor for aux site process.
   * @param sigma_eps Parameter for construction of covariance matrix
   * of spatial epsilon.

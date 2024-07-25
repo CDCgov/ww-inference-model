@@ -29,13 +29,13 @@ spatial_rt_process <- function(log_state_rt,
   delta <- matrix(data = 0, nrow = n_subpopulations, ncol = n_time)
 
   # delta constr.
-  delta[, 1] <- MASS::mvrnorm(
+  delta[, 1] <- mvrnorm(
     n = 1,
     mu = matrix(data = 0, nrow = 1, ncol = n_subpopulations),
     Sigma = sigma_matrix_eps
   )
   for (t_i in 2:n_time) {
-    eps_vec <- MASS::mvrnorm(
+    eps_vec <- mvrnorm(
       n = 1,
       mu = matrix(data = 0, nrow = 1, ncol = n_subpopulations),
       Sigma = sigma_matrix_eps
