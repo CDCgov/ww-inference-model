@@ -62,7 +62,7 @@ check_rt_length <- function(r_in_weeks,
 #' state
 #' @param ww_pop_sites vector indicating the population size in the
 #' catchment area in each of those sites
-#' @param call Calling environment to be passed to the type checker
+#' @param call Calling environment to be passed to [cli::cli_abort()] for traceback. 
 #'
 #' @return NULL, invisibly
 check_ww_site_pops <- function(pop_size,
