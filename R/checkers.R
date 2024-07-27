@@ -88,7 +88,7 @@ check_ww_site_pops <- function(pop_size,
 #' lab-site observation comes frm
 #' @param lab ector of integers indicating which lab the lab-site observations
 #' come from
-#' @param call
+#' @param call Calling environment to be passed to [cli::cli_abort()] for traceback.
 #'
 #' @return NULL, invisibly
 check_site_and_lab_indices <- function(site,
