@@ -17,20 +17,18 @@ matrix construct_spatial_rt(vector log_state_rt,
 
 
   // presets
-  int n_time = cols(spatial_deviation_noise_matrix);
+  int n_time = dims(log_state_rt)[1];
   int n_sites = rows(spatial_deviation_noise_matrix);
   matrix[n_sites,n_time] log_site_rt;
-  matrix[n_sites,n_time] spatial_deviation;
-
-  spatial_deviation[,1] = spatial_deviation_init;
-  for (t_i in 2:n_time) {
-    spatial_deviation[,t_i] = (spatial_deviation_ar_coeff*spatial_deviation[,t_i-1])
-                              + spatial_deviation_noise_matrix[,t_i];
-  }
+  vector[n_sites] spatial_deviation_t_i = spatial_deviation_init;
 
   for (t_i in 1:n_time) {
+    // This formulation still uses the spatial_deviation_init
+    // for inference purposes.
     log_site_rt[,t_i] = (log_state_rt[t_i]*rep_vector(1,n_sites))
-                        + spatial_deviation[,t_i];
+                        + spatial_deviation_t_i;
+    spatial_deviation_t_i = (spatial_deviation_ar_coeff*spatial_deviation_t_i)
+                            + spatial_deviation_noise_matrix[,t_i];
   }
 
   return log_site_rt;

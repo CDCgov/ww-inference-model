@@ -100,7 +100,9 @@
 #'   ),
 #'   phi_rt = 0.6,
 #'   sigma_eps = sqrt(0.02),
+#'   spatial_deviation_init = c(0.09, 0.32, 0.09, -0.78),
 #'   scaling_factor = 0.01,
+#'   state_deviation_init = 0.0001,
 #'   aux_site_bool = TRUE
 #' )
 #' hosp_data <- sim_data$hosp_data
@@ -160,7 +162,10 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                     ),
                                     phi_rt = 0.6,
                                     sigma_eps = sqrt(0.02),
+                                    spatial_deviation_init =
+                                      c(0.09, 0.32, 0.09, -0.78),
                                     scaling_factor = 0.01,
+                                    state_deviation_init = 0.0001,
                                     aux_site_bool = TRUE) {
   # Some quick checks to make sure the inputs work as expected
   stopifnot(
@@ -339,41 +344,29 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     )
   }
 
-  log_r_site <- spatial_rt_process(
-    log_r_state_week,
-    corr_function,
-    corr_fun_params,
-    phi_rt,
-    sigma_eps
+  # Using stan exposed functions for forward spatial Rt process.
+  sigma_matrix <- sigma_eps * corr_function(corr_fun_params)
+  spatial_deviation_noise_matrix <- spatial_deviation_noise_matrix_rng(
+    sigma_matrix,
+    n_weeks
+  )
+  log_r_site <- construct_spatial_rt(log_r_state_week,
+    spatial_deviation_ar_coeff = phi_rt,
+    spatial_deviation_init,
+    spatial_deviation_noise_matrix
   )
   # Auxiliary Site
   if (aux_site_bool) {
-    log_r_site_aux <- matrix(
-      data = 0,
-      nrow = 1,
-      ncol = ncol(log_r_site)
+    state_deviation_noise_vec <- state_deviation_noise_vec_aux_rng(
+      scaling_factor,
+      sigma_eps,
+      n_weeks
     )
-    delta <- matrix(
-      data = 0,
-      nrow = 1,
-      ncol = ncol(log_r_site)
+    log_r_site_aux <- construct_aux_rt(log_r_state_week,
+      state_deviation_ar_coeff = phi_rt,
+      state_deviation_init,
+      state_deviation_noise_vec
     )
-    delta[1] <- rnorm(
-      n = 1,
-      mean = 0,
-      sd = sqrt(scaling_factor) * sigma_eps
-    )
-    for (i in 2:n_weeks) {
-      eps_temp <- rnorm(
-        n = 1,
-        mean = 0,
-        sd = sqrt(scaling_factor) * sigma_eps
-      )
-      delta[i] <- phi_rt * delta[i - 1] + eps_temp
-    }
-    for (i in 1:n_weeks) {
-      log_r_site_aux[i] <- log_r_state_week[i] + delta[i]
-    }
     log_r_site <- rbind(
       log_r_site,
       log_r_site_aux

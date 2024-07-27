@@ -1,7 +1,9 @@
 /**
   * Assembles the correlation matrix with an exponential decay corr. func.
   * @param dist_matrix matrix with distances.
-  * @param phi parameter for function.
+  * @param phi scalar parameter controlling the decay rate of correlation with
+  * distance. Should be non-negative. Smaller values imply a greater reduction
+  * in correlation with increased distance.
   * @param l parameter for function.
   * @return A matrix, the correlation matrix for exp. corr. func.
   */
