@@ -3,7 +3,8 @@
 #' @param df dataframe with `date` column
 #' @param max_date string indicating the maximum date in ISO8601 convention
 #' e.g. YYYY-MM-DD
-#' @param call Calling environment to be passed to the type checker
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
 #'
 #' @return NULL, invisibly
 check_date <- function(df, max_date, call = rlang::caller_env()) {
@@ -33,7 +34,8 @@ check_date <- function(df, max_date, call = rlang::caller_env()) {
 #' hospital admissions date and forecast date in days
 #' @param forecast_horizon integer indicating the duration of the forecast in
 #' days e.g. 28 days
-#' @param call Calling environment to be passed to [cli::cli_abort()] for traceback.
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
 #'
 #' @return NULL, invisible
 check_rt_length <- function(r_in_weeks,
@@ -62,7 +64,8 @@ check_rt_length <- function(r_in_weeks,
 #' state
 #' @param ww_pop_sites vector indicating the population size in the
 #' catchment area in each of those sites
-#' @param call Calling environment to be passed to [cli::cli_abort()] for traceback. 
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#'  traceback.
 #'
 #' @return NULL, invisibly
 check_ww_site_pops <- function(pop_size,
@@ -88,7 +91,8 @@ check_ww_site_pops <- function(pop_size,
 #' lab-site observation comes frm
 #' @param lab ector of integers indicating which lab the lab-site observations
 #' come from
-#' @param call Calling environment to be passed to [cli::cli_abort()] for traceback.
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
 #'
 #' @return NULL, invisibly
 check_site_and_lab_indices <- function(site,
@@ -112,7 +116,8 @@ check_site_and_lab_indices <- function(site,
 #'
 #' @param x vector of arguments to check for negativity
 #' @param arg string to print the name of the element your checking
-#' @param call Calling environment to be passed to the type checker
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
 #'
 #' @return NULL, invisibly
 check_elements_non_neg <- function(x, arg = "x", call = rlang::caller_env()) {
