@@ -24,8 +24,8 @@ vector construct_aux_rt(vector log_state_rt,
   // state_deviation_t_i to 0 initially.
 
   for (t_i in 1:n_time) {
-    state_deviation_t_i = (state_deviation_ar_coeff*state_deviation_t_i)
-                              + state_deviation_noise_vec[t_i];
+    state_deviation_t_i = state_deviation_ar_coeff * state_deviation_t_i +
+        state_deviation_noise_vec[t_i];
     log_aux_site_rt[t_i] = log_state_rt[t_i] + state_deviation_t_i;
   }
 

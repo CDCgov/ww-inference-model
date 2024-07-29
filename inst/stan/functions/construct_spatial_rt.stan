@@ -28,8 +28,7 @@ matrix construct_spatial_rt(vector log_state_rt,
   for (t_i in 1:n_time) {
     spatial_deviation_t_i = (spatial_deviation_ar_coeff*spatial_deviation_t_i)
                             + spatial_deviation_noise_matrix[,t_i];
-    log_site_rt[,t_i] = (log_state_rt[t_i]*rep_vector(1,n_sites))
-                        + spatial_deviation_t_i;
+    log_site_rt[,t_i] = log_state_rt[t_i] + spatial_deviation_t_i;
   }
 
   return log_site_rt;

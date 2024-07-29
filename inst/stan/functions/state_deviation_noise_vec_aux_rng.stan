@@ -10,11 +10,7 @@ vector state_deviation_noise_vec_aux_rng(real scaling_factor,
                                          real sigma_eps,
                                          int n_time) {
 
-  vector[n_time] state_deviation_noise;
-
-  for (t_i in 1:n_time) {
-      state_deviation_noise[t_i] = normal_rng(0, scaling_factor * sigma_eps);
-  }
+  vector[n_time] state_deviation_noise = normal_rng(rep_vector(0, n_time), scaling_factor * sigma_eps);
 
   return state_deviation_noise;
 }
