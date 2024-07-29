@@ -1,5 +1,5 @@
 # Create a dummy dataset that mimics the structure expected by the function
-dummy_data <- tibble(
+dummy_data <- tibble::tibble(
   site = rep("Site1", 10),
   lab = rep("Lab1", 10),
   lab_site_index = rep(1, 10),
@@ -41,7 +41,7 @@ test_that("function flags outliers correctly", {
 
 test_that("function does not flag non-outliers", {
   # Modify dummy_data to have no outliers
-  dummy_data <- tibble(
+  dummy_data <- tibble::tibble(
     site = rep("Site1", 12),
     lab = rep("Lab1", 12),
     lab_site_index = rep(1, 12),
@@ -63,7 +63,7 @@ test_that("function does not flag non-outliers", {
 
 test_that("function handles NA values appropriately", {
   # Include NAs in concentration column and check behavior
-  dummy_data <- tibble(
+  dummy_data <- tibble::tibble(
     site = rep("Site1", 12),
     lab = rep("Lab1", 12),
     lab_site_index = rep(1, 12),
@@ -84,7 +84,7 @@ test_that("function handles NA values appropriately", {
 })
 
 test_that("rho_threshold and log_conc threshold parameters works as expected", {
-  dummy_data <- tibble(
+  dummy_data <- tibble::tibble(
     site = rep("Site1", 12),
     lab = rep("Lab1", 12),
     lab_site_index = rep(1, 12),
