@@ -100,7 +100,7 @@
 #'   ),
 #'   phi_rt = 0.6,
 #'   sigma_eps = sqrt(0.02),
-#'   spatial_deviation_init = c(0.09, 0.32, 0.09, -0.78),
+#'   spatial_deviation_init = c(0.09, 0.32, 0.09, -0.78, -0.24, 0.16),
 #'   scaling_factor = 0.01,
 #'   state_deviation_init = 0.0001,
 #'   aux_site_bool = TRUE
