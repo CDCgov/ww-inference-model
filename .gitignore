@@ -4,6 +4,7 @@
 # Exclude stan compiled model
 
 inst/stan/wwinference
+inst/stan/functions/spatial_functions
 
 # Data
 *.csv
