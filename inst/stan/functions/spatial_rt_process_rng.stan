@@ -4,14 +4,12 @@
   * @param Sigma_matrix Matrix of covariances, constructed externally.
   * @param spatial_deviation_ar_coeff Coefficient for AR(1) temporal correlation on
   * subpopulation deviations.
-  * @param spatial_deviation_init Initial vector of spatial deviation.
   * @return A matrix for unadjusted Rt where rows are subpopulations
   * and columns are time points.
   */
 matrix spatial_rt_process_rng(vector log_state_rt,
                           matrix Sigma_matrix,
-                          real spatial_deviation_ar_coeff,
-                          vector spatial_deviation_init) {
+                          real spatial_deviation_ar_coeff) {
 
 
   //Presets
@@ -22,7 +20,6 @@ matrix spatial_rt_process_rng(vector log_state_rt,
                                                                                              n_time);
   matrix[n_sites,n_time] log_site_rt = construct_spatial_rt(log_state_rt,
                                                             spatial_deviation_ar_coeff,
-                                                            spatial_deviation_init,
                                                             spatial_deviation_noise_matrix);
 
   return log_site_rt;

@@ -59,11 +59,7 @@
 #' deviations
 #' @param sigma_eps Parameter for construction of covariance matrix of spatial
 #' epsilon
-#' @param spatial_deviation_init Initial vector of spatial deviation of sites
-#' and state Rt.
 #' @param scaling_factor Scaling factor for aux site
-#' @param state_deviation_init Initial value of spatial deviation of aux site
-#' and state Rt.
 #' @param aux_site_bool Boolean to use the aux site framework with
 #' scaling factor.
 #'
@@ -104,9 +100,7 @@
 #'   ),
 #'   phi_rt = 0.6,
 #'   sigma_eps = sqrt(0.02),
-#'   spatial_deviation_init = c(0.09, 0.32, 0.09, -0.78, -0.24, 0.16),
 #'   scaling_factor = 0.01,
-#'   state_deviation_init = 0.0001,
 #'   aux_site_bool = TRUE
 #' )
 #' hosp_data <- sim_data$hosp_data
@@ -166,10 +160,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                     ),
                                     phi_rt = 0.6,
                                     sigma_eps = sqrt(0.02),
-                                    spatial_deviation_init =
-                                      c(0.09, 0.32, 0.09, -0.78),
                                     scaling_factor = 0.01,
-                                    state_deviation_init = 0.0001,
                                     aux_site_bool = TRUE) {
   # Some quick checks to make sure the inputs work as expected
   stopifnot(
@@ -208,6 +199,16 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     force_recompile = TRUE
   )
   model$expose_functions(global = TRUE)
+  spatial_fxns <- cmdstanr::cmdstan_model(
+    stan_file = file.path(
+      "inst", "stan",
+      "functions", "spatial_functions.stan"
+    ),
+    compile = TRUE,
+    compile_standalone = TRUE,
+    force_recompile = TRUE
+  )
+  spatial_fxns$expose_functions(global = TRUE)
 
   # Pull parameter values into memory
   params <- get_params(input_params_path) # load in a single row tibble
@@ -354,9 +355,13 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     sigma_matrix,
     n_weeks
   )
+  spatial_deviation_init <- mvrnorm(
+    n = 1,
+    mu = rep(0, n_sites),
+    Sigma = sigma_matrix
+  )
   log_r_site <- construct_spatial_rt(log_r_state_week,
     spatial_deviation_ar_coeff = phi_rt,
-    spatial_deviation_init,
     spatial_deviation_noise_matrix
   )
   # Auxiliary Site
@@ -366,9 +371,13 @@ generate_simulated_data <- function(r_in_weeks = # nolint
       sigma_eps,
       n_weeks
     )
+    state_deviation_init <- rnorm(
+      n = 1,
+      mean = 0,
+      sd = scaling_factor * sigma_eps
+    )
     log_r_site_aux <- construct_aux_rt(log_r_state_week,
       state_deviation_ar_coeff = phi_rt,
-      state_deviation_init,
       state_deviation_noise_vec
     )
     log_r_site <- rbind(

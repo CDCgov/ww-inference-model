@@ -34,9 +34,7 @@ generate_simulated_data(
     = c(12, 75, 81, 96), diag = TRUE, upper = TRUE))), phi = 25, l = 1),
   phi_rt = 0.6,
   sigma_eps = sqrt(0.02),
-  spatial_deviation_init = c(0.09, 0.32, 0.09, -0.78),
   scaling_factor = 0.01,
-  state_deviation_init = 1e-04,
   aux_site_bool = TRUE
 )
 }
@@ -123,13 +121,7 @@ deviations}
 \item{sigma_eps}{Parameter for construction of covariance matrix of spatial
 epsilon}
 
-\item{spatial_deviation_init}{Initial vector of spatial deviation of sites
-and state Rt.}
-
 \item{scaling_factor}{Scaling factor for aux site}
-
-\item{state_deviation_init}{Initial value of spatial deviation of aux site
-and state Rt.}
 
 \item{aux_site_bool}{Boolean to use the aux site framework with
 scaling factor.}
@@ -176,9 +168,7 @@ sim_data <- generate_simulated_data(
   ),
   phi_rt = 0.6,
   sigma_eps = sqrt(0.02),
-  spatial_deviation_init = c(0.09, 0.32, 0.09, -0.78, -0.24, 0.16),
   scaling_factor = 0.01,
-  state_deviation_init = 0.0001,
   aux_site_bool = TRUE
 )
 hosp_data <- sim_data$hosp_data

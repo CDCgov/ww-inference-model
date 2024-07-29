@@ -6,7 +6,6 @@ functions {
 #include functions/infections.stan
 #include functions/observation_model.stan
 #include functions/utils.stan
-#include functions/spatial_functions.stan
 
 }
 
