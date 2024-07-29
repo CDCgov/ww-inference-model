@@ -32,6 +32,15 @@
 preprocess_ww_data <- function(ww_data,
                                conc_col_name = "genome_copies_per_ml",
                                lod_col_name = "lod") {
+  # This checks that we have all the right column names
+  check_required_ww_inputs(
+    ww_data,
+    conc_col_name,
+    lod_col_name
+  )
+  # This checks that the contents of the wastewater concentration data is valid
+  validate_ww_conc_data(ww_data, conc_col_name)
+
   # Add some columns
   ww_data_add_cols <- ww_data |>
     dplyr::left_join(

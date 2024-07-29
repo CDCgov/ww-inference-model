@@ -45,3 +45,89 @@ check_elements_non_neg <- function(x, arg = "x", call = rlang::caller_env()) {
   }
   invisible()
 }
+
+#' Check that the input wastewater data contains all the required column names
+#'
+#' @param ww_data tibble containing the input wastewater data
+#' @param conc_col_name string indicating the name of the column containing
+#' the concentration measurements in the wastewater data
+#' @param lod_col_name string indicating the name of the column containing
+#' the concentration measurements in the wastewater data
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#'
+#' @return
+check_required_ww_inputs <- function(ww_data,
+                                     conc_col_name,
+                                     lod_col_name,
+                                     call = rlang::caller_env()) {
+  column_names <- colnames(ww_data)
+  if (!"date" %in% column_names) {
+    cli::cli_abort(
+      c("`date` column missing from input wastewater data"),
+      class = "wwinference_input_data_error",
+      call = call
+    )
+  }
+
+  if (!"site" %in% column_names) {
+    cli::cli_abort(
+      c("site column missing from input wastewater data"),
+      class = "wwinference_input_data_error",
+      call = call
+    )
+  }
+  if (!"lab" %in% column_names) {
+    cli::cli_abort(
+      c("`lab` column missing from input wastewater data"),
+      class = "wwinference_input_data_error",
+      call = call
+    )
+  }
+  if (!"site_pop" %in% column_names) {
+    cli::cli_abort(
+      c("`site_pop` column missing from input wastewater data"),
+      class = "wwinference_input_data_error",
+      call = call
+    )
+  }
+  if (! !!conc_col_name %in% column_names) {
+    cli::cli_abort(
+      c("{conc_col_name} column missing from input wastewater data"),
+      class = "wwinference_input_data_error",
+      call = call
+    )
+  }
+  if (! !!lod_col_name %in% column_names) {
+    cli::cli_abort(
+      c("{lod_col_name} column missing from input wastewater data"),
+      class = "wwinference_input_data_error",
+      call = call
+    )
+  }
+
+  invisible()
+}
+
+#' Check there is no missignness in a particular vector
+#'
+#' @param x the vector to check
+#' @param arg the name of the vector to check
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#'
+#' @return NULL, invisibly
+check_no_missingness <- function(x, arg = "x", call = rlang::caller_env()) {
+  is_missing <- rlang::are_na(x)
+
+  if (any(is_missing)) {
+    cli::cli_abort(
+      c("{.arg {arg}} has missing values",
+        "i" = "Missing values are not supported in {.arg {arg}}",
+        "!" = "Missing element(s) index: {.val {which(is_missing)}}"
+      ),
+      call = call,
+      class = "wwinference_input_data_error"
+    )
+  }
+}
