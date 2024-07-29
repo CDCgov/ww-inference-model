@@ -200,9 +200,9 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   )
   model$expose_functions(global = TRUE)
   spatial_fxns <- cmdstanr::cmdstan_model(
-    stan_file = file.path(
-      "inst", "stan",
-      "functions", "spatial_functions.stan"
+    stan_file = system.file(
+      "stan", "spatial_functions.stan",
+      package = "wwinference"
     ),
     compile = TRUE,
     compile_standalone = TRUE,
