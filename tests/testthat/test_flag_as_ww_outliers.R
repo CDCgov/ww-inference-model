@@ -19,7 +19,7 @@ test_that("function returns a dataframe with correct columns", {
 
 test_that("function flags outliers correctly", {
   # Modify dummy_data to create an outlier scenario
-  dummy_data <- tibble(
+  dummy_data <- tibble::tibble(
     site = rep("Site1", 12),
     lab = rep("Lab1", 12),
     lab_site_index = rep(1, 12),
