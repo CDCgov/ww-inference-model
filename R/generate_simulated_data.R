@@ -59,7 +59,11 @@
 #' deviations
 #' @param sigma_eps Parameter for construction of covariance matrix of spatial
 #' epsilon
+#' @param spatial_deviation_init Initial vector of spatial deviation of sites
+#' and state Rt.
 #' @param scaling_factor Scaling factor for aux site
+#' @param state_deviation_init Initial value of spatial deviation of aux site
+#' and state Rt.
 #' @param aux_site_bool Boolean to use the aux site framework with
 #' scaling factor.
 #'

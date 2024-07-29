@@ -123,7 +123,13 @@ deviations}
 \item{sigma_eps}{Parameter for construction of covariance matrix of spatial
 epsilon}
 
+\item{spatial_deviation_init}{Initial vector of spatial deviation of sites
+and state Rt.}
+
 \item{scaling_factor}{Scaling factor for aux site}
+
+\item{state_deviation_init}{Initial value of spatial deviation of aux site
+and state Rt.}
 
 \item{aux_site_bool}{Boolean to use the aux site framework with
 scaling factor.}
