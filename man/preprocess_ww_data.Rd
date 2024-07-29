@@ -41,10 +41,11 @@ ww_data <- tibble::tibble(
   site = c(rep(1, 2), rep(2, 2)),
   lab = c(1, 1, 1, 1),
   conc = c(345.2, 784.1, 401.5, 681.8),
-  lod = c(20, 20, 15, 15)
+  lod = c(20, 20, 15, 15),
+  site_pop = c(rep(2e5, 2), rep(4e5, 2))
 )
 ww_data_preprocessed <- preprocess_ww_data(ww_data,
-                                           conc_col_name = "conc",
-                                           lod_col_name = "lod"
-                                           )
+  conc_col_name = "conc",
+  lod_col_name = "lod"
+)
 }

@@ -56,7 +56,7 @@ check_elements_non_neg <- function(x, arg = "x", call = rlang::caller_env()) {
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
 #'
-#' @return
+#' @return NULL, invisibly
 check_required_ww_inputs <- function(ww_data,
                                      conc_col_name,
                                      lod_col_name,
