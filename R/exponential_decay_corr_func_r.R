@@ -9,7 +9,7 @@
 #'
 #' @return Correlation matrix.
 #'
-exponential_decay_corr_func <- function(
+exponential_decay_corr_func_r <- function(
     corr_function_params = list(
       dist_matrix = NULL,
       phi = NULL,

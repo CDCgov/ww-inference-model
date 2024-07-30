@@ -1,167 +1,61 @@
-#' Generate simulated data from the underlying model's generative process
-#' @description
-#' Function that allows the user to generate hospital admissions and site-level
-#' wastewater data directly from the generative model, specifying the conditions
-#' and parameters to generate from.
-#'
-#' @param r_in_weeks vector indcating the mean weekly R(t) that drives infection
-#'  dynamics at the state-level. This gets jittered with random noise to add
-#'  week-to-week variation.
-#' @param n_sites integer indicating the number of sites
-#' @param ww_pop_sites vector indicating the population size in the
-#' catchment area in each of those sites (order must match)
-#' @param pop_size integer indicating the population size in the hypothetical
-#' state
-#' @param site vector of integers indicating which site (WWTP) each separate
-#' lab-site observation comes frm
-#' @param lab vector of integers indicating which lab the lab-site observations
-#' come from
-#' @param ot integer indicating the observed time: length of hospital admissions
-#'  calibration time in days
-#' @param nt integer indicating the nowcast time: length of time between last
-#' hospital admissions date and forecast date in days
-#' @param forecast_horizon integer indicating the duration of the forecast in
-#' days e.g. 28 days
-#' @param sim_start_date character string in ISO8601 format YYYY-MM-DD
-#'  indicating the start date of the simulation, used to get a weekday vector
-#' @param hosp_wday_effect a vector that is a simplex of length 7 describing
-#' how the hospital admissions are spread out over a week, starting at
-#' Monday = 1
-#' @param i0_over_n float between 0 and 1 indicating the initial per capita
-#' infections in the state
-#' @param initial_growth float indicating the exponential growth rate in
-#' infections (daily) during the unobserved time
-#' @param sd_in_lab_level_multiplier float indicating the standard deviation in
-#' the log of the site-lab level multiplier determining how much variation
-#' there is systematically in site-labs from the state mean
-#' @param mean_obs_error_in_ww_lab_site float indicating the mean day-to-day
-#' variation in observed wastewater concentrations across all lab-sites
-#' @param mean_reporting_freq float indicating the mean frequency of wastewater
-#'  measurements across sites in per day (e.g. 1/7 is once per week)
-#' @param sd_reporting_freq float indicating the standard deviation in the
-#' frequency of wastewater measurements across sites
-#' @param mean_reporting_latency float indicating the mean time from forecast
-#' date to last wastewater sample collection date, across sites
-#' @param sd_reporting_latency float indicating the standard deviation in the
-#' time from the forecast date to the last wastewater sample collection date,
-#' across sites
-#' @param mean_log_lod float indicating the mean log of the LOD in each lab-site
-#' @param sd_log_lod float indicating the standard deviation in the log of the
-#' LOD across sites
-#' @param input_params_path path to the toml file with the parameters to use
-#' to generate the simulated data
-#' @param use_spatial_corr Boolean to use spatial process, default is TRUE
-#' @param corr_function Correlation function for spatial site correlations,
-#' defaulted to exponential decay correlation function
-#' @param corr_fun_params Parameters required for correlation function,
-#' defaulted to presets for exponential decay correlation function
-#' @param phi_rt Coefficient for AR(1) temporal correlation on subpopulation
-#' deviations
-#' @param sigma_eps Parameter for construction of covariance matrix of spatial
-#' epsilon
-#' @param scaling_factor Scaling factor for aux site
-#' @param aux_site_bool Boolean to use the aux site framework with
-#' scaling factor.
-#'
-#' @return a list containing three dataframes. hosp_data is a dataframe
-#' containing the number of daily hospital admissions by day for a theoretical
-#' US state, for the duration of the specified calibration period.
-#' hosp_data_eval is a dataframe containing the number of daily hospital
-#' admissions by day for a theoretical US state, for the entire evaluation
-#' period.
-#' ww_data is a dataframe containing the measured wastewater concentrations
-#' in each site alongside other metadata necessary for modeling that data.
-#' @export
-#'
-#' @examples
-#' # Generate a simulated dataset from a hypothetical state with 6 sites and 2
-#' # different labs
-#' sim_data <- generate_simulated_data(
-#'   n_sites = 6,
-#'   site = c(1, 2, 3, 4, 5, 6, 6),
-#'   lab = c(1, 1, 1, 1, 2, 2, 3),
-#'   ww_pop_sites = c(1e5, 4e5, 2e5, 1.5e5, 5e4, 3e5),
-#'   pop_size = 2e6,
-#'   use_spatial_corr = TRUE,
-#'   corr_function = exponential_decay_corr_func_r,
-#'   corr_fun_params = list(
-#'     dist_matrix = as.matrix(
-#'       dist(
-#'         data.frame(
-#'           x = c(85, 37, 48, 7, 45, 36),
-#'           y = c(12, 75, 81, 96, 24, 43),
-#'           diag = TRUE,
-#'           upper = TRUE
-#'         )
-#'       )
-#'     ),
-#'     phi = 25,
-#'     l = 1
-#'   ),
-#'   phi_rt = 0.6,
-#'   sigma_eps = sqrt(0.02),
-#'   scaling_factor = 0.01,
-#'   aux_site_bool = TRUE
-#' )
-#' hosp_data <- sim_data$hosp_data
-#' ww_data <- sim_data$ww_data
-generate_simulated_data <- function(r_in_weeks = # nolint
-                                      c(
-                                        rep(1.1, 5), rep(0.9, 5),
-                                        1 + 0.007 * 1:16
-                                      ),
-                                    n_sites = 4,
-                                    ww_pop_sites = c(4e5, 2e5, 1e5, 5e4),
-                                    pop_size = 1e6,
-                                    site = c(1, 1, 2, 3, 4),
-                                    lab = c(1, 2, 3, 3, 3),
-                                    ot = 90,
-                                    nt = 9,
-                                    forecast_horizon = 28,
-                                    sim_start_date = lubridate::ymd(
-                                      "2023-09-01"
-                                    ),
-                                    hosp_wday_effect = c(
-                                      0.95, 1.01, 1.02,
-                                      1.02, 1.01, 1,
-                                      0.99
-                                    ) / 7,
-                                    i0_over_n = 5e-4,
-                                    initial_growth = 1e-4,
-                                    sd_in_lab_level_multiplier = 0.25,
-                                    mean_obs_error_in_ww_lab_site = 0.2,
-                                    mean_reporting_freq = 1 / 5,
-                                    sd_reporting_freq = 1 / 20,
-                                    mean_reporting_latency = 7,
-                                    sd_reporting_latency = 3,
-                                    mean_log_lod = 3.8,
-                                    sd_log_lod = 0.2,
-                                    input_params_path =
-                                      fs::path_package("extdata",
-                                        "example_params.toml",
-                                        package = "wwinference"
-                                      ),
-                                    use_spatial_corr = TRUE,
-                                    corr_function =
-                                      exponential_decay_corr_func_r,
-                                    corr_fun_params = list(
-                                      dist_matrix = as.matrix(
-                                        dist(
-                                          data.frame(
-                                            x = c(85, 37, 48, 7),
-                                            y = c(12, 75, 81, 96),
-                                            diag = TRUE,
-                                            upper = TRUE
-                                          )
-                                        )
-                                      ),
-                                      phi = 25,
-                                      l = 1
-                                    ),
-                                    phi_rt = 0.6,
-                                    sigma_eps = sqrt(0.02),
-                                    scaling_factor = 0.01,
-                                    aux_site_bool = TRUE) {
+## making gen_sim_data with stan functions
+generate_simulated_data_stan <- function(r_in_weeks = # nolint
+                                           c(
+                                             rep(1.1, 5), rep(0.9, 5),
+                                             1 + 0.007 * 1:16
+                                           ),
+                                         n_sites = 4,
+                                         ww_pop_sites = c(4e5, 2e5, 1e5, 5e4),
+                                         pop_size = 1e6,
+                                         site = c(1, 1, 2, 3, 4),
+                                         lab = c(1, 2, 3, 3, 3),
+                                         ot = 90,
+                                         nt = 9,
+                                         forecast_horizon = 28,
+                                         sim_start_date = lubridate::ymd(
+                                           "2023-09-01"
+                                         ),
+                                         hosp_wday_effect = c(
+                                           0.95, 1.01, 1.02,
+                                           1.02, 1.01, 1,
+                                           0.99
+                                         ) / 7,
+                                         i0_over_n = 5e-4,
+                                         initial_growth = 1e-4,
+                                         sd_in_lab_level_multiplier = 0.25,
+                                         mean_obs_error_in_ww_lab_site = 0.2,
+                                         mean_reporting_freq = 1 / 5,
+                                         sd_reporting_freq = 1 / 20,
+                                         mean_reporting_latency = 7,
+                                         sd_reporting_latency = 3,
+                                         mean_log_lod = 3.8,
+                                         sd_log_lod = 0.2,
+                                         input_params_path =
+                                           fs::path_package("extdata",
+                                             "example_params.toml",
+                                             package = "wwinference"
+                                           ),
+                                         use_spatial_corr = TRUE,
+                                         corr_function =
+                                           exponential_decay_corr_func,
+                                         corr_fun_params = list(
+                                           dist_matrix = as.matrix(
+                                             dist(
+                                               data.frame(
+                                                 x = c(85, 37, 48, 7),
+                                                 y = c(12, 75, 81, 96),
+                                                 diag = TRUE,
+                                                 upper = TRUE
+                                               )
+                                             )
+                                           ),
+                                           phi = 25,
+                                           l = 1
+                                         ),
+                                         phi_rt = 0.6,
+                                         sigma_eps = sqrt(0.02),
+                                         scaling_factor = 0.01,
+                                         aux_site_bool = TRUE) {
   # Some quick checks to make sure the inputs work as expected
   stopifnot(
     "weekly R(t) passed in isn't long enough" =
@@ -190,25 +84,12 @@ generate_simulated_data <- function(r_in_weeks = # nolint
 
   # Expose the stan functions into the global environment
   model <- cmdstanr::cmdstan_model(
-    stan_file = system.file(
-      "stan", "wwinference.stan",
-      package = "wwinference"
-    ),
+    stan_file = file.path("inst", "stan", "wwinference.stan"),
     compile = TRUE,
     compile_standalone = TRUE,
     force_recompile = TRUE
   )
   model$expose_functions(global = TRUE)
-  spatial_fxns <- cmdstanr::cmdstan_model(
-    stan_file = system.file(
-      "stan", "functions", "spatial_functions.stan",
-      package = "wwinference"
-    ),
-    compile = TRUE,
-    compile_standalone = TRUE,
-    force_recompile = TRUE
-  )
-  spatial_fxns$expose_functions(global = TRUE)
 
   # Pull parameter values into memory
   params <- get_params(input_params_path) # load in a single row tibble
@@ -349,36 +230,31 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     )
   }
 
-  # Using stan exposed functions for forward spatial Rt process.
-  sigma_matrix <- sigma_eps * corr_function(corr_fun_params)
-  spatial_deviation_noise_matrix <- spatial_deviation_noise_matrix_rng(
-    sigma_matrix,
-    n_weeks
-  )
-  spatial_deviation_init <- mvrnorm(
-    n = 1,
-    mu = rep(0, n_sites),
-    Sigma = sigma_matrix
-  )
-  log_r_site <- construct_spatial_rt(log_r_state_week,
+  log_r_site <- spatial_rt_process_rng(
+    log_state_rt = log_r_state_week,
+    dist_matrix = corr_fun_params$dist_matrix,
+    sigma_eps = sigma_eps,
+    phi = corr_fun_params$phi,
+    l = corr_fun_params$l,
     spatial_deviation_ar_coeff = phi_rt,
-    spatial_deviation_noise_matrix
+    spatial_deviation_init = MASS::mvrnorm(
+      n = 1,
+      mu = matrix(data = 0, nrow = 1, ncol = n_sites),
+      Sigma = corr_function(corr_fun_params) * sigma_eps^2
+    )
   )
   # Auxiliary Site
   if (aux_site_bool) {
-    state_deviation_noise_vec <- state_deviation_noise_vec_aux_rng(
-      scaling_factor,
-      sigma_eps,
-      n_weeks
-    )
-    state_deviation_init <- rnorm(
-      n = 1,
-      mean = 0,
-      sd = scaling_factor * sigma_eps
-    )
-    log_r_site_aux <- construct_aux_rt(log_r_state_week,
+    log_r_site_aux <- aux_site_process_rng(
+      log_state_rt = log_r_state_week,
+      scaling_factor = scaling_factor,
+      sigma_eps = sigma_eps,
       state_deviation_ar_coeff = phi_rt,
-      state_deviation_noise_vec
+      state_deviation_init = rnorm(
+        n = 1,
+        mean = 0,
+        sd = sqrt(scaling_factor) * sigma_eps
+      )
     )
     log_r_site <- rbind(
       log_r_site,
@@ -579,3 +455,30 @@ generate_simulated_data <- function(r_in_weeks = # nolint
 
   return(example_data)
 }
+
+# exp cor r
+exponential_decay_corr_func_r <- function(
+    corr_function_params = list(
+      dist_matrix = NULL,
+      phi = NULL,
+      l = NULL
+    )) {
+  # presets
+  dist_matrix <- corr_function_params$dist_matrix
+  phi <- corr_function_params$phi
+  l <- corr_function_params$l
+  return(exp(-(dist_matrix / phi)^l))
+}
+#############################
+#############################
+#############################
+# testing - Make sure to run all R functions first!!!
+
+set.seed(1)
+
+data_stan <- generate_simulated_data_stan(
+  corr_function = exponential_decay_corr_func_r
+)
+data_r <- generate_simulated_data(
+  corr_function = exponential_decay_corr_func_r
+)
