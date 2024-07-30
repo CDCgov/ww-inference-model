@@ -16,4 +16,5 @@
 #' @importFrom stats dnbinom dweibull ecdf plogis qlogis rlnorm rnbinom rnorm
 #' rt sd time
 #' @importFrom MASS mvrnorm
+#' @importFrom cramer cramer.test
 NULL

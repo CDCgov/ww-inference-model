@@ -28,7 +28,8 @@ spatial_fxns <- cmdstanr::cmdstan_model(
   ),
   compile = TRUE,
   compile_standalone = TRUE,
-  force_recompile = TRUE
+  force_recompile = TRUE,
+  dir = tempdir()
 )
 
 params <- wwinference::get_params(

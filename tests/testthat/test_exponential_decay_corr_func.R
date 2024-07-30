@@ -16,6 +16,7 @@ test_that(
       phi = 25,
       l = 1
     )
+
     exp_decay_corr_func_stan <-
       space_model_fxns$functions$exponential_decay_corr_func(
         corr_func_params$dist_matrix,
@@ -25,6 +26,8 @@ test_that(
     exp_decay_corr_func_r <- exponential_decay_corr_func_r(
       corr_func_params
     )
+    # both functions return correlation matrix using an
+    # exponential decay correlation function
 
     testthat::expect_equal(
       exp_decay_corr_func_stan,
