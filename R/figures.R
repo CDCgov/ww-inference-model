@@ -39,7 +39,7 @@ get_plot_forecasted_counts <- function(draws,
 
   p <- ggplot(draws_to_plot) +
     geom_line(aes(x = date, y = pred_value, group = draw),
-      color = "red4", alpha = 0.1, size = 0.2
+      color = "red4", alpha = 0.1, linewidth = 0.2
     ) +
     geom_point(
       data = count_data_eval,
@@ -109,7 +109,7 @@ get_plot_ww_conc <- function(draws,
         color = subpop,
         group = draw
       ),
-      alpha = 0.1, size = 0.2,
+      alpha = 0.1, linewidth = 0.2,
       show.legend = FALSE
     ) +
     geom_point(aes(x = date, y = log(observed_value)),
@@ -163,14 +163,14 @@ get_plot_global_rt <- function(draws,
   sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
   draws_to_plot <- draws |> dplyr::filter(
-    name == "rt",
+    name == "global R(t)",
     draw %in% !!sampled_draws
   )
 
   # R(t) of the hypothetical state
   p <- ggplot(draws_to_plot) +
     geom_line(aes(x = date, y = pred_value, group = draw),
-      color = "blue4", alpha = 0.1, size = 0.2
+      color = "blue4", alpha = 0.1, linewidth = 0.2
     ) +
     geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
       linetype = "dashed"
@@ -220,7 +220,7 @@ get_plot_subpop_rt <- function(draws,
   sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
   draws_to_plot <- draws |> dplyr::filter(
-    name == "r_site_t",
+    name == "subpop R(t)",
     draw %in% !!sampled_draws
   )
 
@@ -230,7 +230,7 @@ get_plot_subpop_rt <- function(draws,
         x = date, y = pred_value, group = draw,
         color = subpop
       ),
-      alpha = 0.1, size = 0.2,
+      alpha = 0.1, linewidth = 0.2,
       show.legend = FALSE
     ) +
     geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
