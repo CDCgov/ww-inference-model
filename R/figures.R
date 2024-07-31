@@ -163,7 +163,7 @@ get_plot_global_rt <- function(draws,
   sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
   draws_to_plot <- draws |> dplyr::filter(
-    name == "pred_counts",
+    name == "rt",
     draw %in% !!sampled_draws
   )
 
@@ -220,7 +220,7 @@ get_plot_subpop_rt <- function(draws,
   sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
   draws_to_plot <- draws |> dplyr::filter(
-    name == "pred_counts",
+    name == "r_site_t",
     draw %in% !!sampled_draws
   )
 
