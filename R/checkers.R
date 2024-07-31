@@ -157,7 +157,6 @@ check_int <- function(x, arg = "x", call = rlang::caller_env()) {
 #'
 #' @return This function is called for its side effect of throwing an error. It
 #'   should never return.
-#' @importFrom rlang abort
 throw_type_error <- function(object,
                              arg_name,
                              expected_type,
