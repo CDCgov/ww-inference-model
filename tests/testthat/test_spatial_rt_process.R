@@ -1,5 +1,5 @@
-testthat::test_that(
-  "Test Independence Corr Func in Stan agrees with R",
+test_that(
+  "Test Spatial Func in Stan agrees with R",
   {
     set.seed(2024)
     model <- compiled_site_inf_model

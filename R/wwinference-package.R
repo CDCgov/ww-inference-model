@@ -17,4 +17,5 @@
 #' rt sd time
 #' @importFrom MASS mvrnorm
 #' @importFrom cramer cramer.test
+#' @importFrom expm sqrtm
 NULL
