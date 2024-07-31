@@ -39,7 +39,12 @@ preprocess_ww_data <- function(ww_data,
     lod_col_name
   )
   # This checks that the contents of the wastewater concentration data is valid
-  validate_ww_conc_data(ww_data, conc_col_name)
+  validate_ww_conc_data(ww_data,
+    conc_col_name = conc_col_name,
+    lod_col_name = lod_col_name
+  )
+
+
 
   # Add some columns
   ww_data_add_cols <- ww_data |>

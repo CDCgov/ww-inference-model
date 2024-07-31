@@ -27,5 +27,9 @@ traceback.}
 NULL, invisibly
 }
 \description{
-Check that the input wastewater data contains all the required column names
+This function is intended to be used to check that the wastewater data that
+gets passed into \code{\link[=preprocess_ww_data]{preprocess_ww_data()}} contains the required columns. If
+it does not, we want to tell the user which column is missing. This will not
+however, ensure that the element sof the column are of the right type,
+or check that the values of them make sense.
 }

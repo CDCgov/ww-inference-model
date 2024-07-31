@@ -4,13 +4,21 @@
 \alias{validate_ww_conc_data}
 \title{Validate user-provided wastewater concentration data}
 \usage{
-validate_ww_conc_data(ww_data, conc_col_name, call = rlang::caller_env())
+validate_ww_conc_data(
+  ww_data,
+  conc_col_name,
+  lod_col_name,
+  call = rlang::caller_env()
+)
 }
 \arguments{
 \item{ww_data}{tibble containing the input wastewater data}
 
 \item{conc_col_name}{string indicating the name of the column containing
 the concentration measurements in the wastewater data}
+
+\item{lod_col_name}{string indicating the name of the column containing
+the limit of detection for each measurement in the wastewater data}
 
 \item{call}{Calling environment to be passed to \code{\link[cli:cli_abort]{cli::cli_abort()}} for
 traceback.}
