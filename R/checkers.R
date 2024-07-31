@@ -177,8 +177,8 @@ throw_type_error <- function(object,
 #' @description
 #' This function is intended to be used to check that the wastewater data that
 #' gets passed into [preprocess_ww_data()] contains the required columns. If
-#' it does not, we want to tell the user which column is missing. This will not
-#' however, ensure that the element sof the column are of the right type,
+#' it does not, we want to tell the user which column are missing. This will not
+#' however, ensure that the elements of the column are of the right type,
 #' or check that the values of them make sense.
 #'
 #'
@@ -243,6 +243,58 @@ check_required_ww_inputs <- function(ww_data,
   invisible()
 }
 
+#' Check that the input hosp data contains all the required column names
+#'
+#' @description
+#' This function is intended to be used to check that the hosp data that
+#' gets passed into [preprocess_hosp_data()] contains the required columns. If
+#' it does not, we want to tell the user which columns are missing. This will
+#' not however, ensure that the elements of the column are of the right type,
+#' or check that the values of them make sense.
+#'
+#'
+#' @param hosp_data tibble containing the input count data
+#' @param count_col_name string indicating the name of the column containing
+#' the count data
+#' @param pop_size_col_name string indicating the name of the column containing
+#' the population size of the count catchment area
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#'
+#' @return NULL, invisibly
+check_required_hosp_inputs <- function(hosp_data,
+                                       count_col_name,
+                                       pop_size_col_name,
+                                       call = rlang::caller_env()) {
+  column_names <- colnames(hosp_data)
+  if (!"date" %in% column_names) {
+    cli::cli_abort(
+      c("`date` column missing from input count data"),
+      class = "wwinference_input_data_error",
+      call = call
+    )
+  }
+
+
+  if (! !!count_col_name %in% column_names) {
+    cli::cli_abort(
+      c("{count_col_name} column missing from input count data"),
+      class = "wwinference_input_data_error",
+      call = call
+    )
+  }
+  if (! !!pop_size_col_name %in% column_names) {
+    cli::cli_abort(
+      c("{pop_size_col_name} column missing from input count data"),
+      class = "wwinference_input_data_error",
+      call = call
+    )
+  }
+
+  invisible()
+}
+
+
 #' Check there is no missignness in a particular vector
 #'
 #' @param x the vector to check
@@ -264,4 +316,85 @@ check_no_missingness <- function(x, arg = "x", call = rlang::caller_env()) {
       class = "wwinference_input_data_error"
     )
   }
+  invisible()
+}
+
+#' Check that the vector of population sizes for the global catchment area
+#' has only a single value
+#'
+#' @description
+#' This function  checks that "global" population sizes in the data passed in as
+#' count data contain only a single value of the catchment areas population
+#' size. Multiple values might indicate either that there are multiple count
+#' data streams being passed in (which is not currently supported) or that
+#' there is a time varying population size (which is also not currently
+#' supported). This function is specific to the
+#' current version of the model, and will
+#' be deprecated for a more general `check_for_single_value()` once
+#' additional model functionality has been added.
+#'
+#'
+#' @param x the vector to check
+#' @param arg the name of the vector to check
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#'
+#' @return NULL, invisibly
+check_global_pop <- function(x, arg = "x", call = rlang::caller_env()) {
+  unique_pops <- unique(x)
+
+  if (length(unique_pops) > 1) {
+    cli::cli_abort(
+      c("{.arg {arg}} has more than one global population size",
+        "i" = c(
+          "Multiple/time-varying count catchment area populations",
+          "are not currently supported. Check that data is from a single",
+          "location, and if so, consider replacing with an average",
+          "population size over the inference period"
+        )
+      ),
+      call = call,
+      class = "wwinference_input_data_error"
+    )
+  }
+  invisible()
+}
+
+#' Check that there are no repeated elements in the vector of dates
+#' corresponding to count observations
+#'
+#' @description
+#' This function  checks that the dates in the data passed in as count data are
+#' not repeated, which might indicate multiple count data stream. This
+#' functionality is not currently supported. This function is specific to the
+#' current version of the model, and will
+#' be deprecated for a more general `check_for_repeat_elements()` once
+#' additional model functionality has been added.
+#'
+#'
+#' @param x the vector to check
+#' @param arg the name of the vector to check
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#'
+#' @return NULL, invisibly
+check_for_repeat_dates <- function(x, arg = "x", call = rlang::caller_env()) {
+  duplicates <- duplicated(x)
+
+  if (sum(duplicates) > 0) {
+    cli::cli_abort(
+      c("{.arg {arg}} has more than one date",
+        "i" = c(
+          "Multiple count are not currently supported which might be the",
+          "reason there are multiple dates being passed in. ",
+          "Check that data is from a single location, and if so, provide",
+          "a single count data stream for the population in that location"
+        ),
+        "!" = "Duplicate element(s) index: {.val {which(duplicates)}}"
+      ),
+      call = call,
+      class = "wwinference_input_data_error"
+    )
+  }
+  invisible()
 }

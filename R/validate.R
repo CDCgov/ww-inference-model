@@ -63,3 +63,53 @@ validate_ww_conc_data <- function(ww_data,
 
   invisible()
 }
+
+#' Validate user-provided count data
+#'
+#' @param hosp_data tibble containing the input count data
+#' @param count_col_name string indicating the name of the column containing
+#' the count data
+#' @param pop_size_col_name string indicating the name of the column containing
+#' the population size of the count catchment area
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#'
+#' @return NULL, invisibly
+validate_count_data <- function(hosp_data,
+                                count_col_name,
+                                pop_size_col_name,
+                                call = rlang::caller_env()) {
+  # Count data should be non negative and a vector of integers
+  counts <- hosp_data |> dplyr::pull({
+    count_col_name
+  })
+  arg <- "counts"
+  check_elements_non_neg(counts, arg, call)
+  check_vector(counts, arg, call)
+  check_int(counts, arg, call)
+
+  # Currently, the framework only supports a single population size for
+  # an individual model fit. Therefore, check that there are not multiple
+  # "global" population sizes being passed in.
+  pop <- hosp_data |> dplyr::pull({
+    pop_size_col_name
+  })
+  arg <- "global_pop"
+  check_int(pop, arg, call)
+  check_no_missingness(pop, arg, call)
+  check_elements_non_neg(pop, arg, call)
+  check_global_pop(pop, arg, call)
+
+
+  # Date column should be of date type, for count data, there should only
+  # be on observation per day
+  count_dates <- hosp_data$date
+  arg <- "count_obs_dates"
+  check_date(count_dates, arg, call)
+  check_for_repeat_dates(count_dates, arg, call)
+
+
+
+
+  invisible()
+}

@@ -108,6 +108,19 @@ preprocess_ww_data <- function(ww_data,
 preprocess_hosp_data <- function(hosp_data,
                                  count_col_name = "daily_hosp_admits",
                                  pop_size_col_name = "state_pop") {
+  # This checks that we have all the right column names
+  check_required_hosp_inputs(
+    hosp_data,
+    count_col_name,
+    pop_size_col_name
+  )
+  # This checks that the contents of the hospital admissions data is valid
+  validate_count_data(hosp_data,
+    count_col_name = count_col_name,
+    pop_size_col_name = pop_size_col_name
+  )
+
+
   hosp_data_preprocessed <- hosp_data |>
     dplyr::rename(
       count = {{ count_col_name }},
