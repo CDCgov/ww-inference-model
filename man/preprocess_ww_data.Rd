@@ -37,7 +37,7 @@ potential outliers
 }
 \examples{
 ww_data <- tibble::tibble(
-  date = rep(c("2023-11-01", "2023-11-02"), 2),
+  date = lubridate::ymd(rep(c("2023-11-01", "2023-11-02"), 2)),
   site = c(rep(1, 2), rep(2, 2)),
   lab = c(1, 1, 1, 1),
   conc = c(345.2, 784.1, 401.5, 681.8),

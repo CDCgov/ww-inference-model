@@ -18,7 +18,7 @@
 #'
 #' @examples
 #' ww_data <- tibble::tibble(
-#'   date = rep(c("2023-11-01", "2023-11-02"), 2),
+#'   date = lubridate::ymd(rep(c("2023-11-01", "2023-11-02"), 2)),
 #'   site = c(rep(1, 2), rep(2, 2)),
 #'   lab = c(1, 1, 1, 1),
 #'   conc = c(345.2, 784.1, 401.5, 681.8),
@@ -96,7 +96,7 @@ preprocess_ww_data <- function(ww_data,
 #'
 #' @examples
 #' hosp_data <- tibble::tibble(
-#'   date = c("2023-11-01", "2023-11-02"),
+#'   date = lubridate::ymd(c("2023-11-01", "2023-11-02")),
 #'   daily_admits = c(10, 20),
 #'   state_pop = c(1e6, 1e6)
 #' )
@@ -269,7 +269,7 @@ flag_ww_outliers <- function(ww_data,
 #'
 #' @examples
 #' data <- tibble::tibble(
-#'   date = c("2023-10-01", "2023-10-02"),
+#'   date = lubridate::ymd(c("2023-10-01", "2023-10-02")),
 #'   genome_copies_per_mL = c(300, 3e6),
 #'   flag_as_ww_outlier = c(0, 1),
 #'   exclude = c(0, 0)
