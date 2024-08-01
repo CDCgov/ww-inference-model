@@ -209,15 +209,22 @@ check_required_ww_inputs <- function(ww_data,
       lod_col_name
     },
     add_req_col_names
-  if(!checkmate::check_names(column_names, must.include = expected_col_names)) {
+  )
+
+  # This tells you whats missing
+  checkmate::check_names(column_names, must.include = expected_col_names)
+
+  # This tells you from where it is missing
+  if (!checkmate::check_names(
+    column_names,
+    must.include = expected_col_names
+  )) {
     cli::cli_abort(
-      c("`date` column missing from input wastewater data"),
-      c("Required columns are missing from the input wastewater data"),
+      "Required columns are missing from the input wastewater data",
       class = "wwinference_input_data_error",
-      call = call)
+      call = call
+    )
   }
-
-
 
   invisible()
 }
@@ -258,12 +265,17 @@ check_required_hosp_inputs <- function(hosp_data,
     },
     add_req_col_names
   )
-  res <- try(checkmate::assert_names(column_names,
+
+  # This tells you whats missing
+  checkmate::check_names(column_names, must.include = expected_col_names)
+
+  # This tells you from where it is missing
+  if (!checkmate::check_names(
+    column_names,
     must.include = expected_col_names
-  ))
-  if (class(res) == "try-error") {
+  )) {
     cli::cli_abort(
-      c("Required columns are missing from the input count data"),
+      "Required columns are missing from the input count data",
       class = "wwinference_input_data_error",
       call = call
     )
