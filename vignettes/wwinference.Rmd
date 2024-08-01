@@ -154,7 +154,7 @@ hosp_data_preprocessed <- wwinference::preprocess_hosp_data(
 
 We'll make some plots of the data just to make sure it looks like what we'd expect:
 
-```{r}
+```{r,  out.width='100%'}
 ggplot(ww_data_preprocessed) +
   geom_point(
     aes(
@@ -308,7 +308,7 @@ a `draws_df`, the underlying `CmdStan` object (`raw_fit_obj`), and three
 intended to provide an easy to work with tibble of posterior draws of
 the estimated, nowcasted, and forecasted expected observed hospital admissions
 and wastewater concentrations, as well as the latent variables of interest
-including the site-level $R(t)$ estimates and the state-level $R(t)$ estimate.
+including the site-level R(t) estimates and the state-level R(t) estimate.
 ```{r}
 head(fit)
 ```
@@ -320,7 +320,7 @@ fitting the data well, and if the nowcasted/forecast quantities look reasonable.
 We can create the plots using the fitting wrapper functions (figures can
 also created directly using the `draws_df`)
 
-```{r, fig.fullwidth = TRUE}
+```{r,  out.width='100%'}
 draws_df <- fit$draws_df
 
 plot_hosp <- get_plot_forecasted_counts(
@@ -359,6 +359,7 @@ convergence_flag_df <- wwinference::get_model_diagnostic_flags(
 )
 parameter_diagnostics <- fit$raw_fit_obj$summary()
 diagnostic_summary <- fit$raw_fit_obj$diagnostic_summary(quiet = TRUE)
+head(convergence_flag_df)
 ```
 
 ## Fit to only hospital admissions data
@@ -387,7 +388,7 @@ fit_hosp_only <- wwinference::wwinference(
 )
 ```
 
-```{r, fig.fullwidth = TRUE}
+```{r,  out.width='100%'}
 draws_df_hosp_only <- fit_hosp_only$draws_df
 plot_hosp_hosp_only <- get_plot_forecasted_counts(
   draws = draws_df_hosp_only,
