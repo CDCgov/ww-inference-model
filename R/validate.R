@@ -108,7 +108,7 @@ validate_count_data <- function(hosp_data,
   })
   arg <- "global_pop"
   checkmate::check_integerish(pop)
-  if (all(assertr::not_na(pop))) {
+  if (!all(assertr::not_na(pop))) {
     cli::cli_abort("NAs in {pop_size_col_name} column")
   }
   check_elements_non_neg(pop, arg, call)
