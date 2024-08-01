@@ -85,7 +85,8 @@ Imports:
     posterior,
     MASS,
     cramer,
-    expm
+    expm,
+    rstan
 Remotes:
     stan-dev/cmdstanr
 VignetteBuilder:
