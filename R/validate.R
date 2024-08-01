@@ -18,7 +18,7 @@ validate_ww_conc_data <- function(ww_data,
   })
   arg <- "ww_conc"
   if (!all(assertr::not_na(ww_conc))) {
-    cli::cli_abort("NAs in {conc_col_name} column")
+    cli::cli_abort("Missing values in {conc_col_name} column")
   }
   check_elements_non_neg(ww_conc, arg, call)
   checkmate::assert_vector(ww_conc)
@@ -28,7 +28,7 @@ validate_ww_conc_data <- function(ww_data,
   })
   arg <- "ww_lod"
   if (!all(assertr::not_na(ww_lod))) {
-    cli::cli_abort("NAs in LOD column")
+    cli::cli_abort("Missing values in LOD column")
   }
   check_elements_non_neg(ww_lod, arg, call)
   checkmate::assert_vector(ww_lod)
@@ -37,7 +37,7 @@ validate_ww_conc_data <- function(ww_data,
   ww_obs_dates <- ww_data$date
   arg <- "ww_obs_dates"
   if (!all(assertr::not_na(ww_obs_dates))) {
-    cli::cli_abort("NAs in wastewater observation dates")
+    cli::cli_abort("Missing values in wastewater observation dates")
   }
 
   # Sites  either need to be integers or characters, not be missing, and be
@@ -46,7 +46,7 @@ validate_ww_conc_data <- function(ww_data,
   arg <- "site_labels"
   check_int_or_char(site_labels, arg, call)
   if (!all(assertr::not_na(site_labels))) {
-    cli::cli_abort("NAs in site column")
+    cli::cli_abort("Missing values in site column")
   }
   check_elements_non_neg(site_labels, arg, call)
 
@@ -56,7 +56,7 @@ validate_ww_conc_data <- function(ww_data,
   arg <- "lab_labels"
   check_int_or_char(lab_labels, arg, call)
   if (!all(assertr::not_na(lab_labels))) {
-    cli::cli_abort("NAs in lab column")
+    cli::cli_abort("Missing values in lab column")
   }
   check_elements_non_neg(lab_labels, arg, call)
 
@@ -67,7 +67,7 @@ validate_ww_conc_data <- function(ww_data,
   arg <- "site_pops"
   checkmate::assert_integerish(site_pops)
   if (!all(assertr::not_na(site_pops))) {
-    cli::cli_abort("NAs in site population size column")
+    cli::cli_abort("Missing values in site population size column")
   }
   check_elements_non_neg(site_pops, arg, call)
 
@@ -109,7 +109,7 @@ validate_count_data <- function(hosp_data,
   arg <- "global_pop"
   checkmate::check_integerish(pop)
   if (!all(assertr::not_na(pop))) {
-    cli::cli_abort("NAs in {pop_size_col_name} column")
+    cli::cli_abort("Missing values in {pop_size_col_name} column")
   }
   check_elements_non_neg(pop, arg, call)
   check_global_pop(pop, arg, call)
@@ -121,7 +121,7 @@ validate_count_data <- function(hosp_data,
   arg <- "count_obs_dates"
   checkmate::assert_date(count_dates)
   if (!all(assertr::is_uniq(count_dates))) {
-    cli::cli_abort("count date dates are non-unique")
+    cli::cli_abort("Count data dates are non-unique")
   }
 
 

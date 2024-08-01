@@ -8,6 +8,7 @@ check_required_hosp_inputs(
   hosp_data,
   count_col_name,
   pop_size_col_name,
+  add_req_col_names = c("date"),
   call = rlang::caller_env()
 )
 }
@@ -19,6 +20,9 @@ the count data}
 
 \item{pop_size_col_name}{string indicating the name of the column containing
 the population size of the count catchment area}
+
+\item{add_req_col_names}{vector of strings indicating the required count
+data column names, the defaults is \code{"date"}}
 
 \item{call}{Calling environment to be passed to \code{\link[cli:cli_abort]{cli::cli_abort()}} for
 traceback.}

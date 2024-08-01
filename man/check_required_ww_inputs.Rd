@@ -8,6 +8,7 @@ check_required_ww_inputs(
   ww_data,
   conc_col_name,
   lod_col_name,
+  add_req_col_names = c("date", "site", "lab", "site_pop"),
   call = rlang::caller_env()
 )
 }
@@ -19,6 +20,9 @@ the concentration measurements in the wastewater data}
 
 \item{lod_col_name}{string indicating the name of the column containing
 the concentration measurements in the wastewater data}
+
+\item{add_req_col_names}{vector of strings indicating the required wastewater
+column names, the defaults are \code{c("date", "site", "lab", "site_pop")}}
 
 \item{call}{Calling environment to be passed to \code{\link[cli:cli_abort]{cli::cli_abort()}} for
 traceback.}

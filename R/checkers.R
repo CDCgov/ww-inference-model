@@ -186,6 +186,8 @@ throw_type_error <- function(object,
 #' the concentration measurements in the wastewater data
 #' @param lod_col_name string indicating the name of the column containing
 #' the concentration measurements in the wastewater data
+#' @param add_req_col_names vector of strings indicating the required wastewater
+#' column names, the defaults are `c("date", "site", "lab", "site_pop")`
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
 #'
@@ -193,51 +195,33 @@ throw_type_error <- function(object,
 check_required_ww_inputs <- function(ww_data,
                                      conc_col_name,
                                      lod_col_name,
+                                     add_req_col_names = c(
+                                       "date", "site",
+                                       "lab", "site_pop"
+                                     ),
                                      call = rlang::caller_env()) {
   column_names <- colnames(ww_data)
-  if (!"date" %in% column_names) {
+  expected_col_names <- c(
+    {
+      conc_col_name
+    },
+    {
+      lod_col_name
+    },
+    add_req_col_names
+  )
+  res <- try(checkmate::assert_names(column_names,
+    must.include = expected_col_names
+  ))
+  if (class(res) == "try-error") {
     cli::cli_abort(
-      c("`date` column missing from input wastewater data"),
+      c("Required columns are missing from the input wastewater data"),
       class = "wwinference_input_data_error",
       call = call
     )
   }
 
-  if (!"site" %in% column_names) {
-    cli::cli_abort(
-      c("site column missing from input wastewater data"),
-      class = "wwinference_input_data_error",
-      call = call
-    )
-  }
-  if (!"lab" %in% column_names) {
-    cli::cli_abort(
-      c("`lab` column missing from input wastewater data"),
-      class = "wwinference_input_data_error",
-      call = call
-    )
-  }
-  if (!"site_pop" %in% column_names) {
-    cli::cli_abort(
-      c("`site_pop` column missing from input wastewater data"),
-      class = "wwinference_input_data_error",
-      call = call
-    )
-  }
-  if (! !!conc_col_name %in% column_names) {
-    cli::cli_abort(
-      c("{conc_col_name} column missing from input wastewater data"),
-      class = "wwinference_input_data_error",
-      call = call
-    )
-  }
-  if (! !!lod_col_name %in% column_names) {
-    cli::cli_abort(
-      c("{lod_col_name} column missing from input wastewater data"),
-      class = "wwinference_input_data_error",
-      call = call
-    )
-  }
+
 
   invisible()
 }
@@ -257,6 +241,8 @@ check_required_ww_inputs <- function(ww_data,
 #' the count data
 #' @param pop_size_col_name string indicating the name of the column containing
 #' the population size of the count catchment area
+#' @param add_req_col_names vector of strings indicating the required count
+#' data column names, the defaults is `"date"`
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
 #'
@@ -264,27 +250,24 @@ check_required_ww_inputs <- function(ww_data,
 check_required_hosp_inputs <- function(hosp_data,
                                        count_col_name,
                                        pop_size_col_name,
+                                       add_req_col_names = c("date"),
                                        call = rlang::caller_env()) {
   column_names <- colnames(hosp_data)
-  if (!"date" %in% column_names) {
+  expected_col_names <- c(
+    {
+      count_col_name
+    },
+    {
+      pop_size_col_name
+    },
+    add_req_col_names
+  )
+  res <- try(checkmate::assert_names(column_names,
+    must.include = expected_col_names
+  ))
+  if (class(res) == "try-error") {
     cli::cli_abort(
-      c("`date` column missing from input count data"),
-      class = "wwinference_input_data_error",
-      call = call
-    )
-  }
-
-
-  if (! !!count_col_name %in% column_names) {
-    cli::cli_abort(
-      c("{count_col_name} column missing from input count data"),
-      class = "wwinference_input_data_error",
-      call = call
-    )
-  }
-  if (! !!pop_size_col_name %in% column_names) {
-    cli::cli_abort(
-      c("{pop_size_col_name} column missing from input count data"),
+      c("Required columns are missing from the input count data"),
       class = "wwinference_input_data_error",
       call = call
     )
