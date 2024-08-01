@@ -57,44 +57,6 @@ check_elements_non_neg <- function(x, arg = "x", call = rlang::caller_env()) {
   invisible()
 }
 
-#' Check that the argument is of type date
-#'
-#' @param x Object with type checking, here this will be a date
-#' @param arg Name of the argument supplying the object
-#' @param call Calling environment to be passed to [cli::cli_abort()]
-#'
-#' @return NULL, invisibly
-check_date <- function(x, arg = "x", call = rlang::caller_env()) {
-  if ((!rlang::is_integerish(x)) || (!inherits(x, "Date"))) {
-    throw_type_error(
-      object = x,
-      arg_name = arg,
-      expected_type = "Date",
-      call = call
-    )
-  }
-  invisible()
-}
-
-#' Check that the argument is a vector
-#'
-#' @param x Object with type checking, here this will be a vector
-#' @param arg Name of the argument supplying the object
-#' @param call Calling environment to be passed to [cli::cli_abort()]
-#'
-#' @return NULL, invisibly
-check_vector <- function(x, arg = "x", call = rlang::caller_env()) {
-  # We only want vectors not lists
-  if (!rlang::is_bare_vector(x) || inherits(x, "list")) {
-    throw_type_error(
-      object = x,
-      arg_name = arg,
-      expected_type = "vector",
-      call = call
-    )
-  }
-  invisible()
-}
 
 
 #' Check that the arguments are either integers or characters
@@ -122,27 +84,6 @@ check_int_or_char <- function(x, arg = "x", call = rlang::caller_env()) {
   invisible()
 }
 
-
-#' Check that the arguments are integers
-#'
-#'
-#' @param x Object with type checking
-#' @param arg Name of the argument supplying the object
-#' @param call Calling environment to be passed to [cli::cli_abort()]
-#'
-#' @return NULL, invisibly
-check_int <- function(x, arg = "x", call = rlang::caller_env()) {
-  # We only want vectors not lists
-  if (!rlang::is_integerish(x)) {
-    throw_type_error(
-      object = x,
-      arg_name = arg,
-      expected_type = "integer",
-      call = call
-    )
-  }
-  invisible()
-}
 
 #' Throw an informative type error on a user-provided input
 #'
@@ -285,30 +226,6 @@ check_required_hosp_inputs <- function(hosp_data,
 }
 
 
-#' Check there is no missignness in a particular vector
-#'
-#' @param x the vector to check
-#' @param arg the name of the vector to check
-#' @param call Calling environment to be passed to [cli::cli_abort()] for
-#' traceback.
-#'
-#' @return NULL, invisibly
-check_no_missingness <- function(x, arg = "x", call = rlang::caller_env()) {
-  is_missing <- rlang::are_na(x)
-
-  if (any(is_missing)) {
-    cli::cli_abort(
-      c("{.arg {arg}} has missing values",
-        "i" = "Missing values are not supported in {.arg {arg}}",
-        "!" = "Missing element(s) index: {.val {which(is_missing)}}"
-      ),
-      call = call,
-      class = "wwinference_input_data_error"
-    )
-  }
-  invisible()
-}
-
 #' Check that the vector of population sizes for the global catchment area
 #' has only a single value
 #'
@@ -342,45 +259,6 @@ check_global_pop <- function(x, arg = "x", call = rlang::caller_env()) {
           "location, and if so, consider replacing with an average",
           "population size over the inference period"
         )
-      ),
-      call = call,
-      class = "wwinference_input_data_error"
-    )
-  }
-  invisible()
-}
-
-#' Check that there are no repeated elements in the vector of dates
-#' corresponding to count observations
-#'
-#' @description
-#' This function  checks that the dates in the data passed in as count data are
-#' not repeated, which might indicate multiple count data stream. This
-#' functionality is not currently supported. This function is specific to the
-#' current version of the model, and will
-#' be deprecated for a more general `check_for_repeat_elements()` once
-#' additional model functionality has been added.
-#'
-#'
-#' @param x the vector to check
-#' @param arg the name of the vector to check
-#' @param call Calling environment to be passed to [cli::cli_abort()] for
-#' traceback.
-#'
-#' @return NULL, invisibly
-check_for_repeat_dates <- function(x, arg = "x", call = rlang::caller_env()) {
-  duplicates <- duplicated(x)
-
-  if (sum(duplicates) > 0) {
-    cli::cli_abort(
-      c("{.arg {arg}} has more than one date",
-        "i" = c(
-          "Multiple count are not currently supported which might be the",
-          "reason there are multiple dates being passed in. ",
-          "Check that data is from a single location, and if so, provide",
-          "a single count data stream for the population in that location"
-        ),
-        "!" = "Duplicate element(s) index: {.val {which(duplicates)}}"
       ),
       call = call,
       class = "wwinference_input_data_error"

@@ -17,7 +17,7 @@ validate_ww_conc_data <- function(ww_data,
     conc_col_name
   })
   arg <- "ww_conc"
-  if (!all(assertr::not_na(ww_conc))) {
+  if (assertr::not_na(ww_conc)) {
     cli::cli_abort("Missing values in {conc_col_name} column")
   }
   check_elements_non_neg(ww_conc, arg, call)
