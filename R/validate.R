@@ -120,7 +120,7 @@ validate_count_data <- function(hosp_data,
   count_dates <- hosp_data$date
   arg <- "count_obs_dates"
   checkmate::assert_date(count_dates)
-  if (all(assertr::is_uniq(count_dates))) {
+  if (!all(assertr::is_uniq(count_dates))) {
     cli::cli_abort("count date dates are non-unique")
   }
 
