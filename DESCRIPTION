@@ -82,7 +82,9 @@ Imports:
     rlang,
     scales,
     ggplot2,
-    posterior
+    posterior,
+    assertr,
+    checkmate
 Remotes:
     stan-dev/cmdstanr
 VignetteBuilder:
