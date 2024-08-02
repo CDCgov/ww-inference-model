@@ -153,15 +153,11 @@ check_required_ww_inputs <- function(ww_data,
   )
 
   # This tells you whats missing
-  checkmate::check_names(column_names, must.include = expected_col_names)
-
-  # This tells you from where it is missing
-  if (!checkmate::check_names(
-    column_names,
-    must.include = expected_col_names
-  )) {
+  name_check_result <- checkmate::check_names(column_names, must.include = expected_col_names)
+  if (!name_check_result) {
     cli::cli_abort(
       "Required columns are missing from the input wastewater data",
+      name_check_result,
       class = "wwinference_input_data_error",
       call = call
     )
