@@ -129,17 +129,15 @@ sigma_matrix_true <- sigma_eps_true^2 * exponential_decay_corr_func_r(list(
   phi = phi_true,
   l = l
 ))
-epsilon_true <- t(mvrnorm(
-  n = n_times,
-  mu = rep(0, n_sites),
-  Sigma = sigma_matrix_true
-))
+# Generate samples from a MVM with mean 0 and covariance matrix sigma
+# epsilon_t ~ MVN(0, sigma_matrix) # nolint
+# for each time point. These are your observations!
 obs_data <- matrix(data = 0, nrow = n_sites, ncol = n_times)
 for (i in 1:n_times) {
   obs_data[, i] <- t(mvrnorm(
     n = 1,
-    mu = epsilon_true[, i],
-    Sigma = diag(1, n_sites)
+    mu = rep(0, n_sites),
+    Sigma = sigma_matrix_true
   ))
 }
 
