@@ -76,7 +76,6 @@ data {
 }
 
 parameters {
-  matrix[n_sites,n_times] epsilon;
   real<lower=0> phi;
   real<lower=0> sigma_eps;
 }
