@@ -24,6 +24,7 @@ parameters {
   matrix[n_sites,n_times] alpha;
   real<lower=0> phi;
   real<lower=0> sigma_eps;
+  real<lower=0> sigma_obs;
 }
 
 transformed parameters {
@@ -38,13 +39,20 @@ transformed parameters {
 }
 
 model {
+  //Priors
   to_vector(alpha) ~ std_normal();
   phi ~ uniform(0, 50);
   sigma_eps ~ gamma(sqrt(0.1),1);
+  sigma_obs ~ normal(0, 0.1); // Note entirely sure of the magnitude to use
+  // here,
 
   // Likelihood
+  // Assumes normally distributed observation error.
+  // obs_data are your vectors of draws the MVN at each time point (column
+  // bound to produce a matrix). The epsilon matrix are the
+  // mean of the expected realizations of the MVN draws.
   for (i in 1:n_times) {
-    obs_data[,i] ~ multi_normal(epsilon[,i], identity_matrix(n_sites));
+    obs_data[,i] ~ normal(epsilon[,i], sigma_obs);
   }
 }
 "
@@ -80,15 +88,13 @@ transformed parameters {
 }
 
 model {
-  for(i in 1:n_times){
-    epsilon[,i] ~ multi_normal(rep_vector(0, n_sites), Sigma);
-  }
+  //Priors
   phi ~ uniform(0, 50);
   sigma_eps ~ gamma(sqrt(0.1),1);
 
   // Likelihood
   for (i in 1:n_times) {
-    obs_data[,i] ~ multi_normal(epsilon[,i], identity_matrix(n_sites));
+    obs_data[,i] ~ multi_normal(rep_vector(0, n_sites), Sigma);
   }
 }
 "
