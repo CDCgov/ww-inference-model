@@ -16,8 +16,9 @@
 #' @param call Calling environment to be passed to the type checker
 #'
 #' @return NULL, invisibly
-check_date_logic <- function(df, max_date, call = rlang::caller_env()) {
-  if (max(df$date) > max_date) {
+check_date_logic <- function(date_vector,
+                             max_date, call = rlang::caller_env()) {
+  if (max(date_vector) > max_date) {
     cli::cli_abort(
       c(
         "The data passed in has observations beyond the specified",
@@ -153,7 +154,9 @@ check_required_ww_inputs <- function(ww_data,
   )
 
   # This tells you whats missing
-  name_check_result <- checkmate::check_names(column_names, must.include = expected_col_names)
+  name_check_result <- checkmate::check_names(column_names,
+    must.include = expected_col_names
+  )
   if (!name_check_result) {
     cli::cli_abort(
       "Required columns are missing from the input wastewater data",
