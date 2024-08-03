@@ -4,22 +4,22 @@
 \alias{check_date_logic}
 \title{Check that all dates in dataframe passed in are before a specified date}
 \usage{
-check_date_logic(df, max_date, call = rlang::caller_env())
+check_date_logic(date_vector, max_date, call = rlang::caller_env())
 }
 \arguments{
-\item{df}{dataframe with \code{date} column}
-
 \item{max_date}{string indicating the maximum date in ISO8601 convention
 e.g. YYYY-MM-DD}
 
 \item{call}{Calling environment to be passed to the type checker}
+
+\item{df}{dataframe with \code{date} column}
 }
 \value{
 NULL, invisibly
 }
 \description{
 This function is specifically meant to ensure that the data in the \code{df}
-specified does nto contain data time-stamped beyond the \code{max_date}. The
+specified does not contain data time-stamped beyond the \code{max_date}. The
 intended use-case for this is to ensure that one doesn't accidentally
 pass in data that extends beyond the forecast date, as ideally the user
 is providing vintaged "as of" datasets or at the very least is filtering the

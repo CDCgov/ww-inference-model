@@ -77,7 +77,7 @@ check_int_or_char <- function(x, arg = "x", call = rlang::caller_env()) {
     checkmate::check_integerish(x),
     checkmate::check_character(x)
   )
-  if (!name_check_result) {
+  if (!int_or_char_check_result) {
     throw_type_error(
       object = x,
       arg_name = arg,
@@ -137,14 +137,14 @@ throw_type_error <- function(object,
 #' traceback.
 #'
 #' @return NULL, invisibly
-check_required_ww_inputs <- function(ww_data,
-                                     conc_col_name,
-                                     lod_col_name,
-                                     add_req_col_names = c(
-                                       "date", "site",
-                                       "lab", "site_pop"
-                                     ),
-                                     call = rlang::caller_env()) {
+check_req_ww_columns_present <- function(ww_data,
+                                         conc_col_name,
+                                         lod_col_name,
+                                         add_req_col_names = c(
+                                           "date", "site",
+                                           "lab", "site_pop"
+                                         ),
+                                         call = rlang::caller_env()) {
   column_names <- colnames(ww_data)
   expected_col_names <- c(
     {
@@ -193,11 +193,11 @@ check_required_ww_inputs <- function(ww_data,
 #' traceback.
 #'
 #' @return NULL, invisibly
-check_required_hosp_inputs <- function(hosp_data,
-                                       count_col_name,
-                                       pop_size_col_name,
-                                       add_req_col_names = c("date"),
-                                       call = rlang::caller_env()) {
+check_req_hosp_columns_present <- function(hosp_data,
+                                           count_col_name,
+                                           pop_size_col_name,
+                                           add_req_col_names = c("date"),
+                                           call = rlang::caller_env()) {
   column_names <- colnames(hosp_data)
   expected_col_names <- c(
     {
@@ -210,13 +210,12 @@ check_required_hosp_inputs <- function(hosp_data,
   )
 
   # This tells you whats missing
-  checkmate::check_names(column_names, must.include = expected_col_names)
+  check_colnames <- checkmate::check_names(column_names,
+    must.include = expected_col_names
+  )
 
   # This tells you from where it is missing
-  if (!checkmate::check_names(
-    column_names,
-    must.include = expected_col_names
-  )) {
+  if (!check_colnames) {
     cli::cli_abort(
       "Required columns are missing from the input count data",
       class = "wwinference_input_data_error",

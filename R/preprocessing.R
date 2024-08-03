@@ -32,13 +32,12 @@
 preprocess_ww_data <- function(ww_data,
                                conc_col_name = "genome_copies_per_ml",
                                lod_col_name = "lod") {
-  # This checks that we have all the right column names
-  check_required_ww_inputs(
+  check_req_ww_columns_present(
     ww_data,
     conc_col_name,
     lod_col_name
   )
-  # This checks that the contents of the wastewater concentration data is valid
+  # Perform some checks on the contents of the ww_data dataframe
   validate_ww_conc_data(ww_data,
     conc_col_name = conc_col_name,
     lod_col_name = lod_col_name
@@ -109,12 +108,12 @@ preprocess_hosp_data <- function(hosp_data,
                                  count_col_name = "daily_hosp_admits",
                                  pop_size_col_name = "state_pop") {
   # This checks that we have all the right column names
-  check_required_hosp_inputs(
+  check_req_hosp_columns_present(
     hosp_data,
     count_col_name,
     pop_size_col_name
   )
-  # This checks that the contents of the hospital admissions data is valid
+  # Perform some checks on the contents of the hosp_data df
   validate_count_data(hosp_data,
     count_col_name = count_col_name,
     pop_size_col_name = pop_size_col_name
