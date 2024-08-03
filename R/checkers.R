@@ -73,8 +73,11 @@ check_elements_non_neg <- function(x, arg = "x", call = rlang::caller_env()) {
 #'
 #' @return NULL, invisibly
 check_int_or_char <- function(x, arg = "x", call = rlang::caller_env()) {
-  # We only want vectors not lists
-  if (!(rlang::is_integerish(x) || rlang::is_character(x))) {
+  int_or_char_check_result <- checkmate::assert(
+    checkmate::check_integerish(x),
+    checkmate::check_character(x)
+  )
+  if (!name_check_result) {
     throw_type_error(
       object = x,
       arg_name = arg,
