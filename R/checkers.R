@@ -10,7 +10,7 @@
 #' made available after the forecast was made.
 #'
 #'
-#' @param df dataframe with `date` column
+#' @param date_vector vector of dates
 #' @param max_date string indicating the maximum date in ISO8601 convention
 #' e.g. YYYY-MM-DD
 #' @param call Calling environment to be passed to the type checker
