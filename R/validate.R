@@ -25,7 +25,7 @@ validate_ww_conc_data <- function(ww_data,
     lod_col_name
   })
   arg <- "lod_col_name"
-  check_non_missigness(ww_lod, arg, )
+  check_non_missingness(ww_lod, arg, )
   check_elements_non_neg(ww_lod, arg, call)
   checkmate::assert_vector(ww_lod)
 
