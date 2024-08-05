@@ -123,7 +123,7 @@ validate_count_data <- function(hosp_data,
 
 
   # Date column should be of date type, for count data, there should only
-  # be on observation per day
+  # be one observation per day
   count_dates <- hosp_data$date
   arg <- "count_obs_dates"
   checkmate::assert_date(count_dates)
