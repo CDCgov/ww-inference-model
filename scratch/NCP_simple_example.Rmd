@@ -1,0 +1,130 @@
+---
+title: "NCP_example"
+author: "Kaitlyn Johnson"
+date: "2024-08-05"
+output: html_document
+---
+The goal of this is to compare the implementation of a very simple fit to
+a centered and non-centered parameterization. In the first example, the
+data will be generated directly from the non-centered parameterization.
+```{r}
+library(rstan)
+library(dplyr)
+```
+
+In the second, it will be nested, with an additional observation model.
+
+To start, let's assume we have a model with priors:
+$$\mu \sim Normal(2,5) $$
+$$ \sigma \sim HalfNormal(0,0.5) $$
+
+$$ y_i \sim Normal(\mu, \sigma) $$
+We generate data with a known mean and standard deviation:
+```{r}
+n_obs <- 10
+true_mean <- 3
+true_sigma <- 0.3
+obs <- rnorm(n_obs, mean = true_mean, sd = true_sigma)
+```
+
+In stan we can write this model as:
+```{r}
+stan_model1_centered <- "
+data {
+  int<lower=1> n_obs;
+  vector[n_obs] obs;
+}
+
+parameters {
+  real mu;
+  real<lower=0> sigma;
+}
+
+
+model {
+  //Priors
+  mu ~ normal(2, 5);
+  sigma ~ normal(0,0.5);
+
+  // Likelihood
+  obs ~ normal(mu, sigma);
+}
+"
+stan_model_cent <- stan_model(
+  model_code = stan_model1_centered
+)
+```
+Fit the centered model
+```{r}
+data_list <- list(
+  n_obs = n_obs,
+  obs = obs
+)
+
+# Fit the model
+fit_cent <- sampling(
+  stan_model_cent,
+  data = data_list,
+  iter = 5000,
+  chains = 1
+)
+```
+Or we can write this model with a non-centered parameterization of:
+
+$$\mu \sim Normal(2,5) $$
+$$ \sigma \sim HalfNormal(0,0.5) $$
+
+Instead of evaluating the observations directly from $Normal(\mu, \sigma)$ we
+add an intermediate step that estimates $\epsilon$ as the draws from a standard normal
+for each such that we have
+
+$$ \epsilon_i \sim Normal(0,1)$$
+
+And finally:
+
+$$ y_i = \mu + \sigma\epsilon_i$$
+
+Which we can write in stan as:
+```{r}
+stan_model1_noncentered <- "
+data {
+  int<lower=1> n_obs;
+  vector[n_obs] obs;
+}
+
+parameters {
+  real mu;
+  real<lower=0> sigma;
+  real<lower=0> sigma_obs;
+  vector[n_obs] eta;
+}
+
+transformed parameters{
+ vector [n_obs] expected_vals = mu + sigma*eta;
+}
+
+
+model {
+  //Priors
+  mu ~ normal(2, 5);
+  sigma ~ normal(0,0.5);
+  eta ~ normal(0,1);
+  sigma_obs ~ normal(0, 0.1);
+
+  // Likelihood
+  obs ~ normal(expected_vals, sigma_obs);
+}
+"
+stan_model_noncent <- stan_model(
+  model_code = stan_model1_noncentered
+)
+```
+# Fit the model
+```{r}
+fit_non_cent <- sampling(
+  stan_model_noncent,
+  data = data_list,
+  iter = 5000,
+  chains = 1
+)
+```
