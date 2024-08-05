@@ -2,7 +2,7 @@
 #'
 #' @description
 #' This function is specifically meant to ensure that the data in the `date_vector`
-#' specified does not contain data time-stamped beyond the `max_date`. The
+#' specified does not contain dates after a given `max_date`. The
 #' intended use-case for this is to ensure that one doesn't accidentally
 #' pass in data that extends beyond the forecast date, as ideally the user
 #' is providing vintaged "as of" datasets or at the very least is filtering the
