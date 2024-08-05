@@ -15,7 +15,7 @@ vector aux_site_process_rng(vector log_state_rt,
 
 
   //Presets
-  int n_time = cols(log_state_rt);
+  int n_time = size(log_state_rt);
 
   vector[n_time] state_deviation_noise_vec = state_deviation_noise_vec_aux_rng(scaling_factor,
                                                                                sigma_eps,

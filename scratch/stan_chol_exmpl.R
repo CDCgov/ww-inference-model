@@ -34,7 +34,7 @@ transformed parameters {
   Sigma = sigma_eps^2 * exponential_decay_corr_func(dist_matrix, phi, l);
 
   for (i in 1:n_times) {
-    epsilon[,i] = cholesky_decompose(Sigma) * alpha[, i];
+    epsilon[,i] = sigma_eps * cholesky_decompose(Sigma) * alpha[, i];
   }
 }
 
@@ -76,6 +76,7 @@ data {
 parameters {
   real<lower=0> phi;
   real<lower=0> sigma_eps;
+  matrix[n_sites, n_times] epsilon;
 }
 
 transformed parameters {
@@ -88,10 +89,13 @@ model {
   //Priors
   phi ~ uniform(0, 50);
   sigma_eps ~ gamma(sqrt(0.1),1);
+  for (i in 1:n_times) {
+    epsilon[,i] ~ multi_normal(rep_vector(0, n_sites), Sigma);
+  }
 
   // Likelihood
   for (i in 1:n_times) {
-    obs_data[,i] ~ multi_normal(rep_vector(0, n_sites), Sigma);
+    obs_data[,i] ~ normal(epsilon[,i], 1);
   }
 }
 "
@@ -129,12 +133,18 @@ sigma_matrix_true <- sigma_eps_true^2 * exponential_decay_corr_func_r(list(
 # Generate samples from a MVM with mean 0 and covariance matrix sigma
 # epsilon_t ~ MVN(0, sigma_matrix) # nolint
 # for each time point. These are your observations!
+epsilon <- matrix(data = 0, nrow = n_sites, ncol = n_times)
 obs_data <- matrix(data = 0, nrow = n_sites, ncol = n_times)
 for (i in 1:n_times) {
-  obs_data[, i] <- t(mvrnorm(
+  epsilon[, i] <- t(mvrnorm(
     n = 1,
     mu = rep(0, n_sites),
     Sigma = sigma_matrix_true
+  ))
+  obs_data[, i] <- t(mvrnorm(
+    n = 1,
+    mu = epsilon[, i],
+    Sigma = diag(1, n_sites, n_sites)
   ))
 }
 
@@ -180,11 +190,9 @@ for (i in 1:n_times) {
 
 
 epsilon_non_cent <- epsilon_non_cent %>%
-  as.matrix() %>%
-  t()
+  as.matrix()
 epsilon_cent <- epsilon_cent %>%
-  as.matrix() %>%
-  t()
+  as.matrix()
 
 cramer::cramer.test(
   epsilon_non_cent,

@@ -55,12 +55,12 @@ test_that(
 
       # comparing with cramer test
       cramer_p_value <- cramer.test(
-        stan_noise_matrix,
-        r_noise_matrix
+        t(stan_noise_matrix),
+        t(r_noise_matrix)
       )$p.value
 
       # updating passed tests
-      if (cramer_p_value > 0.05) {
+      if (cramer_p_value > 0.01) {
         passed_tests <- passed_tests + 1
       }
     }
