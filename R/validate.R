@@ -113,7 +113,7 @@ validate_count_data <- function(hosp_data,
   checkmate::check_integerish(pop)
   assert_elements_non_neg(pop)
   assert_non_missingness(pop, arg, call)
-  add_err_msg <- c(
+  add_err_msg <- paste0(
     "Multiple/time-varying count catchment area populations ",
     "are not currently supported. Check that data is from a ",
     "single location, and if so, consider replacing with an ",
