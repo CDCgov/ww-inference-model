@@ -16,6 +16,7 @@ In the second, it will be nested, with an additional observation model.
 
 To start, let's assume we have a model with priors:
 $$\mu \sim Normal(2,5) $$
+
 $$ \sigma \sim HalfNormal(0,0.5) $$
 
 $$ y_i \sim Normal(\mu, \sigma) $$
@@ -120,6 +121,118 @@ stan_model_noncent <- stan_model(
 # Fit the model
 ```{r}
 fit_non_cent <- sampling(
+  stan_model_noncent,
+  data = data_list,
+  iter = 5000,
+  chains = 1
+)
+```
+
+So in the previous example, we performed a non-centered parameterization on the
+observation model $y_i \sim Normal(mu, sigma)$. Now let's instead suppose
+that we rewrite the model so that $m_i$ is a latent quantity: let's just say it
+is the expected number of medals that individuals on X country's gymnastic team
+will win in any year's Olympics, and the observation model is Negative Binomial
+(has the potential to be highly dispersed, because perhaps most years this
+value is low but on a given year country X might have a great team and have a
+very high number of medals).
+Then we have:
+$$\mu \sim Normal(2,5) $$
+
+$$ \sigma \sim HalfNormal(0,0.5) $$
+
+$$ m_i \sim Normal(\mu, \sigma) $$
+$$ y_i \sim NegativeBinomial(\m_i, \phi)$$
+
+To generate data from this model we now have:
+```{r}
+true_phi <- 1
+expected_medals <- rnorm(n_obs, mean = true_mean, sd = true_sigma)
+obs_medals <- rnbinom(n_obs, mu = expected_medals, size = true_phi)
+data_list <- list(
+  n_obs = n_obs,
+  obs_medals = obs_medals
+)
+```
+We write the centered parameterization as:
+```{r}
+stan_model2_centered <- "
+data {
+  int<lower=1> n_obs;
+  array[n_obs] int<lower=0> obs_medals;
+}
+
+parameters {
+  real mu;
+  real<lower=0> sigma;
+  real<lower=1e-5>phi;
+  vector<lower=0>[n_obs] expected_medals;
+}
+
+
+model {
+  //Priors
+  mu ~ normal(2, 5);
+  sigma ~ normal(0,0.5);
+  phi ~ normal(1, 1);
+
+  // Likelihood
+  expected_medals ~ normal(mu, sigma);
+  obs_medals ~ neg_binomial_2(expected_medals, phi);
+}
+"
+stan_model_cent <- stan_model(
+  model_code = stan_model2_centered
+)
+```
+Fit the centered model
+```{r}
+fit_cent <- sampling(
+  stan_model_cent,
+  data = data_list,
+  iter = 5000,
+  chains = 1
+)
+```
+
+Now write the non-centered model
+```{r}
+stan_model2_noncentered <- "
+data {
+  int<lower=1> n_obs;
+  array[n_obs] int<lower=0> obs_medals;
+}
+
+parameters {
+  real mu;
+  real<lower=0> sigma;
+  vector[n_obs] eta;
+  real<lower=1e-5>phi;
+}
+
+transformed parameters{
+ vector [n_obs] expected_medals = mu + sigma*eta;
+}
+
+
+model {
+  //Priors
+  mu ~ normal(2, 5);
+  sigma ~ normal(0,0.5);
+  eta ~ normal(0,1);
+  phi ~ normal(1, 1);
+
+  // Likelihood
+   obs_medals ~ neg_binomial_2(expected_medals, phi);
+}
+"
+stan_model_noncent <- stan_model(
+  model_code = stan_model2_noncentered
+)
+```
+Fit the non-centered parameterization with a negative binomial observation process
+```{r}
+fit_noncent <- sampling(
   stan_model_noncent,
   data = data_list,
   iter = 5000,
