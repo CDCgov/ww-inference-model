@@ -83,7 +83,6 @@ Imports:
     scales,
     ggplot2,
     posterior,
-    assertr,
     checkmate
 Remotes:
     stan-dev/cmdstanr

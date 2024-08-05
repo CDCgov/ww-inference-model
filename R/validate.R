@@ -16,38 +16,35 @@ validate_ww_conc_data <- function(ww_data,
   ww_conc <- ww_data |> dplyr::pull({
     conc_col_name
   })
-  arg <- "ww_conc"
-  if (!all(assertr::not_na(ww_conc))) {
-    cli::cli_abort("Missing values in {conc_col_name} column")
-  }
+  arg <- conc_col_name
+  check_non_missingness(ww_conc, arg, call)
   check_elements_non_neg(ww_conc, arg, call)
   checkmate::assert_vector(ww_conc)
 
   ww_lod <- ww_data |> dplyr::pull({
     lod_col_name
   })
-  arg <- "ww_lod"
-  if (!all(assertr::not_na(ww_lod))) {
-    cli::cli_abort("Missing values in LOD column")
-  }
+  arg <- "lod_col_name"
+  check_non_missigness(ww_lod, arg, )
   check_elements_non_neg(ww_lod, arg, call)
   checkmate::assert_vector(ww_lod)
 
   # Wastewater date column should be of date type!
   ww_obs_dates <- ww_data$date
   arg <- "ww_obs_dates"
-  if (!all(assertr::not_na(ww_obs_dates))) {
-    cli::cli_abort("Missing values in wastewater observation dates")
-  }
+  check_non_missingness(ww_obs_dates, arg, call)
+  checkmate::assert_date(ww_obs_dates)
+  # check for multiple observations per day within a site and lab
+  ww_data |>
+    dplyr::group_by(site, lab) |>
+    check_for_repeat_elements()
 
   # Sites  either need to be integers or characters, not be missing, and be
   # non-negative
   site_labels <- ww_data$site
   arg <- "site_labels"
   check_int_or_char(site_labels, arg, call)
-  if (!all(assertr::not_na(site_labels))) {
-    cli::cli_abort("Missing values in site column")
-  }
+  check_non_missingness(site_labels, arg, call)
   check_elements_non_neg(site_labels, arg, call)
 
   # Labs either need to be integers or characters, not be missing, and be
@@ -55,9 +52,7 @@ validate_ww_conc_data <- function(ww_data,
   lab_labels <- ww_data$lab
   arg <- "lab_labels"
   check_int_or_char(lab_labels, arg, call)
-  if (!all(assertr::not_na(lab_labels))) {
-    cli::cli_abort("Missing values in lab column")
-  }
+  check_non_missingness(lab_labels, arg, call)
   check_elements_non_neg(lab_labels, arg, call)
 
 
@@ -66,9 +61,7 @@ validate_ww_conc_data <- function(ww_data,
   site_pops <- ww_data$site_pop
   arg <- "site_pops"
   checkmate::assert_integerish(site_pops)
-  if (!all(assertr::not_na(site_pops))) {
-    cli::cli_abort("Missing values in site population size column")
-  }
+  check_non_missigness(site_pops, arg, call)
   check_elements_non_neg(site_pops, arg, call)
 
 
@@ -108,9 +101,7 @@ validate_count_data <- function(hosp_data,
   })
   arg <- "global_pop"
   checkmate::check_integerish(pop)
-  if (!all(assertr::not_na(pop))) {
-    cli::cli_abort("Missing values in {pop_size_col_name} column")
-  }
+  check_non_missigness(pop, arg, call)
   check_elements_non_neg(pop, arg, call)
   check_global_pop(pop, arg, call)
 
@@ -120,9 +111,7 @@ validate_count_data <- function(hosp_data,
   count_dates <- hosp_data$date
   arg <- "count_obs_dates"
   checkmate::assert_date(count_dates)
-  if (!all(assertr::is_uniq(count_dates))) {
-    cli::cli_abort("Count data dates are non-unique")
-  }
+  check_for_repeat_elements(count_dates, arg, call)
 
 
 

@@ -58,6 +58,61 @@ check_elements_non_neg <- function(x, arg = "x", call = rlang::caller_env()) {
   invisible()
 }
 
+#' Check there is no missignness in a particular vector
+#'
+#' @param x the vector to check
+#' @param arg the name of the vector to check
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#'
+#' @return NULL, invisibly
+check_non_missingness <- function(x, arg = "x", call = rlang::caller_env()) {
+  any_missing <- any(is.na(x))
+  if (any_missing) {
+    cli::cli_abort(
+      c("{.arg {arg}} has missing values",
+        "!" = "All elements of{.arg {arg}} should be present",
+        "i" = "Element(s) {.val {which(is.na(x))}} are missing"
+      ),
+      class = "wwinference_input_data_error",
+      call = call
+    )
+  }
+  invisible()
+}
+
+#' Check that there are no repeated elements in the vector
+#'
+#' @description
+#' This function  checks that the elements of a vector are
+#' not repeated.
+#'
+#' @param x the vector to check
+#' @param arg the name of the vector to check
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#'
+#' @return NULL, invisibly
+check_for_repeat_elements <- function(x, arg = "x",
+                                      call = rlang::caller_env()) {
+  duplicates <- duplicated(x)
+  if (sum(duplicates) > 0) {
+    cli::cli_abort(
+      c("{.arg {arg}} has more than one element",
+        "i" = c(
+          "Multiple {.arg {arg}} are not currently supported.",
+          "Check that data is from a single location, and if so, provide",
+          "a single count data stream for the population in that location"
+        ),
+        "!" = "Duplicate element(s) index: {.val {which(duplicates)}}"
+      ),
+      call = call,
+      class = "wwinference_input_data_error"
+    )
+  }
+  invisible()
+}
+
 
 
 #' Check that the arguments are either integers or characters
