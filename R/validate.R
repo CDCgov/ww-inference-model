@@ -35,7 +35,7 @@ validate_ww_conc_data <- function(ww_data,
   assert_elements_non_neg(ww_lod, arg, call,
     add_err_msg = c(
       "Note that the model expects natural ",
-      "scale LOD values, which must be",
+      "scale LOD values, which must be ",
       "non-negative"
     )
   )
