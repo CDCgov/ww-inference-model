@@ -100,7 +100,7 @@ validate_count_data <- function(hosp_data,
   arg <- "counts"
   checkmate::assert_vector(counts)
   checkmate::assert_integerish(counts)
-  assert_elements_non_negative(counts, arg, call)
+  assert_elements_non_neg(counts, arg, call)
 
 
   # Currently, the framework only supports a single population size for
