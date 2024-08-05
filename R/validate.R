@@ -19,7 +19,7 @@ validate_ww_conc_data <- function(ww_data,
   arg <- conc_col_name
   assert_non_missingness(ww_conc, arg, call)
   assert_elements_non_neg(ww_conc, arg, call,
-    add_err_msg = c(
+    add_err_msg = paste0(
       "Note that the model expects natural ",
       "scale concentration values, ",
       "which must be non-negative"
@@ -33,9 +33,9 @@ validate_ww_conc_data <- function(ww_data,
   arg <- "lod_col_name"
   assert_non_missingness(ww_lod, arg, )
   assert_elements_non_neg(ww_lod, arg, call,
-    add_err_msg = c(
+    add_err_msg = paste0(
       "Note that the model expects natural ",
-      "scale LOD values, which must be",
+      "scale LOD values, which must be ",
       "non-negative"
     )
   )
@@ -109,8 +109,8 @@ validate_count_data <- function(hosp_data,
   checkmate::check_integerish(pop)
   assert_elements_non_neg(pop)
   assert_non_missingness(pop, arg, call)
-  add_err_msg <- c(
-    "Multiple/time-varying count catchment area populations",
+  add_err_msg <- paste0(
+    "Multiple/time-varying count catchment area populations ",
     "are not currently supported. Check that data is from a ",
     "single location, and if so, consider replacing with an ",
     "average population size over the inference period"
@@ -119,12 +119,12 @@ validate_count_data <- function(hosp_data,
 
 
   # Date column should be of date type, for count data, there should only
-  # be on observation per day
+  # be one observation per day
   count_dates <- hosp_data$date
   arg <- "count_obs_dates"
   checkmate::assert_date(count_dates)
-  add_err_msg <- c(
-    "Check that data is from a single location, and if so,",
+  add_err_msg <- paste0(
+    "Check that data is from a single location, and if so, ",
     "ensure that there are not multiple count data streams"
   )
   assert_no_repeated_elements(count_dates, arg, call, add_err_msg)
