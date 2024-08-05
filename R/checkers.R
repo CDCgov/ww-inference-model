@@ -41,8 +41,8 @@ assert_no_dates_after_max <- function(date_vector,
 #' @param arg string to print the name of the element your checking
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
-#' @param add_err_msg string containing an additional error message, defauly is
-#' `NA`
+#' @param add_err_msg string containing an additional error message,
+#'  default is the empty string (`""`)
 #'
 #' @return NULL, invisibly
 assert_elements_non_neg <- function(x, arg = "x",
@@ -70,7 +70,7 @@ assert_elements_non_neg <- function(x, arg = "x",
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
 #' @param add_err_msg string containing an additional error message,
-#' default is empty string
+#' default is the empty string (`""`)
 #'
 #' @return NULL, invisibly
 assert_non_missingness <- function(x, arg = "x",
@@ -99,7 +99,8 @@ assert_non_missingness <- function(x, arg = "x",
 #' @param arg the name of the vector to check
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
-#' @param add_err_msg
+#' @param add_err_msg string containing an additional error message,
+#' default is the empty string (`""`)
 #'
 #' @return NULL, invisibly
 assert_no_repeated_elements <- function(x, arg = "x",

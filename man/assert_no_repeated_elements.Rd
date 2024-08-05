@@ -19,7 +19,8 @@ assert_no_repeated_elements(
 \item{call}{Calling environment to be passed to \code{\link[cli:cli_abort]{cli::cli_abort()}} for
 traceback.}
 
-\item{add_err_msg}{}
+\item{add_err_msg}{string containing an additional error message,
+default is the empty string (\code{""})}
 }
 \value{
 NULL, invisibly

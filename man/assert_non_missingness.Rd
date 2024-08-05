@@ -20,7 +20,7 @@ assert_non_missingness(
 traceback.}
 
 \item{add_err_msg}{string containing an additional error message,
-default is empty string}
+default is the empty string (\code{""})}
 }
 \value{
 NULL, invisibly
