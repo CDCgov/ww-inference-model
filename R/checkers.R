@@ -95,7 +95,7 @@ check_non_missingness <- function(x, arg = "x", call = rlang::caller_env()) {
 check_for_repeat_elements <- function(x, arg = "x",
                                       call = rlang::caller_env()) {
   duplicates <- duplicated(x)
-  if (sum(duplicates) > 0) {
+  if (any(duplicates)) {
     cli::cli_abort(
       c("{.arg {arg}} has more than one element",
         "i" = c(
