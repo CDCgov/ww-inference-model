@@ -22,7 +22,7 @@ $$ \sigma \sim HalfNormal(0,0.5) $$
 $$ y_i \sim Normal(\mu, \sigma) $$
 We generate data with a known mean and standard deviation:
 ```{r}
-n_obs <- 10
+n_obs <- 50
 true_mean <- 3
 true_sigma <- 0.3
 obs <- rnorm(n_obs, mean = true_mean, sd = true_sigma)
