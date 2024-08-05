@@ -137,7 +137,7 @@ assert_int_or_char <- function(x, arg = "x", call = rlang::caller_env()) {
   # Check if its a character, if it is, check passes. If not,
   # check if its an integer
   int_or_char_check_result <- checkmate::check_character(x)
-  if (!is_char) {
+  if (!int_or_char_check_result) {
     int_or_char_check_result <- checkmate::check_integerish(x)
   }
 
