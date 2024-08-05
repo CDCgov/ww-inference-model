@@ -67,8 +67,7 @@ check_elements_non_neg <- function(x, arg = "x", call = rlang::caller_env()) {
 #'
 #' @return NULL, invisibly
 check_non_missingness <- function(x, arg = "x", call = rlang::caller_env()) {
-  any_missing <- any(is.na(x))
-  if (any_missing) {
+  if (checkmate::anyMissing(x)) {
     cli::cli_abort(
       c("{.arg {arg}} has missing values",
         "!" = "All elements of{.arg {arg}} should be present",
