@@ -70,8 +70,9 @@ validate_ww_conc_data <- function(ww_data,
   # non-negative
   site_pops <- ww_data$site_pop
   arg <- "site_pops"
-  checkmate::assert_count(site_pops)
+  checkmate::assert_integerish(site_pops)
   assert_non_missingness(site_pops, arg, call)
+  assert_elements_non_neg(site_pops, arg, call)
 
 
   invisible()
@@ -98,7 +99,8 @@ validate_count_data <- function(hosp_data,
   })
   arg <- "counts"
   checkmate::assert_vector(counts)
-  checkmate::assert_count(counts)
+  checkmate::assert_integerish(counts)
+  assert_elements_non_negative(counts, arg, call)
 
 
   # Currently, the framework only supports a single population size for
