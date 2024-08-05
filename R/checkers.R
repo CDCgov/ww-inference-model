@@ -284,3 +284,29 @@ check_req_hosp_columns_present <- function(hosp_data,
 
   invisible()
 }
+
+#' Assert that there is only a single value in a particular column
+#'
+#' @param x the vector to check
+#' @param arg the name of the vector to check
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#'
+#' @return NULL, invisibly
+assert_single_value <- function(x, arg = "x",
+                                call = rlang::caller_env(),
+                                add_error_msg) {
+  unique_elements <- unique(x)
+
+  if (length(unique_elements) > 1) {
+    cli::cli_abort(
+      c(
+        "{.arg {arg}} has more than one element",
+        add_error_msg
+      ),
+      call = call,
+      class = "wwinference_input_data_error"
+    )
+  }
+  invisible()
+}

@@ -119,7 +119,7 @@ validate_count_data <- function(hosp_data,
     "single location, and if so, consider replacing with an ",
     "average population size over the inference period"
   )
-  assert_no_repeated_elements(pop, arg, call, add_err_msg)
+  assert_single_value(pop, arg, call, add_err_msg)
 
 
   # Date column should be of date type, for count data, there should only
