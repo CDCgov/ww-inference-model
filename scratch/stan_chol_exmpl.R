@@ -24,6 +24,7 @@ parameters {
   matrix[n_sites,n_times] alpha;
   real<lower=0> phi;
   real<lower=0> sigma_eps;
+  //real<lower=0> sigma_obs; Can get rid of this and assume iid normal
 }
 
 transformed parameters {
@@ -38,13 +39,18 @@ transformed parameters {
 }
 
 model {
+  //Priors
   to_vector(alpha) ~ std_normal();
   phi ~ uniform(0, 50);
   sigma_eps ~ gamma(sqrt(0.1),1);
 
   // Likelihood
+  // Assumes normally distributed observation error.
+  // obs_data are your vectors of draws the MVN at each time point (column
+  // bound to produce a matrix). The epsilon matrix are the
+  // mean of the expected realizations of the MVN draws.
   for (i in 1:n_times) {
-    obs_data[,i] ~ multi_normal(epsilon[,i], identity_matrix(n_sites));
+    obs_data[,i] ~ normal(epsilon[,i], 1);
   }
 }
 "
@@ -68,7 +74,6 @@ data {
 }
 
 parameters {
-  matrix[n_sites,n_times] epsilon;
   real<lower=0> phi;
   real<lower=0> sigma_eps;
 }
@@ -80,15 +85,13 @@ transformed parameters {
 }
 
 model {
-  for(i in 1:n_times){
-    epsilon[,i] ~ multi_normal(rep_vector(0, n_sites), Sigma);
-  }
+  //Priors
   phi ~ uniform(0, 50);
   sigma_eps ~ gamma(sqrt(0.1),1);
 
   // Likelihood
   for (i in 1:n_times) {
-    obs_data[,i] ~ multi_normal(epsilon[,i], identity_matrix(n_sites));
+    obs_data[,i] ~ multi_normal(rep_vector(0, n_sites), Sigma);
   }
 }
 "
@@ -123,17 +126,15 @@ sigma_matrix_true <- sigma_eps_true^2 * exponential_decay_corr_func_r(list(
   phi = phi_true,
   l = l
 ))
-epsilon_true <- t(mvrnorm(
-  n = n_times,
-  mu = rep(0, n_sites),
-  Sigma = sigma_matrix_true
-))
+# Generate samples from a MVM with mean 0 and covariance matrix sigma
+# epsilon_t ~ MVN(0, sigma_matrix) # nolint
+# for each time point. These are your observations!
 obs_data <- matrix(data = 0, nrow = n_sites, ncol = n_times)
 for (i in 1:n_times) {
   obs_data[, i] <- t(mvrnorm(
     n = 1,
-    mu = epsilon_true[, i],
-    Sigma = diag(1, n_sites)
+    mu = rep(0, n_sites),
+    Sigma = sigma_matrix_true
   ))
 }
 
