@@ -95,7 +95,6 @@ data {
 parameters {
   real mu;
   real<lower=0> sigma;
-  real<lower=0> sigma_obs;
   vector[n_obs] eta;
 }
 
@@ -109,10 +108,9 @@ model {
   mu ~ normal(2, 5);
   sigma ~ normal(0,0.5);
   eta ~ normal(0,1);
-  sigma_obs ~ normal(0, 0.1);
 
   // Likelihood
-  obs ~ normal(expected_vals, sigma_obs);
+  obs ~ normal(expected_vals, 1);
 }
 "
 stan_model_noncent <- stan_model(
