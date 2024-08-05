@@ -130,9 +130,9 @@ assert_no_repeated_elements <- function(x, arg = "x",
 #' @param call Calling environment to be passed to [cli::cli_abort()]
 #'
 #' @return NULL, invisibly
-assert_count_or_char <- function(x, arg = "x", call = rlang::caller_env()) {
+assert_int_or_char <- function(x, arg = "x", call = rlang::caller_env()) {
   count_or_char_check_result <- checkmate::assert(
-    checkmate::assert_count(x),
+    checkmate::assert_integerish(x),
     checkmate::assert_character(x)
   )
   if (!count_or_char_check_result) {

@@ -55,14 +55,14 @@ validate_ww_conc_data <- function(ww_data,
   # non-negative
   site_labels <- ww_data$site
   arg <- "site_labels"
-  assert_count_or_char(site_labels, arg, call)
+  assert_int_or_char(site_labels, arg, call)
   assert_non_missingness(site_labels, arg, call)
 
   # Labs either need to be integers or characters, not be missing, and be
   # non-negative
   lab_labels <- ww_data$lab
   arg <- "lab_labels"
-  assert_count_or_char(lab_labels, arg, call)
+  assert_int_or_char(lab_labels, arg, call)
   assert_non_missingness(lab_labels, arg, call)
 
 
