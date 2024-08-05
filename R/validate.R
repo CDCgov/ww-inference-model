@@ -61,7 +61,7 @@ validate_ww_conc_data <- function(ww_data,
   site_pops <- ww_data$site_pop
   arg <- "site_pops"
   checkmate::assert_integerish(site_pops)
-  check_non_missigness(site_pops, arg, call)
+  check_non_missingness(site_pops, arg, call)
   check_elements_non_neg(site_pops, arg, call)
 
 
@@ -101,7 +101,7 @@ validate_count_data <- function(hosp_data,
   })
   arg <- "global_pop"
   checkmate::check_integerish(pop)
-  check_non_missigness(pop, arg, call)
+  check_non_missingness(pop, arg, call)
   check_elements_non_neg(pop, arg, call)
   check_global_pop(pop, arg, call)
 
