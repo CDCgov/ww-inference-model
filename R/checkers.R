@@ -1,7 +1,7 @@
 #' Check that all dates in dataframe passed in are before a specified date
 #'
 #' @description
-#' This function is specifically meant to ensure that the data in the `df`
+#' This function is specifically meant to ensure that the data in the `date_vector`
 #' specified does not contain data time-stamped beyond the `max_date`. The
 #' intended use-case for this is to ensure that one doesn't accidentally
 #' pass in data that extends beyond the forecast date, as ideally the user
