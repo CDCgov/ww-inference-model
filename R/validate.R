@@ -127,7 +127,7 @@ validate_count_data <- function(hosp_data,
   count_dates <- hosp_data$date
   arg <- "count_obs_dates"
   checkmate::assert_date(count_dates)
-  add_err_msg <- c(
+  add_err_msg <- paste0(
     "Check that data is from a single location, and if so, ",
     "ensure that there are not multiple count data streams"
   )
