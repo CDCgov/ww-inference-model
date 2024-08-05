@@ -1,8 +1,8 @@
 #' Check that all dates in dataframe passed in are before a specified date
 #'
 #' @description
-#' This function is specifically meant to ensure that the data in the `date_vector`
-#' specified does not contain dates after a given `max_date`. The
+#' This function is specifically meant to ensure that the data in the
+#' `date_vector` specified does not contain dates after a given `max_date`. The
 #' intended use-case for this is to ensure that one doesn't accidentally
 #' pass in data that extends beyond the forecast date, as ideally the user
 #' is providing vintaged "as of" datasets or at the very least is filtering the
@@ -13,7 +13,8 @@
 #' @param date_vector vector of dates
 #' @param max_date string indicating the maximum date in ISO8601 convention
 #' e.g. YYYY-MM-DD
-#' @param call Calling environment to be passed to the type checker
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
 #'
 #' @return NULL, invisibly
 check_date_logic <- function(date_vector,
@@ -38,16 +39,20 @@ check_date_logic <- function(date_vector,
 #'
 #' @param x vector of arguments to check for negativity
 #' @param arg string to print the name of the element your checking
-#' @param call Calling environment to be passed to the type checker
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#' @param add_err_msg string containing an additional error message, defauly is
+#' `NA`
 #'
 #' @return NULL, invisibly
-check_elements_non_neg <- function(x, arg = "x", call = rlang::caller_env()) {
+check_elements_non_neg <- function(x, arg = "x",
+                                   call = rlang::caller_env(),
+                                   add_err_msg = "") {
   # Greater than or equal to 0 or is NA
   is_non_neg <- (x >= 0) | is.na(x)
   if (!all(is_non_neg)) {
     cli::cli_abort(
-      c("{.arg {arg}} has negative elements, check to ensure that values",
-        "have not been log transformed",
+      c("{.arg {arg}} has negative elements.",
         "!" = "All elements must be 0 or greater",
         "i" = "Elements {.val {which(!is_non_neg)}} are negative"
       ),

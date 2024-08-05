@@ -4,14 +4,23 @@
 \alias{check_elements_non_neg}
 \title{Check that all elements of a vector are non-negative}
 \usage{
-check_elements_non_neg(x, arg = "x", call = rlang::caller_env())
+check_elements_non_neg(
+  x,
+  arg = "x",
+  call = rlang::caller_env(),
+  add_err_msg = ""
+)
 }
 \arguments{
 \item{x}{vector of arguments to check for negativity}
 
 \item{arg}{string to print the name of the element your checking}
 
-\item{call}{Calling environment to be passed to the type checker}
+\item{call}{Calling environment to be passed to \code{\link[cli:cli_abort]{cli::cli_abort()}} for
+traceback.}
+
+\item{add_err_msg}{string containing an additional error message, defauly is
+\code{NA}}
 }
 \value{
 NULL, invisibly

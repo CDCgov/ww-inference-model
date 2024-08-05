@@ -12,14 +12,15 @@ check_date_logic(date_vector, max_date, call = rlang::caller_env())
 \item{max_date}{string indicating the maximum date in ISO8601 convention
 e.g. YYYY-MM-DD}
 
-\item{call}{Calling environment to be passed to the type checker}
+\item{call}{Calling environment to be passed to \code{\link[cli:cli_abort]{cli::cli_abort()}} for
+traceback.}
 }
 \value{
 NULL, invisibly
 }
 \description{
-This function is specifically meant to ensure that the data in the \code{df}
-specified does not contain data time-stamped beyond the \code{max_date}. The
+This function is specifically meant to ensure that the data in the \code{date_vector}
+specified does not contain dates after a given \code{max_date}. The
 intended use-case for this is to ensure that one doesn't accidentally
 pass in data that extends beyond the forecast date, as ideally the user
 is providing vintaged "as of" datasets or at the very least is filtering the

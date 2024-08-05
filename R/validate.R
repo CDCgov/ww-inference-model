@@ -18,7 +18,13 @@ validate_ww_conc_data <- function(ww_data,
   })
   arg <- conc_col_name
   check_non_missingness(ww_conc, arg, call)
-  check_elements_non_neg(ww_conc, arg, call)
+  check_elements_non_neg(ww_conc, arg, call,
+    add_err_msg = c(
+      "Note that the model expects natural ",
+      "scale concentration values, ",
+      "which must be non-negative"
+    )
+  )
   checkmate::assert_vector(ww_conc)
 
   ww_lod <- ww_data |> dplyr::pull({
@@ -26,7 +32,13 @@ validate_ww_conc_data <- function(ww_data,
   })
   arg <- "lod_col_name"
   check_non_missingness(ww_lod, arg, )
-  check_elements_non_neg(ww_lod, arg, call)
+  check_elements_non_neg(ww_lod, arg, call,
+    add_err_msg = c(
+      "Note that the model expects natural ",
+      "scale LOD values, which must be",
+      "non-negative"
+    )
+  )
   checkmate::assert_vector(ww_lod)
 
   # Wastewater date column should be of date type!
@@ -45,7 +57,6 @@ validate_ww_conc_data <- function(ww_data,
   arg <- "site_labels"
   check_int_or_char(site_labels, arg, call)
   check_non_missingness(site_labels, arg, call)
-  check_elements_non_neg(site_labels, arg, call)
 
   # Labs either need to be integers or characters, not be missing, and be
   # non-negative
@@ -53,7 +64,6 @@ validate_ww_conc_data <- function(ww_data,
   arg <- "lab_labels"
   check_int_or_char(lab_labels, arg, call)
   check_non_missingness(lab_labels, arg, call)
-  check_elements_non_neg(lab_labels, arg, call)
 
 
   # Site populations should be integers, not be missing, and be

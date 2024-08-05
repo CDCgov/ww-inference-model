@@ -2,7 +2,7 @@
 % Please edit documentation in R/checkers.R
 \name{check_non_missingness}
 \alias{check_non_missingness}
-\title{Check there is no missignness in a particular vector}
+\title{Assert that there is no missignness in a particular vector}
 \usage{
 check_non_missingness(x, arg = "x", call = rlang::caller_env())
 }
@@ -18,5 +18,5 @@ traceback.}
 NULL, invisibly
 }
 \description{
-Check there is no missignness in a particular vector
+Assert that there is no missignness in a particular vector
 }
