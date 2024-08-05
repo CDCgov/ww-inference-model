@@ -24,7 +24,7 @@ parameters {
   matrix[n_sites,n_times] alpha;
   real<lower=0> phi;
   real<lower=0> sigma_eps;
-  real<lower=0> sigma_obs;
+  //real<lower=0> sigma_obs; Can get rid of this and assume iid normal
 }
 
 transformed parameters {
@@ -43,8 +43,6 @@ model {
   to_vector(alpha) ~ std_normal();
   phi ~ uniform(0, 50);
   sigma_eps ~ gamma(sqrt(0.1),1);
-  sigma_obs ~ normal(0, 0.1); // Note entirely sure of the magnitude to use
-  // here,
 
   // Likelihood
   // Assumes normally distributed observation error.
@@ -52,7 +50,7 @@ model {
   // bound to produce a matrix). The epsilon matrix are the
   // mean of the expected realizations of the MVN draws.
   for (i in 1:n_times) {
-    obs_data[,i] ~ normal(epsilon[,i], sigma_obs);
+    obs_data[,i] ~ normal(epsilon[,i], 1);
   }
 }
 "
