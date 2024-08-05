@@ -17,8 +17,8 @@
 #' traceback.
 #'
 #' @return NULL, invisibly
-check_date_logic <- function(date_vector,
-                             max_date, call = rlang::caller_env()) {
+assert_no_dates_after_max <- function(date_vector,
+                                      max_date, call = rlang::caller_env()) {
   if (max(date_vector) > max_date) {
     cli::cli_abort(
       c(
@@ -35,7 +35,7 @@ check_date_logic <- function(date_vector,
 }
 
 
-#' Check that all elements of a vector are non-negative
+#' Assert that all elements of a vector are non-negative
 #'
 #' @param x vector of arguments to check for negativity
 #' @param arg string to print the name of the element your checking
@@ -45,9 +45,9 @@ check_date_logic <- function(date_vector,
 #' `NA`
 #'
 #' @return NULL, invisibly
-check_elements_non_neg <- function(x, arg = "x",
-                                   call = rlang::caller_env(),
-                                   add_err_msg = "") {
+assert_elements_non_neg <- function(x, arg = "x",
+                                    call = rlang::caller_env(),
+                                    add_err_msg = "") {
   # Greater than or equal to 0 or is NA
   is_non_neg <- (x >= 0) | is.na(x)
   if (!all(is_non_neg)) {
@@ -71,7 +71,7 @@ check_elements_non_neg <- function(x, arg = "x",
 #' traceback.
 #'
 #' @return NULL, invisibly
-check_non_missingness <- function(x, arg = "x", call = rlang::caller_env()) {
+assert_non_missingness <- function(x, arg = "x", call = rlang::caller_env()) {
   if (checkmate::anyMissing(x)) {
     cli::cli_abort(
       c("{.arg {arg}} has missing values",
@@ -97,8 +97,8 @@ check_non_missingness <- function(x, arg = "x", call = rlang::caller_env()) {
 #' traceback.
 #'
 #' @return NULL, invisibly
-check_for_repeat_elements <- function(x, arg = "x",
-                                      call = rlang::caller_env()) {
+assert_no_repeated_elements <- function(x, arg = "x",
+                                        call = rlang::caller_env()) {
   duplicates <- duplicated(x)
   if (any(duplicates)) {
     cli::cli_abort(
@@ -119,8 +119,7 @@ check_for_repeat_elements <- function(x, arg = "x",
 
 
 
-#' Check that the arguments are either integers or characters
-#'
+#' Assert that the arguments are either count type or characters
 #' @description
 #' This is for unique identifiers of groupings, which we will allow to
 #' either be character or integers.
@@ -131,12 +130,12 @@ check_for_repeat_elements <- function(x, arg = "x",
 #' @param call Calling environment to be passed to [cli::cli_abort()]
 #'
 #' @return NULL, invisibly
-check_int_or_char <- function(x, arg = "x", call = rlang::caller_env()) {
-  int_or_char_check_result <- checkmate::assert(
-    checkmate::check_integerish(x),
-    checkmate::check_character(x)
+assert_count_or_char <- function(x, arg = "x", call = rlang::caller_env()) {
+  count_or_char_check_result <- checkmate::assert(
+    checkmate::assert_count(x),
+    checkmate::assert_character(x)
   )
-  if (!int_or_char_check_result) {
+  if (!count_or_char_check_result) {
     throw_type_error(
       object = x,
       arg_name = arg,
@@ -286,7 +285,7 @@ check_req_hosp_columns_present <- function(hosp_data,
 }
 
 
-#' Check that the vector of population sizes for the global catchment area
+#' Assert that the vector of population sizes for the global catchment area
 #' has only a single value
 #'
 #' @description
@@ -307,7 +306,7 @@ check_req_hosp_columns_present <- function(hosp_data,
 #' traceback.
 #'
 #' @return NULL, invisibly
-check_global_pop <- function(x, arg = "x", call = rlang::caller_env()) {
+assert_global_pop <- function(x, arg = "x", call = rlang::caller_env()) {
   unique_pops <- unique(x)
 
   if (length(unique_pops) > 1) {
