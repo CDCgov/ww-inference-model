@@ -131,10 +131,8 @@ assert_no_repeated_elements <- function(x, arg = "x",
 #'
 #' @return NULL, invisibly
 assert_int_or_char <- function(x, arg = "x", call = rlang::caller_env()) {
-  count_or_char_check_result <- checkmate::assert(
-    checkmate::assert_integerish(x),
-    checkmate::assert_character(x)
-  )
+  count_or_char_check_result <- checkmate::check_integerish(x) ||
+    checkmate::check_character(x)
   if (!count_or_char_check_result) {
     throw_type_error(
       object = x,
