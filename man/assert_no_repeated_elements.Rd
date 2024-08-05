@@ -4,7 +4,12 @@
 \alias{assert_no_repeated_elements}
 \title{Check that there are no repeated elements in the vector}
 \usage{
-assert_no_repeated_elements(x, arg = "x", call = rlang::caller_env())
+assert_no_repeated_elements(
+  x,
+  arg = "x",
+  call = rlang::caller_env(),
+  add_err_msg = ""
+)
 }
 \arguments{
 \item{x}{the vector to check}
@@ -13,6 +18,8 @@ assert_no_repeated_elements(x, arg = "x", call = rlang::caller_env())
 
 \item{call}{Calling environment to be passed to \code{\link[cli:cli_abort]{cli::cli_abort()}} for
 traceback.}
+
+\item{add_err_msg}{}
 }
 \value{
 NULL, invisibly

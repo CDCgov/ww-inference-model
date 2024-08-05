@@ -4,7 +4,12 @@
 \alias{assert_non_missingness}
 \title{Assert that there is no missignness in a particular vector}
 \usage{
-assert_non_missingness(x, arg = "x", call = rlang::caller_env())
+assert_non_missingness(
+  x,
+  arg = "x",
+  call = rlang::caller_env(),
+  add_err_msg = ""
+)
 }
 \arguments{
 \item{x}{the vector to check}
@@ -13,6 +18,9 @@ assert_non_missingness(x, arg = "x", call = rlang::caller_env())
 
 \item{call}{Calling environment to be passed to \code{\link[cli:cli_abort]{cli::cli_abort()}} for
 traceback.}
+
+\item{add_err_msg}{string containing an additional error message,
+default is empty string}
 }
 \value{
 NULL, invisibly

@@ -52,7 +52,7 @@ assert_elements_non_neg <- function(x, arg = "x",
   is_non_neg <- (x >= 0) | is.na(x)
   if (!all(is_non_neg)) {
     cli::cli_abort(
-      c("{.arg {arg}} has negative elements.",
+      c("{.arg {arg}} has negative elements.", add_err_msg,
         "!" = "All elements must be 0 or greater",
         "i" = "Elements {.val {which(!is_non_neg)}} are negative"
       ),
@@ -69,12 +69,16 @@ assert_elements_non_neg <- function(x, arg = "x",
 #' @param arg the name of the vector to check
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
+#' @param add_err_msg string containing an additional error message,
+#' default is empty string
 #'
 #' @return NULL, invisibly
-assert_non_missingness <- function(x, arg = "x", call = rlang::caller_env()) {
+assert_non_missingness <- function(x, arg = "x",
+                                   call = rlang::caller_env(),
+                                   add_err_msg = "") {
   if (checkmate::anyMissing(x)) {
     cli::cli_abort(
-      c("{.arg {arg}} has missing values",
+      c("{.arg {arg}} has missing values", add_err_msg,
         "!" = "All elements of{.arg {arg}} should be present",
         "i" = "Element(s) {.val {which(is.na(x))}} are missing"
       ),
@@ -95,19 +99,17 @@ assert_non_missingness <- function(x, arg = "x", call = rlang::caller_env()) {
 #' @param arg the name of the vector to check
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
+#' @param add_err_msg
 #'
 #' @return NULL, invisibly
 assert_no_repeated_elements <- function(x, arg = "x",
-                                        call = rlang::caller_env()) {
+                                        call = rlang::caller_env(),
+                                        add_err_msg = "") {
   duplicates <- duplicated(x)
   if (any(duplicates)) {
     cli::cli_abort(
-      c("{.arg {arg}} has more than one element",
-        "i" = c(
-          "Multiple {.arg {arg}} are not currently supported.",
-          "Check that data is from a single location, and if so, provide",
-          "a single count data stream for the population in that location"
-        ),
+      c("{.arg {arg}} has more than one element", add_err_msg,
+        "i" = "Multiple {.arg {arg}} are not currently supported.",
         "!" = "Duplicate element(s) index: {.val {which(duplicates)}}"
       ),
       call = call,
@@ -279,47 +281,5 @@ check_req_hosp_columns_present <- function(hosp_data,
     )
   }
 
-  invisible()
-}
-
-
-#' Assert that the vector of population sizes for the global catchment area
-#' has only a single value
-#'
-#' @description
-#' This function  checks that "global" population sizes in the data passed in as
-#' count data contain only a single value of the catchment areas population
-#' size. Multiple values might indicate either that there are multiple count
-#' data streams being passed in (which is not currently supported) or that
-#' there is a time varying population size (which is also not currently
-#' supported). This function is specific to the
-#' current version of the model, and will
-#' be deprecated for a more general `check_for_single_value()` once
-#' additional model functionality has been added.
-#'
-#'
-#' @param x the vector to check
-#' @param arg the name of the vector to check
-#' @param call Calling environment to be passed to [cli::cli_abort()] for
-#' traceback.
-#'
-#' @return NULL, invisibly
-assert_global_pop <- function(x, arg = "x", call = rlang::caller_env()) {
-  unique_pops <- unique(x)
-
-  if (length(unique_pops) > 1) {
-    cli::cli_abort(
-      c("{.arg {arg}} has more than one global population size",
-        "i" = c(
-          "Multiple/time-varying count catchment area populations",
-          "are not currently supported. Check that data is from a single",
-          "location, and if so, consider replacing with an average",
-          "population size over the inference period"
-        )
-      ),
-      call = call,
-      class = "wwinference_input_data_error"
-    )
-  }
   invisible()
 }

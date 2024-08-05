@@ -110,9 +110,16 @@ validate_count_data <- function(hosp_data,
     pop_size_col_name
   })
   arg <- "global_pop"
-  checkmate::check_count(pop)
+  checkmate::check_integerish(pop)
+  assert_elements_non_neg(pop)
   assert_non_missingness(pop, arg, call)
-  assert_global_pop(pop, arg, call)
+  add_err_msg <- c(
+    "Multiple/time-varying count catchment area populations",
+    "are not currently supported. Check that data is from a ",
+    "single location, and if so, consider replacing with an ",
+    "average population size over the inference period"
+  )
+  assert_no_repeated_elements(pop, arg, call, add_err_msg)
 
 
   # Date column should be of date type, for count data, there should only
@@ -120,7 +127,12 @@ validate_count_data <- function(hosp_data,
   count_dates <- hosp_data$date
   arg <- "count_obs_dates"
   checkmate::assert_date(count_dates)
-  assert_no_repeated_elements(count_dates, arg, call)
+  add_err_msg <- c(
+    "Check that data is from a single location, and if so,",
+    "ensure that there are not multiple count data streams"
+  )
+  assert_no_repeated_elements(count_dates, arg, call, add_err_msg)
+
 
 
 
