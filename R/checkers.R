@@ -58,7 +58,7 @@ check_elements_non_neg <- function(x, arg = "x", call = rlang::caller_env()) {
   invisible()
 }
 
-#' Check there is no missignness in a particular vector
+#' Assert that there is no missignness in a particular vector
 #'
 #' @param x the vector to check
 #' @param arg the name of the vector to check
