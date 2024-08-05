@@ -302,14 +302,14 @@ check_req_hosp_columns_present <- function(hosp_data,
 #' @return NULL, invisibly
 assert_single_value <- function(x, arg = "x",
                                 call = rlang::caller_env(),
-                                add_error_msg = "") {
+                                add_err_msg = "") {
   unique_elements <- unique(x)
 
   if (length(unique_elements) > 1) {
     cli::cli_abort(
       c(
         "{.arg {arg}} has more than one element",
-        add_error_msg
+        add_err_msg
       ),
       call = call,
       class = "wwinference_input_data_error"

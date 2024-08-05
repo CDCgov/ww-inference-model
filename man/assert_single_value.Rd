@@ -4,12 +4,7 @@
 \alias{assert_single_value}
 \title{Assert that there is only a single value in a particular column}
 \usage{
-assert_single_value(
-  x,
-  arg = "x",
-  call = rlang::caller_env(),
-  add_error_msg = ""
-)
+assert_single_value(x, arg = "x", call = rlang::caller_env(), add_err_msg = "")
 }
 \arguments{
 \item{x}{the vector to check}
