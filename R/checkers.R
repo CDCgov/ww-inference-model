@@ -136,7 +136,7 @@ assert_no_repeated_elements <- function(x, arg = "x",
 assert_int_or_char <- function(x, arg = "x", call = rlang::caller_env()) {
   # Check if its a character, if it is, check passes. If not,
   # check if its an integer
-  int_or_char_check_result <- checkmate::check_character(x)
+  int_or_char_check_result <- is.character(x)
   if (!int_or_char_check_result) {
     int_or_char_check_result <- checkmate::check_integerish(x)
   }
