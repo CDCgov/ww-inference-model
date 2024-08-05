@@ -4,7 +4,12 @@
 \alias{assert_single_value}
 \title{Assert that there is only a single value in a particular column}
 \usage{
-assert_single_value(x, arg = "x", call = rlang::caller_env(), add_error_msg)
+assert_single_value(
+  x,
+  arg = "x",
+  call = rlang::caller_env(),
+  add_error_msg = ""
+)
 }
 \arguments{
 \item{x}{the vector to check}
@@ -13,6 +18,9 @@ assert_single_value(x, arg = "x", call = rlang::caller_env(), add_error_msg)
 
 \item{call}{Calling environment to be passed to \code{\link[cli:cli_abort]{cli::cli_abort()}} for
 traceback.}
+
+\item{add_err_msg}{string containing an additional error message,
+default is the empty string (\code{""})}
 }
 \value{
 NULL, invisibly

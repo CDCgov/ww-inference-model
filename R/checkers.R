@@ -296,11 +296,13 @@ check_req_hosp_columns_present <- function(hosp_data,
 #' @param arg the name of the vector to check
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
+#' @param add_err_msg string containing an additional error message,
+#' default is the empty string (`""`)
 #'
 #' @return NULL, invisibly
 assert_single_value <- function(x, arg = "x",
                                 call = rlang::caller_env(),
-                                add_error_msg) {
+                                add_error_msg = "") {
   unique_elements <- unique(x)
 
   if (length(unique_elements) > 1) {

@@ -46,10 +46,6 @@ validate_ww_conc_data <- function(ww_data,
   arg <- "ww_obs_dates"
   assert_non_missingness(ww_obs_dates, arg, call)
   checkmate::assert_date(ww_obs_dates)
-  # check for multiple observations per day within a site and lab
-  ww_data |>
-    dplyr::group_by(site, lab) |>
-    assert_no_repeated_elements()
 
   # Sites  either need to be integers or characters, not be missing, and be
   # non-negative
@@ -132,10 +128,6 @@ validate_count_data <- function(hosp_data,
     "ensure that there are not multiple count data streams"
   )
   assert_no_repeated_elements(count_dates, arg, call, add_err_msg)
-
-
-
-
 
   invisible()
 }
