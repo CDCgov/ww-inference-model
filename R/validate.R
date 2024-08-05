@@ -19,7 +19,7 @@ validate_ww_conc_data <- function(ww_data,
   arg <- conc_col_name
   assert_non_missingness(ww_conc, arg, call)
   assert_elements_non_neg(ww_conc, arg, call,
-    add_err_msg = c(
+    add_err_msg = paste0(
       "Note that the model expects natural ",
       "scale concentration values, ",
       "which must be non-negative"
