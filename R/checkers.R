@@ -52,6 +52,7 @@ assert_elements_non_neg <- function(x, arg = "x",
   if (!all(is_non_neg)) {
     cli::cli_abort(
       c("{.arg {arg}} has negative elements.",
+          add_err_msg,
         "!" = "All elements must be 0 or greater",
         "i" = "Elements {.val {which(!is_non_neg)}} are negative"
       ),
