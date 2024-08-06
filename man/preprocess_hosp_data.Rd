@@ -31,7 +31,7 @@ that \code{\link[=get_stan_data]{get_stan_data()}} expects.
 }
 \examples{
 hosp_data <- tibble::tibble(
-  date = c("2023-11-01", "2023-11-02"),
+  date = lubridate::ymd(c("2023-11-01", "2023-11-02")),
   daily_admits = c(10, 20),
   state_pop = c(1e6, 1e6)
 )
