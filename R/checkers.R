@@ -140,7 +140,7 @@ is_integerish <- checkmate::check_integerish(x)
 is_character <- checkmate::check_character(x)
 is_int_or_char <- isTRUE(is_integerish) || isTRUE(is_character)
 
-  if (!int_or_char_check_result) {
+  if (!is_int_or_char) {
     throw_type_error(
       object = x,
       arg_name = arg,
