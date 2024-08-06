@@ -83,7 +83,9 @@ Imports:
     scales,
     ggplot2,
     posterior,
-    MASS
+    MASS,
+    cramer,
+    expm
 Remotes:
     stan-dev/cmdstanr
 VignetteBuilder:

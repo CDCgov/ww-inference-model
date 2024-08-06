@@ -21,6 +21,17 @@ compiled_site_inf_model <- cmdstanr::cmdstan_model(
   dir = tempdir()
 )
 
+spatial_fxns <- cmdstanr::cmdstan_model(
+  stan_file = system.file(
+    "stan", "functions", "spatial_functions.stan",
+    package = "wwinference"
+  ),
+  compile = TRUE,
+  compile_standalone = TRUE,
+  force_recompile = TRUE,
+  dir = tempdir()
+)
+
 params <- wwinference::get_params(
   system.file("extdata", "example_params.toml",
     package = "wwinference"

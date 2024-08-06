@@ -1,0 +1,233 @@
+---
+title: "NCP_example"
+author: "Kaitlyn Johnson"
+date: "2024-08-05"
+output: html_document
+---
+The goal of this is to compare the implementation of a very simple fit to
+a centered and non-centered parameterization. In the first example, the
+data will be generated directly from the non-centered parameterization.
+```{r}
+library(dplyr)
+```
+
+In the second, it will be nested, with an additional observation model.
+
+To start, let's assume we have a model with priors:
+$$\mu \sim Normal(2,5) $$
+
+$$ \sigma \sim HalfNormal(0,0.5) $$
+
+$$ y_i \sim Normal(\mu, \sigma) $$
+We generate data with a known mean and standard deviation:
+```{r}
+n_obs <- 50
+true_mean <- 3
+true_sigma <- 0.3
+obs <- rnorm(n_obs, mean = true_mean, sd = true_sigma)
+```
+
+In stan we can write this model as:
+```{r}
+stan_model1_centered <- "
+data {
+  int<lower=1> n_obs;
+  vector[n_obs] obs;
+}
+
+parameters {
+  real mu;
+  real<lower=0> sigma;
+}
+
+
+model {
+  //Priors
+  mu ~ normal(2, 5);
+  sigma ~ normal(0,0.5);
+
+  // Likelihood
+  obs ~ normal(mu, sigma);
+}
+"
+comp_stan_model1_centered <- cmdstanr::write_stan_file(
+  stan_model1_centered
+)
+model1_cent <- cmdstanr::cmdstan_model(
+  comp_stan_model1_centered
+)
+```
+Fit the centered model
+```{r}
+data_list <- list(
+  n_obs = n_obs,
+  obs = obs
+)
+
+# Fit the model
+fit_cent <- model1_cent$sample(
+  data_list
+)
+```
+Or we can write this model with a non-centered parameterization of:
+
+$$\mu \sim Normal(2,5) $$
+$$ \sigma \sim HalfNormal(0,0.5) $$
+
+Instead of evaluating the observations directly from $Normal(\mu, \sigma)$ we
+add an intermediate step that estimates $\epsilon$ as the draws from a standard normal
+for each such that we have
+
+$$ \epsilon_i \sim Normal(0,1)$$
+
+And finally:
+
+$$ y_i = \mu + \sigma\epsilon_i$$
+
+Which we can write in stan as:
+```{r}
+stan_model1_noncentered <- "
+data {
+  int<lower=1> n_obs;
+  vector[n_obs] obs;
+}
+
+parameters {
+  real mu;
+  real<lower=0> sigma;
+  vector[n_obs] eta;
+}
+
+transformed parameters{
+ vector [n_obs] expected_vals = mu + sigma*eta;
+}
+
+
+model {
+  //Priors
+  mu ~ normal(2, 5);
+  sigma ~ normal(0,0.5);
+  eta ~ normal(0,1);
+
+  // Likelihood
+  obs ~ normal(expected_vals, 1);
+}
+"
+comp_stan_model1_non_centered <- cmdstanr::write_stan_file(
+  stan_model1_noncentered
+)
+model1_non_cent <- cmdstanr::cmdstan_model(
+  comp_stan_model1_non_centered
+)
+```
+# Fit the model
+```{r}
+fit_non_cent <- model1_non_cent$sample(
+  data_list
+)
+```
+
+So in the previous example, we performed a non-centered parameterization on the
+observation model $y_i \sim Normal(mu, sigma)$. Now let's instead suppose
+that we rewrite the model so that $m_i$ is a latent quantity: let's just say it
+is the expected number of medals that individuals on X country's gymnastic team
+will win in any year's Olympics, and the observation model is Poisson
+Then we have:
+$$\mu \sim Normal(2,5) $$
+
+$$ \sigma \sim HalfNormal(0,0.5) $$
+
+$$ m_i \sim Normal(\mu, \sigma) $$
+$$ y_i \sim Poisson(m_i)$$
+
+To generate data from this model we now have:
+```{r}
+true_phi <- 1
+expected_medals <- rnorm(n_obs, mean = true_mean, sd = true_sigma)
+obs_medals <- rnbinom(n_obs, mu = expected_medals, size = true_phi)
+data_list <- list(
+  n_obs = n_obs,
+  obs_medals = obs_medals
+)
+```
+We write the centered parameterization as:
+```{r}
+stan_model2_centered <- "
+data {
+  int<lower=1> n_obs;
+  array[n_obs] int<lower=0> obs_medals;
+}
+
+parameters {
+  real mu;
+  real<lower=0> sigma;
+  vector<lower=0>[n_obs] expected_medals;
+}
+
+
+
+model {
+  //Priors
+  mu ~ normal(2, 5);
+  sigma ~ normal(0,0.5);
+  // Likelihood
+  expected_medals ~ normal(mu, sigma);
+  obs_medals ~ poisson(expected_medals);
+}
+"
+comp_stan_model2_centered <- cmdstanr::write_stan_file(
+  stan_model2_centered
+)
+model2_cent <- cmdstanr::cmdstan_model(
+  comp_stan_model2_centered
+)
+```
+Fit the centered model
+```{r}
+fit_cent <- model2_cent$sample(
+  data_list
+)
+```
+
+Now write the non-centered model
+```{r}
+stan_model2_noncentered <- "
+data {
+  int<lower=1> n_obs;
+  array[n_obs] int<lower=0> obs_medals;
+}
+
+parameters {
+  real mu;
+  real<lower=0> sigma;
+  vector[n_obs] eta;
+}
+
+transformed parameters{
+ vector [n_obs] expected_medals = mu + sigma*eta;
+}
+
+
+model {
+  //Priors
+  mu ~ normal(2, 5);
+  sigma ~ normal(0,0.5);
+  eta ~ normal(0,1);
+
+  // Likelihood
+   obs_medals ~ poisson(expected_medals);
+}
+"
+comp_stan_model2_non_centered <- cmdstanr::write_stan_file(
+  stan_model2_noncentered
+)
+model2_non_cent <- cmdstanr::cmdstan_model(
+  comp_stan_model2_non_centered
+)
+```
+Fit the non-centered parameterization with a negative binomial observation process
+```{r}
+fit_cent <- model2_non_cent$sample(
+  data_list
+)
+```
