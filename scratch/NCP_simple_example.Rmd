@@ -8,7 +8,6 @@ The goal of this is to compare the implementation of a very simple fit to
 a centered and non-centered parameterization. In the first example, the
 data will be generated directly from the non-centered parameterization.
 ```{r}
-library(rstan)
 library(dplyr)
 ```
 
@@ -51,8 +50,11 @@ model {
   obs ~ normal(mu, sigma);
 }
 "
-stan_model_cent <- stan_model(
-  model_code = stan_model1_centered
+comp_stan_model1_centered <- cmdstanr::write_stan_file(
+  stan_model1_centered
+)
+model1_cent <- cmdstanr::cmdstan_model(
+  comp_stan_model1_centered
 )
 ```
 Fit the centered model
@@ -63,11 +65,8 @@ data_list <- list(
 )
 
 # Fit the model
-fit_cent <- sampling(
-  stan_model_cent,
-  data = data_list,
-  iter = 5000,
-  chains = 1
+fit_cent <- model1_cent$sample(
+  data_list
 )
 ```
 Or we can write this model with a non-centered parameterization of:
@@ -114,17 +113,17 @@ model {
   obs ~ normal(expected_vals, 1);
 }
 "
-stan_model_noncent <- stan_model(
-  model_code = stan_model1_noncentered
+comp_stan_model1_non_centered <- cmdstanr::write_stan_file(
+  stan_model1_noncentered
+)
+model1_non_cent <- cmdstanr::cmdstan_model(
+  comp_stan_model1_non_centered
 )
 ```
 # Fit the model
 ```{r}
-fit_non_cent <- sampling(
-  stan_model_noncent,
-  data = data_list,
-  iter = 5000,
-  chains = 1
+fit_non_cent <- model1_non_cent$sample(
+  data_list
 )
 ```
 
@@ -176,17 +175,17 @@ model {
   obs_medals ~ poisson(expected_medals);
 }
 "
-stan_model_cent <- stan_model(
-  model_code = stan_model2_centered
+comp_stan_model2_centered <- cmdstanr::write_stan_file(
+  stan_model2_centered
+)
+model2_cent <- cmdstanr::cmdstan_model(
+  comp_stan_model2_centered
 )
 ```
 Fit the centered model
 ```{r}
-fit_cent <- sampling(
-  stan_model_cent,
-  data = data_list,
-  iter = 5000,
-  chains = 1
+fit_cent <- model2_cent$sample(
+  data_list
 )
 ```
 
@@ -219,16 +218,16 @@ model {
    obs_medals ~ poisson(expected_medals);
 }
 "
-stan_model_noncent <- stan_model(
-  model_code = stan_model2_noncentered
+comp_stan_model2_non_centered <- cmdstanr::write_stan_file(
+  stan_model2_noncentered
+)
+model2_non_cent <- cmdstanr::cmdstan_model(
+  comp_stan_model2_non_centered
 )
 ```
 Fit the non-centered parameterization with a negative binomial observation process
 ```{r}
-fit_noncent <- sampling(
-  stan_model_noncent,
-  data = data_list,
-  iter = 5000,
-  chains = 1
+fit_cent <- model2_non_cent$sample(
+  data_list
 )
 ```

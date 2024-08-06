@@ -1,5 +1,4 @@
 library(tidyverse)
-library(rstan)
 library(MASS)
 
 # For this example, we will be exploring noncentering vs centering a MVN
@@ -111,11 +110,11 @@ model {
 }
 "
 
-stan_model_non_cent <- stan_model(
-  model_code = stan_model_code_non_cent
+stan_model_non_cent <- cmdstanr::write_stan_file(
+  stan_model_code_non_cent
 )
-stan_model_cent <- stan_model(
-  model_code = stan_model_code_cent
+stan_model_cent <- cmdstanr::write_stan_file(
+  stan_model_code_cent
 )
 
 # data
@@ -169,34 +168,41 @@ data_list <- list(
 )
 
 # Fit the model
-fit_non_cent <- sampling(
-  stan_model_non_cent,
-  data = data_list,
-  iter = 5000,
-  chains = 1
-) # 2.569sec
-fit_cent <- sampling(
-  stan_model_cent,
-  data = data_list,
-  iter = 5000,
-  chains = 1
-) # 3.083sec
+model_non_cent <- cmdstanr::cmdstan_model(
+  stan_model_non_cent
+)
+fit_non_cent <- model_non_cent$sample(
+  data_list
+)
+model_cent <- cmdstanr::cmdstan_model(
+  stan_model_cent
+)
+fit_cent <- model_cent$sample(
+  data_list
+)
 
 
 # averaging eps time points
-fit_non_cent_extract <- rstan::extract(fit_non_cent)$epsilon
+
+fit_non_cent_extract <- fit_non_cent$draws(variables = "epsilon")
+fit_cent_extract <- fit_cent$draws(variables = "epsilon")
 epsilon_non_cent <- data.frame()
-fit_cent_extract <- rstan::extract(fit_cent)$epsilon
 epsilon_cent <- data.frame()
 for (i in 1:n_times) {
-  temp <- fit_non_cent_extract[, , i] %>%
+  temp_non_cent <- fit_non_cent_extract[, , i] %>%
     as.data.frame() %>%
-    summarise(across(everything(), ~ mean(.x)))
-  epsilon_non_cent <- rbind(epsilon_non_cent, temp)
-  temp <- fit_cent_extract[, , i] %>%
+    summarise(across(everything(), ~ mean(.x))) %>%
+    `colnames<-`(c(
+      "eps1", "eps2", "eps3", "eps4"
+    ))
+  epsilon_non_cent <- rbind(epsilon_non_cent, temp_non_cent)
+  temp_cent <- fit_cent_extract[, , i] %>%
     as.data.frame() %>%
-    summarise(across(everything(), ~ mean(.x)))
-  epsilon_cent <- rbind(epsilon_cent, temp)
+    summarise(across(everything(), ~ mean(.x))) %>%
+    `colnames<-`(c(
+      "eps1", "eps2", "eps3", "eps4"
+    ))
+  epsilon_cent <- rbind(epsilon_cent, temp_cent)
 }
 
 
