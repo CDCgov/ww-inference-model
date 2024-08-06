@@ -24,7 +24,8 @@ test_that(
       corr_fun_params$phi,
       corr_fun_params$l
     )
-    sigma_matrix <- sqrt(0.02) * omega_matrix
+    sigma_eps <- sqrt(0.02)
+    sigma_matrix <- sigma_eps * omega_matrix
     n_time <- 150
 
     passed_tests <- 0
@@ -67,7 +68,7 @@ test_that(
 
     testthat::expect_gt(
       passed_tests,
-      num_tests * .95
+      num_tests * .99
     )
   }
 )

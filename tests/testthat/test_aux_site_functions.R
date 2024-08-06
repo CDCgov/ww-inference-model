@@ -17,47 +17,36 @@ test_that(
 
     passed_tests <- 0
     num_tests <- 100
-    for (i in 1:num_tests) {
-      stan_log_site_rt <- space_model_fxns$aux_site_process_rng(
-        log_state_rt,
-        scaling_factor,
-        sigma_eps,
-        state_deviation_ar_coeff
-      )
 
-      r_log_aux_site_rt <- matrix(
-        data = 0,
-        nrow = 1,
-        ncol = n_times
-      )
-      state_deviation_noise_vec <- rnorm(
-        n = n_times,
-        mean = 0,
-        sd = scaling_factor * sigma_eps
-      )
-      state_deviation_t_i <- 0
-      for (t_i in 1:n_times) {
-        state_deviation_t_i <- state_deviation_ar_coeff * state_deviation_t_i +
-          state_deviation_noise_vec[t_i]
-        r_log_aux_site_rt[t_i] <- log_state_rt[t_i] + state_deviation_t_i
-      }
-      r_log_aux_site_rt <- as.vector(r_log_aux_site_rt)
+    state_deviation_noise_vec <- rnorm(
+      n = n_times,
+      mean = 0,
+      sd = scaling_factor * sigma_eps
+    )
+    stan_log_site_rt <- space_model_fxns$construct_aux_rt(
+      log_state_rt,
+      state_deviation_ar_coeff,
+      state_deviation_noise_vec
+    )
 
-      # comparing with ks test
-      ks_p_value <- ks.test(
-        stan_log_site_rt,
-        r_log_aux_site_rt
-      )$p.value
-      # updating passed tests
-      if (ks_p_value > 0.01) {
-        passed_tests <- passed_tests + 1
-      }
+    r_log_aux_site_rt <- matrix(
+      data = 0,
+      nrow = 1,
+      ncol = n_times
+    )
+    state_deviation_t_i <- 0
+    for (t_i in 1:n_times) {
+      state_deviation_t_i <- state_deviation_ar_coeff * state_deviation_t_i +
+        state_deviation_noise_vec[t_i]
+      r_log_aux_site_rt[t_i] <- log_state_rt[t_i] + state_deviation_t_i
     }
+    r_log_aux_site_rt <- as.vector(r_log_aux_site_rt)
 
 
-    testthat::expect_gt(
-      passed_tests,
-      num_tests * .95
+    testthat::expect_equal(
+      stan_log_site_rt,
+      r_log_aux_site_rt,
+      ignore_attr = TRUE
     )
   }
 )

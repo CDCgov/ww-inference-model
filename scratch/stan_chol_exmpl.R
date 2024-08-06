@@ -1,6 +1,17 @@
 library(tidyverse)
 library(rstan)
+library(MASS)
 
+# For this example, we will be exploring noncentering vs centering a MVN
+# using the Choleskey decomposition functionality in Stan.
+# The centered model we will be using is the following :
+# // epsilon ~ MVN(0, Sigma)
+# // obs_data ~ MVN(epsilon, I)
+# The non-centered model will be using the following :
+# // alpha ~ N(0,1)
+# // Sigma = LL'
+# // epsilon = 0 + L * alpha
+# // obs_data ~ MVN(epsilon, I)
 
 
 stan_model_code_non_cent <- "
@@ -34,7 +45,7 @@ transformed parameters {
   Sigma = sigma_eps^2 * exponential_decay_corr_func(dist_matrix, phi, l);
 
   for (i in 1:n_times) {
-    epsilon[,i] = sigma_eps * cholesky_decompose(Sigma) * alpha[, i];
+    epsilon[,i] = cholesky_decompose(Sigma) * alpha[, i];
   }
 }
 
