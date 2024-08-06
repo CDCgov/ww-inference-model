@@ -48,7 +48,6 @@ validate_ww_conc_data <- function(ww_data,
   checkmate::assert_date(ww_obs_dates)
 
   # Sites  either need to be integers or characters, not be missing, and be
-  # non-negative
   site_labels <- ww_data$site
   arg <- "site_labels"
   assert_int_or_char(site_labels, arg, call)
