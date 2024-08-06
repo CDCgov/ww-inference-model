@@ -2,7 +2,8 @@
 % Please edit documentation in R/checkers.R
 \name{assert_int_or_char}
 \alias{assert_int_or_char}
-\title{Assert that the arguments are either count type or characters}
+\title{Assert that a vector is either of a vector of integers or a vector of
+characters}
 \usage{
 assert_int_or_char(x, arg = "x", call = rlang::caller_env())
 }

@@ -122,7 +122,8 @@ assert_no_repeated_elements <- function(x, arg = "x",
 
 
 
-#' Assert that a vector is either of a vector of integers or a vector of characters
+#' Assert that a vector is either of a vector of integers or a vector of
+#' characters
 #' @description
 #' This is for unique identifiers of groupings, which we will allow to
 #' either be character or integers.
@@ -136,9 +137,9 @@ assert_no_repeated_elements <- function(x, arg = "x",
 assert_int_or_char <- function(x, arg = "x", call = rlang::caller_env()) {
   # Check if its a character, if it is, check passes. If not,
   # check if its an integer
-is_integerish <- checkmate::check_integerish(x)
-is_character <- checkmate::check_character(x)
-is_int_or_char <- isTRUE(is_integerish) || isTRUE(is_character)
+  is_integerish <- checkmate::check_integerish(x)
+  is_character <- checkmate::check_character(x)
+  is_int_or_char <- isTRUE(is_integerish) || isTRUE(is_character)
 
   if (!is_int_or_char) {
     throw_type_error(
