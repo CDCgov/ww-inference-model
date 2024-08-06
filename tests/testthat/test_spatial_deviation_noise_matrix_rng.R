@@ -26,7 +26,7 @@ test_that(
     )
     sigma_eps <- sqrt(0.02)
     sigma_matrix <- sigma_eps * omega_matrix
-    n_time <- 150
+    n_time <- 200
 
     passed_tests <- 0
     num_tests <- 100
