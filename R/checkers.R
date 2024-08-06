@@ -122,7 +122,7 @@ assert_no_repeated_elements <- function(x, arg = "x",
 
 
 
-#' Assert that the arguments are either count type or characters
+#' Assert that a vector is either of a vector of integers or a vector of characters
 #' @description
 #' This is for unique identifiers of groupings, which we will allow to
 #' either be character or integers.
