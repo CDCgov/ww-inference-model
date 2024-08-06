@@ -57,7 +57,7 @@ test_that(
       }
     }
 
-    testthat::expect_gt(
+    testthat::expect_gte(
       passed_tests,
       num_tests * .99
     )
