@@ -1,5 +1,12 @@
 # Expose the stan functions into the global environment
 model <- cmdstanr::cmdstan_model(
+  stan_file = file.path("inst", "stan", "wwinference.stan"),
+  compile = TRUE,
+  compile_standalone = TRUE,
+  force_recompile = TRUE
+)
+model$expose_functions(global = TRUE)
+model <- cmdstanr::cmdstan_model(
   stan_file = file.path("inst", "stan", "functions", "spatial_functions.stan"),
   compile = TRUE,
   compile_standalone = TRUE,
@@ -7,38 +14,35 @@ model <- cmdstanr::cmdstan_model(
 )
 model$expose_functions(global = TRUE)
 
-
-dist_matrix1 <- as.matrix(
-  dist(
-    data.frame(
-      x = c(85, 37, 48, 7),
-      y = c(12, 75, 81, 96),
-      diag = TRUE,
-      upper = TRUE
-    )
-  )
+n_time <- 150
+state_dev_ar_coeff <- 0.8
+log_state_rt <- rnorm(
+  n = n_time,
+  mean = 1.2,
+  sd = 0.05
 )
-dist_matrix2 <- as.matrix(
-  dist(
-    data.frame(
-      x = c(850, 370, 480, 70),
-      y = c(120, 750, 810, 960),
-      diag = TRUE,
-      upper = TRUE
-    )
-  )
+state_dev_noise_vec <- state_deviation_noise_vec_aux_rng(
+  scaling_factor = 1.1,
+  sigma_eps = sqrt(0.2),
+  n_time = n_time
+)
+stan_log_aux_site_rt <- construct_aux_rt(
+  log_state_rt = log_state_rt,
+  state_deviation_ar_coeff = state_dev_ar_coeff,
+  state_deviation_noise_vec = state_dev_noise_vec
 )
 
-corr_matrix1 <- exponential_decay_corr_func(
-  dist_matrix = dist_matrix,
-  phi = 25,
-  l = 1
+
+state_deviation_t_i <- 0
+log_aux_site_rt <- matrix(
+  data = 0,
+  ncol = n_time,
+  nrow = 1
 )
-corr_matrix2 <- exponential_decay_corr_func(
-  dist_matrix = dist_matrix2,
-  phi = 250,
-  l = 1
-)
-matrix_normalization(
-  corr_matrix
-)
+for (t_i in 1:n_time) {
+  state_deviation_t_i <- state_dev_ar_coeff * state_deviation_t_i +
+    state_dev_noise_vec[t_i]
+  log_aux_site_rt[t_i] <- log_state_rt[t_i] + state_deviation_t_i
+}
+
+stan_log_aux_site_rt == log_aux_site_rt
