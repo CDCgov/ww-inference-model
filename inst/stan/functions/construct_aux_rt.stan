@@ -4,10 +4,10 @@
   * @param state_deviation_ar_coeff Coefficient for AR(1) temporal correlation on
   * subpopulation deviations.
   * @param scale_factor Scaling factor for aux site process.
-  * @param sigma_eps Parameter for construction of covariance matrix
-  * of spatial epsilon.
-  * @param z Vector with random vectors of noise on standard normal.
-  * @param init_bool Boolean for making initial value stationary( 1 or 0 ).
+  * @param init_stat Boolean. Should the initial value of the AR(1) be drawn
+  * from the process's stationary stationary distribution (1) or from the
+  * process's conditional error distribution (0)? Note that the process only has
+  * a defined stationary distribution if `state_deviation_ar_coeff` < 1.
   * @return A vector for unadjusted Rt for aux site where columns are time points.
   */
 vector construct_aux_rt(vector log_state_rt,
@@ -15,7 +15,7 @@ vector construct_aux_rt(vector log_state_rt,
                         real scaling_factor,
                         real sigma_eps,
                         vector z,
-                        int init_bool) {
+                        int init_stat) {
 
 
   // presets
@@ -25,7 +25,7 @@ vector construct_aux_rt(vector log_state_rt,
     state_deviation_ar_coeff,
     scaling_factor * sigma_eps,
     z,
-    init_bool
+    init_stat
   );
 
   return log_aux_site_rt;

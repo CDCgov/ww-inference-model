@@ -7,7 +7,9 @@
   * @param state_deviation_ar_coeff Coefficient for AR(1) temporal correlation on
   * state deviations for aux site.
   * @param init_stat Boolean. Should the initial value of the AR(1) be drawn
-  * from the process's.
+  * from the process's stationary stationary distribution (1) or from the
+  * process's conditional error distribution (0)? Note that the process only has
+  * a defined stationary distribution if `state_deviation_ar_coeff` < 1.
   * @return A vector for unadjusted Rt for aux site where columns are time points.
   */
 vector aux_site_process_rng(vector log_state_rt,
@@ -23,7 +25,7 @@ vector aux_site_process_rng(vector log_state_rt,
   // creates vector of standard normal for contruct aux rt.
   vector[n_time] z;
   for (i in 1:n_time){
-    z[i] = normal_rng(0, 1);
+    z[i] = std_normal_rng();
   }
   vector[n_time] log_aux_site_rt = construct_aux_rt(log_state_rt,
                                                     state_deviation_ar_coeff,

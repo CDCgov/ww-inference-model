@@ -62,12 +62,10 @@
 #' @param scaling_factor Scaling factor for aux site
 #' @param aux_site_bool Boolean to use the aux site framework with
 #' scaling factor.
-#' @param init_bool Boolean for making initial value of AUX site AR(1)
-#' process stationary( 1 or 0 ).
 #' @param init_stat Boolean. Should the initial value of the AR(1) be drawn
 #' from the process's stationary distribution (`TRUE`) or from the process's
 #' conditional error distribution (`FALSE`)? Note that the process only has
-#' a defined stationary distribution if `state_deviation_ar_coeff` < 1.
+#' a defined stationary distribution if `phi_rt` < 1.
 #' Default `FALSE`.
 #'
 #' @return a list containing three dataframes. hosp_data is a dataframe
@@ -376,9 +374,9 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   # Auxiliary Site
   if (aux_site_bool) {
     state_deviation_noise_vec <- rnorm(
-      n = n_time,
+      n = n_weeks,
       mean = 0,
-      sd = 0
+      sd = 1
     )
     log_r_site_aux <- construct_aux_rt(log_r_state_week,
       state_deviation_ar_coeff = phi_rt,

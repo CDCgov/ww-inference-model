@@ -130,11 +130,8 @@ scaling factor.}
 \item{init_stat}{Boolean. Should the initial value of the AR(1) be drawn
 from the process's stationary distribution (\code{TRUE}) or from the process's
 conditional error distribution (\code{FALSE})? Note that the process only has
-a defined stationary distribution if \code{state_deviation_ar_coeff} < 1.
+a defined stationary distribution if \code{phi_rt} < 1.
 Default \code{FALSE}.}
-
-\item{init_bool}{Boolean for making initial value of AUX site AR(1)
-process stationary( 1 or 0 ).}
 }
 \value{
 a list containing three dataframes. hosp_data is a dataframe
