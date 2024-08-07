@@ -35,7 +35,8 @@ generate_simulated_data(
   phi_rt = 0.6,
   sigma_eps = sqrt(0.02),
   scaling_factor = 0.01,
-  aux_site_bool = TRUE
+  aux_site_bool = TRUE,
+  init_bool = TRUE
 )
 }
 \arguments{
@@ -125,6 +126,9 @@ epsilon}
 
 \item{aux_site_bool}{Boolean to use the aux site framework with
 scaling factor.}
+
+\item{init_bool}{Boolean for making initial value of AUX site AR(1)
+process stationary( 1 or 0 ).}
 }
 \value{
 a list containing three dataframes. hosp_data is a dataframe
@@ -169,7 +173,8 @@ sim_data <- generate_simulated_data(
   phi_rt = 0.6,
   sigma_eps = sqrt(0.02),
   scaling_factor = 0.01,
-  aux_site_bool = TRUE
+  aux_site_bool = TRUE,
+  init_bool = TRUE
 )
 hosp_data <- sim_data$hosp_data
 ww_data <- sim_data$ww_data

@@ -3,24 +3,29 @@
   * @param log_state_rt "State" level unadjusted Rt, on log scale.
   * @param state_deviation_ar_coeff Coefficient for AR(1) temporal correlation on
   * subpopulation deviations.
-  * @param state_deviation_init Initial value of the spatial deviation
-  * @param state_deviation_noise_vec vector with random vectors of noise
-  * for state devaiation process for aux site.
+  * @param scale_factor Scaling factor for aux site process.
+  * @param sigma_eps Parameter for construction of covariance matrix
+  * of spatial epsilon.
+  * @param z Vector with random vectors of noise on standard normal.
+  * @param init_bool Boolean for making initial value stationary( 1 or 0 ).
   * @return A vector for unadjusted Rt for aux site where columns are time points.
   */
 vector construct_aux_rt(vector log_state_rt,
                         real state_deviation_ar_coeff,
-                        vector state_deviation_noise_vec) {
+                        real scaling_factor,
+                        real sigma_eps,
+                        vector z,
+                        int init_bool) {
 
 
   // presets
-  int n_time = dims(state_deviation_noise_vec)[1];
+  int n_time = dims(z)[1];
   vector[n_time] log_aux_site_rt = ar1(
     log_state_rt,
     state_deviation_ar_coeff,
-    1,
-    state_deviation_noise_vec,
-    0
+    scaling_factor * sigma_eps,
+    z,
+    init_bool
   );
 
   return log_aux_site_rt;
