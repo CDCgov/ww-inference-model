@@ -7,6 +7,7 @@
 #' for additional source files to include. Within each stan file,
 #' use #include {path to your file with the `stan` directory}.stan
 #'
+#'
 #' @details The code for this function has been adapted
 #' from code written (under an MIT license) as part of
 #' the [`epinowcast`](https://github.com/epinowcast/epinowcast)
