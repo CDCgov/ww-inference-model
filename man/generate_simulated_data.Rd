@@ -35,7 +35,8 @@ generate_simulated_data(
   phi_rt = 0.6,
   sigma_eps = sqrt(0.02),
   scaling_factor = 0.01,
-  aux_site_bool = TRUE
+  aux_site_bool = TRUE,
+  init_stat = TRUE
 )
 }
 \arguments{
@@ -125,6 +126,12 @@ epsilon}
 
 \item{aux_site_bool}{Boolean to use the aux site framework with
 scaling factor.}
+
+\item{init_stat}{Boolean. Should the initial value of the AR(1) be drawn
+from the process's stationary distribution (\code{TRUE}) or from the process's
+conditional error distribution (\code{FALSE})? Note that the process only has
+a defined stationary distribution if \code{phi_rt} < 1.
+Default \code{FALSE}.}
 }
 \value{
 a list containing three dataframes. hosp_data is a dataframe
@@ -169,7 +176,8 @@ sim_data <- generate_simulated_data(
   phi_rt = 0.6,
   sigma_eps = sqrt(0.02),
   scaling_factor = 0.01,
-  aux_site_bool = TRUE
+  aux_site_bool = TRUE,
+  init_stat = TRUE
 )
 hosp_data <- sim_data$hosp_data
 ww_data <- sim_data$ww_data

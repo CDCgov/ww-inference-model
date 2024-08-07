@@ -62,6 +62,11 @@
 #' @param scaling_factor Scaling factor for aux site
 #' @param aux_site_bool Boolean to use the aux site framework with
 #' scaling factor.
+#' @param init_stat Boolean. Should the initial value of the AR(1) be drawn
+#' from the process's stationary distribution (`TRUE`) or from the process's
+#' conditional error distribution (`FALSE`)? Note that the process only has
+#' a defined stationary distribution if `phi_rt` < 1.
+#' Default `TRUE`.
 #'
 #' @return a list containing three dataframes. hosp_data is a dataframe
 #' containing the number of daily hospital admissions by day for a theoretical
@@ -101,7 +106,8 @@
 #'   phi_rt = 0.6,
 #'   sigma_eps = sqrt(0.02),
 #'   scaling_factor = 0.01,
-#'   aux_site_bool = TRUE
+#'   aux_site_bool = TRUE,
+#'   init_stat = TRUE
 #' )
 #' hosp_data <- sim_data$hosp_data
 #' ww_data <- sim_data$ww_data
@@ -161,7 +167,8 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                     phi_rt = 0.6,
                                     sigma_eps = sqrt(0.02),
                                     scaling_factor = 0.01,
-                                    aux_site_bool = TRUE) {
+                                    aux_site_bool = TRUE,
+                                    init_stat = TRUE) {
   # Some quick checks to make sure the inputs work as expected
   stopifnot(
     "weekly R(t) passed in isn't long enough" =
@@ -366,19 +373,17 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   )
   # Auxiliary Site
   if (aux_site_bool) {
-    state_deviation_noise_vec <- state_deviation_noise_vec_aux_rng(
-      scaling_factor,
-      sigma_eps,
-      n_weeks
-    )
-    state_deviation_init <- rnorm(
-      n = 1,
+    state_deviation_noise_vec <- rnorm(
+      n = n_weeks,
       mean = 0,
-      sd = scaling_factor * sigma_eps
+      sd = 1
     )
     log_r_site_aux <- construct_aux_rt(log_r_state_week,
       state_deviation_ar_coeff = phi_rt,
-      state_deviation_noise_vec
+      scaling_factor,
+      sigma_eps,
+      state_deviation_noise_vec,
+      init_stat
     )
     log_r_site <- rbind(
       log_r_site,

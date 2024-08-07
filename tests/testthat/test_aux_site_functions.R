@@ -21,12 +21,15 @@ test_that(
     state_deviation_noise_vec <- rnorm(
       n = n_times,
       mean = 0,
-      sd = scaling_factor * sigma_eps
+      sd = 1
     )
     stan_log_site_rt <- space_model_fxns$construct_aux_rt(
       log_state_rt,
       state_deviation_ar_coeff,
-      state_deviation_noise_vec
+      scaling_factor,
+      sigma_eps,
+      state_deviation_noise_vec,
+      1
     )
 
     r_log_aux_site_rt <- matrix(
@@ -34,6 +37,10 @@ test_that(
       nrow = 1,
       ncol = n_times
     )
+    state_deviation_noise_vec <-
+      (scaling_factor * sigma_eps) * state_deviation_noise_vec
+    adj <- 1.0 / sqrt(1.0 - state_deviation_ar_coeff^2)
+    state_deviation_noise_vec[1] <- adj * state_deviation_noise_vec[1]
     state_deviation_t_i <- 0
     for (t_i in 1:n_times) {
       state_deviation_t_i <- state_deviation_ar_coeff * state_deviation_t_i +
