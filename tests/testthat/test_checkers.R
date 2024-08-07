@@ -173,3 +173,14 @@ test_that(
     ))
   }
 )
+
+test_that(
+  "Test that check on only a single value being present works as expected.",
+  {
+    x <- c(1)
+    expect_no_error(assert_single_value(x, "x"))
+
+    x <- c(-9, 4, 5)
+    expect_error(assert_single_value(x, "x"))
+  }
+)
