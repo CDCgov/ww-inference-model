@@ -66,7 +66,7 @@
 #' from the process's stationary distribution (`TRUE`) or from the process's
 #' conditional error distribution (`FALSE`)? Note that the process only has
 #' a defined stationary distribution if `phi_rt` < 1.
-#' Default `FALSE`.
+#' Default `TRUE`.
 #'
 #' @return a list containing three dataframes. hosp_data is a dataframe
 #' containing the number of daily hospital admissions by day for a theoretical
