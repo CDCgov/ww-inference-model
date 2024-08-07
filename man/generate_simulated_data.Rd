@@ -36,7 +36,7 @@ generate_simulated_data(
   sigma_eps = sqrt(0.02),
   scaling_factor = 0.01,
   aux_site_bool = TRUE,
-  init_bool = TRUE
+  init_stat = TRUE
 )
 }
 \arguments{
@@ -127,6 +127,12 @@ epsilon}
 \item{aux_site_bool}{Boolean to use the aux site framework with
 scaling factor.}
 
+\item{init_stat}{Boolean. Should the initial value of the AR(1) be drawn
+from the process's stationary distribution (\code{TRUE}) or from the process's
+conditional error distribution (\code{FALSE})? Note that the process only has
+a defined stationary distribution if \code{state_deviation_ar_coeff} < 1.
+Default \code{FALSE}.}
+
 \item{init_bool}{Boolean for making initial value of AUX site AR(1)
 process stationary( 1 or 0 ).}
 }
@@ -174,7 +180,7 @@ sim_data <- generate_simulated_data(
   sigma_eps = sqrt(0.02),
   scaling_factor = 0.01,
   aux_site_bool = TRUE,
-  init_bool = TRUE
+  init_stat = TRUE
 )
 hosp_data <- sim_data$hosp_data
 ww_data <- sim_data$ww_data

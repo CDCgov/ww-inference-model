@@ -64,6 +64,11 @@
 #' scaling factor.
 #' @param init_bool Boolean for making initial value of AUX site AR(1)
 #' process stationary( 1 or 0 ).
+#' @param init_stat Boolean. Should the initial value of the AR(1) be drawn
+#' from the process's stationary distribution (`TRUE`) or from the process's
+#' conditional error distribution (`FALSE`)? Note that the process only has
+#' a defined stationary distribution if `state_deviation_ar_coeff` < 1.
+#' Default `FALSE`.
 #'
 #' @return a list containing three dataframes. hosp_data is a dataframe
 #' containing the number of daily hospital admissions by day for a theoretical
@@ -104,7 +109,7 @@
 #'   sigma_eps = sqrt(0.02),
 #'   scaling_factor = 0.01,
 #'   aux_site_bool = TRUE,
-#'   init_bool = TRUE
+#'   init_stat = TRUE
 #' )
 #' hosp_data <- sim_data$hosp_data
 #' ww_data <- sim_data$ww_data
@@ -165,7 +170,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                     sigma_eps = sqrt(0.02),
                                     scaling_factor = 0.01,
                                     aux_site_bool = TRUE,
-                                    init_bool = TRUE) {
+                                    init_stat = TRUE) {
   # Some quick checks to make sure the inputs work as expected
   stopifnot(
     "weekly R(t) passed in isn't long enough" =
@@ -370,17 +375,17 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   )
   # Auxiliary Site
   if (aux_site_bool) {
-    state_deviation_noise_vec <- state_deviation_noise_vec_aux_rng(
-      1,
-      1,
-      n_weeks
+    state_deviation_noise_vec <- rnorm(
+      n = n_time,
+      mean = 0,
+      sd = 0
     )
     log_r_site_aux <- construct_aux_rt(log_r_state_week,
       state_deviation_ar_coeff = phi_rt,
       scaling_factor,
       sigma_eps,
       state_deviation_noise_vec,
-      init_bool
+      init_stat
     )
     log_r_site <- rbind(
       log_r_site,

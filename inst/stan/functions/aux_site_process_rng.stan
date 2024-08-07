@@ -6,29 +6,28 @@
   * of spatial epsilon.
   * @param state_deviation_ar_coeff Coefficient for AR(1) temporal correlation on
   * state deviations for aux site.
-  * @param init_bool Boolean for making initial value stationary( 1 or 0 ).
+  * @param init_stat Boolean. Should the initial value of the AR(1) be drawn
+  * from the process's.
   * @return A vector for unadjusted Rt for aux site where columns are time points.
   */
 vector aux_site_process_rng(vector log_state_rt,
                               real scaling_factor,
                               real sigma_eps,
                               real state_deviation_ar_coeff,
-                              int init_bool) {
+                              int init_stat) {
 
 
   //Presets
   int n_time = size(log_state_rt);
 
   // creates vector of standard normal for contruct aux rt.
-  vector[n_time] z = state_deviation_noise_vec_aux_rng(1,
-                                                       1,
-                                                       n_time);
+  vector[n_time] z = standard_normal_rng();
   vector[n_time] log_aux_site_rt = construct_aux_rt(log_state_rt,
                                                     state_deviation_ar_coeff,
                                                     scaling_factor,
                                                     sigma_eps,
                                                     z,
-                                                    init_bool);
+                                                    init_stat);
 
   return log_aux_site_rt;
 }
