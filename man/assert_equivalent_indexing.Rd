@@ -15,8 +15,9 @@ assert_equivalent_indexing(
 \item{full_data}{a tibble containing the columns \code{date} (with IS08 dates)
 and \code{t} (integers of time in days) that the other tibble will be joined to}
 
-\item{subsetted_data}{a tibble containing the columns \code{date} (with IS08 dates)
-and \code{t} (integers of time in days) that we indexed based on the \code{full_data}}
+\item{subsetted_data}{a tibble containing the columns \code{date} (with
+IS08 dates) and \code{t} (integers of time in days) that we indexed based on the
+\code{full_data}}
 
 \item{call}{Calling environment to be passed to \code{\link[cli:cli_abort]{cli::cli_abort()}} for
 traceback.}

@@ -23,7 +23,12 @@
 #' @param compute_likelihood indicator variable telling stan whether or not to
 #' compute the likelihood, default = `1`
 #'
-#' @return a list of named variables to pass to stan
+#' @return a nested list containing the following:
+#' `input_data`: a list containing two dataframes:
+#'    `input_ww_data`: wastewater data passed to stan
+#'    `input_count_data`: count data passed to stan
+#'
+#'  `stan_args`: named variables to pass to stan
 #' @export
 #'
 #' @examples
@@ -79,13 +84,17 @@
 #' calibration_time <- 90
 #' forecast_horizon <- 28
 #' include_ww <- 1
-#' stan_data_list <- get_stan_data(
+#' input_data_and_args <- get_stan_data(
 #'   input_count_data,
 #'   input_ww_data,
 #'   forecast_date,
 #'   forecast_horizon,
 #'   calibration_time,
 #' )
+#' input_data <- input_data_and_args$input_data
+#' input_ww_data <- input_data$input_ww_data
+#' input_count_data <- input_data$input_count_data
+#' stan_args <- input_data_and_args$stan_args
 get_stan_data <- function(input_count_data,
                           input_ww_data,
                           forecast_date,
@@ -339,7 +348,16 @@ get_stan_data <- function(input_count_data,
     lab_site_to_site_map = ww_indices$lab_site_to_site_map
   )
 
-  return(data_renewal)
+  input_data <- list(
+    input_ww_data = ww_data,
+    input_count_data = count_data
+  )
+  input_data_and_args <- list(
+    input_data = input_data,
+    stan_args = data_renewal
+  )
+
+  return(input_data_and_args)
 }
 
 #' Get the integer sizes of the wastewater input data
