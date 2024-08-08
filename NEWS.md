@@ -6,4 +6,3 @@ This will serve as our change-log
 - 2024-07-23: Update `generate_simulated_data()` function to modularize the model components, adding additional
 forward simulation functions.
 - 2024-08-05: Add input data validation with informative error messaging
-
