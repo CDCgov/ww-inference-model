@@ -184,3 +184,31 @@ test_that(
     expect_error(assert_single_value(x, "x"))
   }
 )
+
+test_that(
+  "Test that check on non-empty dataframe works as expected.",
+  {
+    df_with_cols <- data.frame(Col1 = c(1, 2), Column2 = c(3, 4))
+    expect_no_error(assert_not_empty(df_with_cols, "df_with_cols"))
+
+    empty_df_with_cols <- data.frame(Col1 = numeric(), Column2 = character())
+    expect_error(assert_not_empty(empty_df_with_cols, "empty_df_with_cols"))
+  }
+)
+
+test_that(
+  "Test that check on daily dates works as expected.",
+  {
+    daily_dates <- c(
+      lubridate::ymd("2023-01-01"),
+      lubridate::ymd("2023-01-02")
+    )
+    expect_no_error(assert_daily_data(daily_dates, arg = "daily_dates"))
+
+    weekly_dates <- c(
+      lubridate::ymd("2023-01-01"),
+      lubridate::ymd("2023-01-08")
+    )
+    expect_error(assert_daily_data(weekly_dates, arg = "daily_dates"))
+  }
+)

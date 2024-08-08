@@ -25,6 +25,8 @@
 #'
 #' @return a list of named variables to pass to stan
 #' @export
+#'
+#' @examples
 get_stan_data <- function(input_count_data,
                           input_ww_data,
                           forecast_date,
@@ -72,9 +74,15 @@ get_stan_data <- function(input_count_data,
       "exclude" %in% colnames(input_ww_data)
   )
 
-  # Filter out wastewater outliers and arrange data for indexing
+
+  # Filter out wastewater outliers, and remove extra wastewater
+  # data. Arrange data for indexing. This is what will be returned.
   ww_data <- input_ww_data |>
-    dplyr::filter(exclude != 1) |>
+    dplyr::filter(
+      exclude != 1,
+      date > last_count_data_date -
+        lubridate::days(calibration_time)
+    ) |>
     dplyr::arrange(date, lab_site_index)
 
   # Returns a list with the numbers of elements needed for the stan model
@@ -121,12 +129,14 @@ get_stan_data <- function(input_count_data,
     n_ww_sites = ww_data_sizes$n_ww_sites
   )
 
-  # Get the remaining things needed for both models
+  # Get the remaining things needed for both models.
   input_count_data_filtered <- input_count_data |>
     dplyr::filter(
-      date >= last_count_data_date - lubridate::days(calibration_time)
+      date > last_count_data_date - lubridate::days(calibration_time)
     )
+  # This is what will be returned
   count_data <- add_time_indexing(input_count_data_filtered)
+
 
   # Get the sizes of all the elements
   count_data_sizes <- get_count_data_sizes(

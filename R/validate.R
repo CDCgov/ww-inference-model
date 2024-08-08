@@ -101,6 +101,16 @@ validate_count_data <- function(hosp_data,
   checkmate::assert_integerish(counts)
   assert_elements_non_neg(counts, arg, call)
 
+  # Right now the model expects daily data! Check that the dates are each day
+  assert_daily_data(
+    hosp_data$date,
+    add_err_msg =
+      c(
+        "Count dataset does not appear to be daily.",
+        "The current model only supports daily data"
+      )
+  )
+
 
   # Currently, the framework only supports a single population size for
   # an individual model fit. Therefore, check that there are not multiple
@@ -133,4 +143,14 @@ validate_count_data <- function(hosp_data,
   assert_no_repeated_elements(count_dates, arg, call, add_err_msg)
 
   invisible()
+}
+
+validate_both_datasets <- function(input_hosp_data,
+                                   input_ww_data,
+                                   calibration_time,
+                                   forecast_date) {
+  # check that you have sufficient hosp data for the calibration time
+  # check that ww data does not go back beyond hospital admissions data
+  # check that the wastewater data has some data within the observed hospital
+  # admissions data
 }

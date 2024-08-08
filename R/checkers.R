@@ -326,6 +326,16 @@ assert_single_value <- function(x, arg = "x",
   invisible()
 }
 
+#' Assert that the dataframe being passed to the function is not empty
+#'
+#' @param x the dataframe to check
+#' @param arg the name of the dataframe to check
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#' @param add_err_msg add_err_msg string containing an additional error message,
+#' default is the empty string (`""`)
+#'
+#' @return NULL invisible
 assert_not_empty <- function(x, arg = "x",
                              call = rlang::caller_env(),
                              add_err_msg = "") {
@@ -333,6 +343,43 @@ assert_not_empty <- function(x, arg = "x",
     cli::cli_abort(
       c(
         "{.arg {arg}} is empty",
+        add_err_msg
+      ),
+      call = call,
+      class = "wwinference_input_data_error"
+    )
+  }
+  invisible()
+}
+
+
+#' Assert that the vector of dates being passed in contains dates for each day
+#'
+#' @param dates the vector of dates to check, must be of Date type
+#' @param arg the name of the vector to check
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#' @param add_err_msg add_err_msg string containing an additional error message,
+#' default is the empty string (`""`)
+#'
+#' @return NULL invisible
+assert_daily_data <- function(dates, arg = "dates",
+                              call = rlang::caller_env(),
+                              add_err_msg = "") {
+  sorted_dates <- dates[order(dates)]
+  # Generate a sequence of dates from the minimum to the
+  # maximum date in the dataset
+  expected_dates <- seq.Date(
+    from = min(sorted_dates),
+    to = max(sorted_dates),
+    by = "day"
+  )
+
+
+  if (!all(expected_dates %in% sorted_dates)) {
+    cli::cli_abort(
+      c(
+        "Vector of dates does not contain dates for each day",
         add_err_msg
       ),
       call = call,
