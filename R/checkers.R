@@ -63,31 +63,32 @@ assert_elements_non_neg <- function(x, arg = "x",
   invisible()
 }
 
-#' Assert that there is no missignness in a particular vector
-#'
-#' @param x the vector to check
-#' @param arg the name of the vector to check
-#' @param call Calling environment to be passed to [cli::cli_abort()] for
-#' traceback.
-#' @param add_err_msg string containing an additional error message,
-#' default is the empty string (`""`)
-#'
-#' @return NULL, invisibly
-assert_non_missingness <- function(x, arg = "x",
-                                   call = rlang::caller_env(),
-                                   add_err_msg = "") {
-  if (checkmate::anyMissing(x)) {
-    cli::cli_abort(
-      c("{.arg {arg}} has missing values", add_err_msg,
-        "!" = "All elements of{.arg {arg}} should be present",
-        "i" = "Element(s) {.val {which(is.na(x))}} are missing"
-      ),
-      class = "wwinference_input_data_error",
-      call = call
-    )
+assert_integerish <-
+  #' Assert that there is no missignness in a particular vector
+  #'
+  #' @param x the vector to check
+  #' @param arg the name of the vector to check
+  #' @param call Calling environment to be passed to [cli::cli_abort()] for
+  #' traceback.
+  #' @param add_err_msg string containing an additional error message,
+  #' default is the empty string (`""`)
+  #'
+  #' @return NULL, invisibly
+  assert_non_missingness <- function(x, arg = "x",
+                                     call = rlang::caller_env(),
+                                     add_err_msg = "") {
+    if (checkmate::anyMissing(x)) {
+      cli::cli_abort(
+        c("{.arg {arg}} has missing values", add_err_msg,
+          "!" = "All elements of{.arg {arg}} should be present",
+          "i" = "Element(s) {.val {which(is.na(x))}} are missing"
+        ),
+        class = "wwinference_input_data_error",
+        call = call
+      )
+    }
+    invisible()
   }
-  invisible()
-}
 
 #' Check that there are no repeated elements in the vector
 #'
@@ -356,14 +357,13 @@ assert_not_empty <- function(x, arg = "x",
 #' Assert that the vector of dates being passed in contains dates for each day
 #'
 #' @param dates the vector of dates to check, must be of Date type
-#' @param arg the name of the vector to check
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
 #' @param add_err_msg add_err_msg string containing an additional error message,
 #' default is the empty string (`""`)
 #'
 #' @return NULL invisible
-assert_daily_data <- function(dates, arg = "dates",
+assert_daily_data <- function(dates,
                               call = rlang::caller_env(),
                               add_err_msg = "") {
   sorted_dates <- dates[order(dates)]
@@ -386,5 +386,113 @@ assert_daily_data <- function(dates, arg = "dates",
       class = "wwinference_input_data_error"
     )
   }
+  invisible()
+}
+
+#' Assert that the vector of dates contains the duration of the specified
+#' calibration time
+#'
+#' @param dates the vector of dates to check, must be of Date type
+#' @param calibration_time integer indicating the number of days that
+#' the dates must span
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#' @param add_err_msg add_err_msg string containing an additional error message,
+#' default is the empty string (`""`)
+#'
+#' @return NULL invisible
+assert_sufficient_days_of_data <- function(date_vector,
+                                           calibration_time,
+                                           call = rlang::caller_env(),
+                                           add_err_msg = "") {
+  # check that you have sufficient hosp data for the calibration time
+  min_date <- max(date_vector,
+    na.rm = TRUE
+  ) - lubridate::days(calibration_time) + 1
+  check_sufficient_data <- min(date_vector, na.rm = TRUE) <= min_date
+  if (!check_sufficient_data) {
+    cli::cli_abort(
+      c(
+        "Insufficient data for specified calibration time"
+      ),
+      call = call,
+      class = "wwinference_specification_error"
+    )
+  }
+  invisible()
+}
+
+#' Assert that a vector of dates we're testing overlaps with the comparison
+#' dates
+#'
+#' @param test_dates the vector of dates to check, must be in IS08 convention
+#' @param comparison_dates the vector of dates to compare to, must be in ISO8
+#' convention
+#' @param max_date the maximum date the testing dates should be
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#' @param add_err_msg add_err_msg string containing an additional error message,
+#' default is the empty string (`""`)
+#'
+#' @return NULL invisible
+assert_overlap_dates <- function(test_dates,
+                                 comparison_dates,
+                                 max_date,
+                                 call = rlang::caller_env(),
+                                 add_err_msg = "") {
+  check_data_overlap <- min(test_dates) <= max(comparison_dates) &
+    max(test_dates) <= max_date
+  if (!check_data_overlap) {
+    cli::cli_abort(
+      c(
+        "The two vectors of dates do not overlap",
+        add_err_msg
+      ),
+      call = call,
+      class = "wwinference_input_data_error"
+    )
+  }
+
+  invisible()
+}
+#' Assert that two tibbles of date and time mapping align
+#'
+#' @param full_data a tibble containing the columns `date` (with IS08 dates)
+#' and `t` (integers of time in days) that the other tibble will be joined to
+#' @param subsetted_data a tibble containing the columns `date` (with
+#' IS08 dates) and `t` (integers of time in days) that we indexed based on the
+#'  `full_data`
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#' @param add_err_msg add_err_msg string containing an additional error message,
+#' default is the empty string (`""`)
+#'
+#' @return NULL invisible
+assert_equivalent_indexing <- function(full_data,
+                                       subsetted_data,
+                                       call = rlang::caller_env(),
+                                       add_err_msg = "") {
+  full_dates <- full_data |> dplyr::distinct(date, t)
+  subset_dates <- subsetted_data |>
+    dplyr::distinct(date, t) |>
+    dplyr::rename(subset_t = t)
+
+  test_df <- full_dates |>
+    dplyr::left_join(subset_dates, by = "date") |>
+    dplyr::filter(!is.na(subset_t))
+
+  check_indexing <- all(test_df$t == test_df$subset_t)
+
+  if (!check_indexing) {
+    cli::cli_abort(
+      c(
+        "Date and time indexing on datasets being passed to stan do not
+        align"
+      ),
+      call = call,
+      class = "wwinference_preprocessing_error"
+    )
+  }
+
   invisible()
 }

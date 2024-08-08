@@ -111,7 +111,6 @@ validate_count_data <- function(hosp_data,
       )
   )
 
-
   # Currently, the framework only supports a single population size for
   # an individual model fit. Therefore, check that there are not multiple
   # "global" population sizes being passed in.
@@ -119,7 +118,8 @@ validate_count_data <- function(hosp_data,
     pop_size_col_name
   })
   arg <- "global_pop"
-  checkmate::check_integerish(pop)
+
+  checkmate::assert_integerish(pop)
   assert_elements_non_neg(pop)
   assert_non_missingness(pop, arg, call)
   add_err_msg <- paste0(
@@ -145,12 +145,56 @@ validate_count_data <- function(hosp_data,
   invisible()
 }
 
-validate_both_datasets <- function(input_hosp_data,
+#' Validate that both count data and wastewater data are coherent and
+#' compatible with one another and the the user-specified parameters
+#'
+#' @param input_count_data tibble containing the input count data that has
+#' been filtered and is ready to be passed into stan
+#' @param input_ww_data tibble containing the input wastewater data that has
+#' been filtered and is ready to be passed into stan
+#' @param calibration_time integer indicating the calibration time
+#' @param forecast_date IS08 formatted date indicating the forecast date
+#'
+#' @return NULL, invisibly
+validate_both_datasets <- function(input_count_data,
                                    input_ww_data,
                                    calibration_time,
                                    forecast_date) {
   # check that you have sufficient hosp data for the calibration time
-  # check that ww data does not go back beyond hospital admissions data
+  assert_sufficient_days_of_data(
+    input_count_data$date,
+    calibration_time
+  )
+
+  assert_elements_non_neg(calibration_time,
+    arg = "calibration_time"
+  )
+  checkmate::assert_integerish(calibration_time)
+
+  # make sure filtering to exclude days before earliest calibration time
+  # didn't eliminate
+  assert_not_empty(input_ww_data,
+    add_err_msg = c(
+      "Wastewater data passed in doesn't overlap",
+      "with count data calibration period"
+    )
+  )
+
   # check that the wastewater data has some data within the observed hospital
   # admissions data
+  assert_overlap_dates(input_ww_data$date,
+    input_count_data$date,
+    forecast_date,
+    add_err_msg = c(
+      "There is no wastewater data within ",
+      "the count data calibration period"
+    )
+  )
+
+  # check that the time and date indices of both datasets line up
+  assert_equivalent_indexing(
+    input_count_data,
+    input_ww_data
+  )
+  invisible()
 }
