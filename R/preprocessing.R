@@ -293,8 +293,10 @@ indicate_ww_exclusions <- function(data,
     # Port over the outliers flagged to the exclude column
     data_w_exclusions <- data |>
       dplyr::mutate(
-        exclude = ifelse({{ outlier_col_name }} == 1, 1, exclude)
+        exclude = ifelse(!!rlang::sym(outlier_col_name) == 1, 1, exclude)
       )
+  } else {
+    data_w_exclusions <- data
   }
   return(data_w_exclusions)
 }
