@@ -144,3 +144,17 @@ convert_to_logsd <- function(mean, sd) {
 to_simplex <- function(vector) {
   return(vector / sum(vector))
 }
+
+#' Escape brackets returned in a string for passing to glue
+#'
+#' @param string A string vector containing `{}`
+#'
+#' @return A string vector where all single brackets are replaced with double
+#' brackets
+#'
+#' @examples
+#' test_string <- "{my_var}"
+#' glue::glue(autoescape_brackets(test_string))
+autoescape_brackets <- function(string) {
+  return(gsub("\\{(.*)\\}", "{{\\1}}", string))
+}
