@@ -151,6 +151,7 @@ to_simplex <- function(vector) {
 #'
 #' @return A string vector where all single brackets are replaced with double
 #' brackets
+#' @export
 #'
 #' @examples
 #' test_string <- "{my_var}"

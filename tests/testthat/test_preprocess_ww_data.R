@@ -176,14 +176,6 @@ test_that("Function handles empty dataframes with an error", {
 # (assuming flag_ww_outliers works as expected)
 test_that("Function flags outliers correctly", {
   # Add a potential outlier value for testing
-  outlier_ww_data <- rbind(ww_data, tibble::tibble(
-    date = lubridate::ymd("2023-11-03"),
-    site = 1,
-    lab = 1,
-    conc = 10000, # Outlier concentration value
-    lod = 20
-  ))
-
   outlier_ww_data <- tibble::tibble(
     date = seq(
       from = lubridate::ymd("2023-11-01"),
