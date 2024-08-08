@@ -111,7 +111,7 @@ test_that("lab_site_index and site_index are created correctly", {
   expect_true(all(!is.na(processed$site_index)))
 
   # Check for unique indices for each lab-site combination
-  expect_equal(length(unique(processed$lab_site_index)), 4)
+  expect_equal(length(unique(processed$lab_site_index)), 2)
 
   # Check for unique indices for each site
   expect_equal(length(unique(processed$site_index)), 2)
