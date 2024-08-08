@@ -90,6 +90,11 @@
 #'   forecast_date,
 #'   forecast_horizon,
 #'   calibration_time,
+#'   generation_interval,
+#'   inf_to_count_delay,
+#'   infection_feedback_pmf,
+#'   params,
+#'   include_ww
 #' )
 #' input_data <- input_data_and_args$input_data
 #' input_ww_data <- input_data$input_ww_data
@@ -120,6 +125,15 @@ get_stan_data <- function(input_count_data,
   ww_data_present <- nrow(input_ww_data) != 0
   if (ww_data_present == FALSE) {
     message("No wastewater data present")
+  }
+
+  if (all(sum(input_ww_data$flag_as_ww_outlier) > sum(input_ww_data$exclude))) {
+    cli::cli_warn(
+      c(
+        "Wastewater data being passed to the model has outliers flagged,",
+        "but not all have been indicated for exclusion from model fit"
+      )
+    )
   }
 
 

@@ -122,6 +122,11 @@ input_data_and_args <- get_stan_data(
   forecast_date,
   forecast_horizon,
   calibration_time,
+  generation_interval,
+  inf_to_count_delay,
+  infection_feedback_pmf,
+  params,
+  include_ww
 )
 input_data <- input_data_and_args$input_data
 input_ww_data <- input_data$input_ww_data
