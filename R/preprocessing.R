@@ -67,7 +67,7 @@ preprocess_ww_data <- function(ww_data,
       genome_copies_per_ml = {{ conc_col_name }}
     ) |>
     dplyr::mutate(
-      lab_site_name = glue::glue("Site: {site},  Lab: {lab}"),
+      lab_site_name = glue::glue("Site: {site}, Lab: {lab}"),
       below_lod = ifelse(genome_copies_per_ml < lod, 1, 0)
     )
 
