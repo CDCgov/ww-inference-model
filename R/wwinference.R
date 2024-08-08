@@ -70,8 +70,8 @@ wwinference <- function(ww_data,
                         generate_initial_values = TRUE,
                         compiled_model = wwinference::compile_model()) {
   # Check that data is compatible with specifications
-  check_date(ww_data, model_spec$forecast_date)
-  check_date(count_data, model_spec$forecast_date)
+  assert_no_dates_after_max(ww_data$date, model_spec$forecast_date)
+  assert_no_dates_after_max(count_data$date, model_spec$forecast_date)
 
   # If checks pass, create stan data object
   stan_data <- get_stan_data(

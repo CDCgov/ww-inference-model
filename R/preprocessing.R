@@ -18,20 +18,33 @@
 #'
 #' @examples
 #' ww_data <- tibble::tibble(
-#'   date = rep(c("2023-11-01", "2023-11-02"), 2),
+#'   date = lubridate::ymd(rep(c("2023-11-01", "2023-11-02"), 2)),
 #'   site = c(rep(1, 2), rep(2, 2)),
 #'   lab = c(1, 1, 1, 1),
 #'   conc = c(345.2, 784.1, 401.5, 681.8),
-#'   lod = c(20, 20, 15, 15)
+#'   lod = c(20, 20, 15, 15),
+#'   site_pop = c(rep(2e5, 2), rep(4e5, 2))
 #' )
-
 #' ww_data_preprocessed <- preprocess_ww_data(ww_data,
-#'                                            conc_col_name = "conc",
-#'                                            lod_col_name = "lod"
-#'                                            )
+#'   conc_col_name = "conc",
+#'   lod_col_name = "lod"
+#' )
 preprocess_ww_data <- function(ww_data,
                                conc_col_name = "genome_copies_per_ml",
                                lod_col_name = "lod") {
+  check_req_ww_columns_present(
+    ww_data,
+    conc_col_name,
+    lod_col_name
+  )
+  # Perform some checks on the contents of the ww_data dataframe
+  validate_ww_conc_data(ww_data,
+    conc_col_name = conc_col_name,
+    lod_col_name = lod_col_name
+  )
+
+
+
   # Add some columns
   ww_data_add_cols <- ww_data |>
     dplyr::left_join(
@@ -82,7 +95,7 @@ preprocess_ww_data <- function(ww_data,
 #'
 #' @examples
 #' hosp_data <- tibble::tibble(
-#'   date = c("2023-11-01", "2023-11-02"),
+#'   date = lubridate::ymd(c("2023-11-01", "2023-11-02")),
 #'   daily_admits = c(10, 20),
 #'   state_pop = c(1e6, 1e6)
 #' )
@@ -94,6 +107,19 @@ preprocess_ww_data <- function(ww_data,
 preprocess_hosp_data <- function(hosp_data,
                                  count_col_name = "daily_hosp_admits",
                                  pop_size_col_name = "state_pop") {
+  # This checks that we have all the right column names
+  check_req_hosp_columns_present(
+    hosp_data,
+    count_col_name,
+    pop_size_col_name
+  )
+  # Perform some checks on the contents of the hosp_data df
+  validate_count_data(hosp_data,
+    count_col_name = count_col_name,
+    pop_size_col_name = pop_size_col_name
+  )
+
+
   hosp_data_preprocessed <- hosp_data |>
     dplyr::rename(
       count = {{ count_col_name }},
@@ -242,7 +268,7 @@ flag_ww_outliers <- function(ww_data,
 #'
 #' @examples
 #' data <- tibble::tibble(
-#'   date = c("2023-10-01", "2023-10-02"),
+#'   date = lubridate::ymd(c("2023-10-01", "2023-10-02")),
 #'   genome_copies_per_mL = c(300, 3e6),
 #'   flag_as_ww_outlier = c(0, 1),
 #'   exclude = c(0, 0)
