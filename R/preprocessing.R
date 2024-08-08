@@ -1,7 +1,8 @@
 #' Pre-process wastewater input data, adding needed indices and flagging
 #' potential outliers
 #' @param ww_data dataframe containing the following columns: site, lab,
-#' date, a column for concentration, and lod
+#' date, site_pop, a column for concentration, and  a column for the
+#' limit of detection
 #' @param conc_col_name string indicating the name of the column containing
 #' the concentration measurements in the wastewater data, default is
 #'  `genome_copies_per_ml`
