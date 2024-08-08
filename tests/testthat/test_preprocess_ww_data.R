@@ -63,6 +63,32 @@ test_that("lab_site_index and site_index are created correctly", {
 
   # Check for unique indices for each site
   expect_equal(length(unique(processed$site_index)), 2)
+
+  # More complex example where each sample is processed in a different lab,
+  # so we will need 4 unique site identifiers
+
+  test_ww_data <- tibble::tibble(
+    date = lubridate::ymd(rep(c("2023-11-01", "2023-11-02"), 2)),
+    site = c(rep(1, 2), 2, 1),
+    lab = c(1, 2, 3, 4),
+    conc = c(345.2, 784.1, 401.5, 681.8),
+    lod = c(20, 20, 15, 15),
+    site_pop = c(rep(1e6, 2), rep(3e5, 2))
+  )
+
+  processed <- preprocess_ww_data(test_ww_data,
+    conc_col_name = "conc",
+    lod_col_name = "lod"
+  )
+
+  expect_true(all(!is.na(processed$lab_site_index)))
+  expect_true(all(!is.na(processed$site_index)))
+
+  # Check for unique indices for each lab-site combination
+  expect_equal(length(unique(processed$lab_site_index)), 4)
+
+  # Check for unique indices for each site
+  expect_equal(length(unique(processed$site_index)), 2)
 })
 
 # Test that below_lod flag is set correctly
