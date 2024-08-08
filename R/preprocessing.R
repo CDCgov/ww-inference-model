@@ -13,8 +13,8 @@
 #' the `conc_col_name` will be replaced with `genome_copies_per_ml` and
 #' the `lod_col_name` will be replaced with `lod` plus the following
 #' additional columns needed for the stan model:
-#' lab_site_index, site_index, flag_as_ww_outlier, lab_site_name,
-#' forecast_date
+#' lab_site_index, site_index, flag_as_ww_outlier, below_lod, lab_site_name,
+#' exclude
 #' @export
 #'
 #' @examples

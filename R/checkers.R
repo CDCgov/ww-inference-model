@@ -325,3 +325,19 @@ assert_single_value <- function(x, arg = "x",
   }
   invisible()
 }
+
+assert_not_empty <- function(x, arg = "x",
+                             call = rlang::caller_env(),
+                             add_err_msg = "") {
+  if (nrow(x) == 0) {
+    cli::cli_abort(
+      c(
+        "{.arg {arg}} is empty",
+        add_err_msg
+      ),
+      call = call,
+      class = "wwinference_input_data_error"
+    )
+  }
+  invisible()
+}
