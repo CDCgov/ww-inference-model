@@ -91,6 +91,7 @@ validate_count_data <- function(hosp_data,
                                 count_col_name,
                                 pop_size_col_name,
                                 call = rlang::caller_env()) {
+  assert_not_empty(hosp_data, arg = "hosp_data", call)
   # Count data should be non negative and a vector of integers
   counts <- hosp_data |> dplyr::pull({
     count_col_name
