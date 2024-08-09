@@ -123,9 +123,9 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                         package = "wwinference"
                                       )) {
   # Some quick checks to make sure the inputs work as expected-----------------
-  check_rt_length(r_in_weeks, ot, nt, forecast_horizon)
-  check_ww_site_pops(pop_size, ww_pop_sites)
-  check_site_and_lab_indices(site, lab)
+  assert_rt_correct_length(r_in_weeks, ot, nt, forecast_horizon)
+  assert_ww_site_pops_lt_total(pop_size, ww_pop_sites)
+  assert_site_lab_indices_align(site, lab)
 
   # Expose the stan functions into the global environment--------------------
   model <- cmdstanr::cmdstan_model(
@@ -140,6 +140,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   model$expose_functions(global = TRUE)
 
   # Get other variables needed for forward simulation ------------------------
+  params <- get_params(input_params_path) # load in a single row tibble
 
   # Get pop fractions of each subpop. There will n_sites + 1 subpops
   pop_fraction <- c(
@@ -147,13 +148,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     (pop_size - sum(ww_pop_sites)) / pop_size
   )
   n_subpops <- length(pop_fraction)
-  # Pull parameter values into memory
-  params <- get_params(input_params_path) # load in a single row tibble
-  par_names <- colnames(params) # pull them into memory
-  for (i in seq_along(par_names)) {
-    assign(par_names[i], as.double(params[i]))
-  }
-
   # Create a tibble that maps sites, labs, and population sizes of the sites
   n_sites <- length(unique(site))
   site_lab_map <- data.frame(
@@ -170,10 +164,13 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   n_lab_sites <- nrow(site_lab_map)
 
   # Define some time variables
+  uot <- params$uot # Time period of exponential growth outside of
+  # admissions calibratin window (initialization of renewal process)
   ht <- nt + forecast_horizon
   n_weeks <- ceiling((ot + ht) / 7) # calibration + forecast time
   tot_weeks <- ceiling((uot + ot + ht) / 7) # initialization time +
   # calibration + forecast time
+
 
   # We need dates to get a weekday vector
   dates <- seq(
@@ -227,7 +224,8 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   ## Generation interval------------------------------------------------------
   # Double censored and zero-truncated
   generation_interval <- simulate_double_censored_pmf(
-    max = gt_max, meanlog = mu_gi, sdlog = sigma_gi, fun_dist = rlnorm, n = 5e6
+    max = params$gt_max, meanlog = params$mu_gi, sdlog = params$sigma_gi,
+    fun_dist = rlnorm, n = 5e6
   ) |> drop_first_and_renormalize()
 
   # Set infection feedback to generation interval
@@ -238,17 +236,20 @@ generate_simulated_data <- function(r_in_weeks = # nolint
 
   # Get incubation period for COVID.
   inc <- make_incubation_period_pmf(
-    backward_scale, backward_shape, r
+    params$backward_scale, params$backward_shape, params$r
   )
-  sym_to_hosp <- make_hospital_onset_delay_pmf(neg_binom_mu, neg_binom_size)
+  sym_to_hosp <- make_hospital_onset_delay_pmf(
+    params$neg_binom_mu,
+    params$neg_binom_size
+  )
 
   # Final infection to hospital admissions delay distribution
   inf_to_hosp <- make_reporting_delay_pmf(inc, sym_to_hosp)
 
   ## Shedding kinetics delay distribution-------------------------------
   vl_trajectory <- model$functions$get_vl_trajectory(
-    t_peak_mean, viral_peak_mean,
-    duration_shedding_mean, gt_max
+    params$t_peak_mean, params$viral_peak_mean,
+    params$duration_shedding_mean, params$gt_max
   )
 
   # Global undadjusted R(t) ---------------------------------------------------
@@ -281,7 +282,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     unadj_r_site = unadj_r_site,
     initial_growth = initial_growth,
     initial_growth_prior_sd =
-      initial_growth_prior_sd,
+      params$initial_growth_prior_sd,
     i0_over_n = i0_over_n,
     sd_i0_over_n = sd_i0_over_n,
     generation_interval =
@@ -303,12 +304,12 @@ generate_simulated_data <- function(r_in_weeks = # nolint
 
   ## Generate a time varying P(hosp|infection)----------------------------------
   p_hosp_days <- get_time_varying_daily_ihr(
-    p_hosp_mean,
-    uot,
+    params$p_hosp_mean,
+    params$uot,
     ot,
     ht,
     tot_weeks,
-    p_hosp_w_sd_sd
+    params$p_hosp_w_sd_sd
   )
 
   ## Latent per capita admissions--------------------------------------------
@@ -329,7 +330,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   # This is negative binomial but could swap out for a different obs error
   pred_obs_hosp <- rnbinom(
     n = length(pred_hosp), mu = pred_hosp,
-    size = 1 / ((inv_sqrt_phi_prior_mean)^2)
+    size = 1 / ((params$inv_sqrt_phi_prior_mean)^2)
   )
 
 
@@ -344,7 +345,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     ot = ot,
     ht = ht,
     new_i_over_n_site = new_i_over_n_site,
-    log10_g_prior_mean = log10_g_prior_mean,
+    log10_g_prior_mean = params$log10_g_prior_mean,
     vl_trajectory = vl_trajectory
   )
   ## Site-lab level observation error----------------------------------------
@@ -356,7 +357,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     log_m_lab_sites = log_m_lab_sites,
     sigma_ww_lab_site = sigma_ww_lab_site,
     site = site,
-    ml_of_ww_per_person_day = ml_of_ww_per_person_day
+    ml_of_ww_per_person_day = params$ml_of_ww_per_person_day
   )
 
   ## Downsample to simulate reporting/collection process---------------------

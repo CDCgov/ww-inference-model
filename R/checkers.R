@@ -35,7 +35,7 @@ assert_no_dates_after_max <- function(date_vector,
 }
 
 
-#' Check that R(t) specified for generating simulated data is of sufficient
+#' Assert that R(t) specified for generating simulated data is of sufficient
 #' length
 #'
 #' @param r_in_weeks a vector indicating the R(t) in weeks
@@ -49,11 +49,11 @@ assert_no_dates_after_max <- function(date_vector,
 #' traceback.
 #'
 #' @return NULL, invisible
-check_rt_length <- function(r_in_weeks,
-                            ot,
-                            nt,
-                            forecast_horizon,
-                            call = rlang::caller_env()) {
+assert_rt_correct_length <- function(r_in_weeks,
+                                     ot,
+                                     nt,
+                                     forecast_horizon,
+                                     call = rlang::caller_env()) {
   if (length(r_in_weeks) < (ot + nt + forecast_horizon) / 7) {
     cli::cli_abort(
       c(
@@ -68,7 +68,7 @@ check_rt_length <- function(r_in_weeks,
   invisible()
 }
 
-#' Check that the sum of the wastewater site populations don't exceed
+#' Assert that the sum of the wastewater site populations don't exceed
 #' the total population
 #'
 #' @param pop_size integer indicating the population size in the hypothetical
@@ -79,9 +79,9 @@ check_rt_length <- function(r_in_weeks,
 #'  traceback.
 #'
 #' @return NULL, invisibly
-check_ww_site_pops <- function(pop_size,
-                               ww_pop_sites,
-                               call = rlang::caller_env()) {
+assert_ww_site_pops_lt_total <- function(pop_size,
+                                         ww_pop_sites,
+                                         call = rlang::caller_env()) {
   if (sum(ww_pop_sites) > pop_size) {
     cli::cli_abort(
       c(
@@ -96,7 +96,7 @@ check_ww_site_pops <- function(pop_size,
   invisible()
 }
 
-#' Check that the specified site and lab indices line up
+#' Assert that the specified site and lab indices line up
 #'
 #' @param site vector of integers indicating which site (WWTP) each separate
 #' lab-site observation comes frm
@@ -106,9 +106,9 @@ check_ww_site_pops <- function(pop_size,
 #' traceback.
 #'
 #' @return NULL, invisibly
-check_site_and_lab_indices <- function(site,
-                                       lab,
-                                       call = rlang::caller_env()) {
+assert_site_lab_indices_align <- function(site,
+                                          lab,
+                                          call = rlang::caller_env()) {
   if (length(site) != length(lab)) {
     cli::cli_abort(
       c(
