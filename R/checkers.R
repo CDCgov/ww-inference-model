@@ -202,14 +202,14 @@ throw_type_error <- function(object,
 #' traceback.
 #'
 #' @return NULL, invisibly
-check_req_ww_columns_present <- function(ww_data,
-                                         conc_col_name,
-                                         lod_col_name,
-                                         add_req_col_names = c(
-                                           "date", "site",
-                                           "lab", "site_pop"
-                                         ),
-                                         call = rlang::caller_env()) {
+check_req_ww_cols_present <- function(ww_data,
+                                      conc_col_name,
+                                      lod_col_name,
+                                      add_req_col_names = c(
+                                        "date", "site",
+                                        "lab", "site_pop"
+                                      ),
+                                      call = rlang::caller_env()) {
   column_names <- colnames(ww_data)
   expected_col_names <- c(
     {
@@ -242,17 +242,17 @@ check_req_ww_columns_present <- function(ww_data,
   invisible()
 }
 
-#' Check that the input hosp data contains all the required column names
+#' Check that the input count data contains all the required column names
 #'
 #' @description
-#' This function is intended to be used to check that the hosp data that
-#' gets passed into [preprocess_hosp_data()] contains the required columns. If
+#' This function is intended to be used to check that the count data that
+#' gets passed into [preprocess_count_data()] contains the required columns. If
 #' it does not, we want to tell the user which columns are missing. This will
 #' not however, ensure that the elements of the column are of the right type,
 #' or check that the values of them make sense.
 #'
 #'
-#' @param hosp_data tibble containing the input count data
+#' @param count_data tibble containing the input count data
 #' @param count_col_name string indicating the name of the column containing
 #' the count data
 #' @param pop_size_col_name string indicating the name of the column containing
@@ -263,12 +263,12 @@ check_req_ww_columns_present <- function(ww_data,
 #' traceback.
 #'
 #' @return NULL, invisibly
-check_req_hosp_columns_present <- function(hosp_data,
-                                           count_col_name,
-                                           pop_size_col_name,
-                                           add_req_col_names = c("date"),
-                                           call = rlang::caller_env()) {
-  column_names <- colnames(hosp_data)
+check_req_count_cols_present <- function(count_data,
+                                         count_col_name,
+                                         pop_size_col_name,
+                                         add_req_col_names = c("date"),
+                                         call = rlang::caller_env()) {
+  column_names <- colnames(count_data)
   expected_col_names <- c(
     {
       count_col_name
@@ -405,7 +405,7 @@ assert_sufficient_days_of_data <- function(date_vector,
                                            calibration_time,
                                            call = rlang::caller_env(),
                                            add_err_msg = "") {
-  # check that you have sufficient hosp data for the calibration time
+  # check that you have sufficient count data for the calibration time
   min_date <- max(date_vector,
     na.rm = TRUE
   ) - lubridate::days(calibration_time) + 1

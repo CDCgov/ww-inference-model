@@ -33,7 +33,7 @@
 preprocess_ww_data <- function(ww_data,
                                conc_col_name = "genome_copies_per_ml",
                                lod_col_name = "lod") {
-  check_req_ww_columns_present(
+  check_req_ww_cols_present(
     ww_data,
     conc_col_name,
     lod_col_name
@@ -83,7 +83,7 @@ preprocess_ww_data <- function(ww_data,
 
 #' Pre-process hospital admissions data, converting column names to those
 #' that [get_stan_data()] expects.
-#' @param hosp_data dataframe containing the following columns: date,
+#' @param count_data dataframe containing the following columns: date,
 #' a count column, and a population size column
 #' @param count_col_name name of the column containing the epidemiological
 #' indicator, default is `daily_hosp_admits`
@@ -100,34 +100,34 @@ preprocess_ww_data <- function(ww_data,
 #'   daily_admits = c(10, 20),
 #'   state_pop = c(1e6, 1e6)
 #' )
-#' hosp_data_preprocessed <- preprocess_hosp_data(
-#'   hosp_data,
+#' hosp_data_preprocessed <- preprocess_count_data(
+#'   count_data,
 #'   "daily_admits",
 #'   "state_pop"
 #' )
-preprocess_hosp_data <- function(hosp_data,
-                                 count_col_name = "daily_hosp_admits",
-                                 pop_size_col_name = "state_pop") {
+preprocess_count_data <- function(count_data,
+                                  count_col_name = "daily_hosp_admits",
+                                  pop_size_col_name = "state_pop") {
   # This checks that we have all the right column names
-  check_req_hosp_columns_present(
-    hosp_data,
+  check_req_count_cols_present(
+    count_data,
     count_col_name,
     pop_size_col_name
   )
   # Perform some checks on the contents of the hosp_data df
-  validate_count_data(hosp_data,
+  validate_count_data(count_data,
     count_col_name = count_col_name,
     pop_size_col_name = pop_size_col_name
   )
 
 
-  hosp_data_preprocessed <- hosp_data |>
+  count_data_preprocessed <- count_data |>
     dplyr::rename(
       count = {{ count_col_name }},
       total_pop = {{ pop_size_col_name }}
     )
 
-  return(hosp_data_preprocessed)
+  return(count_data_preprocessed)
 }
 
 

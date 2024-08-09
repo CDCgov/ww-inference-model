@@ -28,7 +28,7 @@ hosp_data <- tibble::tibble(
   state_pop = rep(1e6, 122)
 )
 
-input_count_data <- preprocess_hosp_data(
+input_count_data <- preprocess_count_data(
   hosp_data,
   "daily_admits",
   "state_pop"

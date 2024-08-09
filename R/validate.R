@@ -78,7 +78,7 @@ validate_ww_conc_data <- function(ww_data,
 
 #' Validate user-provided count data
 #'
-#' @param hosp_data tibble containing the input count data
+#' @param count_data tibble containing the input count data
 #' @param count_col_name string indicating the name of the column containing
 #' the count data
 #' @param pop_size_col_name string indicating the name of the column containing
@@ -87,13 +87,13 @@ validate_ww_conc_data <- function(ww_data,
 #' traceback.
 #'
 #' @return NULL, invisibly
-validate_count_data <- function(hosp_data,
+validate_count_data <- function(count_data,
                                 count_col_name,
                                 pop_size_col_name,
                                 call = rlang::caller_env()) {
-  assert_not_empty(hosp_data, arg = "hosp_data", call)
+  assert_not_empty(count_data, arg = "count_data", call)
   # Count data should be non negative and a vector of integers
-  counts <- hosp_data |> dplyr::pull({
+  counts <- count_data |> dplyr::pull({
     count_col_name
   })
   arg <- "counts"
@@ -103,7 +103,7 @@ validate_count_data <- function(hosp_data,
 
   # Right now the model expects daily data! Check that the dates are each day
   assert_daily_data(
-    hosp_data$date,
+    count_data$date,
     add_err_msg =
       c(
         "Count dataset does not appear to be daily.",
@@ -114,7 +114,7 @@ validate_count_data <- function(hosp_data,
   # Currently, the framework only supports a single population size for
   # an individual model fit. Therefore, check that there are not multiple
   # "global" population sizes being passed in.
-  pop <- hosp_data |> dplyr::pull({
+  pop <- count_data |> dplyr::pull({
     pop_size_col_name
   })
   arg <- "global_pop"
@@ -133,7 +133,7 @@ validate_count_data <- function(hosp_data,
 
   # Date column should be of date type, for count data, there should only
   # be one observation per day
-  count_dates <- hosp_data$date
+  count_dates <- count_data$date
   arg <- "count_obs_dates"
   checkmate::assert_date(count_dates)
   add_err_msg <- paste0(
@@ -160,7 +160,7 @@ validate_both_datasets <- function(input_count_data,
                                    input_ww_data,
                                    calibration_time,
                                    forecast_date) {
-  # check that you have sufficient hosp data for the calibration time
+  # check that you have sufficient count data for the calibration time
   assert_sufficient_days_of_data(
     input_count_data$date,
     calibration_time
@@ -180,8 +180,8 @@ validate_both_datasets <- function(input_count_data,
     )
   )
 
-  # check that the wastewater data has some data within the observed hospital
-  # admissions data
+  # check that the wastewater data has some data within the observed count
+  # data
   assert_overlap_dates(input_ww_data$date,
     input_count_data$date,
     forecast_date,
