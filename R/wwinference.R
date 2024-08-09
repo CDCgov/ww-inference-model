@@ -59,7 +59,7 @@
 #' `check_diagnostics()` function on the `diagnostic_summary` as part of any
 #' pipeline to ensure model convergence.
 #' @name wwinference
-#' 
+#'
 NULL
 
 #' Model fitting function
@@ -68,26 +68,24 @@ NULL
 #' @param model_spec The model specification parameters
 #' @param init_lists A list of initial values for the sampler
 #' @return The fit object from the model
-#' @noRd 
+#' @noRd
 fit_model <- function(compiled_model,
-                        standata,
-                        model_spec,
-                        init_lists) {
-
-    compiled_model$sample(
-      data = stan_data,
-      init = init_lists,
-      seed = mcmc_options$seed,
-      iter_sampling = mcmc_options$iter_sampling,
-      iter_warmup = mcmc_options$iter_warmup,
-      max_treedepth = mcmc_options$max_treedepth,
-      chains = mcmc_options$n_chains,
-      parallel_chains = mcmc_options$n_chains
-    )
-
+                      stan_data,
+                      model_spec,
+                      init_lists) {
+  compiled_model$sample(
+    data = stan_data,
+    init = init_lists,
+    seed = mcmc_options$seed,
+    iter_sampling = mcmc_options$iter_sampling,
+    iter_warmup = mcmc_options$iter_warmup,
+    max_treedepth = mcmc_options$max_treedepth,
+    chains = mcmc_options$n_chains,
+    parallel_chains = mcmc_options$n_chains
+  )
 }
 
-#' @export 
+#' @export
 #' @rdname wwinference
 wwinference <- function(ww_data,
                         count_data,
@@ -131,7 +129,7 @@ wwinference <- function(ww_data,
 
   fit <- safe_fit_model(
     compiled_model,
-    standata,
+    stan_data,
     model_spec,
     init_lists
   )
@@ -175,8 +173,9 @@ wwinference <- function(ww_data,
     )
 
     out <- list(
-      draws_df = draws,
-      raw_fit_obj = fit$result,
+      ww_data = ww_data,
+      count_data = count_data,
+      fit = fit,
       date_time_spine = date_time_spine,
       lab_site_spine = lab_site_spine,
       subpop_spine = subpop_spine
@@ -191,13 +190,12 @@ wwinference <- function(ww_data,
   }
 
   structure(out, class = "wwinference_fit")
-
 }
 
 #' @export
 print.wwinference_fit <- function(x, ...) {
   cat("wwinference_fit object\n")
-  cat("Model fit object: ", x$raw_fit_obj, "\n")
+  cat("Model fit object: ", x$fit, "\n")
   cat("Date time spine: ", x$date_time_spine, "\n")
   cat("Lab site spine: ", x$lab_site_spine, "\n")
   cat("Subpop spine: ", x$subpop_spine, "\n")

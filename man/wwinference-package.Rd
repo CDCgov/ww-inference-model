@@ -2,6 +2,7 @@
 % Please edit documentation in R/wwinference-package.R
 \docType{package}
 \name{wwinference-package}
+\alias{wwinference}
 \alias{wwinference-package}
 \title{wwinference: Jointly infers infection dynamics from wastewater data and epidemiological indicators}
 \description{

@@ -29,12 +29,29 @@
 #' are observations, the data will be joined to each draw of the predicted
 #' observation to facilitate plotting.
 #' @export
-get_draws_df <- function(ww_data,
-                         count_data,
-                         fit_obj,
-                         date_time_spine,
-                         lab_site_spine,
-                         subpop_spine) {
+get_draws_df <- function(ww_data, ...) UseMethod("get_draws_df")
+
+#' @export
+#' @rdname get_draws_df
+get_draws_df.wwinference_fit <- function(ww_data, ...) {
+  get_draws_df.default(
+    ww_data = ww_data$ww_data,
+    count_data = ww_data$count_data,
+    fit_obj = ww_data$fit,
+    date_time_spine = ww_data$date_time_spine,
+    lab_site_spine = ww_data$lab_site_spine,
+    subpop_spine = ww_data$subpop_spine
+  )
+}
+
+#' @export
+#' @rdname get_draws_df
+get_draws_df.default <- function(ww_data,
+                                 count_data,
+                                 fit_obj,
+                                 date_time_spine,
+                                 lab_site_spine,
+                                 subpop_spine) {
   draws <- fit_obj$result$draws()
 
   count_draws <- draws |>
