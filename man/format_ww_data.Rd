@@ -4,7 +4,14 @@
 \alias{format_ww_data}
 \title{Format the wastewater data as a tidy data frame}
 \usage{
-format_ww_data(log_obs_conc_lab_site, ot, ht, date_df, site_lab_map)
+format_ww_data(
+  log_obs_conc_lab_site,
+  ot,
+  ht,
+  date_df,
+  site_lab_map,
+  lod_lab_site
+)
 }
 \arguments{
 \item{log_obs_conc_lab_site}{matrix of numeric values where rows are the
@@ -22,6 +29,9 @@ dates}
 
 \item{site_lab_map}{tibble mapping sites, labs, lab site indices, and the
 population size of the site}
+
+\item{lod_lab_site}{vector of numerics indicating the LOD in each lab and
+site combination}
 }
 \value{
 a tidy dataframe containing the observed wastewater concentrations

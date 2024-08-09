@@ -389,7 +389,8 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     ot,
     ht,
     date_df,
-    site_lab_map
+    site_lab_map,
+    lod_lab_site
   )
 
 

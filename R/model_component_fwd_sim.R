@@ -330,6 +330,8 @@ downsample_ww_obs <- function(log_conc_lab_site,
 #' dates
 #' @param site_lab_map tibble mapping sites, labs, lab site indices, and the
 #' population size of the site
+#' @param lod_lab_site vector of numerics indicating the LOD in each lab and
+#' site combination
 #'
 #' @return a tidy dataframe containing the observed wastewater concentrations
 #' in each site and lab at each time point
@@ -337,7 +339,9 @@ format_ww_data <- function(log_obs_conc_lab_site,
                            ot,
                            ht,
                            date_df,
-                           site_lab_map) {
+                           site_lab_map,
+                           lod_lab_site) {
+  n_lab_sites <- nrow(site_lab_map)
   ww_data <- as.data.frame(t(log_obs_conc_lab_site)) |>
     dplyr::mutate(t = 1:(ot + ht)) |>
     tidyr::pivot_longer(!t,
@@ -396,7 +400,7 @@ format_hosp_data <- function(pred_obs_hosp,
                              pop_size,
                              date_df) {
   hosp_data <- tibble::tibble(
-    t = 1:ot,
+    t = 1:dur_obs,
     daily_hosp_admits = pred_obs_hosp[1:dur_obs],
     state_pop = pop_size
   ) |>
