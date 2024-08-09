@@ -203,12 +203,12 @@ test_that(
       lubridate::ymd("2023-01-01"),
       lubridate::ymd("2023-01-02")
     )
-    expect_no_error(assert_daily_data(daily_dates, arg = "daily_dates"))
+    expect_no_error(assert_daily_data(daily_dates))
 
     weekly_dates <- c(
       lubridate::ymd("2023-01-01"),
       lubridate::ymd("2023-01-08")
     )
-    expect_error(assert_daily_data(weekly_dates, arg = "daily_dates"))
+    expect_error(assert_daily_data(weekly_dates))
   }
 )

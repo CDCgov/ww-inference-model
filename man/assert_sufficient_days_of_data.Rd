@@ -13,6 +13,8 @@ assert_sufficient_days_of_data(
 )
 }
 \arguments{
+\item{date_vector}{the vector of dates to check, must be of Date type}
+
 \item{calibration_time}{integer indicating the number of days that
 the dates must span}
 
@@ -21,8 +23,6 @@ traceback.}
 
 \item{add_err_msg}{add_err_msg string containing an additional error message,
 default is the empty string (\code{""})}
-
-\item{dates}{the vector of dates to check, must be of Date type}
 }
 \value{
 NULL invisible
