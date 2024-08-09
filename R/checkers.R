@@ -132,7 +132,6 @@ assert_site_lab_indices_align <- function(site,
 #' traceback.
 #' @param add_err_msg string containing an additional error message,
 #'  default is the empty string (`""`)
-
 #'
 #' @return NULL, invisibly
 assert_elements_non_neg <- function(x, arg = "x",
