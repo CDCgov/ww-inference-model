@@ -63,31 +63,32 @@ assert_elements_non_neg <- function(x, arg = "x",
   invisible()
 }
 
-#' Assert that there is no missignness in a particular vector
-#'
-#' @param x the vector to check
-#' @param arg the name of the vector to check
-#' @param call Calling environment to be passed to [cli::cli_abort()] for
-#' traceback.
-#' @param add_err_msg string containing an additional error message,
-#' default is the empty string (`""`)
-#'
-#' @return NULL, invisibly
-assert_non_missingness <- function(x, arg = "x",
-                                   call = rlang::caller_env(),
-                                   add_err_msg = "") {
-  if (checkmate::anyMissing(x)) {
-    cli::cli_abort(
-      c("{.arg {arg}} has missing values", add_err_msg,
-        "!" = "All elements of{.arg {arg}} should be present",
-        "i" = "Element(s) {.val {which(is.na(x))}} are missing"
-      ),
-      class = "wwinference_input_data_error",
-      call = call
-    )
+assert_integerish <-
+  #' Assert that there is no missignness in a particular vector
+  #'
+  #' @param x the vector to check
+  #' @param arg the name of the vector to check
+  #' @param call Calling environment to be passed to [cli::cli_abort()] for
+  #' traceback.
+  #' @param add_err_msg string containing an additional error message,
+  #' default is the empty string (`""`)
+  #'
+  #' @return NULL, invisibly
+  assert_non_missingness <- function(x, arg = "x",
+                                     call = rlang::caller_env(),
+                                     add_err_msg = "") {
+    if (checkmate::anyMissing(x)) {
+      cli::cli_abort(
+        c("{.arg {arg}} has missing values", add_err_msg,
+          "!" = "All elements of{.arg {arg}} should be present",
+          "i" = "Element(s) {.val {which(is.na(x))}} are missing"
+        ),
+        class = "wwinference_input_data_error",
+        call = call
+      )
+    }
+    invisible()
   }
-  invisible()
-}
 
 #' Check that there are no repeated elements in the vector
 #'
@@ -201,14 +202,14 @@ throw_type_error <- function(object,
 #' traceback.
 #'
 #' @return NULL, invisibly
-check_req_ww_columns_present <- function(ww_data,
-                                         conc_col_name,
-                                         lod_col_name,
-                                         add_req_col_names = c(
-                                           "date", "site",
-                                           "lab", "site_pop"
-                                         ),
-                                         call = rlang::caller_env()) {
+check_req_ww_cols_present <- function(ww_data,
+                                      conc_col_name,
+                                      lod_col_name,
+                                      add_req_col_names = c(
+                                        "date", "site",
+                                        "lab", "site_pop"
+                                      ),
+                                      call = rlang::caller_env()) {
   column_names <- colnames(ww_data)
   expected_col_names <- c(
     {
@@ -220,14 +221,19 @@ check_req_ww_columns_present <- function(ww_data,
     add_req_col_names
   )
 
-  # This tells you whats missing
+  # This tells you whats missing. This either returns TRUE or
   name_check_result <- checkmate::check_names(column_names,
     must.include = expected_col_names
   )
-  if (!name_check_result) {
+
+
+
+  if (!isTRUE(name_check_result)) {
     cli::cli_abort(
-      "Required columns are missing from the input wastewater data",
-      name_check_result,
+      message = c(
+        "Required columns are missing from the wastewater data. ",
+        autoescape_brackets(name_check_result)
+      ),
       class = "wwinference_input_data_error",
       call = call
     )
@@ -236,17 +242,17 @@ check_req_ww_columns_present <- function(ww_data,
   invisible()
 }
 
-#' Check that the input hosp data contains all the required column names
+#' Check that the input count data contains all the required column names
 #'
 #' @description
-#' This function is intended to be used to check that the hosp data that
-#' gets passed into [preprocess_hosp_data()] contains the required columns. If
+#' This function is intended to be used to check that the count data that
+#' gets passed into [preprocess_count_data()] contains the required columns. If
 #' it does not, we want to tell the user which columns are missing. This will
 #' not however, ensure that the elements of the column are of the right type,
 #' or check that the values of them make sense.
 #'
 #'
-#' @param hosp_data tibble containing the input count data
+#' @param count_data tibble containing the input count data
 #' @param count_col_name string indicating the name of the column containing
 #' the count data
 #' @param pop_size_col_name string indicating the name of the column containing
@@ -257,12 +263,12 @@ check_req_ww_columns_present <- function(ww_data,
 #' traceback.
 #'
 #' @return NULL, invisibly
-check_req_hosp_columns_present <- function(hosp_data,
-                                           count_col_name,
-                                           pop_size_col_name,
-                                           add_req_col_names = c("date"),
-                                           call = rlang::caller_env()) {
-  column_names <- colnames(hosp_data)
+check_req_count_cols_present <- function(count_data,
+                                         count_col_name,
+                                         pop_size_col_name,
+                                         add_req_col_names = c("date"),
+                                         call = rlang::caller_env()) {
+  column_names <- colnames(count_data)
   expected_col_names <- c(
     {
       count_col_name
@@ -279,9 +285,12 @@ check_req_hosp_columns_present <- function(hosp_data,
   )
 
   # This tells you from where it is missing
-  if (!check_colnames) {
+  if (!isTRUE(check_colnames)) {
     cli::cli_abort(
-      "Required columns are missing from the input count data",
+      c(
+        "Required columns are missing from the input count data",
+        autoescape_brackets(check_colnames)
+      ),
       class = "wwinference_input_data_error",
       call = call
     )
@@ -315,5 +324,175 @@ assert_single_value <- function(x, arg = "x",
       class = "wwinference_input_data_error"
     )
   }
+  invisible()
+}
+
+#' Assert that the dataframe being passed to the function is not empty
+#'
+#' @param x the dataframe to check
+#' @param arg the name of the dataframe to check
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#' @param add_err_msg add_err_msg string containing an additional error message,
+#' default is the empty string (`""`)
+#'
+#' @return NULL invisible
+assert_not_empty <- function(x, arg = "x",
+                             call = rlang::caller_env(),
+                             add_err_msg = "") {
+  if (nrow(x) == 0) {
+    cli::cli_abort(
+      c(
+        "{.arg {arg}} is empty",
+        add_err_msg
+      ),
+      call = call,
+      class = "wwinference_input_data_error"
+    )
+  }
+  invisible()
+}
+
+
+#' Assert that the vector of dates being passed in contains dates for each day
+#'
+#' @param dates the vector of dates to check, must be of Date type
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#' @param add_err_msg add_err_msg string containing an additional error message,
+#' default is the empty string (`""`)
+#'
+#' @return NULL invisible
+assert_daily_data <- function(dates,
+                              call = rlang::caller_env(),
+                              add_err_msg = "") {
+  sorted_dates <- dates[order(dates)]
+  # Generate a sequence of dates from the minimum to the
+  # maximum date in the dataset
+  expected_dates <- seq.Date(
+    from = min(sorted_dates),
+    to = max(sorted_dates),
+    by = "day"
+  )
+
+
+  if (!all(expected_dates %in% sorted_dates)) {
+    cli::cli_abort(
+      c(
+        "Vector of dates does not contain dates for each day",
+        add_err_msg
+      ),
+      call = call,
+      class = "wwinference_input_data_error"
+    )
+  }
+  invisible()
+}
+
+#' Assert that the vector of dates contains the duration of the specified
+#' calibration time
+#'
+#' @param date_vector the vector of dates to check, must be of Date type
+#' @param calibration_time integer indicating the number of days that
+#' the dates must span
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#' @param add_err_msg add_err_msg string containing an additional error message,
+#' default is the empty string (`""`)
+#'
+#' @return NULL invisible
+assert_sufficient_days_of_data <- function(date_vector,
+                                           calibration_time,
+                                           call = rlang::caller_env(),
+                                           add_err_msg = "") {
+  # check that you have sufficient count data for the calibration time
+  min_date <- max(date_vector,
+    na.rm = TRUE
+  ) - lubridate::days(calibration_time) + 1
+  check_sufficient_data <- min(date_vector, na.rm = TRUE) <= min_date
+  if (!check_sufficient_data) {
+    cli::cli_abort(
+      c(
+        "Insufficient data for specified calibration time"
+      ),
+      call = call,
+      class = "wwinference_specification_error"
+    )
+  }
+  invisible()
+}
+
+#' Assert that a vector of dates we're testing overlaps with the comparison
+#' dates
+#'
+#' @param test_dates the vector of dates to check, must be in IS08 convention
+#' @param comparison_dates the vector of dates to compare to, must be in ISO8
+#' convention
+#' @param max_date the maximum date the testing dates should be
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#' @param add_err_msg add_err_msg string containing an additional error message,
+#' default is the empty string (`""`)
+#'
+#' @return NULL invisible
+assert_overlap_dates <- function(test_dates,
+                                 comparison_dates,
+                                 max_date,
+                                 call = rlang::caller_env(),
+                                 add_err_msg = "") {
+  check_data_overlap <- min(test_dates) <= max(comparison_dates) &
+    max(test_dates) <= max_date
+  if (!check_data_overlap) {
+    cli::cli_abort(
+      c(
+        "The two vectors of dates do not overlap",
+        add_err_msg
+      ),
+      call = call,
+      class = "wwinference_input_data_error"
+    )
+  }
+
+  invisible()
+}
+#' Assert that two tibbles of date and time mapping align
+#'
+#' @param full_data a tibble containing the columns `date` (with IS08 dates)
+#' and `t` (integers of time in days) that the other tibble will be joined to
+#' @param subsetted_data a tibble containing the columns `date` (with
+#' IS08 dates) and `t` (integers of time in days) that we indexed based on the
+#'  `full_data`
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#' @param add_err_msg add_err_msg string containing an additional error message,
+#' default is the empty string (`""`)
+#'
+#' @return NULL invisible
+assert_equivalent_indexing <- function(full_data,
+                                       subsetted_data,
+                                       call = rlang::caller_env(),
+                                       add_err_msg = "") {
+  full_dates <- full_data |> dplyr::distinct(date, t)
+  subset_dates <- subsetted_data |>
+    dplyr::distinct(date, t) |>
+    dplyr::rename(subset_t = t)
+
+  test_df <- full_dates |>
+    dplyr::left_join(subset_dates, by = "date") |>
+    dplyr::filter(!is.na(subset_t))
+
+  check_indexing <- all(test_df$t == test_df$subset_t)
+
+  if (!check_indexing) {
+    cli::cli_abort(
+      c(
+        "Date and time indexing on datasets being passed to stan do not
+        align"
+      ),
+      call = call,
+      class = "wwinference_preprocessing_error"
+    )
+  }
+
   invisible()
 }

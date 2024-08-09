@@ -5,7 +5,7 @@
 \title{Get model specifications}
 \usage{
 get_model_spec(
-  forecast_date,
+  forecast_date = NULL,
   calibration_time = 90,
   forecast_horizon = 28,
   generation_interval = wwinference::generation_interval,
@@ -18,7 +18,7 @@ get_model_spec(
 }
 \arguments{
 \item{forecast_date}{a character string in ISO8601 format (YYYY-MM-DD)
-indicating the date that the forecast is to be made. Default is}
+indicating the date that the forecast is to be made. Default is NULL}
 
 \item{calibration_time}{integer indicating the number of days to calibrate
 the model for, default is \code{90}}

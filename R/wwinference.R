@@ -64,10 +64,7 @@
 #' @rdname wwinference
 wwinference <- function(ww_data,
                         count_data,
-                        model_spec = wwinference::get_model_spec(
-                          forecast_date =
-                            "2023-12-06"
-                        ),
+                        model_spec = wwinference::get_model_spec(),
                         mcmc_options = wwinference::get_mcmc_options(),
                         generate_initial_values = TRUE,
                         compiled_model = wwinference::compile_model()) {
@@ -76,7 +73,7 @@ wwinference <- function(ww_data,
   assert_no_dates_after_max(count_data$date, model_spec$forecast_date)
 
   # If checks pass, create stan data object
-  stan_data <- get_stan_data(
+  input_data_and_args <- get_stan_data(
     input_count_data = count_data,
     input_ww_data = ww_data,
     forecast_date = model_spec$forecast_date,
@@ -89,12 +86,15 @@ wwinference <- function(ww_data,
     include_ww = as.numeric(model_spec$include_ww),
     compute_likelihood = 1
   )
+  # We want to return these to the user
+  input_data <- input_data_and_args$input_data
+  stan_args <- input_data_and_args$stan_args
 
   init_lists <- NULL
   if (generate_initial_values) {
     init_lists <- c()
     for (i in 1:mcmc_options$n_chains) {
-      init_lists[[i]] <- get_inits(stan_data, params)
+      init_lists[[i]] <- get_inits(stan_args, params)
     }
   }
 
@@ -122,7 +122,7 @@ wwinference <- function(ww_data,
     date_time_spine <- tibble::tibble(
       date = seq(
         from = min(count_data$date),
-        to = min(count_data$date) + stan_data$ot + stan_data$ht,
+        to = min(count_data$date) + stan_args$ot + stan_args$ht,
         by = "days"
       )
     ) |>
@@ -137,8 +137,8 @@ wwinference <- function(ww_data,
       dplyr::bind_rows(tibble::tibble(
         site = "remainder of pop",
         site_index = max(ww_data$site_index) + 1,
-        site_pop = stan_data$subpop_size[
-          length(unique(stan_data$subpop_size))
+        site_pop = stan_args$subpop_size[
+          length(unique(stan_args$subpop_size))
         ]
       ))
 
@@ -275,7 +275,7 @@ get_mcmc_options <- function(
 #'
 #'
 #' @param forecast_date a character string in ISO8601 format (YYYY-MM-DD)
-#' indicating the date that the forecast is to be made. Default is
+#' indicating the date that the forecast is to be made. Default is NULL
 #' @param calibration_time integer indicating the number of days to calibrate
 #' the model for, default is `90`
 #' @param forecast_horizon integer indicating the number of days, including the
@@ -303,7 +303,7 @@ get_mcmc_options <- function(
 #' @examples
 #' model_spec_list <- get_model_spec(forecast_date = "2023-12-06")
 get_model_spec <- function(
-    forecast_date,
+    forecast_date = NULL,
     calibration_time = 90,
     forecast_horizon = 28,
     generation_interval = wwinference::generation_interval,
@@ -315,6 +315,11 @@ get_model_spec <- function(
         package = "wwinference"
       )
     )) {
+  if (is.null(forecast_date)) {
+    cli::cli_abort(
+      "The user must specify a forecast date"
+    )
+  }
   model_specs <- list(
     forecast_date = forecast_date,
     calibration_time = calibration_time,
