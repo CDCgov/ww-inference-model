@@ -60,31 +60,6 @@
 #' pipeline to ensure model convergence.
 #' @name wwinference
 #'
-NULL
-
-#' Model fitting function
-#' @param compiled_model The compiled model object
-#' @param standata The stan data object
-#' @param model_spec The model specification parameters
-#' @param init_lists A list of initial values for the sampler
-#' @return The fit object from the model
-#' @noRd
-fit_model <- function(compiled_model,
-                      stan_data,
-                      mcmc_options,
-                      init_lists) {
-  compiled_model$sample(
-    data = stan_data,
-    init = init_lists,
-    seed = mcmc_options$seed,
-    iter_sampling = mcmc_options$iter_sampling,
-    iter_warmup = mcmc_options$iter_warmup,
-    max_treedepth = mcmc_options$max_treedepth,
-    chains = mcmc_options$n_chains,
-    parallel_chains = mcmc_options$n_chains
-  )
-}
-
 #' @export
 #' @rdname wwinference
 wwinference <- function(ww_data,
@@ -175,7 +150,7 @@ wwinference <- function(ww_data,
     out <- list(
       ww_data = ww_data,
       count_data = count_data,
-      fit = fit,
+      fit = fit$result,
       date_time_spine = date_time_spine,
       lab_site_spine = lab_site_spine,
       subpop_spine = subpop_spine
@@ -192,6 +167,17 @@ wwinference <- function(ww_data,
   structure(out, class = "wwinference_fit")
 }
 
+
+#' @title Printing method for object of class `wwinference_fit`
+#'
+#' @description
+#' Prints the labeled elements of the `wwinference_fit` object
+#'
+#' @param x Object of class `wwinference.fit`
+#'
+#' @param ... Additional parameters
+#' @return NULL
+#'
 #' @export
 print.wwinference_fit <- function(x, ...) {
   cat("wwinference_fit object\n")
@@ -201,6 +187,31 @@ print.wwinference_fit <- function(x, ...) {
   cat("Subpop spine: ", x$subpop_spine, "\n")
   invisible(x)
 }
+
+
+#' Model fitting function
+#' @param compiled_model The compiled model object
+#' @param standata The stan data object
+#' @param mcmc_options The MCMC specifications
+#' @param init_lists A list of initial values for the sampler
+#' @return The fit object from the model
+#' @noRd
+fit_model <- function(compiled_model,
+                      stan_data,
+                      mcmc_options,
+                      init_lists) {
+  compiled_model$sample(
+    data = stan_data,
+    init = init_lists,
+    seed = mcmc_options$seed,
+    iter_sampling = mcmc_options$iter_sampling,
+    iter_warmup = mcmc_options$iter_warmup,
+    max_treedepth = mcmc_options$max_treedepth,
+    chains = mcmc_options$n_chains,
+    parallel_chains = mcmc_options$n_chains
+  )
+}
+
 
 #' Get MCMC options
 #'
