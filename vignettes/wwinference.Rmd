@@ -29,7 +29,7 @@ interested in fitting the `wwinference` model to their own data.
 In this quick start, we also use `dplyr` `tidybayes` and `ggplot2` packages.
 These are installed as dependencies when `wwinference` is installed.
 
-```{r warning=FALSE, message=FALSE}
+```{r load-pkgs, warning=FALSE, message=FALSE}
 library(wwinference)
 library(dplyr)
 library(ggplot2)
@@ -320,8 +320,8 @@ fitting the data well, and if the nowcasted/forecast quantities look reasonable.
 We can create the plots using the fitting wrapper functions (figures can
 also created directly using the `draws_df`)
 
-```{r,  out.width='100%'}
-draws_df <- fit$draws_df
+```{r generating-figures,  out.width='100%'}
+draws_df <- get_draws_df(fit)
 
 plot_hosp <- get_plot_forecasted_counts(
   draws = draws_df,
@@ -355,10 +355,10 @@ we recommend the (bayesplot tutorial)[https://mc-stan.org/bayesplot/articles/vis
 ```{r}
 convergence_flag_df <- wwinference::get_model_diagnostic_flags(
   stan_fit_obj =
-    fit$raw_fit_obj
+    fit$fit$raw_fit_obj
 )
-parameter_diagnostics <- fit$raw_fit_obj$summary()
-diagnostic_summary <- fit$raw_fit_obj$diagnostic_summary(quiet = TRUE)
+parameter_diagnostics <- fit$fit$raw_fit_obj$summary()
+diagnostic_summary <- fit$fit$raw_fit_obj$diagnostic_summary(quiet = TRUE)
 head(convergence_flag_df)
 ```
 
@@ -389,7 +389,7 @@ fit_hosp_only <- wwinference::wwinference(
 ```
 
 ```{r,  out.width='100%'}
-draws_df_hosp_only <- fit_hosp_only$draws_df
+draws_df_hosp_only <- get_draws_df(fit_hosp_only)
 plot_hosp_hosp_only <- get_plot_forecasted_counts(
   draws = draws_df_hosp_only,
   count_data_eval = hosp_data_eval,

@@ -58,8 +58,35 @@
 #' has major model issues. We recommend the user always run the
 #' `check_diagnostics()` function on the `diagnostic_summary` as part of any
 #' pipeline to ensure model convergence.
-#' @export
+#' @name wwinference
 #'
+NULL
+
+#' Model fitting function
+#' @param compiled_model The compiled model object
+#' @param standata The stan data object
+#' @param model_spec The model specification parameters
+#' @param init_lists A list of initial values for the sampler
+#' @return The fit object from the model
+#' @noRd
+fit_model <- function(compiled_model,
+                      stan_data,
+                      model_spec,
+                      init_lists) {
+  compiled_model$sample(
+    data = stan_data,
+    init = init_lists,
+    seed = mcmc_options$seed,
+    iter_sampling = mcmc_options$iter_sampling,
+    iter_warmup = mcmc_options$iter_warmup,
+    max_treedepth = mcmc_options$max_treedepth,
+    chains = mcmc_options$n_chains,
+    parallel_chains = mcmc_options$n_chains
+  )
+}
+
+#' @export
+#' @rdname wwinference
 wwinference <- function(ww_data,
                         count_data,
                         model_spec = wwinference::get_model_spec(
@@ -96,32 +123,13 @@ wwinference <- function(ww_data,
     }
   }
 
-
-  fit_model <- function(compiled_model,
-                        standata,
-                        model_spec,
-                        init_lists) {
-    fit <- compiled_model$sample(
-      data = stan_data,
-      init = init_lists,
-      seed = mcmc_options$seed,
-      iter_sampling = mcmc_options$iter_sampling,
-      iter_warmup = mcmc_options$iter_warmup,
-      max_treedepth = mcmc_options$max_treedepth,
-      chains = mcmc_options$n_chains,
-      parallel_chains = mcmc_options$n_chains
-    )
-
-    return(fit)
-  }
-
   # This returns the cmdstan object if the model runs, and result = NULL if
   # the model errors
   safe_fit_model <- purrr::safely(fit_model)
 
   fit <- safe_fit_model(
     compiled_model,
-    standata,
+    stan_data,
     model_spec,
     init_lists
   )
@@ -159,23 +167,15 @@ wwinference <- function(ww_data,
         ]
       ))
 
-    draws <- get_draws_df(
-      ww_data = ww_data,
-      count_data = count_data,
-      fit_obj = fit,
-      date_time_spine = date_time_spine,
-      lab_site_spine = lab_site_spine,
-      subpop_spine = subpop_spine
-    )
-    summary_diagnostics <- fit$result$diagnostic_summary()
     convergence_flag_df <- get_model_diagnostic_flags(
       stan_fit_object =
         fit$result
     )
 
     out <- list(
-      draws_df = draws,
-      raw_fit_obj = fit$result,
+      ww_data = ww_data,
+      count_data = count_data,
+      fit = fit,
       date_time_spine = date_time_spine,
       lab_site_spine = lab_site_spine,
       subpop_spine = subpop_spine
@@ -189,7 +189,17 @@ wwinference <- function(ww_data,
     }
   }
 
-  return(out)
+  structure(out, class = "wwinference_fit")
+}
+
+#' @export
+print.wwinference_fit <- function(x, ...) {
+  cat("wwinference_fit object\n")
+  cat("Model fit object: ", x$fit, "\n")
+  cat("Date time spine: ", x$date_time_spine, "\n")
+  cat("Lab site spine: ", x$lab_site_spine, "\n")
+  cat("Subpop spine: ", x$subpop_spine, "\n")
+  invisible(x)
 }
 
 #' Get MCMC options
