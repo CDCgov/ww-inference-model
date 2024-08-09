@@ -384,74 +384,32 @@ generate_simulated_data <- function(r_in_weeks = # nolint
 
   # Format the data-----------------------------------------------------------
 
-  ww_data <- as.data.frame(t(log_obs_conc_lab_site)) |>
-    dplyr::mutate(t = 1:(ot + ht)) |>
-    tidyr::pivot_longer(!t,
-      names_to = "lab_site",
-      names_prefix = "V",
-      values_to = "log_conc"
-    ) |>
-    dplyr::mutate(
-      lab_site = as.integer(lab_site)
-    ) |>
-    dplyr::left_join(date_df, by = "t") |>
-    dplyr::left_join(site_lab_map,
-      by = "lab_site"
-    ) |>
-    dplyr::left_join(
-      data.frame(
-        lab_site = 1:n_lab_sites,
-        lod_sewage = lod_lab_site
-      ),
-      by = c("lab_site")
-    ) |> # Remove below LOD values
-    dplyr::mutate(
-      lod_sewage =
-        dplyr::case_when(
-          is.na(log_conc) ~ NA,
-          !is.na(log_conc) ~ lod_sewage
-        )
-    ) |>
-    dplyr::mutate(
-      genome_copies_per_ml = exp(log_conc),
-      lod = exp(lod_sewage)
-    ) |>
-    dplyr::filter(!is.na(genome_copies_per_ml)) |>
-    dplyr::rename(site_pop = ww_pop) |>
-    dplyr::arrange(site, lab, date) |>
-    dplyr::select(date, site, lab, genome_copies_per_ml, lod, site_pop)
+  ww_data <- format_ww_data(
+    log_obs_conc_lab_site,
+    ot,
+    ht,
+    date_df,
+    site_lab_map
+  )
+
 
   # Make a hospital admissions dataframe for model calibration
-  hosp_data <- tibble::tibble(
-    t = 1:ot,
-    daily_hosp_admits = pred_obs_hosp[1:ot],
-    state_pop = pop_size
+  hosp_data <- format_hosp_data(pred_obs_hosp,
+    dur_obs = ot,
+    pop_size,
+    date_df
+  )
+
+  hosp_data_for_eval <- format_hosp_data(pred_obs_hosp,
+    dur_obs = (ot + ht),
+    pop_size,
+    date_df
   ) |>
-    dplyr::left_join(
-      date_df,
-      by = "t"
-    ) |>
-    dplyr::select(
-      date,
-      daily_hosp_admits,
-      state_pop
+    dplyr::rename(
+      daily_hosp_admits_for_eval =
+        daily_hosp_admits
     )
 
-  # Make another one for model evaluation
-  hosp_data_eval <- tibble::tibble(
-    t = 1:(ot + ht),
-    daily_hosp_admits_for_eval = pred_obs_hosp,
-    state_pop = pop_size
-  ) |>
-    dplyr::left_join(
-      date_df,
-      by = "t"
-    ) |>
-    dplyr::select(
-      date,
-      daily_hosp_admits_for_eval,
-      state_pop
-    )
 
   example_data <- list(
     ww_data = ww_data,

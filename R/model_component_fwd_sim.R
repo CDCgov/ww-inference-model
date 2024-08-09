@@ -316,3 +316,98 @@ downsample_ww_obs <- function(log_conc_lab_site,
 
   return(log_obs_conc_lab_site)
 }
+
+#' Format the wastewater data as a tidy data frame
+#'
+#' @param log_obs_conc_lab_site matrix of numeric values where rows are the
+#' site-lab combinations and columns are the observed time points
+#' @param ot integer indicating the number of days we will have observed data
+#' for in the calibration period
+#' @param ht integer indicating the time after the last observed epi indicator
+#'  and before the forecast date, of which there can still be wastewater
+#'  observations
+#' @param date_df tibble of columns `date` and `t` that map time in days to
+#' dates
+#' @param site_lab_map tibble mapping sites, labs, lab site indices, and the
+#' population size of the site
+#'
+#' @return a tidy dataframe containing the observed wastewater concentrations
+#' in each site and lab at each time point
+format_ww_data <- function(log_obs_conc_lab_site,
+                           ot,
+                           ht,
+                           date_df,
+                           site_lab_map) {
+  ww_data <- as.data.frame(t(log_obs_conc_lab_site)) |>
+    dplyr::mutate(t = 1:(ot + ht)) |>
+    tidyr::pivot_longer(!t,
+      names_to = "lab_site",
+      names_prefix = "V",
+      values_to = "log_conc"
+    ) |>
+    dplyr::mutate(
+      lab_site = as.integer(lab_site)
+    ) |>
+    dplyr::left_join(date_df, by = "t") |>
+    dplyr::left_join(site_lab_map,
+      by = "lab_site"
+    ) |>
+    dplyr::left_join(
+      data.frame(
+        lab_site = 1:n_lab_sites,
+        lod_sewage = lod_lab_site
+      ),
+      by = c("lab_site")
+    ) |> # Remove below LOD values
+    dplyr::mutate(
+      lod_sewage =
+        dplyr::case_when(
+          is.na(log_conc) ~ NA,
+          !is.na(log_conc) ~ lod_sewage
+        )
+    ) |>
+    dplyr::mutate(
+      genome_copies_per_ml = exp(log_conc),
+      lod = exp(lod_sewage)
+    ) |>
+    dplyr::filter(!is.na(genome_copies_per_ml)) |>
+    dplyr::rename(site_pop = ww_pop) |>
+    dplyr::arrange(site, lab, date) |>
+    dplyr::select(date, site, lab, genome_copies_per_ml, lod, site_pop)
+
+  return(ww_data)
+}
+
+#' Format the hospital admissions data into a tidy dataframe
+#'
+#' @param pred_obs_hosp vector of non-negative integers indicating the number
+#' of hospital admissions on each day
+#' @param dur_obs integer indicating the number of days we want the
+#' observations for
+#' @param pop_size integer indicating the population size of the admissions
+#' catchment area
+#' @param date_df tibble of columns `date` and `t` that map time in days to
+#' dates
+#'
+#' @return a tidy dataframe containing counts of admissions by date alongside
+#' population size
+format_hosp_data <- function(pred_obs_hosp,
+                             dur_obs,
+                             pop_size,
+                             date_df) {
+  hosp_data <- tibble::tibble(
+    t = 1:ot,
+    daily_hosp_admits = pred_obs_hosp[1:dur_obs],
+    state_pop = pop_size
+  ) |>
+    dplyr::left_join(
+      date_df,
+      by = "t"
+    ) |>
+    dplyr::select(
+      date,
+      daily_hosp_admits,
+      state_pop
+    )
+  return(hosp_data)
+}
