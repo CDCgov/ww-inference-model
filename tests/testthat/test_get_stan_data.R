@@ -173,7 +173,7 @@ test_that(paste0(
 })
 
 test_that("Test that pmf check works as expected", {
-  expect_error(get_stan_data(
+  expect_warning(get_stan_data(
     input_count_data,
     input_ww_data,
     forecast_date,
@@ -186,7 +186,7 @@ test_that("Test that pmf check works as expected", {
     include_ww
   ))
 
-  expect_error(get_stan_data(
+  expect_warning(get_stan_data(
     input_count_data,
     input_ww_data,
     forecast_date,
@@ -199,7 +199,7 @@ test_that("Test that pmf check works as expected", {
     include_ww
   ))
 
-  expect_error(get_stan_data(
+  expect_warning(get_stan_data(
     input_count_data,
     input_ww_data,
     forecast_date,

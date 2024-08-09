@@ -225,10 +225,10 @@ validate_pmf <- function(pmf,
   }
 
   if (length(pmf) > calibration_time || length(pmf) > nrow(count_data)) {
-    cli::cli_abort(
+    cli::cli_warn(
       c(
         "Length of {.arg {arg}} is longer than calibration time. Consider",
-        "truncating the pmf or increasing the calibration time. "
+        " increasing the calibration time. "
       )
     )
   }
