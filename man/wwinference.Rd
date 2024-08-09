@@ -8,7 +8,7 @@ data}
 wwinference(
   ww_data,
   count_data,
-  model_spec = wwinference::get_model_spec(forecast_date = "2023-12-06"),
+  model_spec = wwinference::get_model_spec(),
   mcmc_options = wwinference::get_mcmc_options(),
   generate_initial_values = TRUE,
   compiled_model = wwinference::compile_model()

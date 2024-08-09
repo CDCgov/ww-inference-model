@@ -23,8 +23,83 @@
 #' @param compute_likelihood indicator variable telling stan whether or not to
 #' compute the likelihood, default = `1`
 #'
-#' @return a list of named variables to pass to stan
+#' @return a nested list containing the following:
+#' `input_data`: a list containing two dataframes:
+#'    `input_ww_data`: wastewater data passed to stan
+#'    `input_count_data`: count data passed to stan
+#'
+#'  `stan_args`: named variables to pass to stan
 #' @export
+#'
+#' @examples
+#' ww_data <- tibble::tibble(
+#'   date = rep(seq(
+#'     from = lubridate::ymd("2023-08-01"),
+#'     to = lubridate::ymd("2023-11-01"),
+#'     by = "weeks"
+#'   ), 2),
+#'   site = c(rep(1, 14), rep(2, 14)),
+#'   lab = c(rep(1, 28)),
+#'   conc = abs(rnorm(28, mean = 500, sd = 50)),
+#'   lod = c(rep(20, 14), rep(15, 14)),
+#'   site_pop = c(rep(2e5, 14), rep(4e5, 14))
+#' )
+#'
+#' ww_data_preprocessed <- preprocess_ww_data(ww_data,
+#'   conc_col_name = "conc",
+#'   lod_col_name = "lod"
+#' )
+#' input_ww_data <- indicate_ww_exclusions(ww_data_preprocessed)
+#'
+#'
+#' hosp_data <- tibble::tibble(
+#'   date = seq(
+#'     from = lubridate::ymd("2023-07-01"),
+#'     to = lubridate::ymd("2023-10-30"),
+#'     by = "days"
+#'   ),
+#'   daily_admits = sample(5:70, 122, replace = TRUE),
+#'   state_pop = rep(1e6, 122)
+#' )
+#'
+#' input_count_data <- preprocess_count_data(
+#'   hosp_data,
+#'   "daily_admits",
+#'   "state_pop"
+#' )
+#'
+#' generation_interval <- to_simplex(c(0.01, 0.2, 0.3, 0.2, 0.1, 0.1, 0.01))
+#' inf_to_count_delay <- to_simplex(c(
+#'   rep(0.01, 12), rep(0.2, 4),
+#'   rep(0.01, 10)
+#' ))
+#' infection_feedback_pmf <- generation_interval
+#'
+#' params <- get_params(
+#'   system.file("extdata", "example_params.toml",
+#'     package = "wwinference"
+#'   )
+#' )
+#' forecast_date <- "2023-11-06"
+#' calibration_time <- 90
+#' forecast_horizon <- 28
+#' include_ww <- 1
+#' input_data_and_args <- get_stan_data(
+#'   input_count_data,
+#'   input_ww_data,
+#'   forecast_date,
+#'   forecast_horizon,
+#'   calibration_time,
+#'   generation_interval,
+#'   inf_to_count_delay,
+#'   infection_feedback_pmf,
+#'   params,
+#'   include_ww
+#' )
+#' input_data <- input_data_and_args$input_data
+#' input_ww_data <- input_data$input_ww_data
+#' input_count_data <- input_data$input_count_data
+#' stan_args <- input_data_and_args$stan_args
 get_stan_data <- function(input_count_data,
                           input_ww_data,
                           forecast_date,
@@ -36,12 +111,6 @@ get_stan_data <- function(input_count_data,
                           params,
                           include_ww,
                           compute_likelihood = 1) {
-  # Assign parameter names
-  par_names <- colnames(params)
-  for (i in seq_along(par_names)) {
-    assign(par_names[i], as.double(params[i]))
-  }
-
   # Get the last date that there were observations of the epidemiological
   # indicator (aka cases or hospital admissions counts)
   last_count_data_date <- max(input_count_data$date, na.rm = TRUE)
@@ -50,6 +119,15 @@ get_stan_data <- function(input_count_data,
   ww_data_present <- nrow(input_ww_data) != 0
   if (ww_data_present == FALSE) {
     message("No wastewater data present")
+  }
+
+  if (all(sum(input_ww_data$flag_as_ww_outlier) > sum(input_ww_data$exclude))) {
+    cli::cli_warn(
+      c(
+        "Wastewater data being passed to the model has outliers flagged,",
+        "but not all have been indicated for exclusion from model fit"
+      )
+    )
   }
 
 
@@ -72,10 +150,25 @@ get_stan_data <- function(input_count_data,
       "exclude" %in% colnames(input_ww_data)
   )
 
-  # Filter out wastewater outliers and arrange data for indexing
+
+  # Filter out wastewater outliers, and remove extra wastewater
+  # data. Arrange data for indexing. This is what will be returned.
   ww_data <- input_ww_data |>
-    dplyr::filter(exclude != 1) |>
+    dplyr::filter(
+      exclude != 1,
+      date > last_count_data_date -
+        lubridate::days(calibration_time)
+    ) |>
     dplyr::arrange(date, lab_site_index)
+
+  # Get the remaining things needed for both models.
+  input_count_data_filtered <- input_count_data |>
+    dplyr::filter(
+      date > last_count_data_date - lubridate::days(calibration_time)
+    )
+  # This is what will be returned
+  count_data <- add_time_indexing(input_count_data_filtered)
+
 
   # Returns a list with the numbers of elements needed for the stan model
   ww_data_sizes <- get_ww_data_sizes(
@@ -86,10 +179,35 @@ get_stan_data <- function(input_count_data,
   # observations
   ww_indices <- get_ww_data_indices(
     ww_data,
-    input_count_data,
+    count_data,
     owt = ww_data_sizes$owt,
     lod_col_name = "below_lod"
   )
+  ww_data$t <- ww_indices$ww_sampled_times
+  # Ensure that both datasets have overlap with one another, are sufficient
+  # in length for the specified calibration time, and have proper time indexing
+  validate_both_datasets(
+    input_count_data = count_data,
+    input_ww_data = ww_data,
+    calibration_time = calibration_time,
+    forecast_date = forecast_date
+  )
+  validate_pmf(generation_interval,
+    calibration_time,
+    count_data,
+    arg = "generation interval"
+  )
+  validate_pmf(infection_feedback_pmf,
+    calibration_time,
+    count_data,
+    arg = "infection feedback pmf"
+  )
+  validate_pmf(inf_to_count_delay,
+    calibration_time,
+    count_data,
+    arg = "infection to count delay"
+  )
+
   # Returns a list of the vectors of lod values, the site population sizes in
   # order of the site index, a vector of observations of the log of
   # the genome copies per ml
@@ -110,6 +228,15 @@ get_stan_data <- function(input_count_data,
     sum(ww_values$pop_ww) / pop
   )
 
+  if (sum(ww_values$pop_ww) / pop > 1) {
+    cli::cli_warn(c(
+      "The sum of the wastewater site catchment area populations:",
+      "is greater than the global population. While the model supports this",
+      "we advise checking your input data to ensure it is specified correctly."
+    ))
+  }
+
+
   # Logic to determine the number of subpopulations to estimate R(t) for:
   # First determine if we need to add an additional subpopulation
   add_auxiliary_site <- ifelse(pop >= sum(ww_values$pop_ww), TRUE, FALSE)
@@ -121,13 +248,6 @@ get_stan_data <- function(input_count_data,
     n_ww_sites = ww_data_sizes$n_ww_sites
   )
 
-  # Get the remaining things needed for both models
-  input_count_data_filtered <- input_count_data |>
-    dplyr::filter(
-      date >= last_count_data_date - lubridate::days(calibration_time)
-    )
-  count_data <- add_time_indexing(input_count_data_filtered)
-
   # Get the sizes of all the elements
   count_data_sizes <- get_count_data_sizes(
     input_count_data = count_data,
@@ -135,7 +255,7 @@ get_stan_data <- function(input_count_data,
     forecast_horizon = forecast_horizon,
     calibration_time = calibration_time,
     last_count_data_date = last_count_data_date,
-    uot = uot
+    uot = params$uot
   )
   count_indices <- get_count_indices(count_data)
   count_values <- get_count_values(
@@ -158,26 +278,27 @@ get_stan_data <- function(input_count_data,
   )
   # matrix to transform p_hosp RW from weekly to daily
   p_hosp_m <- get_ind_m(
-    uot + count_data_sizes$ot + count_data_sizes$ht,
+    params$uot + count_data_sizes$ot + count_data_sizes$ht,
     count_data_sizes$tot_weeks
   )
 
   # Estimate of number of initial infections
-  i0 <- mean(count_values$count[1:7], na.rm = TRUE) / p_hosp_mean
+  i0 <- mean(count_values$count[1:7], na.rm = TRUE) / params$p_hosp_mean
 
   # package up parameters for stan data object
   viral_shedding_pars <- c(
-    t_peak_mean, t_peak_sd, viral_peak_mean, viral_peak_sd,
-    duration_shedding_mean, duration_shedding_sd
+    params$t_peak_mean, params$t_peak_sd, params$viral_peak_mean,
+    params$viral_peak_sd, params$duration_shedding_mean,
+    params$duration_shedding_sd
   )
 
   inf_to_count_delay_max <- length(inf_to_count_delay)
 
   data_renewal <- list(
-    gt_max = gt_max,
+    gt_max = params$gt_max,
     hosp_delay_max = inf_to_count_delay_max,
     inf_to_hosp = inf_to_count_delay,
-    mwpd = ml_of_ww_per_person_day,
+    mwpd = params$ml_of_ww_per_person_day,
     ot = count_data_sizes$ot,
     n_subpops = subpop_data$n_subpops,
     n_ww_sites = ww_data_sizes$n_ww_sites,
@@ -186,14 +307,14 @@ get_stan_data <- function(input_count_data,
     oht = count_data_sizes$oht,
     n_censored = ww_data_sizes$n_censored,
     n_uncensored = ww_data_sizes$n_uncensored,
-    uot = uot,
+    uot = params$uot,
     ht = count_data_sizes$ht,
     n_weeks = count_data_sizes$n_weeks,
     ind_m = ind_m,
     tot_weeks = count_data_sizes$tot_weeks,
     p_hosp_m = p_hosp_m,
     generation_interval = generation_interval,
-    ts = 1:gt_max,
+    ts = 1:params$gt_max,
     state_pop = pop,
     subpop_size = subpop_data$subpop_size,
     norm_pop = subpop_data$norm_pop,
@@ -213,45 +334,54 @@ get_stan_data <- function(input_count_data,
     infection_feedback_pmf = infection_feedback_pmf,
     # All the priors!
     viral_shedding_pars = viral_shedding_pars, # tpeak, viral peak, dur_shed
-    autoreg_rt_a = autoreg_rt_a,
-    autoreg_rt_b = autoreg_rt_b,
-    autoreg_rt_site_a = autoreg_rt_site_a,
-    autoreg_rt_site_b = autoreg_rt_site_b,
-    autoreg_p_hosp_a = autoreg_p_hosp_a,
-    autoreg_p_hosp_b = autoreg_p_hosp_b,
-    inv_sqrt_phi_prior_mean = inv_sqrt_phi_prior_mean,
-    inv_sqrt_phi_prior_sd = inv_sqrt_phi_prior_sd,
-    r_prior_mean = r_prior_mean,
-    r_prior_sd = r_prior_sd,
-    log10_g_prior_mean = log10_g_prior_mean,
-    log10_g_prior_sd = log10_g_prior_sd,
-    i0_over_n_prior_a = 1 + i0_certainty * (i0 / pop),
-    i0_over_n_prior_b = 1 + i0_certainty * (1 - (i0 / pop)),
-    wday_effect_prior_mean = wday_effect_prior_mean,
-    wday_effect_prior_sd = wday_effect_prior_sd,
-    initial_growth_prior_mean = initial_growth_prior_mean,
-    initial_growth_prior_sd = initial_growth_prior_sd,
-    sigma_ww_site_prior_mean_mean = sigma_ww_site_prior_mean_mean,
-    sigma_ww_site_prior_mean_sd = sigma_ww_site_prior_mean_sd,
-    sigma_ww_site_prior_sd_mean = sigma_ww_site_prior_sd_mean,
-    sigma_ww_site_prior_sd_sd = sigma_ww_site_prior_sd_sd,
-    eta_sd_sd = eta_sd_sd,
-    sigma_i0_prior_mode = sigma_i0_prior_mode,
-    sigma_i0_prior_sd = sigma_i0_prior_sd,
-    p_hosp_prior_mean = p_hosp_mean,
-    p_hosp_sd_logit = p_hosp_sd_logit,
-    p_hosp_w_sd_sd = p_hosp_w_sd_sd,
-    ww_site_mod_sd_sd = ww_site_mod_sd_sd,
-    inf_feedback_prior_logmean = infection_feedback_prior_logmean,
-    inf_feedback_prior_logsd = infection_feedback_prior_logsd,
-    sigma_rt_prior = sigma_rt_prior,
-    log_phi_g_prior_mean = log_phi_g_prior_mean,
-    log_phi_g_prior_sd = log_phi_g_prior_sd,
+    autoreg_rt_a = params$autoreg_rt_a,
+    autoreg_rt_b = params$autoreg_rt_b,
+    autoreg_rt_site_a = params$autoreg_rt_site_a,
+    autoreg_rt_site_b = params$autoreg_rt_site_b,
+    autoreg_p_hosp_a = params$autoreg_p_hosp_a,
+    autoreg_p_hosp_b = params$autoreg_p_hosp_b,
+    inv_sqrt_phi_prior_mean = params$inv_sqrt_phi_prior_mean,
+    inv_sqrt_phi_prior_sd = params$inv_sqrt_phi_prior_sd,
+    r_prior_mean = params$r_prior_mean,
+    r_prior_sd = params$r_prior_sd,
+    log10_g_prior_mean = params$log10_g_prior_mean,
+    log10_g_prior_sd = params$log10_g_prior_sd,
+    i0_over_n_prior_a = 1 + params$i0_certainty * (i0 / pop),
+    i0_over_n_prior_b = 1 + params$i0_certainty * (1 - (i0 / pop)),
+    wday_effect_prior_mean = params$wday_effect_prior_mean,
+    wday_effect_prior_sd = params$wday_effect_prior_sd,
+    initial_growth_prior_mean = params$initial_growth_prior_mean,
+    initial_growth_prior_sd = params$initial_growth_prior_sd,
+    sigma_ww_site_prior_mean_mean = params$sigma_ww_site_prior_mean_mean,
+    sigma_ww_site_prior_mean_sd = params$sigma_ww_site_prior_mean_sd,
+    sigma_ww_site_prior_sd_mean = params$sigma_ww_site_prior_sd_mean,
+    sigma_ww_site_prior_sd_sd = params$sigma_ww_site_prior_sd_sd,
+    eta_sd_sd = params$eta_sd_sd,
+    sigma_i0_prior_mode = params$sigma_i0_prior_mode,
+    sigma_i0_prior_sd = params$sigma_i0_prior_sd,
+    p_hosp_prior_mean = params$p_hosp_mean,
+    p_hosp_sd_logit = params$p_hosp_sd_logit,
+    p_hosp_w_sd_sd = params$p_hosp_w_sd_sd,
+    ww_site_mod_sd_sd = params$ww_site_mod_sd_sd,
+    inf_feedback_prior_logmean = params$infection_feedback_prior_logmean,
+    inf_feedback_prior_logsd = params$infection_feedback_prior_logsd,
+    sigma_rt_prior = params$sigma_rt_prior,
+    log_phi_g_prior_mean = params$log_phi_g_prior_mean,
+    log_phi_g_prior_sd = params$log_phi_g_prior_sd,
     ww_sampled_sites = ww_indices$ww_sampled_sites,
     lab_site_to_site_map = ww_indices$lab_site_to_site_map
   )
 
-  return(data_renewal)
+  input_data <- list(
+    input_ww_data = ww_data,
+    input_count_data = count_data
+  )
+  input_data_and_args <- list(
+    input_data = input_data,
+    stan_args = data_renewal
+  )
+
+  return(input_data_and_args)
 }
 
 #' Get the integer sizes of the wastewater input data
@@ -437,6 +567,9 @@ get_ww_data_indices <- function(ww_data,
 #' @param one_pop_per_site a boolean variable indicating if there should only
 #' be on catchment area population per site, default is `TRUE` because this is
 #' what the stan model expects
+#' @param padding_value an smaller numeric value to add to the the
+#' concentration measurements to ensure that log transformation will produce
+#' real numbers
 #'
 #' @return  A list containing the necessary vectors of values that
 #' the stan model requires:
@@ -449,7 +582,8 @@ get_ww_values <- function(ww_data,
                           ww_measurement_col_name = "genome_copies_per_ml",
                           ww_lod_value_col_name = "lod",
                           ww_site_pop_col_name = "site_pop",
-                          one_pop_per_site = TRUE) {
+                          one_pop_per_site = TRUE,
+                          padding_value = 1e-8) {
   ww_data_present <- nrow(ww_data) != 0
 
   if (isTRUE(ww_data_present)) {
@@ -481,7 +615,7 @@ get_ww_values <- function(ww_data,
     log_conc <- ww_data |>
       dplyr::mutate(
         log_conc =
-          (log(.data[[ww_measurement_col_name]] + 1e-8))
+          (log(.data[[ww_measurement_col_name]] + padding_value))
       ) |>
       dplyr::pull(log_conc)
 
