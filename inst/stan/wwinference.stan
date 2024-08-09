@@ -108,9 +108,9 @@ transformed data {
   }
   real phi = 25;
   real l = 1;
-  real log_sigma_generalized_mu = log(0.02);
-  real log_sigma_generalized_sd = 0.1;
-  real scaling_factor = 1.1;
+  real log_sigma_generalized_mu = log(0.02^(n_subpops-1));
+  real log_sigma_generalized_sd = 0.01;
+  real scaling_factor = 1.0;
   matrix[n_subpops-1,n_subpops-1] non_norm_omega = exponential_decay_corr_func(dist_matrix, phi, l);
   //----------------------------------------------------------------------------
 
@@ -233,7 +233,8 @@ transformed parameters {
   // Site level spatial Rt------------------------------------------------------
   //non_norm_omega = exponential_decay_corr_func(dist_matrix, phi, l);
   norm_omega = matrix_normalization(non_norm_omega);
-  sigma_mat = pow(sigma_generalized, 1.0 / n_subpops) * norm_omega;
+  sigma_mat = pow(sigma_generalized, 1.0 / (n_subpops - 1)) * norm_omega;
+  //sigma_mat = sigma_generalized * non_norm_omega;
   for (i in 1:n_weeks) {
     spatial_dev_ns_mat[,i] = cholesky_decompose(sigma_mat) * non_cent_spatial_dev_ns_mat[,i];
   }

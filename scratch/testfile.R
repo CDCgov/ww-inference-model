@@ -7,6 +7,8 @@ library(tidybayes)
 hosp_data <- wwinference::hosp_data
 hosp_data_eval <- wwinference::hosp_data_eval
 ww_data <- wwinference::ww_data
+rt_global <- wwinference::rt_global_data
+rt_site <- wwinference::rt_site_data
 
 head(ww_data)
 head(hosp_data)
@@ -69,6 +71,47 @@ ggplot(hosp_data_preprocessed) +
   ggtitle("State level hospital admissions") +
   theme_bw()
 
+# Rt site-----------------------------------------------------------------------
+rt_site_df <- as.data.frame(t(rt_site)) %>%
+  mutate(date = hosp_data_eval$date) %>%
+  `colnames<-`(c(
+    "Site: 1",
+    "Site: 2",
+    "Site: 3",
+    "Site: 4",
+    "remainder of pop",
+    "date"
+  )) %>%
+  pivot_longer(cols = -date) %>%
+  `colnames<-`(c(
+    "date",
+    "subpop",
+    "value"
+  ))
+ggplot(rt_site_df) +
+  geom_line(aes(
+    x = date,
+    y = value
+  )) +
+  facet_wrap(~subpop, scales = "free") +
+  xlab("") +
+  ylab("Subpopulation R(t)") +
+  ggtitle("R(t) estimate") +
+  theme_bw()
+#-------------------------------------------------------------------------------
+# Rt global---------------------------------------------------------------------
+rt_global_df <- as.data.frame(rt_global) %>%
+  mutate(date = hosp_data_eval$date)
+ggplot(rt_global_df) +
+  geom_line(aes(
+    x = date,
+    y = rt_global
+  )) +
+  xlab("") +
+  ylab("Global R(t)") +
+  ggtitle("Global R(t) estimate") +
+  theme_bw()
+#-------------------------------------------------------------------------------
 
 ww_data_to_fit <- wwinference::indicate_ww_exclusions(
   ww_data_preprocessed,
@@ -144,6 +187,10 @@ ggplot(draws_df |> dplyr::filter(
   name == "global R(t)",
   draw %in% sampled_draws
 )) +
+  geom_line(data = rt_global_df, aes(
+    x = rt_global_df$date,
+    y = rt_global_df$rt_global
+  ), color = "red") +
   geom_line(aes(x = date, y = pred_value, group = draw),
     color = "blue4", alpha = 0.1, size = 0.2
   ) +
@@ -153,7 +200,7 @@ ggplot(draws_df |> dplyr::filter(
   geom_hline(aes(yintercept = 1), linetype = "dashed") +
   xlab("") +
   ylab("Global R(t) ") +
-  ggtitle("Global R(t) estimate") +
+  ggtitle("Global R(t) estimate (Red line is actual)") +
   theme_bw()
 
 
@@ -189,6 +236,10 @@ ggplot(draws_df |> dplyr::filter(
   name == "subpop R(t)",
   draw %in% sampled_draws
 )) +
+  geom_line(data = rt_site_df, aes(
+    x = date,
+    y = value
+  ), color = "red") +
   geom_line(
     aes(
       x = date, y = pred_value, group = draw,
@@ -202,7 +253,7 @@ ggplot(draws_df |> dplyr::filter(
   facet_wrap(~subpop, scales = "free") +
   geom_hline(aes(yintercept = 1), linetype = "dashed") +
   xlab("") +
-  ylab("Subpopulation R(t)") +
+  ylab("Subpopulation R(t) (Red line is actual)") +
   ggtitle("R(t) estimate") +
   theme_bw()
 

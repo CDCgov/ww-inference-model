@@ -57,8 +57,8 @@
 #' defaulted to presets for exponential decay correlation function
 #' @param phi_rt Coefficient for AR(1) temporal correlation on subpopulation
 #' deviations
-#' @param sigma_eps Parameter for construction of covariance matrix of spatial
-#' epsilon
+#' @param sigma_generalized Parameter for construction of covariance
+#' matrix of spatial epsilon.  Generalized variance.
 #' @param scaling_factor Scaling factor for aux site
 #' @param aux_site_bool Boolean to use the aux site framework with
 #' scaling factor.
@@ -104,7 +104,7 @@
 #'     l = 1
 #'   ),
 #'   phi_rt = 0.6,
-#'   sigma_eps = sqrt(0.02),
+#'   sigma_generalized = 0.02^6,
 #'   scaling_factor = 0.01,
 #'   aux_site_bool = TRUE,
 #'   init_stat = TRUE
@@ -165,7 +165,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                       l = 1
                                     ),
                                     phi_rt = 0.6,
-                                    sigma_eps = sqrt(0.02),
+                                    sigma_generalized = 0.02^4,
                                     scaling_factor = 0.01,
                                     aux_site_bool = TRUE,
                                     init_stat = TRUE) {
@@ -357,16 +357,27 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   }
 
   # Using stan exposed functions for forward spatial Rt process.
-  sigma_matrix <- sigma_eps * corr_function(corr_fun_params)
+  sigma_matrix <- (sigma_generalized^(1 / n_sites)) * matrix_normalization(
+    corr_function(corr_fun_params)
+  )
   spatial_deviation_noise_matrix <- spatial_deviation_noise_matrix_rng(
     sigma_matrix,
     n_weeks
   )
-  spatial_deviation_init <- mvrnorm(
-    n = 1,
-    mu = rep(0, n_sites),
-    Sigma = sigma_matrix
-  )
+  if (!use_spatial_corr) {
+    spatial_deviation_init <- mvrnorm(
+      n = 1,
+      mu = rep(0, n_sites + 1),
+      Sigma = sigma_matrix
+    )
+  } else {
+    spatial_deviation_init <- mvrnorm(
+      n = 1,
+      mu = rep(0, n_sites),
+      Sigma = sigma_matrix
+    )
+  }
+
   log_r_site <- construct_spatial_rt(log_r_state_week,
     spatial_deviation_ar_coeff = phi_rt,
     spatial_deviation_noise_matrix
@@ -381,7 +392,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     log_r_site_aux <- construct_aux_rt(log_r_state_week,
       state_deviation_ar_coeff = phi_rt,
       scaling_factor,
-      sigma_eps,
+      sigma_generalized^(1 / n_sites),
       state_deviation_noise_vec,
       init_stat
     )
@@ -579,7 +590,9 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   example_data <- list(
     ww_data = ww_data,
     hosp_data = hosp_data,
-    hosp_data_eval = hosp_data_eval
+    hosp_data_eval = hosp_data_eval,
+    rt_site_data = r_site, # temp?
+    rt_global_data = rt # temp?
   )
 
   return(example_data)
