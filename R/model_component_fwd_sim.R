@@ -415,3 +415,58 @@ format_hosp_data <- function(pred_obs_hosp,
     )
   return(hosp_data)
 }
+
+#' Back- calculate R(t) from incident infections and the generation interval
+#'
+#' @param new_i vector of numerics that spans the length of `tot_time`,
+#' representing the new incident infections per day
+#' @param convolve_fxn function used to convolve infections with delay pmf
+#' @param generation_interval vector of simplex describing the probability of
+#' each time from infection to onwards transmission
+#' @param uot integer indicating the days for exponential growth initialization
+#' to occur (referred to as unobserved time)
+#' @param tot_time integer indicating the total time we have incident
+#' infections for
+#'
+#' @return a numeric vector of length(`tot_time` - `uot`) that represents
+#' the effective reproductive number
+#' @export
+calc_rt <- function(new_i,
+                    convolve_fxn,
+                    generation_interval,
+                    uot,
+                    tot_time) {
+  rt <- (new_i / convolve_fxn(
+    new_i, rev(generation_interval), tot_time
+  ))[(uot + 1):tot_time]
+  return(rt)
+}
+
+#' Create a mapping of sites, labs, and population sizes in each site
+#'
+#' @param site vector of integers or characters uniquely identifying a site,
+#'  or the population in the wastewater catchment area
+#' @param lab vector of integer or character uniquely identifying a lab where
+#' a sample was processed
+#' @param ww_pop_sites vector of integers indicating the population size in
+#' each site
+#'
+#' @return a tibble mapping sites, labs and population sizes
+create_site_lab_map <- function(site,
+                                lab,
+                                ww_pop_sites) {
+  n_sites <- length(unique(site))
+  site_lab_map <- data.frame(
+    site,
+    lab
+  ) |>
+    dplyr::mutate(
+      lab_site = dplyr::row_number()
+    ) |>
+    dplyr::left_join(data.frame(
+      site = 1:n_sites,
+      ww_pop = ww_pop_sites
+    ))
+
+  return(site_lab_map)
+}

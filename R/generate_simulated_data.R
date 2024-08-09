@@ -148,19 +148,16 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     (pop_size - sum(ww_pop_sites)) / pop_size
   )
   n_subpops <- length(pop_fraction)
+
   # Create a tibble that maps sites, labs, and population sizes of the sites
   n_sites <- length(unique(site))
-  site_lab_map <- data.frame(
+  site_lab_map <- create_site_lab_map(
     site,
-    lab
-  ) |>
-    dplyr::mutate(
-      lab_site = dplyr::row_number()
-    ) |>
-    dplyr::left_join(data.frame(
-      site = 1:n_sites,
-      ww_pop = ww_pop_sites
-    ))
+    lab,
+    ww_pop_sites
+  )
+
+
   n_lab_sites <- nrow(site_lab_map)
 
   # Define some time variables
@@ -326,7 +323,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     day_of_week_vector,
     hosp_wday_effect
   )
-  ## Add observation errror---------------------------------------------------
+  ## Add observation error---------------------------------------------------
   # This is negative binomial but could swap out for a different obs error
   pred_obs_hosp <- rnbinom(
     n = length(pred_hosp), mu = pred_hosp,
@@ -377,9 +374,13 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   # I(t)/convolve(I(t), g(t)) #nolint
   # This is not used directly, but we want to have it for comparing to the
   # fit.
-  rt <- (new_i_over_n / model$functions$convolve_dot_product(
-    new_i_over_n, rev(generation_interval), uot + ot + ht
-  ))[(uot + 1):(uot + ot + ht)]
+  rt <- calc_rt(new_i_over_n,
+    convolve_fxn = model$functions$convolve_dot_product,
+    generation_interval,
+    uot,
+    tot_time = (uot + ot + ht)
+  )
+
 
 
   # Format the data-----------------------------------------------------------

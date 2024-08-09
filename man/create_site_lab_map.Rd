@@ -16,6 +16,9 @@ a sample was processed}
 \item{ww_pop_sites}{vector of integers indicating the population size in
 each site}
 }
+\value{
+a tibble mapping sites, labs and population sizes
+}
 \description{
 Create a mapping of sites, labs, and population sizes in each site
 }
