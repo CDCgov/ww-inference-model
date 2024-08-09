@@ -198,6 +198,21 @@ get_stan_data <- function(input_count_data,
     calibration_time = calibration_time,
     forecast_date = forecast_date
   )
+  validate_pmf(generation_interval,
+    calibration_time,
+    count_data,
+    arg = "generation interval"
+  )
+  validate_pmf(infection_feedback_pmf,
+    calibration_time,
+    count_data,
+    arg = "infection feedback pmf"
+  )
+  validate_pmf(inf_to_count_delay,
+    calibration_time,
+    count_data,
+    arg = "infection to count delay"
+  )
 
   # Returns a list of the vectors of lod values, the site population sizes in
   # order of the site index, a vector of observations of the log of

@@ -198,3 +198,38 @@ validate_both_datasets <- function(input_count_data,
   )
   invisible()
 }
+
+#' Validate that the pmf being passed to stan
+#'
+#' @param pmf simplex vector describing a probabilty of an event ocurring on
+#' each day
+#' @param calibration_time integer indicating the calibration time
+#' @param tibble containing the input count data ready to be passed to stan
+#' @param arg name of the argument supplying the object
+#' @param call The calling environment to be reflected in the error message
+#' @return NULL, invisibly
+validate_pmf <- function(pmf,
+                         calibration_time,
+                         count_data,
+                         arg = "x",
+                         call = rlang::caller_env()) {
+  if (!all.equal(sum(pmf), 1)) {
+    cli::cli_abort(
+      c(
+        "{.arg {arg}} does not sum to 1. "
+      ),
+      call = call,
+      class = "wwinference_type_error"
+    )
+  }
+
+  if (length(pmf) > calibration_time || length(pmf) > nrow(count_data)) {
+    cli::cli_abort(
+      c(
+        "Length of {.arg {arg}} is longer than calibration time. Consider",
+        "truncating the pmf or increasing the calibration time. "
+      )
+    )
+  }
+  invisible()
+}

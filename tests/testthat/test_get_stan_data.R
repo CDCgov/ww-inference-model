@@ -50,7 +50,7 @@ include_ww <- 1
 
 
 test_that("Test that function returns list with the necessary elements", {
-  result <- stan_data_list <- get_stan_data(
+  result <- get_stan_data(
     input_count_data,
     input_ww_data,
     forecast_date,
@@ -65,4 +65,163 @@ test_that("Test that function returns list with the necessary elements", {
 
 
   testthat::expect_true(all(names(result) %in% c("input_data", "stan_args")))
+})
+
+test_that(paste0(
+  "Test that modifying calibration time generates data of expected",
+  " length"
+), {
+  result <- get_stan_data(
+    input_count_data,
+    input_ww_data,
+    forecast_date,
+    forecast_horizon,
+    calibration_time = 80,
+    generation_interval,
+    inf_to_count_delay,
+    infection_feedback_pmf,
+    params,
+    include_ww
+  )
+  count_data <- result$input_data$input_count_data
+  expect_true(nrow(count_data) == 80)
+})
+
+test_that(paste0(
+  "Test that passing out of window wastewater data behaves as",
+  "expected"
+), {
+  # Make calibration time too large for input data and get an error
+  expect_error(get_stan_data(
+    input_count_data,
+    input_ww_data,
+    forecast_date,
+    forecast_horizon,
+    calibration_time = 140,
+    generation_interval,
+    inf_to_count_delay,
+    infection_feedback_pmf,
+    params,
+    include_ww
+  ))
+
+  # Make wastewater data outside of scope of admissions data
+  recent_ww_data <- tibble::tibble(
+    date = rep(seq(
+      from = lubridate::ymd("2024-08-01"),
+      to = lubridate::ymd("2024-11-01"),
+      by = "weeks"
+    ), 2),
+    site = c(rep(1, 14), rep(2, 14)),
+    lab = c(rep(1, 28)),
+    conc = abs(rnorm(28, mean = 500, sd = 50)),
+    lod = c(rep(20, 14), rep(15, 14)),
+    site_pop = c(rep(2e5, 14), rep(4e5, 14))
+  )
+
+  recent_ww_data_preprocessed <- preprocess_ww_data(recent_ww_data,
+    conc_col_name = "conc",
+    lod_col_name = "lod"
+  )
+  recent_input_ww_data <- indicate_ww_exclusions(recent_ww_data_preprocessed)
+
+  expect_error(get_stan_data(
+    input_count_data,
+    recent_input_ww_data,
+    forecast_date,
+    forecast_horizon,
+    calibration_time,
+    generation_interval,
+    inf_to_count_delay,
+    infection_feedback_pmf,
+    params,
+    include_ww
+  ))
+
+  # Make wastewater data outside of scope of admissions data
+  old_ww_data <- tibble::tibble(
+    date = rep(seq(
+      from = lubridate::ymd("2022-08-01"),
+      to = lubridate::ymd("2022-11-01"),
+      by = "weeks"
+    ), 2),
+    site = c(rep(1, 14), rep(2, 14)),
+    lab = c(rep(1, 28)),
+    conc = abs(rnorm(28, mean = 500, sd = 50)),
+    lod = c(rep(20, 14), rep(15, 14)),
+    site_pop = c(rep(2e5, 14), rep(4e5, 14))
+  )
+
+  old_ww_data_preprocessed <- preprocess_ww_data(old_ww_data,
+    conc_col_name = "conc",
+    lod_col_name = "lod"
+  )
+  old_input_ww_data <- indicate_ww_exclusions(old_ww_data_preprocessed)
+
+  expect_error(get_stan_data(
+    input_count_data,
+    old_input_ww_data,
+    forecast_date,
+    forecast_horizon,
+    calibration_time,
+    generation_interval,
+    inf_to_count_delay,
+    infection_feedback_pmf,
+    params,
+    include_ww
+  ))
+})
+
+test_that("Test that pmf check works as expected", {
+  expect_error(get_stan_data(
+    input_count_data,
+    input_ww_data,
+    forecast_date,
+    forecast_horizon,
+    calibration_time,
+    generation_interval = to_simplex(rep(1, 100)),
+    inf_to_count_delay,
+    infection_feedback_pmf,
+    params,
+    include_ww
+  ))
+
+  expect_error(get_stan_data(
+    input_count_data,
+    input_ww_data,
+    forecast_date,
+    forecast_horizon,
+    calibration_time,
+    generation_interval,
+    inf_to_count_delay = to_simplex(rep(1, 100)),
+    infection_feedback_pmf,
+    params,
+    include_ww
+  ))
+
+  expect_error(get_stan_data(
+    input_count_data,
+    input_ww_data,
+    forecast_date,
+    forecast_horizon,
+    calibration_time,
+    generation_interval,
+    inf_to_count_delay,
+    infection_feedback_pmf = to_simplex(rep(1, 100)),
+    params,
+    include_ww
+  ))
+
+  expect_error(get_stan_data(
+    input_count_data,
+    input_ww_data,
+    forecast_date,
+    forecast_horizon,
+    calibration_time,
+    generation_interval,
+    inf_to_count_delay,
+    infection_feedback_pmf = c(0.5, 0.4, 0.2),
+    params,
+    include_ww
+  ))
 })

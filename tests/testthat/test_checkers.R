@@ -86,7 +86,7 @@ test_that(
     )
     conc_col_name <- "genome_copies_per_ml"
     lod_col_name <- "lod"
-    expect_no_error(check_req_ww_columns_present(
+    expect_no_error(check_req_ww_cols_present(
       x,
       conc_col_name,
       lod_col_name
@@ -138,7 +138,7 @@ test_that(
     )
     count_col_name <- "hosp"
     pop_size_col_name <- "pop"
-    expect_no_error(check_req_count_columns_present(
+    expect_no_error(check_req_count_cols_present(
       x,
       count_col_name,
       pop_size_col_name
