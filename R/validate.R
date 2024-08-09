@@ -204,7 +204,8 @@ validate_both_datasets <- function(input_count_data,
 #' @param pmf simplex vector describing a probabilty of an event ocurring on
 #' each day
 #' @param calibration_time integer indicating the calibration time
-#' @param tibble containing the input count data ready to be passed to stan
+#' @param count_data tibble containing the input count data ready to be passed
+#' to stan
 #' @param arg name of the argument supplying the object
 #' @param call The calling environment to be reflected in the error message
 #' @return NULL, invisibly

@@ -18,11 +18,12 @@ each day}
 
 \item{calibration_time}{integer indicating the calibration time}
 
+\item{count_data}{tibble containing the input count data ready to be passed
+to stan}
+
 \item{arg}{name of the argument supplying the object}
 
 \item{call}{The calling environment to be reflected in the error message}
-
-\item{tibble}{containing the input count data ready to be passed to stan}
 }
 \value{
 NULL, invisibly

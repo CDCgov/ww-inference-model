@@ -101,7 +101,7 @@ preprocess_ww_data <- function(ww_data,
 #'   state_pop = c(1e6, 1e6)
 #' )
 #' hosp_data_preprocessed <- preprocess_count_data(
-#'   count_data,
+#'   hosp_data,
 #'   "daily_admits",
 #'   "state_pop"
 #' )
