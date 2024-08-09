@@ -104,7 +104,7 @@ wwinference <- function(ww_data,
 
   fit <- safe_fit_model(
     compiled_model,
-    stan_data,
+    stan_args,
     mcmc_options,
     init_lists
   )
