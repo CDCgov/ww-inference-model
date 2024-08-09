@@ -111,12 +111,6 @@ get_stan_data <- function(input_count_data,
                           params,
                           include_ww,
                           compute_likelihood = 1) {
-  # Assign parameter names
-  par_names <- colnames(params)
-  for (i in seq_along(par_names)) {
-    assign(par_names[i], as.double(params[i]))
-  }
-
   # Get the last date that there were observations of the epidemiological
   # indicator (aka cases or hospital admissions counts)
   last_count_data_date <- max(input_count_data$date, na.rm = TRUE)
@@ -261,7 +255,7 @@ get_stan_data <- function(input_count_data,
     forecast_horizon = forecast_horizon,
     calibration_time = calibration_time,
     last_count_data_date = last_count_data_date,
-    uot = uot
+    uot = params$uot
   )
   count_indices <- get_count_indices(count_data)
   count_values <- get_count_values(
@@ -284,26 +278,27 @@ get_stan_data <- function(input_count_data,
   )
   # matrix to transform p_hosp RW from weekly to daily
   p_hosp_m <- get_ind_m(
-    uot + count_data_sizes$ot + count_data_sizes$ht,
+    params$uot + count_data_sizes$ot + count_data_sizes$ht,
     count_data_sizes$tot_weeks
   )
 
   # Estimate of number of initial infections
-  i0 <- mean(count_values$count[1:7], na.rm = TRUE) / p_hosp_mean
+  i0 <- mean(count_values$count[1:7], na.rm = TRUE) / params$p_hosp_mean
 
   # package up parameters for stan data object
   viral_shedding_pars <- c(
-    t_peak_mean, t_peak_sd, viral_peak_mean, viral_peak_sd,
-    duration_shedding_mean, duration_shedding_sd
+    params$t_peak_mean, params$t_peak_sd, params$viral_peak_mean,
+    params$viral_peak_sd, params$duration_shedding_mean,
+    params$duration_shedding_sd
   )
 
   inf_to_count_delay_max <- length(inf_to_count_delay)
 
   data_renewal <- list(
-    gt_max = gt_max,
+    gt_max = params$gt_max,
     hosp_delay_max = inf_to_count_delay_max,
     inf_to_hosp = inf_to_count_delay,
-    mwpd = ml_of_ww_per_person_day,
+    mwpd = params$ml_of_ww_per_person_day,
     ot = count_data_sizes$ot,
     n_subpops = subpop_data$n_subpops,
     n_ww_sites = ww_data_sizes$n_ww_sites,
@@ -312,14 +307,14 @@ get_stan_data <- function(input_count_data,
     oht = count_data_sizes$oht,
     n_censored = ww_data_sizes$n_censored,
     n_uncensored = ww_data_sizes$n_uncensored,
-    uot = uot,
+    uot = params$uot,
     ht = count_data_sizes$ht,
     n_weeks = count_data_sizes$n_weeks,
     ind_m = ind_m,
     tot_weeks = count_data_sizes$tot_weeks,
-    p_hosp_m = p_hosp_m,
+    p_hosp_m = params$p_hosp_m,
     generation_interval = generation_interval,
-    ts = 1:gt_max,
+    ts = 1:params$gt_max,
     state_pop = pop,
     subpop_size = subpop_data$subpop_size,
     norm_pop = subpop_data$norm_pop,
@@ -339,40 +334,40 @@ get_stan_data <- function(input_count_data,
     infection_feedback_pmf = infection_feedback_pmf,
     # All the priors!
     viral_shedding_pars = viral_shedding_pars, # tpeak, viral peak, dur_shed
-    autoreg_rt_a = autoreg_rt_a,
-    autoreg_rt_b = autoreg_rt_b,
-    autoreg_rt_site_a = autoreg_rt_site_a,
-    autoreg_rt_site_b = autoreg_rt_site_b,
-    autoreg_p_hosp_a = autoreg_p_hosp_a,
-    autoreg_p_hosp_b = autoreg_p_hosp_b,
-    inv_sqrt_phi_prior_mean = inv_sqrt_phi_prior_mean,
-    inv_sqrt_phi_prior_sd = inv_sqrt_phi_prior_sd,
-    r_prior_mean = r_prior_mean,
-    r_prior_sd = r_prior_sd,
-    log10_g_prior_mean = log10_g_prior_mean,
-    log10_g_prior_sd = log10_g_prior_sd,
-    i0_over_n_prior_a = 1 + i0_certainty * (i0 / pop),
-    i0_over_n_prior_b = 1 + i0_certainty * (1 - (i0 / pop)),
-    wday_effect_prior_mean = wday_effect_prior_mean,
-    wday_effect_prior_sd = wday_effect_prior_sd,
-    initial_growth_prior_mean = initial_growth_prior_mean,
-    initial_growth_prior_sd = initial_growth_prior_sd,
-    sigma_ww_site_prior_mean_mean = sigma_ww_site_prior_mean_mean,
-    sigma_ww_site_prior_mean_sd = sigma_ww_site_prior_mean_sd,
-    sigma_ww_site_prior_sd_mean = sigma_ww_site_prior_sd_mean,
-    sigma_ww_site_prior_sd_sd = sigma_ww_site_prior_sd_sd,
-    eta_sd_sd = eta_sd_sd,
-    sigma_i0_prior_mode = sigma_i0_prior_mode,
-    sigma_i0_prior_sd = sigma_i0_prior_sd,
-    p_hosp_prior_mean = p_hosp_mean,
-    p_hosp_sd_logit = p_hosp_sd_logit,
-    p_hosp_w_sd_sd = p_hosp_w_sd_sd,
-    ww_site_mod_sd_sd = ww_site_mod_sd_sd,
-    inf_feedback_prior_logmean = infection_feedback_prior_logmean,
-    inf_feedback_prior_logsd = infection_feedback_prior_logsd,
-    sigma_rt_prior = sigma_rt_prior,
-    log_phi_g_prior_mean = log_phi_g_prior_mean,
-    log_phi_g_prior_sd = log_phi_g_prior_sd,
+    autoreg_rt_a = params$autoreg_rt_a,
+    autoreg_rt_b = params$autoreg_rt_b,
+    autoreg_rt_site_a = params$autoreg_rt_site_a,
+    autoreg_rt_site_b = params$autoreg_rt_site_b,
+    autoreg_p_hosp_a = params$autoreg_p_hosp_a,
+    autoreg_p_hosp_b = params$autoreg_p_hosp_b,
+    inv_sqrt_phi_prior_mean = params$inv_sqrt_phi_prior_mean,
+    inv_sqrt_phi_prior_sd = params$inv_sqrt_phi_prior_sd,
+    r_prior_mean = params$r_prior_mean,
+    r_prior_sd = params$r_prior_sd,
+    log10_g_prior_mean = params$log10_g_prior_mean,
+    log10_g_prior_sd = params$log10_g_prior_sd,
+    i0_over_n_prior_a = 1 + params$i0_certainty * (i0 / pop),
+    i0_over_n_prior_b = 1 + params$i0_certainty * (1 - (i0 / pop)),
+    wday_effect_prior_mean = params$wday_effect_prior_mean,
+    wday_effect_prior_sd = params$wday_effect_prior_sd,
+    initial_growth_prior_mean = params$initial_growth_prior_mean,
+    initial_growth_prior_sd = params$initial_growth_prior_sd,
+    sigma_ww_site_prior_mean_mean = params$sigma_ww_site_prior_mean_mean,
+    sigma_ww_site_prior_mean_sd = params$sigma_ww_site_prior_mean_sd,
+    sigma_ww_site_prior_sd_mean = params$sigma_ww_site_prior_sd_mean,
+    sigma_ww_site_prior_sd_sd = params$sigma_ww_site_prior_sd_sd,
+    eta_sd_sd = params$eta_sd_sd,
+    sigma_i0_prior_mode = params$sigma_i0_prior_mode,
+    sigma_i0_prior_sd = params$sigma_i0_prior_sd,
+    p_hosp_prior_mean = params$p_hosp_mean,
+    p_hosp_sd_logit = params$p_hosp_sd_logit,
+    p_hosp_w_sd_sd = params$p_hosp_w_sd_sd,
+    ww_site_mod_sd_sd = params$ww_site_mod_sd_sd,
+    inf_feedback_prior_logmean = params$infection_feedback_prior_logmean,
+    inf_feedback_prior_logsd = params$infection_feedback_prior_logsd,
+    sigma_rt_prior = params$sigma_rt_prior,
+    log_phi_g_prior_mean = params$log_phi_g_prior_mean,
+    log_phi_g_prior_sd = params$log_phi_g_prior_sd,
     ww_sampled_sites = ww_indices$ww_sampled_sites,
     lab_site_to_site_map = ww_indices$lab_site_to_site_map
   )
@@ -572,6 +567,9 @@ get_ww_data_indices <- function(ww_data,
 #' @param one_pop_per_site a boolean variable indicating if there should only
 #' be on catchment area population per site, default is `TRUE` because this is
 #' what the stan model expects
+#' @param padding_value an smaller numeric value to add to the the
+#' concentration measurements to ensure that log transformation will produce
+#' real numbers
 #'
 #' @return  A list containing the necessary vectors of values that
 #' the stan model requires:
@@ -584,7 +582,8 @@ get_ww_values <- function(ww_data,
                           ww_measurement_col_name = "genome_copies_per_ml",
                           ww_lod_value_col_name = "lod",
                           ww_site_pop_col_name = "site_pop",
-                          one_pop_per_site = TRUE) {
+                          one_pop_per_site = TRUE,
+                          padding_value = 1e-8) {
   ww_data_present <- nrow(ww_data) != 0
 
   if (isTRUE(ww_data_present)) {
@@ -616,7 +615,7 @@ get_ww_values <- function(ww_data,
     log_conc <- ww_data |>
       dplyr::mutate(
         log_conc =
-          (log(.data[[ww_measurement_col_name]] + 1e-8))
+          (log(.data[[ww_measurement_col_name]] + padding_value))
       ) |>
       dplyr::pull(log_conc)
 
