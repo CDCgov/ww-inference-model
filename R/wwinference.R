@@ -71,7 +71,7 @@ NULL
 #' @noRd
 fit_model <- function(compiled_model,
                       stan_data,
-                      model_spec,
+                      mcmc_options,
                       init_lists) {
   compiled_model$sample(
     data = stan_data,
@@ -130,7 +130,7 @@ wwinference <- function(ww_data,
   fit <- safe_fit_model(
     compiled_model,
     stan_data,
-    model_spec,
+    mcmc_options,
     init_lists
   )
 
