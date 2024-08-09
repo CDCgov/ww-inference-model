@@ -132,7 +132,6 @@ check_site_and_lab_indices <- function(site,
 #' traceback.
 #' @param add_err_msg string containing an additional error message,
 #'  default is the empty string (`""`)
-
 #'
 #' @return NULL, invisibly
 assert_elements_non_neg <- function(x, arg = "x",
