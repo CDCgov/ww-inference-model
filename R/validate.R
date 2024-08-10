@@ -194,7 +194,8 @@ validate_both_datasets <- function(input_count_data,
   # check that the time and date indices of both datasets line up
   assert_equivalent_indexing(
     input_count_data,
-    input_ww_data
+    input_ww_data,
+    arg = "ww and count data"
   )
   invisible()
 }

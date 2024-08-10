@@ -317,7 +317,8 @@ assert_single_value <- function(x, arg = "x",
   if (length(unique_elements) > 1) {
     cli::cli_abort(
       c(
-        "{.arg {arg}} has more than one element",
+        "{.arg {arg}} should have a single unique value;",
+        "it has more than one. ",
         add_err_msg
       ),
       call = call,
@@ -337,15 +338,24 @@ assert_single_value <- function(x, arg = "x",
 #' default is the empty string (`""`)
 #'
 #' @return NULL invisible
-assert_not_empty <- function(x, arg = "x",
+assert_not_empty <- function(x,
+                             arg = "x",
                              call = rlang::caller_env(),
                              add_err_msg = "") {
-  if (nrow(x) == 0) {
+  nrows <- nrow(x)
+
+  if (is.null(nrows)) {
     cli::cli_abort(
       c(
-        "{.arg {arg}} is empty",
+        "Expected something with rows,",
+        "i.e. 2-d array or dataframe-like. ",
         add_err_msg
       ),
+      call = call,
+      class = "wwinference_input_data_error"
+    )
+  } else if (nrows < 1) {
+    cli::cli_abort(c("{.arg {arg}} is empty", add_err_msg),
       call = call,
       class = "wwinference_input_data_error"
     )
@@ -355,6 +365,11 @@ assert_not_empty <- function(x, arg = "x",
 
 
 #' Assert that the vector of dates being passed in contains dates for each day
+#'
+#' @description
+#' This function checks to make sure that the date vector being passed in
+#' is complete for every day between the minimum and maximum dates. It can
+#' have repeated values.
 #'
 #' @param dates the vector of dates to check, must be of Date type
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
@@ -366,12 +381,11 @@ assert_not_empty <- function(x, arg = "x",
 assert_daily_data <- function(dates,
                               call = rlang::caller_env(),
                               add_err_msg = "") {
-  sorted_dates <- dates[order(dates)]
   # Generate a sequence of dates from the minimum to the
   # maximum date in the dataset
   expected_dates <- seq.Date(
-    from = min(sorted_dates),
-    to = max(sorted_dates),
+    from = min(dates),
+    to = max(dates),
     by = "day"
   )
 
@@ -435,13 +449,13 @@ assert_sufficient_days_of_data <- function(date_vector,
 #' default is the empty string (`""`)
 #'
 #' @return NULL invisible
-assert_overlap_dates <- function(test_dates,
-                                 comparison_dates,
+assert_overlap_dates <- function(dates1,
+                                 dates2,
                                  max_date,
                                  call = rlang::caller_env(),
                                  add_err_msg = "") {
-  check_data_overlap <- min(test_dates) <= max(comparison_dates) &
-    max(test_dates) <= max_date
+  check_data_overlap <- min(dates1) <= max(dates2) &
+    max(dates1) <= max_date
   if (!check_data_overlap) {
     cli::cli_abort(
       c(
@@ -457,37 +471,37 @@ assert_overlap_dates <- function(test_dates,
 }
 #' Assert that two tibbles of date and time mapping align
 #'
-#' @param full_data a tibble containing the columns `date` (with IS08 dates)
-#' and `t` (integers of time in days) that the other tibble will be joined to
-#' @param subsetted_data a tibble containing the columns `date` (with
-#' IS08 dates) and `t` (integers of time in days) that we indexed based on the
-#'  `full_data`
+#' @param first_data a tibble containing the columns `date` (with IS08601
+#' dates) and `t` (integers of time in days)
+#' @param second_data a tibble containing the columns `date` (with
+#' IS08601 dates) and `t` (integers of time in days)
+#' @param arg string to print the name of the element your checking
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
 #' @param add_err_msg add_err_msg string containing an additional error message,
 #' default is the empty string (`""`)
 #'
 #' @return NULL invisible
-assert_equivalent_indexing <- function(full_data,
-                                       subsetted_data,
+assert_equivalent_indexing <- function(first_data,
+                                       second_data,
+                                       arg = "x",
                                        call = rlang::caller_env(),
                                        add_err_msg = "") {
-  full_dates <- full_data |> dplyr::distinct(date, t)
-  subset_dates <- subsetted_data |>
+  full_dates <- first_data |> dplyr::distinct(date, t)
+  subset_dates <- second_data |>
     dplyr::distinct(date, t) |>
-    dplyr::rename(subset_t = t)
+    dplyr::rename(second_t = t)
 
   test_df <- full_dates |>
     dplyr::left_join(subset_dates, by = "date") |>
-    dplyr::filter(!is.na(subset_t))
+    dplyr::filter(!is.na(second_t))
 
-  check_indexing <- all(test_df$t == test_df$subset_t)
+  check_indexing <- all(test_df$t == test_df$second_t)
 
   if (!check_indexing) {
     cli::cli_abort(
       c(
-        "Date and time indexing on datasets being passed to stan do not
-        align"
+        "Date and time indexing on {.arg {arg}} being do not align"
       ),
       call = call,
       class = "wwinference_preprocessing_error"
