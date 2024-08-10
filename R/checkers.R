@@ -456,7 +456,7 @@ assert_overlap_dates <- function(test_dates,
 #' @param full_data a tibble containing the columns `date` (with ISO8601 dates)
 #' and `t` (integers of time in days) that the other tibble will be joined to
 #' @param subsetted_data a tibble containing the columns `date` (with
-#' IS08 dates) and `t` (integers of time in days) that we indexed based on the
+#' ISO8601 dates) and `t` (integers of time in days) that we indexed based on the
 #'  `full_data`
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
