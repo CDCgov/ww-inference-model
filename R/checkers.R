@@ -421,7 +421,7 @@ assert_sufficient_days_of_data <- function(date_vector,
 #' Assert that a vector of dates we're testing overlaps with the comparison
 #' dates
 #'
-#' @param test_dates the vector of dates to check, must be in IS08 convention
+#' @param test_dates the vector of dates to check, must be strings in ISO8601 YY-MM-DD format
 #' @param comparison_dates the vector of dates to compare to, must be in ISO8601 YY-MM-DD format
 #' @param max_date the maximum date the testing dates should be
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
