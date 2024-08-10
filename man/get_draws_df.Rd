@@ -6,9 +6,9 @@
 \alias{get_draws_df.default}
 \title{Postprocess to generate a draws dataframe}
 \usage{
-get_draws_df(ww_data, ...)
+get_draws_df(ww_output, ...)
 
-\method{get_draws_df}{wwinference_fit}(ww_data, ...)
+\method{get_draws_df}{wwinference_fit}(ww_output, ...)
 
 \method{get_draws_df}{default}(
   ww_data,

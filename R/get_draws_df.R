@@ -29,18 +29,18 @@
 #' are observations, the data will be joined to each draw of the predicted
 #' observation to facilitate plotting.
 #' @export
-get_draws_df <- function(ww_data, ...) UseMethod("get_draws_df")
+get_draws_df <- function(ww_output, ...) UseMethod("get_draws_df")
 
 #' @export
 #' @rdname get_draws_df
-get_draws_df.wwinference_fit <- function(ww_data, ...) {
+get_draws_df.wwinference_fit <- function(ww_output, ...) {
   get_draws_df.default(
-    ww_data = ww_data$ww_data,
-    count_data = ww_data$count_data,
-    fit_obj = ww_data$fit,
-    date_time_spine = ww_data$date_time_spine,
-    lab_site_spine = ww_data$lab_site_spine,
-    subpop_spine = ww_data$subpop_spine
+    www_data = ww_output$ww_data,
+    count_data = ww_output$count_data,
+    fit_obj = ww_output$fit,
+    date_time_spine = ww_output$date_time_spine,
+    lab_site_spine = ww_output$lab_site_spine,
+    subpop_spine = ww_output$subpop_spine
   )
 }
 
@@ -52,7 +52,7 @@ get_draws_df.default <- function(ww_data,
                                  date_time_spine,
                                  lab_site_spine,
                                  subpop_spine) {
-  draws <- fit_obj$result$draws()
+  draws <- fit_obj$draws()
 
   count_draws <- draws |>
     tidybayes::spread_draws(pred_hosp[t]) |>
