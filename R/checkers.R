@@ -220,7 +220,7 @@ check_req_ww_cols_present <- function(ww_data,
     add_req_col_names
   )
 
-  # This tells you whats missing. This either returns TRUE or
+  # This either returns TRUE or tells you whats missing.
   name_check_result <- checkmate::check_names(column_names,
     must.include = expected_col_names
   )
