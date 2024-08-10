@@ -453,7 +453,7 @@ assert_overlap_dates <- function(test_dates,
 }
 #' Assert that two tibbles of date and time mapping align
 #'
-#' @param full_data a tibble containing the columns `date` (with IS08 dates)
+#' @param full_data a tibble containing the columns `date` (with ISO8601 dates)
 #' and `t` (integers of time in days) that the other tibble will be joined to
 #' @param subsetted_data a tibble containing the columns `date` (with
 #' IS08 dates) and `t` (integers of time in days) that we indexed based on the
