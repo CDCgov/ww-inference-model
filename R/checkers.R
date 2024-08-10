@@ -385,7 +385,7 @@ assert_daily_data <- function(dates,
   invisible()
 }
 
-#' Assert that the vector of dates contains the duration of the specified
+#' Assert that the vector of dates spans at least the specified
 #' calibration time
 #'
 #' @param date_vector the vector of dates to check, must be of Date type
