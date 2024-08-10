@@ -224,9 +224,6 @@ check_req_ww_cols_present <- function(ww_data,
   name_check_result <- checkmate::check_names(column_names,
     must.include = expected_col_names
   )
-
-
-
   if (!isTRUE(name_check_result)) {
     cli::cli_abort(
       message = c(
