@@ -150,7 +150,7 @@ wwinference <- function(ww_data,
     out <- list(
       ww_data = ww_data,
       count_data = count_data,
-      fit = fit$result,
+      fit = fit,
       date_time_spine = date_time_spine,
       lab_site_spine = lab_site_spine,
       subpop_spine = subpop_spine

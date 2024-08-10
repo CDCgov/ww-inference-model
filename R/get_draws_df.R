@@ -52,7 +52,7 @@ get_draws_df.default <- function(ww_data,
                                  date_time_spine,
                                  lab_site_spine,
                                  subpop_spine) {
-  draws <- fit_obj$draws()
+  draws <- fit_obj$result$draws()
 
   count_draws <- draws |>
     tidybayes::spread_draws(pred_hosp[t]) |>
