@@ -386,7 +386,7 @@ assert_daily_data <- function(dates,
   )
 
 
-  if (!all(expected_dates %in% sorted_dates)) {
+  if (!all(expected_dates %in% dates)) {
     cli::cli_abort(
       c(
         "Vector of dates does not contain dates for each day",
