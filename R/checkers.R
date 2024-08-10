@@ -63,32 +63,31 @@ assert_elements_non_neg <- function(x, arg = "x",
   invisible()
 }
 
-assert_integerish <-
-  #' Assert that there is no missignness in a particular vector
-  #'
-  #' @param x the vector to check
-  #' @param arg the name of the vector to check
-  #' @param call Calling environment to be passed to [cli::cli_abort()] for
-  #' traceback.
-  #' @param add_err_msg string containing an additional error message,
-  #' default is the empty string (`""`)
-  #'
-  #' @return NULL, invisibly
-  assert_non_missingness <- function(x, arg = "x",
-                                     call = rlang::caller_env(),
-                                     add_err_msg = "") {
-    if (checkmate::anyMissing(x)) {
-      cli::cli_abort(
-        c("{.arg {arg}} has missing values", add_err_msg,
-          "!" = "All elements of{.arg {arg}} should be present",
-          "i" = "Element(s) {.val {which(is.na(x))}} are missing"
-        ),
-        class = "wwinference_input_data_error",
-        call = call
-      )
-    }
-    invisible()
+#' Assert that there is no missignness in a particular vector
+#'
+#' @param x the vector to check
+#' @param arg the name of the vector to check
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#' @param add_err_msg string containing an additional error message,
+#' default is the empty string (`""`)
+#'
+#' @return NULL, invisibly
+assert_non_missingness <- function(x, arg = "x",
+                                   call = rlang::caller_env(),
+                                   add_err_msg = "") {
+  if (checkmate::anyMissing(x)) {
+    cli::cli_abort(
+      c("{.arg {arg}} has missing values", add_err_msg,
+        "!" = "All elements of{.arg {arg}} should be present",
+        "i" = "Element(s) {.val {which(is.na(x))}} are missing"
+      ),
+      class = "wwinference_input_data_error",
+      call = call
+    )
   }
+  invisible()
+}
 
 #' Check that there are no repeated elements in the vector
 #'
@@ -221,13 +220,10 @@ check_req_ww_cols_present <- function(ww_data,
     add_req_col_names
   )
 
-  # This tells you whats missing. This either returns TRUE or
+  # This either returns TRUE or tells you whats missing.
   name_check_result <- checkmate::check_names(column_names,
     must.include = expected_col_names
   )
-
-
-
   if (!isTRUE(name_check_result)) {
     cli::cli_abort(
       message = c(
@@ -403,7 +399,7 @@ assert_daily_data <- function(dates,
   invisible()
 }
 
-#' Assert that the vector of dates contains the duration of the specified
+#' Assert that the vector of dates spans at least the specified
 #' calibration time
 #'
 #' @param date_vector the vector of dates to check, must be of Date type
@@ -439,9 +435,8 @@ assert_sufficient_days_of_data <- function(date_vector,
 #' Assert that a vector of dates we're testing overlaps with the comparison
 #' dates
 #'
-#' @param test_dates the vector of dates to check, must be in IS08 convention
-#' @param comparison_dates the vector of dates to compare to, must be in ISO8
-#' convention
+#' @param dates1 the vector of dates to check, must of date type
+#' @param dates2 the vector of dates to compare to, must be of date type
 #' @param max_date the maximum date the testing dates should be
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
@@ -454,6 +449,8 @@ assert_overlap_dates <- function(dates1,
                                  max_date,
                                  call = rlang::caller_env(),
                                  add_err_msg = "") {
+  checkmate::assert_date(dates1)
+  checkmate::assert_date(dates2)
   check_data_overlap <- min(dates1) <= max(dates2) &
     max(dates1) <= max_date
   if (!check_data_overlap) {
