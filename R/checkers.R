@@ -402,7 +402,7 @@ assert_sufficient_days_of_data <- function(date_vector,
                                            call = rlang::caller_env(),
                                            add_err_msg = "") {
   # check that you have sufficient count data for the calibration time
-  min_date <- max(date_vector,
+  calibration_start <- max(date_vector,
     na.rm = TRUE
   ) - lubridate::days(calibration_time) + 1
   check_sufficient_data <- min(date_vector, na.rm = TRUE) <= min_date
