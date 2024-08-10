@@ -63,7 +63,6 @@ assert_elements_non_neg <- function(x, arg = "x",
   invisible()
 }
 
-assert_integerish <-
   #' Assert that there is no missignness in a particular vector
   #'
   #' @param x the vector to check
