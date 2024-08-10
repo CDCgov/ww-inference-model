@@ -218,7 +218,7 @@ validate_pmf <- function(pmf,
   if (!all.equal(sum(pmf), 1)) {
     cli::cli_abort(
       c(
-        "{.arg {arg}} does not sum to 1. "
+        "{.arg {arg}} does not sum to 1."
       ),
       call = call,
       class = "wwinference_type_error"

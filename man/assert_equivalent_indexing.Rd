@@ -5,19 +5,21 @@
 \title{Assert that two tibbles of date and time mapping align}
 \usage{
 assert_equivalent_indexing(
-  full_data,
-  subsetted_data,
+  first_data,
+  second_data,
+  arg = "x",
   call = rlang::caller_env(),
   add_err_msg = ""
 )
 }
 \arguments{
-\item{full_data}{a tibble containing the columns \code{date} (with IS08 dates)
-and \code{t} (integers of time in days) that the other tibble will be joined to}
+\item{first_data}{a tibble containing the columns \code{date} (with IS08601
+dates) and \code{t} (integers of time in days)}
 
-\item{subsetted_data}{a tibble containing the columns \code{date} (with
-IS08 dates) and \code{t} (integers of time in days) that we indexed based on the
-\code{full_data}}
+\item{second_data}{a tibble containing the columns \code{date} (with
+IS08601 dates) and \code{t} (integers of time in days)}
+
+\item{arg}{string to print the name of the element your checking}
 
 \item{call}{Calling environment to be passed to \code{\link[cli:cli_abort]{cli::cli_abort()}} for
 traceback.}

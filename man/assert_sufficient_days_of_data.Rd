@@ -2,7 +2,7 @@
 % Please edit documentation in R/checkers.R
 \name{assert_sufficient_days_of_data}
 \alias{assert_sufficient_days_of_data}
-\title{Assert that the vector of dates contains the duration of the specified
+\title{Assert that the vector of dates spans at least the specified
 calibration time}
 \usage{
 assert_sufficient_days_of_data(
@@ -28,6 +28,6 @@ default is the empty string (\code{""})}
 NULL invisible
 }
 \description{
-Assert that the vector of dates contains the duration of the specified
+Assert that the vector of dates spans at least the specified
 calibration time
 }

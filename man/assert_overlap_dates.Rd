@@ -2,22 +2,20 @@
 % Please edit documentation in R/checkers.R
 \name{assert_overlap_dates}
 \alias{assert_overlap_dates}
-\title{Assert that a vector of dates we're testing overlaps with the comparison
-dates}
+\title{Assert that two vectors of dates overlap}
 \usage{
 assert_overlap_dates(
-  test_dates,
-  comparison_dates,
+  dates1,
+  dates2,
   max_date,
   call = rlang::caller_env(),
   add_err_msg = ""
 )
 }
 \arguments{
-\item{test_dates}{the vector of dates to check, must be in IS08 convention}
+\item{dates1}{the vector of dates to check, must of date type}
 
-\item{comparison_dates}{the vector of dates to compare to, must be in ISO8
-convention}
+\item{dates2}{the vector of dates to compare to, must be of date type}
 
 \item{max_date}{the maximum date the testing dates should be}
 
@@ -31,6 +29,5 @@ default is the empty string (\code{""})}
 NULL invisible
 }
 \description{
-Assert that a vector of dates we're testing overlaps with the comparison
-dates
+Assert that two vectors of dates overlap
 }

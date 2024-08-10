@@ -432,8 +432,7 @@ assert_sufficient_days_of_data <- function(date_vector,
   invisible()
 }
 
-#' Assert that a vector of dates we're testing overlaps with the comparison
-#' dates
+#' Assert that two vectors of dates overlap
 #'
 #' @param dates1 the vector of dates to check, must of date type
 #' @param dates2 the vector of dates to compare to, must be of date type
