@@ -12,6 +12,8 @@
 #' used to fit the model
 #' @param count_data A dataframe of the preprocessed daily count data (e.g.
 #' hospital admissions) from the "global" population
+#' @param stan_args A list containing all the data passed to stan for fitting
+#' the model
 #' @param fit_obj a CmdStan object that is the output of fitting the model to
 #' the `ww_data` and `count_data`
 #' @return  A tibble containing the full set of posterior draws of the
@@ -29,6 +31,7 @@ get_draws_df.wwinference_fit <- function(ww_output, ...) {
   get_draws_df.default(
     ww_data = ww_output$input_data$ww_data,
     count_data = ww_output$input_data$count_data,
+    stan_args = ww_output$stan_args,
     fit_obj = ww_output$fit
   )
 }
@@ -37,6 +40,7 @@ get_draws_df.wwinference_fit <- function(ww_output, ...) {
 #' @rdname get_draws_df
 get_draws_df.default <- function(ww_data,
                                  count_data,
+                                 stan_args,
                                  fit_obj) {
   draws <- fit_obj$result$draws()
 

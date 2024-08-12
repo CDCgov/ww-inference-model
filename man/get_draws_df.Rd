@@ -10,7 +10,7 @@ get_draws_df(ww_output, ...)
 
 \method{get_draws_df}{wwinference_fit}(ww_output, ...)
 
-\method{get_draws_df}{default}(ww_data, count_data, fit_obj)
+\method{get_draws_df}{default}(ww_data, count_data, stan_args, fit_obj)
 }
 \arguments{
 \item{ww_data}{A dataframe of the preprocessed wastewater concentration data
@@ -18,6 +18,9 @@ used to fit the model}
 
 \item{count_data}{A dataframe of the preprocessed daily count data (e.g.
 hospital admissions) from the "global" population}
+
+\item{stan_args}{A list containing all the data passed to stan for fitting
+the model}
 
 \item{fit_obj}{a CmdStan object that is the output of fitting the model to
 the \code{ww_data} and \code{count_data}}
