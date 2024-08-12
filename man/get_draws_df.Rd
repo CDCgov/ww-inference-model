@@ -15,6 +15,8 @@ get_draws_df(ww_output, ...)
 \arguments{
 \item{ww_output}{an object of the \code{wwinference_fit} class}
 
+\item{...}{additional arguments}
+
 \item{ww_data}{A dataframe of the preprocessed wastewater concentration data
 used to fit the model}
 

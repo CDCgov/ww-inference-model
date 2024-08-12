@@ -17,6 +17,7 @@
 #' @param fit_obj a CmdStan object that is the output of fitting the model to
 #' the `ww_data` and `count_data`
 #' @param ww_output an object of the `wwinference_fit` class
+#' @param ... additional arguments
 #' @return  A tibble containing the full set of posterior draws of the
 #' estimated, nowcasted, and forecasted: counts, site-level wastewater
 #' concentrations, "global"(e.g. state) R(t) estimate, and the  "local" (site +
