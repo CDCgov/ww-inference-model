@@ -10,14 +10,7 @@ get_draws_df(ww_output, ...)
 
 \method{get_draws_df}{wwinference_fit}(ww_output, ...)
 
-\method{get_draws_df}{default}(
-  ww_data,
-  count_data,
-  fit_obj,
-  date_time_spine,
-  lab_site_spine,
-  subpop_spine
-)
+\method{get_draws_df}{default}(ww_data, count_data, fit_obj)
 }
 \arguments{
 \item{ww_data}{A dataframe of the preprocessed wastewater concentration data
@@ -28,16 +21,6 @@ hospital admissions) from the "global" population}
 
 \item{fit_obj}{a CmdStan object that is the output of fitting the model to
 the \code{ww_data} and \code{count_data}}
-
-\item{date_time_spine}{A tibble mapping the time index in stan (observed +
-nowcast + forecast) to real dates}
-
-\item{lab_site_spine}{A tibble mapping the site-lab index in stan to the
-corresponding site, lab, and site population}
-
-\item{subpop_spine}{A tibble mapping the site index in stan to the
-corresponding subpopulation (either a site or the auxiliary site we add to
-represent the rest of the population)}
 }
 \value{
 A tibble containing the full set of posterior draws of the

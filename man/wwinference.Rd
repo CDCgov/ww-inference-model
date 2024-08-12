@@ -43,22 +43,18 @@ function}
 \code{compile_model()}}
 }
 \value{
-A nested list of the following items, intended to allow the user to
-quickly and easily plot results from their inference, while also being able
-to have the full user functionality of running the model themselves in stan
-by providing the raw model object and diagnostics. If the model runs, this
+An object of the \code{ww_inference_fit} class containing the following
+items that are intended to be passed to downstream functions to do things
+like extract posterior draws, get diangostic behavior, and plot results
+(for example). If the model runs, this
 function will return:
-\code{draws_df}: A tibble containing the full set of posterior draws of the
-estimated, nowcasted, and forecasted: counts, site-level wastewater
-concentrations, "global"(e.g. state) R(t) estimate, and the  "local" (site +
-the one auxiliary subpopulation) R(t) estimates. In the instance where there
-are observations, the data will be joined to each draw of the predicted
-observation to facilitate plotting.
-\code{raw_fit_obj}: The CmdStan object that is returned from the call to
+\code{fit}: The CmdStan object that is returned from the call to
 \code{cmdstanr::sample()}. Can be used to access draws, summary, diagnostics, etc.
-\code{date_time_spine}: Mapping from time in stan to dates
-\code{lab_site_spine}: Mapping from lab_site_index in stan to lab and site
-\code{subpop_spine}: Mapping from site index in stan to site
+\code{input_data}: a list containing the input \code{ww_data} and the input
+\code{count_data} used in the model.
+\code{stan_data_args}: a list containing the inputs passed directly to the
+stan model
+\code{mcmc_options}: a list of the MCMC specifications passed to stan
 
 If the model fails to run, a list containing the follow will be returned:
 \code{error}: the error message provided from stan, indicating why the model

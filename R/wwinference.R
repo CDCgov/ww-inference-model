@@ -121,7 +121,7 @@ wwinference <- function(ww_data,
     out <- list(
       fit = fit,
       input_data = input_data,
-      stan_data_args = stan_data_args,
+      stan_args = stan_args,
       mcmc_options = mcmc_options
     )
 
@@ -152,7 +152,7 @@ print.wwinference_fit <- function(x, ...) {
   cat("wwinference_fit object\n")
   cat("Model fit object: ", x$fit, "\n")
   cat("Input data: ", x$input_data, "\n")
-  cat("Stan data arguments: ", x$stan_data_args, "\n")
+  cat("Stan arguments: ", x$stan_args, "\n")
   cat("MCMC options: ", x$mcmc_options, "\n")
   invisible(x)
 }

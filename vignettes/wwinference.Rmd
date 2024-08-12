@@ -361,7 +361,7 @@ we recommend the (bayesplot tutorial)[https://mc-stan.org/bayesplot/articles/vis
 ```{r}
 convergence_flag_df <- wwinference::get_model_diagnostic_flags(
   stan_fit_obj =
-    fit$fit$result
+    ww_fit$fit$result
 )
 parameter_diagnostics <- fit$fit$result$summary()
 diagnostic_summary <- fit$fit$result$diagnostic_summary(quiet = TRUE)
