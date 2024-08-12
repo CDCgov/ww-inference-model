@@ -35,7 +35,7 @@ get_draws_df <- function(ww_output, ...) UseMethod("get_draws_df")
 #' @rdname get_draws_df
 get_draws_df.wwinference_fit <- function(ww_output, ...) {
   get_draws_df.default(
-    www_data = ww_output$ww_data,
+    ww_data = ww_output$ww_data,
     count_data = ww_output$count_data,
     fit_obj = ww_output$fit,
     date_time_spine = ww_output$date_time_spine,
