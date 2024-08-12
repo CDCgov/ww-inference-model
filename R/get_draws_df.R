@@ -29,8 +29,8 @@ get_draws_df <- function(ww_output, ...) UseMethod("get_draws_df")
 #' @rdname get_draws_df
 get_draws_df.wwinference_fit <- function(ww_output, ...) {
   get_draws_df.default(
-    ww_data = ww_output$input_data$ww_data,
-    count_data = ww_output$input_data$count_data,
+    ww_data = ww_output$input_data$input_ww_data,
+    count_data = ww_output$input_data$input_count_data,
     stan_args = ww_output$stan_args,
     fit_obj = ww_output$fit
   )
@@ -78,7 +78,11 @@ get_draws_df.default <- function(ww_data,
     ) |>
     dplyr::select(name, t, pred_value, draw) |>
     dplyr::left_join(date_time_spine, by = "t") |>
-    dplyr::left_join(count_data, by = "date") |>
+    dplyr::left_join(
+      count_data |>
+        dplyr::select(-t),
+      by = "date"
+    ) |>
     dplyr::ungroup() |>
     dplyr::rename(observed_value = count) |>
     dplyr::mutate(
@@ -106,10 +110,14 @@ get_draws_df.default <- function(ww_data,
     dplyr::select(name, lab_site_index, t, pred_value, draw) |>
     dplyr::left_join(date_time_spine, by = "t") |>
     dplyr::left_join(lab_site_spine, by = "lab_site_index") |>
-    dplyr::left_join(ww_data, by = c(
-      "lab_site_index", "date",
-      "lab", "site", "site_pop"
-    )) |>
+    dplyr::left_join(
+      ww_data |>
+        dplyr::select(-t),
+      by = c(
+        "lab_site_index", "date",
+        "lab", "site", "site_pop"
+      )
+    ) |>
     dplyr::ungroup() |>
     dplyr::mutate(observed_value = genome_copies_per_ml) |>
     dplyr::mutate(
@@ -129,7 +137,11 @@ get_draws_df.default <- function(ww_data,
     ) |>
     dplyr::select(name, t, pred_value, draw) |>
     dplyr::left_join(date_time_spine, by = "t") |>
-    dplyr::left_join(count_data, by = "date") |>
+    dplyr::left_join(
+      count_data |>
+        dplyr::select(-t),
+      by = "date"
+    ) |>
     dplyr::ungroup() |>
     dplyr::rename(observed_value = count) |>
     dplyr::mutate(
