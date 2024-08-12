@@ -283,7 +283,7 @@ used to fit the model.
 
 
 ```{r warning=FALSE, message=FALSE}
-fit <- wwinference::wwinference(
+ww_fit <- wwinference::wwinference(
   ww_data_to_fit,
   hosp_data_preprocessed,
   model_spec = get_model_spec(
@@ -300,28 +300,34 @@ fit <- wwinference::wwinference(
 )
 ```
 
-# The `wwinference` object
-The `wwinference()` function returns a `wwinference` object which includes
-a `draws_df`, the underlying `CmdStan` object (`raw_fit_obj`), and three
-"spines" that map the stan indices to the data which include:a
-`date_time_spine`, `lab_site_spine`, and `subpop_spine`. The `draws_df` is
+# The `wwinference_fit` object
+The `wwinference()` function returns a `wwinference_fit` object which includes
+the underlying `CmdStan` object (`fit`), a list of the two sources of input
+data (`input_data`), the list of the arguments passed to stan
+`stan_data_args`), the list of the MCMC options (`mcmc_options`) passed to
+stan.
+```{r}
+head(ww_fit)
+```
+# Summarizing and plotting the model fit
+The `draws_df` is
 intended to provide an easy to work with tibble of posterior draws of
 the estimated, nowcasted, and forecasted expected observed hospital admissions
 and wastewater concentrations, as well as the latent variables of interest
 including the site-level R(t) estimates and the state-level R(t) estimate.
-```{r}
-head(fit)
-```
-# Summarizing and plotting the model fit
-The `draws_df` object is intended to be used to easily plot relevant model
-outputs against data. This can be useful to get a sense of if you're model is
-fitting the data well, and if the nowcasted/forecast quantities look reasonable.
+We can then easily plot relevant model outputs against data. This can be useful
+to get a sense of if you're model is fitting the data well, and if the
+nowcasted/forecast quantities look reasonable.
 
 We can create the plots using the fitting wrapper functions (figures can
-also created directly using the `draws_df`)
+also created directly using the `draws_df`).
+
+To generate the `draws_df`, you can just pass the entire `wwinference_fit`
+object to the `get_draws_df()` function (or you can pass individual
+tibbles required by the function).
 
 ```{r generating-figures,  out.width='100%'}
-draws_df <- get_draws_df(fit)
+draws_df <- get_draws_df(ww_fit)
 
 plot_hosp <- get_plot_forecasted_counts(
   draws = draws_df,

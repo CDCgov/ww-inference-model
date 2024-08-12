@@ -14,14 +14,6 @@
 #' hospital admissions) from the "global" population
 #' @param fit_obj a CmdStan object that is the output of fitting the model to
 #' the `ww_data` and `count_data`
-#' @param date_time_spine A tibble mapping the time index in stan (observed +
-#' nowcast + forecast) to real dates
-#' @param lab_site_spine A tibble mapping the site-lab index in stan to the
-#' corresponding site, lab, and site population
-#' @param subpop_spine A tibble mapping the site index in stan to the
-#' corresponding subpopulation (either a site or the auxiliary site we add to
-#' represent the rest of the population)
-#'
 #' @return  A tibble containing the full set of posterior draws of the
 #' estimated, nowcasted, and forecasted: counts, site-level wastewater
 #' concentrations, "global"(e.g. state) R(t) estimate, and the  "local" (site +
@@ -35,12 +27,9 @@ get_draws_df <- function(ww_output, ...) UseMethod("get_draws_df")
 #' @rdname get_draws_df
 get_draws_df.wwinference_fit <- function(ww_output, ...) {
   get_draws_df.default(
-    ww_data = ww_output$ww_data,
-    count_data = ww_output$count_data,
-    fit_obj = ww_output$fit,
-    date_time_spine = ww_output$date_time_spine,
-    lab_site_spine = ww_output$lab_site_spine,
-    subpop_spine = ww_output$subpop_spine
+    ww_data = ww_output$input_data$ww_data,
+    count_data = ww_output$input_data$count_data,
+    fit_obj = ww_output$fit
   )
 }
 
@@ -48,11 +37,33 @@ get_draws_df.wwinference_fit <- function(ww_output, ...) {
 #' @rdname get_draws_df
 get_draws_df.default <- function(ww_data,
                                  count_data,
-                                 fit_obj,
-                                 date_time_spine,
-                                 lab_site_spine,
-                                 subpop_spine) {
+                                 fit_obj) {
   draws <- fit_obj$result$draws()
+
+  # Get the necessary mappings needed to join draws to data
+  date_time_spine <- tibble::tibble(
+    date = seq(
+      from = min(count_data$date),
+      to = min(count_data$date) + stan_args$ot + stan_args$ht,
+      by = "days"
+    )
+  ) |>
+    dplyr::mutate(t = row_number())
+  # Lab-site index to corresponding lab, site, and site population size
+  lab_site_spine <- ww_data |>
+    dplyr::distinct(site, lab, lab_site_index, site_pop)
+  # Site index to corresponding site and subpopulation size
+  subpop_spine <- ww_data |>
+    dplyr::distinct(site, site_index, site_pop) |>
+    dplyr::mutate(site = as.factor(site)) |>
+    dplyr::bind_rows(tibble::tibble(
+      site = "remainder of pop",
+      site_index = max(ww_data$site_index) + 1,
+      site_pop = stan_args$subpop_size[
+        length(unique(stan_args$subpop_size))
+      ]
+    ))
+
 
   count_draws <- draws |>
     tidybayes::spread_draws(pred_hosp[t]) |>

@@ -35,22 +35,19 @@
 #' @param compiled_model The pre-compiled model as defined using
 #' `compile_model()`
 #'
-#' @return A nested list of the following items, intended to allow the user to
-#' quickly and easily plot results from their inference, while also being able
-#' to have the full user functionality of running the model themselves in stan
-#' by providing the raw model object and diagnostics. If the model runs, this
+#' @return An object of the `ww_inference_fit` class containing the following
+#' items that are intended to be passed to downstream functions to do things
+#' like extract posterior draws, get diangostic behavior, and plot results
+#' (for example). If the model runs, this
 #' function will return:
-#' `draws_df`: A tibble containing the full set of posterior draws of the
-#' estimated, nowcasted, and forecasted: counts, site-level wastewater
-#' concentrations, "global"(e.g. state) R(t) estimate, and the  "local" (site +
-#' the one auxiliary subpopulation) R(t) estimates. In the instance where there
-#' are observations, the data will be joined to each draw of the predicted
-#' observation to facilitate plotting.
-#' `raw_fit_obj`: The CmdStan object that is returned from the call to
+
+#' `fit`: The CmdStan object that is returned from the call to
 #' `cmdstanr::sample()`. Can be used to access draws, summary, diagnostics, etc.
-#' `date_time_spine`: Mapping from time in stan to dates
-#' `lab_site_spine`: Mapping from lab_site_index in stan to lab and site
-#' `subpop_spine`: Mapping from site index in stan to site
+#' `input_data`: a list containing the input `ww_data` and the input
+#' `count_data` used in the model.
+#' `stan_data_args`: a list containing the inputs passed directly to the
+#' stan model
+#' `mcmc_options`: a list of the MCMC specifications passed to stan
 #'
 #' If the model fails to run, a list containing the follow will be returned:
 #' `error`: the error message provided from stan, indicating why the model
@@ -116,44 +113,16 @@ wwinference <- function(ww_data,
     )
     message(fit$error[[1]])
   } else {
-    # This is a bit messy, but get the spines needed to map stan data to
-    # the real data
-    # Time index to date
-    date_time_spine <- tibble::tibble(
-      date = seq(
-        from = min(count_data$date),
-        to = min(count_data$date) + stan_args$ot + stan_args$ht,
-        by = "days"
-      )
-    ) |>
-      dplyr::mutate(t = row_number())
-    # Lab-site index to corresponding lab, site, and site population size
-    lab_site_spine <- ww_data |>
-      dplyr::distinct(site, lab, lab_site_index, site_pop)
-    # Site index to corresponding site and subpopulation size
-    subpop_spine <- ww_data |>
-      dplyr::distinct(site, site_index, site_pop) |>
-      dplyr::mutate(site = as.factor(site)) |>
-      dplyr::bind_rows(tibble::tibble(
-        site = "remainder of pop",
-        site_index = max(ww_data$site_index) + 1,
-        site_pop = stan_args$subpop_size[
-          length(unique(stan_args$subpop_size))
-        ]
-      ))
-
     convergence_flag_df <- get_model_diagnostic_flags(
       stan_fit_object =
         fit$result
     )
 
     out <- list(
-      ww_data = ww_data,
-      count_data = count_data,
       fit = fit,
-      date_time_spine = date_time_spine,
-      lab_site_spine = lab_site_spine,
-      subpop_spine = subpop_spine
+      input_data = input_data,
+      stan_data_args = stan_data_args,
+      mcmc_options = mcmc_options
     )
 
     # Message if a flag doesn't pass. Still return
@@ -182,9 +151,9 @@ wwinference <- function(ww_data,
 print.wwinference_fit <- function(x, ...) {
   cat("wwinference_fit object\n")
   cat("Model fit object: ", x$fit, "\n")
-  cat("Date time spine: ", x$date_time_spine, "\n")
-  cat("Lab site spine: ", x$lab_site_spine, "\n")
-  cat("Subpop spine: ", x$subpop_spine, "\n")
+  cat("Input data: ", x$input_data, "\n")
+  cat("Stan data arguments: ", x$stan_data_args, "\n")
+  cat("MCMC options: ", x$mcmc_options, "\n")
   invisible(x)
 }
 
