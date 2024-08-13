@@ -23,14 +23,14 @@ IS08601 dates) and \code{t} (integers of time in days)}
 \item{arg1}{string to print the name of the element your checking,
 default is \code{x1}}
 
+\item{arg2}{string to print the name of the element your checking,
+default is \code{x2}}
+
 \item{call}{Calling environment to be passed to \code{\link[cli:cli_abort]{cli::cli_abort()}} for
 traceback.}
 
 \item{add_err_msg}{add_err_msg string containing an additional error message,
 default is the empty string (\code{""})}
-
-\item{arg2`}{string to print the name of the element your checking,
-default is \code{x2}}
 }
 \value{
 NULL invisible

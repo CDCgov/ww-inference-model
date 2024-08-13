@@ -473,7 +473,7 @@ assert_overlap_dates <- function(dates1,
 #' IS08601 dates) and `t` (integers of time in days)
 #' @param arg1 string to print the name of the element your checking,
 #' default is `x1`
-#' @param arg2` string to print the name of the element your checking,
+#' @param arg2 string to print the name of the element your checking,
 #' default is `x2`
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
