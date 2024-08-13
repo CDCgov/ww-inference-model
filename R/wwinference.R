@@ -70,7 +70,7 @@ wwinference <- function(ww_data,
   assert_no_dates_after_max(ww_data$date, model_spec$forecast_date)
   assert_no_dates_after_max(count_data$date, model_spec$forecast_date)
 
-  input_count_data <- get_input_hosp_data_for_stan(
+  input_count_data <- get_input_count_data_for_stan(
     count_data,
     calibration_time
   )
