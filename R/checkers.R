@@ -488,7 +488,7 @@ assert_equivalent_indexing <- function(first_data,
     dplyr::distinct(date, t) |>
     dplyr::rename(second_t = t)
 
-  test_df <- full_dates |>
+  test_df <- first_index |>
     dplyr::left_join(subset_dates, by = "date") |>
     dplyr::filter(!is.na(second_t))
 
