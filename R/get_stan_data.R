@@ -148,7 +148,10 @@ get_stan_data <- function(input_count_data,
 
 
   # Test for presence of needed column names
-  check_req_ww_cols_present(input_ww_data)
+  check_req_ww_cols_present(input_ww_data,
+    conc_col_name = "genome_copies_per_ml",
+    lod_col_name = "lod"
+  )
 
   # Filter out wastewater outliers, and remove extra wastewater
   # data. Arrange data for indexing. This is what will be returned.
