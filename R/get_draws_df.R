@@ -43,7 +43,9 @@ get_draws_df.wwinference_fit <- function(ww_output, ...) {
 get_draws_df.default <- function(ww_data,
                                  count_data,
                                  stan_args,
-                                 fit_obj) {
+                                 fit_obj
+                                 ...) {
+
   draws <- fit_obj$result$draws()
 
   # Get the necessary mappings needed to join draws to data
