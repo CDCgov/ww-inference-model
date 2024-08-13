@@ -51,7 +51,8 @@ get_draws_df.default <- function(ww_data,
                                  fit_obj,
                                  date_time_spine,
                                  lab_site_spine,
-                                 subpop_spine) {
+                                 subpop_spine,
+                                 ...) {
   draws <- fit_obj$result$draws()
 
   count_draws <- draws |>

@@ -16,7 +16,8 @@ get_draws_df(ww_data, ...)
   fit_obj,
   date_time_spine,
   lab_site_spine,
-  subpop_spine
+  subpop_spine,
+  ...
 )
 }
 \arguments{
