@@ -483,7 +483,7 @@ assert_equivalent_indexing <- function(first_data,
                                        arg = "x",
                                        call = rlang::caller_env(),
                                        add_err_msg = "") {
-  full_dates <- first_data |> dplyr::distinct(date, t)
+  first_index <- first_data |> dplyr::distinct(date, t)
   subset_dates <- second_data |>
     dplyr::distinct(date, t) |>
     dplyr::rename(second_t = t)
