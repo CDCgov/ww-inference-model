@@ -51,7 +51,7 @@ test_that(
     x <- c(4, 4, 5)
     expect_error(assert_no_repeated_elements(x, "x"))
 
-    x <- c("2024-03-03", "2024-03-03")
+    x <- c("2024-03-03", "2024-03-03", "2024-03-04")
     expect_error(assert_no_repeated_elements(x, "x"))
   }
 )
