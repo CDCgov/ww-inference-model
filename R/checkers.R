@@ -334,7 +334,7 @@ assert_single_value <- function(x, arg = "x",
 #' default is the empty string (`""`)
 #'
 #' @return NULL invisible
-assert_not_empty <- function(x,
+assert_df_not_empty <- function(x,
                              arg = "x",
                              call = rlang::caller_env(),
                              add_err_msg = "") {
