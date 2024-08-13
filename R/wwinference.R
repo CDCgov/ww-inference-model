@@ -63,9 +63,9 @@
 wwinference <- function(ww_data,
                         count_data,
                         model_spec = wwinference::get_model_spec(),
-                        mcmc_options = wwinference::get_mcmc_options(),
+                        mcmc_options = get_mcmc_options(),
                         generate_initial_values = TRUE,
-                        compiled_model = wwinference::compile_model()) {
+                        compiled_model = compile_model()) {
   # Check that data is compatible with specifications
   assert_no_dates_after_max(ww_data$date, model_spec$forecast_date)
   assert_no_dates_after_max(count_data$date, model_spec$forecast_date)
