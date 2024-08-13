@@ -13,7 +13,7 @@ validate_ww_conc_data <- function(ww_data,
                                   conc_col_name,
                                   lod_col_name,
                                   call = rlang::caller_env()) {
-  assert_not_empty(ww_data, arg = "ww_data", call)
+  assert_df_not_empty(ww_data, arg = "ww_data", call)
 
 
   ww_conc <- ww_data |> dplyr::pull({
@@ -91,7 +91,7 @@ validate_count_data <- function(count_data,
                                 count_col_name,
                                 pop_size_col_name,
                                 call = rlang::caller_env()) {
-  assert_not_empty(count_data, arg = "count_data", call)
+  assert_df_not_empty(count_data, arg = "count_data", call)
   # Count data should be non negative and a vector of integers
   counts <- count_data |> dplyr::pull({
     count_col_name
@@ -173,7 +173,7 @@ validate_both_datasets <- function(input_count_data,
 
   # make sure filtering to exclude days before earliest calibration time
   # didn't eliminate
-  assert_not_empty(input_ww_data,
+  assert_df_not_empty(input_ww_data,
     add_err_msg = c(
       "Wastewater data passed in doesn't overlap",
       "with count data calibration period"
@@ -195,7 +195,8 @@ validate_both_datasets <- function(input_count_data,
   assert_equivalent_indexing(
     input_count_data,
     input_ww_data,
-    arg = "ww and count data"
+    arg1 = "count data",
+    arg2 = "ww data"
   )
   invisible()
 }

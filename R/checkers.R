@@ -335,9 +335,9 @@ assert_single_value <- function(x, arg = "x",
 #'
 #' @return NULL invisible
 assert_df_not_empty <- function(x,
-                             arg = "x",
-                             call = rlang::caller_env(),
-                             add_err_msg = "") {
+                                arg = "x",
+                                call = rlang::caller_env(),
+                                add_err_msg = "") {
   nrows <- nrow(x)
 
   if (is.null(nrows)) {
@@ -471,7 +471,10 @@ assert_overlap_dates <- function(dates1,
 #' dates) and `t` (integers of time in days)
 #' @param second_data a tibble containing the columns `date` (with
 #' IS08601 dates) and `t` (integers of time in days)
-#' @param arg string to print the name of the element your checking
+#' @param arg1 string to print the name of the element your checking,
+#' default is `x1`
+#' @param arg2` string to print the name of the element your checking,
+#' default is `x2`
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
 #' @param add_err_msg add_err_msg string containing an additional error message,
@@ -480,7 +483,8 @@ assert_overlap_dates <- function(dates1,
 #' @return NULL invisible
 assert_equivalent_indexing <- function(first_data,
                                        second_data,
-                                       arg = "x",
+                                       arg1 = "x1",
+                                       arg2 = "x2",
                                        call = rlang::caller_env(),
                                        add_err_msg = "") {
   full_dates <- first_data |> dplyr::distinct(date, t)
@@ -497,7 +501,8 @@ assert_equivalent_indexing <- function(first_data,
   if (!check_indexing) {
     cli::cli_abort(
       c(
-        "Date and time indexing on {.arg {arg}} being do not align"
+        "Date and time indexing on {.arg1 {arg1}} and {.arg2 {arg2}}",
+        "do not align"
       ),
       call = call,
       class = "wwinference_preprocessing_error"

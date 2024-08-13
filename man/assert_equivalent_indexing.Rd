@@ -7,7 +7,8 @@
 assert_equivalent_indexing(
   first_data,
   second_data,
-  arg = "x",
+  arg1 = "x1",
+  arg2 = "x2",
   call = rlang::caller_env(),
   add_err_msg = ""
 )
@@ -19,13 +20,17 @@ dates) and \code{t} (integers of time in days)}
 \item{second_data}{a tibble containing the columns \code{date} (with
 IS08601 dates) and \code{t} (integers of time in days)}
 
-\item{arg}{string to print the name of the element your checking}
+\item{arg1}{string to print the name of the element your checking,
+default is \code{x1}}
 
 \item{call}{Calling environment to be passed to \code{\link[cli:cli_abort]{cli::cli_abort()}} for
 traceback.}
 
 \item{add_err_msg}{add_err_msg string containing an additional error message,
 default is the empty string (\code{""})}
+
+\item{arg2`}{string to print the name of the element your checking,
+default is \code{x2}}
 }
 \value{
 NULL invisible
