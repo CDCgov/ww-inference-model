@@ -11,7 +11,7 @@
 #'
 #' @return a list of initial values for each of the parameters in the
 #' `wwinference` model
-get_inits <- function(stan_data, params, stdev = 0.01) {
+get_inits_for_one_chain <- function(stan_data, params, stdev = 0.01) {
   # Define some variables
   pop <- stan_data$state_pop
   n_weeks <- as.numeric(stan_data$n_weeks)

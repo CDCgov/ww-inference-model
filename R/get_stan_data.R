@@ -138,18 +138,17 @@ get_stan_data <- function(input_count_data,
     unique() |>
     dplyr::pull(total_pop)
 
-  stopifnot(
-    "More than one population size in training data" =
-      length(pop) == 1
+  assert_single_value(pop,
+    arg = "global population",
+    add_err_msg = c(
+      "More than one global population size",
+      "passed to stan"
+    )
   )
 
 
   # Test for presence of needed column names
-  stopifnot(
-    "Exclude column isn't present in input ww dataset" =
-      "exclude" %in% colnames(input_ww_data)
-  )
-
+  check_req_ww_cols_present(input_ww_data)
 
   # Filter out wastewater outliers, and remove extra wastewater
   # data. Arrange data for indexing. This is what will be returned.
@@ -569,7 +568,7 @@ get_ww_data_indices <- function(ww_data,
 #' what the stan model expects
 #' @param padding_value an smaller numeric value to add to the the
 #' concentration measurements to ensure that log transformation will produce
-#' real numbers
+#' real numbers, default value is `1e-8`
 #'
 #' @return  A list containing the necessary vectors of values that
 #' the stan model requires:

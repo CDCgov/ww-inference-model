@@ -35,7 +35,7 @@ what the stan model expects}
 
 \item{padding_value}{an smaller numeric value to add to the the
 concentration measurements to ensure that log transformation will produce
-real numbers}
+real numbers, default value is \code{1e-8}}
 }
 \value{
 A list containing the necessary vectors of values that

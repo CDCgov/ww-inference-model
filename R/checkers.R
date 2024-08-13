@@ -487,13 +487,15 @@ assert_equivalent_indexing <- function(first_data,
                                        arg2 = "x2",
                                        call = rlang::caller_env(),
                                        add_err_msg = "") {
-  first_index <- first_data |> dplyr::distinct(date, t)
+  first_index <- first_data |>
+    dplyr::distinct(date, t)
   second_index <- second_data |>
     dplyr::distinct(date, t) |>
     dplyr::rename(second_t = t)
 
+
   test_df <- first_index |>
-    dplyr::inner_join(second_index, by = "date") |>
+    dplyr::inner_join(second_index, by = "date")
 
   check_indexing <- all(test_df$t == test_df$second_t)
 
