@@ -182,8 +182,9 @@ validate_both_datasets <- function(input_count_data,
 
   # check that the wastewater data has some data within the observed count
   # data
-  assert_overlap_dates(input_ww_data$date,
+  assert_dates_within_frame(
     input_count_data$date,
+    input_ww_data$date,
     forecast_date,
     add_err_msg = c(
       "There is no wastewater data within ",

@@ -432,7 +432,8 @@ assert_sufficient_days_of_data <- function(date_vector,
   invisible()
 }
 
-#' Assert that two vectors of dates overlap
+#' Assert that the second vector of dates is within the period after the first
+#' date in the first set of dats and the maximum date
 #'
 #' @param dates1 the vector of dates to check, must of date type
 #' @param dates2 the vector of dates to compare to, must be of date type
@@ -443,16 +444,18 @@ assert_sufficient_days_of_data <- function(date_vector,
 #' default is the empty string (`""`)
 #'
 #' @return NULL invisible
-assert_overlap_dates <- function(dates1,
-                                 dates2,
-                                 max_date,
-                                 call = rlang::caller_env(),
-                                 add_err_msg = "") {
+assert_dates_within_frame <- function(dates1,
+                                      dates2,
+                                      max_date,
+                                      call = rlang::caller_env(),
+                                      add_err_msg = "") {
   checkmate::assert_date(dates1)
   checkmate::assert_date(dates2)
-  check_data_overlap <- min(dates1) <= max(dates2) &
-    max(dates1) <= max_date
-  if (!check_data_overlap) {
+  check_dates2_win_frame <- min(dates1) <= max(dates2) &
+    min(dates2) >= min(dates1) &
+    max(dates2) <= max_date &
+    max(dates1) <= -max_date
+  if (!check_dates2_win_frame) {
     cli::cli_abort(
       c(
         "The two vectors of dates do not overlap",

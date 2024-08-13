@@ -1,10 +1,109 @@
+#' Get the input count data to pass directly to stan
+#'
+#' @param preprocessed_count_data a dataframe with the input count data, must
+#' have the following columns: date, count, total_pop
+#' @param calibration_time integer indicating the max duration in days that
+#' the model is calibrated to the count data for
+#' @return datatframe of count data passed to stan
+#' @export
+get_input_count_data_for_stan <- function(preprocessed_count_data,
+                                          calibration_time) {
+  # Get the last date that there were observations of the epidemiological
+  # indicator (aka cases or hospital admissions counts)
+  last_count_data_date <- max(preprocessed_count_data$date, na.rm = TRUE)
+
+  input_count_data_filtered <- preprocessed_count_data |>
+    dplyr::filter(
+      date > last_count_data_date - lubridate::days(calibration_time)
+    )
+
+  count_data <- add_time_indexing(input_count_data_filtered)
+
+
+  return(count_data)
+}
+
+#' Get the input ww data passed directly to stan
+#'
+#' @param preprocessed_ww_data a dataframe with the input wastewater data with
+#' no gaps, must have the following columns: date, site, lab,
+#' genome_copies_per_ml, site_pop, below_lod, and if removing outliers,
+#' flag_as_ww_outlier
+#' @param first_count_data_date The earliest day with an observation in the '
+#' count dataset, in ISO8601 format (YYYY-MM-DD)
+#' @param last_count_data_date the last date that a count observation is
+#' presen, in ISO8601 format (YYYY-MM-DD)
+#' @param calibration_time integer indicating the max duration in days that
+#' the model is calibrated to the count data for
+#' @return dataframe of the ww data passed to stan
+#' @export
+get_input_ww_data_for_stan <- function(preprocessed_ww_data,
+                                       first_count_data_date,
+                                       last_count_data_date,
+                                       calibration_time) {
+  # Test to see if ww_data_present
+  ww_data_present <- nrow(preprocessed_ww_data) != 0
+  if (ww_data_present == FALSE) {
+    message("No wastewater data present")
+  }
+
+  if (all(sum(preprocessed_ww_data$flag_as_ww_outlier) > sum(
+    preprocessed_ww_data$exclude
+  ))) {
+    cli::cli_warn(
+      c(
+        "Wastewater data being passed to the model has outliers flagged,",
+        "but not all have been indicated for exclusion from model fit"
+      )
+    )
+  }
+
+  # Test for presence of needed column names
+  check_req_ww_cols_present(preprocessed_ww_data,
+    conc_col_name = "genome_copies_per_ml",
+    lod_col_name = "lod"
+  )
+
+  # Filter out wastewater outliers, and remove extra wastewater
+  # data. Arrange data for indexing. This is what will be returned.
+  ww_data <- preprocessed_ww_data |>
+    dplyr::filter(
+      exclude != 1,
+      date > last_count_data_date -
+        lubridate::days(calibration_time)
+    ) |>
+    dplyr::arrange(date, lab_site_index)
+
+  ww_data_sizes <- get_ww_data_sizes(
+    ww_data,
+    lod_col_name = "below_lod"
+  )
+
+  ww_indices <- get_ww_data_indices(
+    ww_data,
+    first_count_data_date,
+    owt = ww_data_sizes$owt,
+    lod_col_name = "below_lod"
+  )
+
+  ww_data <- ww_data |>
+    dplyr::mutate(
+      t = ww_indices$ww_sampled_times
+    )
+
+  return(ww_data)
+}
+
+
+
+
 #' Get stan data for ww + hosp model
 #'
-#' @param input_count_data a dataframe with the input count data, must have
-#' the following columns: date, count, total_pop
-#' @param input_ww_data a dataframe with the input wastewater data with no gaps,
-#' must have the following columns: date, site, lab, genome_copies_per_ml,
-#' site_pop, below_lod, and if removing outliers, flag_as_ww_outlier
+#' @param input_count_data a dataframe of the count data to be passed
+#' directly to stan, , must have the following columns: date, count, total_pop
+#' @param input_ww_data a dataframe of the wastewater data to be passed
+#' directly to stan, must have the following columns: date, site, lab,
+#' genome_copies_per_ml, site_pop, below_lod, and exclude
 #' @param forecast_date string indicating the forecast date in ISO8601
 #'  convention e.g. YYYY-MM-DD
 #' @param forecast_horizon integer indicating the number of days to make a
@@ -23,12 +122,7 @@
 #' @param compute_likelihood indicator variable telling stan whether or not to
 #' compute the likelihood, default = `1`
 #'
-#' @return a nested list containing the following:
-#' `input_data`: a list containing two dataframes:
-#'    `input_ww_data`: wastewater data passed to stan
-#'    `input_count_data`: count data passed to stan
-#'
-#'  `stan_args`: named variables to pass to stan
+#' @return `stan_args`: named variables to pass to stan
 #' @export
 #'
 #' @examples
@@ -84,9 +178,19 @@
 #' calibration_time <- 90
 #' forecast_horizon <- 28
 #' include_ww <- 1
-#' input_data_and_args <- get_stan_data(
+#' input_count_data_for_stan <- get_input_count_data_for_stan(
 #'   input_count_data,
+#'   calibration_time
+#' )
+#' last_count_data_date <- max(preprocessed_count_data$date, na.rm = TRUE)
+#' input_ww_data_for_stan <- get_input_ww_data_for_stan(
 #'   input_ww_data,
+#'   last_count_data_date,
+#'   calibration_time
+#' )
+#' stan_args <- get_stan_data(
+#'   input_count_data_for_stan,
+#'   input_ww_data_for_stan,
 #'   forecast_date,
 #'   forecast_horizon,
 #'   calibration_time,
@@ -96,10 +200,6 @@
 #'   params,
 #'   include_ww
 #' )
-#' input_data <- input_data_and_args$input_data
-#' input_ww_data <- input_data$input_ww_data
-#' input_count_data <- input_data$input_count_data
-#' stan_args <- input_data_and_args$stan_args
 get_stan_data <- function(input_count_data,
                           input_ww_data,
                           forecast_date,
@@ -111,24 +211,28 @@ get_stan_data <- function(input_count_data,
                           params,
                           include_ww,
                           compute_likelihood = 1) {
-  # Get the last date that there were observations of the epidemiological
-  # indicator (aka cases or hospital admissions counts)
-  last_count_data_date <- max(input_count_data$date, na.rm = TRUE)
+  validate_pmf(generation_interval,
+    calibration_time,
+    input_count_data,
+    arg = "generation interval"
+  )
+  validate_pmf(infection_feedback_pmf,
+    calibration_time,
+    input_count_data,
+    arg = "infection feedback pmf"
+  )
+  validate_pmf(inf_to_count_delay,
+    calibration_time,
+    input_count_data,
+    arg = "infection to count delay"
+  )
 
-  # Test to see if ww_data_present
-  ww_data_present <- nrow(input_ww_data) != 0
-  if (ww_data_present == FALSE) {
-    message("No wastewater data present")
-  }
-
-  if (all(sum(input_ww_data$flag_as_ww_outlier) > sum(input_ww_data$exclude))) {
-    cli::cli_warn(
-      c(
-        "Wastewater data being passed to the model has outliers flagged,",
-        "but not all have been indicated for exclusion from model fit"
-      )
-    )
-  }
+  validate_both_datasets(
+    input_count_data,
+    input_ww_data,
+    calibration_time = calibration_time,
+    forecast_date = forecast_date
+  )
 
 
   # Get the total pop, coming from the larger population generating the
@@ -146,79 +250,31 @@ get_stan_data <- function(input_count_data,
     )
   )
 
-
-  # Test for presence of needed column names
-  check_req_ww_cols_present(input_ww_data,
-    conc_col_name = "genome_copies_per_ml",
-    lod_col_name = "lod"
+  first_count_data_date <- min(input_count_data$date, na.rm = TRUE)
+  # Returns a list of the vectors of lod values, the site population sizes in
+  # order of the site index, a vector of observations of the log of
+  # the genome copies per ml
+  ww_values <- get_ww_values(
+    input_ww_data,
+    ww_measurement_col_name = "genome_copies_per_ml",
+    ww_lod_value_col_name = "lod",
+    ww_site_pop_col_name = "site_pop"
   )
-
-  # Filter out wastewater outliers, and remove extra wastewater
-  # data. Arrange data for indexing. This is what will be returned.
-  ww_data <- input_ww_data |>
-    dplyr::filter(
-      exclude != 1,
-      date > last_count_data_date -
-        lubridate::days(calibration_time)
-    ) |>
-    dplyr::arrange(date, lab_site_index)
-
-  # Get the remaining things needed for both models.
-  input_count_data_filtered <- input_count_data |>
-    dplyr::filter(
-      date > last_count_data_date - lubridate::days(calibration_time)
-    )
-  # This is what will be returned
-  count_data <- add_time_indexing(input_count_data_filtered)
-
-
   # Returns a list with the numbers of elements needed for the stan model
   ww_data_sizes <- get_ww_data_sizes(
-    ww_data,
+    input_ww_data,
     lod_col_name = "below_lod"
   )
   # Returns the vectors of indices you need to map latent variables to
   # observations
   ww_indices <- get_ww_data_indices(
-    ww_data,
-    count_data,
+    input_ww_data |> dplyr::select(-t),
+    first_count_data_date,
     owt = ww_data_sizes$owt,
     lod_col_name = "below_lod"
   )
-  ww_data$t <- ww_indices$ww_sampled_times
   # Ensure that both datasets have overlap with one another, are sufficient
   # in length for the specified calibration time, and have proper time indexing
-  validate_both_datasets(
-    input_count_data = count_data,
-    input_ww_data = ww_data,
-    calibration_time = calibration_time,
-    forecast_date = forecast_date
-  )
-  validate_pmf(generation_interval,
-    calibration_time,
-    count_data,
-    arg = "generation interval"
-  )
-  validate_pmf(infection_feedback_pmf,
-    calibration_time,
-    count_data,
-    arg = "infection feedback pmf"
-  )
-  validate_pmf(inf_to_count_delay,
-    calibration_time,
-    count_data,
-    arg = "infection to count delay"
-  )
-
-  # Returns a list of the vectors of lod values, the site population sizes in
-  # order of the site index, a vector of observations of the log of
-  # the genome copies per ml
-  ww_values <- get_ww_values(
-    ww_data,
-    ww_measurement_col_name = "genome_copies_per_ml",
-    ww_lod_value_col_name = "lod",
-    ww_site_pop_col_name = "site_pop"
-  )
 
   stopifnot(
     "Wastewater sampled times not equal to length of input ww data" =
@@ -252,16 +308,16 @@ get_stan_data <- function(input_count_data,
 
   # Get the sizes of all the elements
   count_data_sizes <- get_count_data_sizes(
-    input_count_data = count_data,
+    input_count_data = input_count_data,
     forecast_date = forecast_date,
     forecast_horizon = forecast_horizon,
     calibration_time = calibration_time,
     last_count_data_date = last_count_data_date,
     uot = params$uot
   )
-  count_indices <- get_count_indices(count_data)
+  count_indices <- get_count_indices(input_count_data)
   count_values <- get_count_values(
-    count_data,
+    input_count_data,
     ot = count_data_sizes$ot,
     ht = count_data_sizes$ht,
     count_col_name = "count"
@@ -296,7 +352,7 @@ get_stan_data <- function(input_count_data,
 
   inf_to_count_delay_max <- length(inf_to_count_delay)
 
-  data_renewal <- list(
+  stan_args <- list(
     gt_max = params$gt_max,
     hosp_delay_max = inf_to_count_delay_max,
     inf_to_hosp = inf_to_count_delay,
@@ -374,16 +430,8 @@ get_stan_data <- function(input_count_data,
     lab_site_to_site_map = ww_indices$lab_site_to_site_map
   )
 
-  input_data <- list(
-    input_ww_data = ww_data,
-    input_count_data = count_data
-  )
-  input_data_and_args <- list(
-    input_data = input_data,
-    stan_args = data_renewal
-  )
 
-  return(input_data_and_args)
+  return(stan_args)
 }
 
 #' Get the integer sizes of the wastewater input data
@@ -451,8 +499,8 @@ get_ww_data_sizes <- function(ww_data,
 #'
 #' @param ww_data Input wastewater dataframe containing one row
 #' per observation, with outliers already removed
-#' @param input_hosp_data Input hospital admissions data frame with one row
-#' per day and location
+#' @param first_count_data_date The earliest day with an observation in the '
+#' count dataset, in ISO8601 format YYYY-MM-DD
 #' @param owt number of wastewater observations
 #' @param lod_col_name A string representing the name of the
 #' column in the input_ww_data that provides a 0 if the data point is not above
@@ -474,7 +522,7 @@ get_ww_data_sizes <- function(ww_data,
 #' lab_site_to_site_map: the vector of sites that correspond to each lab-site
 #' @export
 get_ww_data_indices <- function(ww_data,
-                                input_hosp_data,
+                                first_count_data_date,
                                 owt,
                                 lod_col_name = "below_lod") {
   # Vector of indices along the list of wastewater concentrations that
@@ -500,11 +548,11 @@ get_ww_data_indices <- function(ww_data,
     # day of hospital admissions data
     ww_date_df <- data.frame(
       date = seq(
-        from = min(input_hosp_data$date),
+        from = first_count_data_date,
         to = max(ww_data$date),
         by = "days"
       ),
-      t = 1:(as.integer(max(ww_data$date) - min(input_hosp_data$date)) + 1)
+      t = 1:(as.integer(max(ww_data$date) - first_count_data_date) + 1)
     )
 
     # Left join the data mapped to time to the wastewater data
