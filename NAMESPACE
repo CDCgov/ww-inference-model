@@ -2,7 +2,6 @@
 
 export(add_pmfs)
 export(add_time_indexing)
-export(autoescape_brackets)
 export(compile_model)
 export(convert_to_logmean)
 export(convert_to_logsd)
