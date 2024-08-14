@@ -169,7 +169,7 @@ get_plot_global_rt <- function(draws,
 
   # R(t) timeseries
   p <- ggplot(draws_to_plot) +
-    ggplot2::geom_segment(
+    ggplot2::geom_step(
       aes(x = date, y = pred_value, group = draw),
       color = "blue4", alpha = 0.1, linewidth = 0.2
     ) +
@@ -226,7 +226,7 @@ get_plot_subpop_rt <- function(draws,
   )
 
   p <- ggplot(draws_to_plot) +
-    ggplot2::geom_segment(
+    ggplot2::geom_step(
       aes(
         x = date, y = pred_value, group = draw,
         color = subpop
