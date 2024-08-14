@@ -152,9 +152,9 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   # Create a tibble that maps sites, labs, and population sizes of the sites
   n_sites <- length(unique(site))
   site_lab_map <- create_site_lab_map(
-    site,
-    lab,
-    ww_pop_sites
+    site = site,
+    lab = lab,
+    ww_pop_sites = ww_pop_sites
   )
 
 
@@ -301,12 +301,12 @@ generate_simulated_data <- function(r_in_weeks = # nolint
 
   ## Generate a time varying P(hosp|infection)----------------------------------
   p_hosp_days <- get_time_varying_daily_ihr(
-    params$p_hosp_mean,
-    params$uot,
-    ot,
-    ht,
-    tot_weeks,
-    params$p_hosp_w_sd_sd
+    p_hosp_mean = params$p_hosp_mean,
+    uot = params$uot,
+    ot = ot,
+    ht = ht,
+    tot_weeks = tot_weeks,
+    p_hosp_w_sd_sd = params$p_hosp_w_sd_sd
   )
 
   ## Latent per capita admissions--------------------------------------------
@@ -376,8 +376,8 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   # fit.
   rt <- calc_rt(new_i_over_n,
     convolve_fxn = model$functions$convolve_dot_product,
-    generation_interval,
-    uot,
+    generation_interval = generation_interval,
+    uot = uot,
     tot_time = (uot + ot + ht)
   )
 
@@ -386,26 +386,26 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   # Format the data-----------------------------------------------------------
 
   ww_data <- format_ww_data(
-    log_obs_conc_lab_site,
-    ot,
-    ht,
-    date_df,
-    site_lab_map,
-    lod_lab_site
+    log_obs_conc_lab_site = log_obs_conc_lab_site,
+    ot = ot,
+    ht = ht,
+    date_df = date_df,
+    site_lab_map = site_lab_map,
+    lod_lab_site = lod_lab_site
   )
 
 
   # Make a hospital admissions dataframe for model calibration
   hosp_data <- format_hosp_data(pred_obs_hosp,
     dur_obs = ot,
-    pop_size,
-    date_df
+    pop_size = pop_size,
+    date_df = date_df
   )
 
   hosp_data_for_eval <- format_hosp_data(pred_obs_hosp,
     dur_obs = (ot + ht),
-    pop_size,
-    date_df
+    pop_size = pop_size,
+    date_df = date_df
   ) |>
     dplyr::rename(
       daily_hosp_admits_for_eval =
