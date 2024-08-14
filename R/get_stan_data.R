@@ -145,7 +145,6 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #' )
 #' input_ww_data <- indicate_ww_exclusions(ww_data_preprocessed)
 #'
-#'
 #' hosp_data <- tibble::tibble(
 #'   date = seq(
 #'     from = lubridate::ymd("2023-07-01"),
