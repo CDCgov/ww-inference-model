@@ -267,13 +267,14 @@ test_that("No NA values are introduced during preprocessing", {
 # (edge case)
 test_that("Function handles LOD values equal to concentration values", {
   edge_case_ww_data <- ww_data |>
-    dplyr::mutate(conc = lod) # Set concentration equal to LOD
+    dplyr::mutate(conc = lod) # Set concentration equal to LOD,
+  # we expect this should get flagged as below LOD
 
   processed_edge_case <- preprocess_ww_data(edge_case_ww_data,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
 
-  # Check if below_lod is set to 0 when concentration equals LOD
-  expect_equal(processed_edge_case$below_lod, rep(0, nrow(edge_case_ww_data)))
+  # Check if below_lod is set to 1 when concentration equals LOD
+  expect_equal(processed_edge_case$below_lod, rep(1, nrow(edge_case_ww_data)))
 })
