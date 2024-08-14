@@ -355,7 +355,7 @@ get_stan_data <- function(input_count_data,
   inf_to_count_delay_max <- length(inf_to_count_delay)
 
   stan_args <- list(
-    gt_max = params$gt_max,
+    gt_max = min(length(generation_interval), params$gt_max),
     hosp_delay_max = inf_to_count_delay_max,
     inf_to_hosp = inf_to_count_delay,
     mwpd = params$ml_of_ww_per_person_day,
