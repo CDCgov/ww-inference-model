@@ -250,6 +250,7 @@ get_stan_data <- function(input_count_data,
     )
   )
 
+  last_count_data_date <- max(input_count_data$date, na.rm = TRUE)
   first_count_data_date <- min(input_count_data$date, na.rm = TRUE)
   # Returns a list of the vectors of lod values, the site population sizes in
   # order of the site index, a vector of observations of the log of

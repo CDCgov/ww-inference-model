@@ -454,7 +454,7 @@ assert_dates_within_frame <- function(dates1,
   check_dates2_win_frame <- min(dates1) <= max(dates2) &
     min(dates2) >= min(dates1) &
     max(dates2) <= max_date &
-    max(dates1) <= -max_date
+    max(dates1) <= max_date
   if (!check_dates2_win_frame) {
     cli::cli_abort(
       c(
