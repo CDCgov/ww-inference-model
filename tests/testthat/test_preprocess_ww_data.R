@@ -260,7 +260,7 @@ test_that("No NA values are introduced during preprocessing", {
   )
 
   # Check for any new NA values introduced in any column
-  expect_true(all(complete.cases(processed)))
+  expect_true(all(!is.na(processed)))
 })
 
 # Test that the function can handle LOD values equal to concentration values

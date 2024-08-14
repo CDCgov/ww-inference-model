@@ -14,7 +14,9 @@ test_that("Function returns dataframe with correct columns", {
 
   expected_cols <- c("date", "count", "total_pop")
 
-  expect_true(all(expected_cols %in% names(processed)))
+  expect_true(checkmate::check_names(names(processed),
+    must.include = expected_cols
+  ))
 })
 
 # Test that count column is renamed correctly
@@ -25,7 +27,9 @@ test_that("Count column is renamed correctly", {
   )
 
   expect_false("daily_admits" %in% names(processed))
-  expect_true("count" %in% names(processed))
+  expect_true(checkmate::check_names(names(processed),
+    must.include = "count"
+  ))
 })
 
 # Test that population size column is renamed correctly
@@ -36,7 +40,9 @@ test_that("Population size column is renamed correctly", {
   )
 
   expect_false("state_pop" %in% names(processed))
-  expect_true("total_pop" %in% names(processed))
+  expect_true(
+    checkmate::check_names(names(processed), must.include = "total_pop")
+  )
 })
 
 # Test data setup
@@ -54,8 +60,9 @@ test_that("Function returns dataframe with correct columns", {
   )
 
   expected_cols <- c("date", "count", "total_pop")
-
-  expect_true(all(expected_cols %in% names(processed)))
+  expect_true(checkmate::check_names(names(processed),
+    must.include = expected_cols
+  ))
 })
 
 # Test that count column is renamed correctly
@@ -66,7 +73,7 @@ test_that("Count column is renamed correctly", {
   )
 
   expect_false("daily_admits" %in% names(processed))
-  expect_true("count" %in% names(processed))
+  expect_true(checkmate::check_names(names(processed), must.include = "count"))
 })
 
 # Test that population size column is renamed correctly
@@ -78,6 +85,9 @@ test_that("Population size column is renamed correctly", {
 
   expect_false("state_pop" %in% names(processed))
   expect_true("total_pop" %in% names(processed))
+  expect_true(checkmate::check_names(names(processed),
+    must.include = "total_pop"
+  ))
 })
 
 test_that("Function handles missing columns with an error", {

@@ -174,8 +174,8 @@ validate_both_datasets <- function(input_count_data,
   # didn't eliminate
   assert_df_not_empty(input_ww_data,
     add_err_msg = c(
-      "Wastewater data passed in doesn't overlap",
-      "with count data calibration period"
+      "There is no wastewater data within ",
+      "the count data calibration period"
     )
   )
 
@@ -186,8 +186,8 @@ validate_both_datasets <- function(input_count_data,
     input_ww_data$date,
     forecast_date,
     add_err_msg = c(
-      "There is no wastewater data within ",
-      "the count data calibration period"
+      "Wastewater data passed in doesn't overlap",
+      "with count data calibration period"
     )
   )
 
@@ -201,7 +201,9 @@ validate_both_datasets <- function(input_count_data,
   invisible()
 }
 
-#' Validate that the pmf being passed to stan
+#' Validate that the pmf vector being passed to stan
+#' is a valid probability mass function sums to 1 and
+#' has all non-negative entries.
 #'
 #' @param pmf simplex vector describing a probabilty of an event ocurring on
 #' each day
@@ -234,5 +236,12 @@ validate_pmf <- function(pmf,
       )
     )
   }
+
+  assert_elements_non_neg(pmf,
+    add_err_msg = c(
+      "Elements in {.arg {arg}} are should",
+      "be strictly positive"
+    )
+  )
   invisible()
 }

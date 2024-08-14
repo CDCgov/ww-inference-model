@@ -13,7 +13,9 @@ test_that("Function returns dataframe with 'exclude' column", {
     remove_outliers = TRUE
   )
 
-  expect_true("exclude" %in% names(processed))
+  expect_true(
+    checkmate::check_names(names(processed), must.include = "exclude")
+  )
 })
 
 # Test that outliers are correctly marked for exclusion when
