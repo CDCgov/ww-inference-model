@@ -2,10 +2,16 @@
 % Please edit documentation in R/model_diagnostics.R
 \name{get_model_diagnostic_flags}
 \alias{get_model_diagnostic_flags}
-\title{Get diagnostic flags}
+\alias{get_model_diagnostic_flags.wwinference_fit}
+\alias{get_model_diagnostic_flags.default}
+\title{Get a table of diagnostic flags}
 \usage{
-get_model_diagnostic_flags(
-  stan_fit_object,
+get_model_diagnostic_flags(x, ...)
+
+\method{get_model_diagnostic_flags}{wwinference_fit}(x, ...)
+
+\method{get_model_diagnostic_flags}{default}(
+  x,
   ebmfi_tolerance = 0.2,
   divergences_tolerance = 0.01,
   frac_high_rhat_tolerance = 0.05,
@@ -14,7 +20,8 @@ get_model_diagnostic_flags(
 )
 }
 \arguments{
-\item{stan_fit_object}{The R6 Cmdstan Object fit object}
+\item{x}{Either an object of the 'wwinference_fit' class or
+the R6 Cmdstan Object fit object}
 
 \item{ebmfi_tolerance}{float indicating the tolerance for EBMFI
 (estimated bayesian fraction of missing information), default is \code{0.2}}
@@ -40,5 +47,17 @@ This function takes in the output from a cmdstanr$sample() function (the
 fit object) and a series of diagnostic tolerances and returns
 a dataframe containing flags for whether any of the diagnostic thresholds
 were exceeded, which would indicate that the model did not properly
-converge
+converge. This funtion has a default method that takes
+the CmdStan fitting object, as well as an S3 method for objects of class
+'wwinference_fit'
+
+This method overloads the generic get_model_diagnostic_flags function
+specifically for objects of type 'wwinference_fit'.
 }
+\seealso{
+Other diagnostics:
+\code{\link{diagnostic_summary}()},
+\code{\link{parameter_diagnostics}()}
+}
+\concept{diagnostics}
+\keyword{internal}

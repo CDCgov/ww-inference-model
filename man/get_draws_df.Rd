@@ -41,7 +41,7 @@ and the 3 relevant mappings from stan indices to the real data, in order
 to generate a dataframe containing the posterior draws of the counts (e.g.
 hospital admissions), the wastewater concentration values, the "global" R(t),
 and the "local" R(t) estimates + the critical metadata in the data.
-This funtion has a default method that takes the tow sets of input data,
+This funtion has a default method that takes the two sets of input data,
 the last of stan arguments, and the CmdStan fitting object, as well as an S3
 method for objects of class 'wwinference_fit'
 
