@@ -11,14 +11,14 @@
 #' method for objects of class 'wwinference_fit'
 #'
 #'
-#' @param ww_data A dataframe of the preprocessed wastewater concentration data
-#' used to fit the model
+#' @param x Either a dataframe of wastewater observations, or an object of
+#' class wwinference_fit
 #' @param count_data A dataframe of the preprocessed daily count data (e.g.
 #' hospital admissions) from the "global" population
 #' @param stan_args A list containing all the data passed to stan for fitting
 #' the model
 #' @param fit_obj a CmdStan object that is the output of fitting the model to
-#' the `ww_data` and `count_data`
+#' `x` and `count_data`
 #' @param ... additional arguments
 #' @return  A tibble containing the full set of posterior draws of the
 #' estimated, nowcasted, and forecasted: counts, site-level wastewater
@@ -27,11 +27,7 @@
 #' are observations, the data will be joined to each draw of the predicted
 #' observation to facilitate plotting.
 #' @export
-get_draws_df <- function(ww_data,
-                         count_data,
-                         stan_args,
-                         fit_obj,
-                         ...) {
+get_draws_df <- function(x, ...) {
   UseMethod("get_draws_df")
 }
 
@@ -41,21 +37,20 @@ get_draws_df <- function(ww_data,
 #' This method overloads the generic get_draws_df function specifically
 #' for objects of type 'wwinference_fit'.
 #'
-#' @param ww_output an object of the `wwinference_fit` class
 #' @rdname get_draws_df
 #' @export
-get_draws_df.wwinference_fit <- function(ww_output, ...) {
+get_draws_df.wwinference_fit <- function(x, ...) {
   get_draws_df.default(
-    ww_data = ww_output$input_data$input_ww_data,
-    count_data = ww_output$input_data$input_count_data,
-    stan_args = ww_output$stan_args,
-    fit_obj = ww_output$fit
+    x = x$input_data$input_ww_data,
+    count_data = x$input_data$input_count_data,
+    stan_args = x$stan_args,
+    fit_obj = x$fit
   )
 }
 
 #' @keywords internal
 #' @rdname get_draws_df
-get_draws_df.default <- function(ww_data,
+get_draws_df.default <- function(x,
                                  count_data,
                                  stan_args,
                                  fit_obj,
@@ -72,15 +67,15 @@ get_draws_df.default <- function(ww_data,
   ) |>
     dplyr::mutate(t = row_number())
   # Lab-site index to corresponding lab, site, and site population size
-  lab_site_spine <- ww_data |>
+  lab_site_spine <- x |>
     dplyr::distinct(site, lab, lab_site_index, site_pop)
   # Site index to corresponding site and subpopulation size
-  subpop_spine <- ww_data |>
+  subpop_spine <- x |>
     dplyr::distinct(site, site_index, site_pop) |>
     dplyr::mutate(site = as.factor(site)) |>
     dplyr::bind_rows(tibble::tibble(
       site = "remainder of pop",
-      site_index = max(ww_data$site_index) + 1,
+      site_index = max(x$site_index) + 1,
       site_pop = stan_args$subpop_size[
         length(unique(stan_args$subpop_size))
       ]
@@ -129,7 +124,7 @@ get_draws_df.default <- function(ww_data,
     dplyr::left_join(date_time_spine, by = "t") |>
     dplyr::left_join(lab_site_spine, by = "lab_site_index") |>
     dplyr::left_join(
-      ww_data |>
+      x |>
         dplyr::select(-t),
       by = c(
         "lab_site_index", "date",

@@ -6,15 +6,17 @@
 \alias{get_draws_df.default}
 \title{Postprocess to generate a draws dataframe}
 \usage{
-get_draws_df(ww_data, count_data, stan_args, fit_obj, ...)
+get_draws_df(x, ...)
 
-\method{get_draws_df}{wwinference_fit}(ww_output, ...)
+\method{get_draws_df}{wwinference_fit}(x, ...)
 
-\method{get_draws_df}{default}(ww_data, count_data, stan_args, fit_obj, ...)
+\method{get_draws_df}{default}(x, count_data, stan_args, fit_obj, ...)
 }
 \arguments{
-\item{ww_data}{A dataframe of the preprocessed wastewater concentration data
-used to fit the model}
+\item{x}{Either a dataframe of wastewater observations, or an object of
+class wwinference_fit}
+
+\item{...}{additional arguments}
 
 \item{count_data}{A dataframe of the preprocessed daily count data (e.g.
 hospital admissions) from the "global" population}
@@ -23,11 +25,7 @@ hospital admissions) from the "global" population}
 the model}
 
 \item{fit_obj}{a CmdStan object that is the output of fitting the model to
-the \code{ww_data} and \code{count_data}}
-
-\item{...}{additional arguments}
-
-\item{ww_output}{an object of the \code{wwinference_fit} class}
+\code{x} and \code{count_data}}
 }
 \value{
 A tibble containing the full set of posterior draws of the
