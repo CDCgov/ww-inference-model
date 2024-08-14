@@ -446,7 +446,7 @@ fit_hosp_only <- wwinference::wwinference(
 )
 ```
 
-```{r,  plot-hosp-only out.width='100%'}
+```{r,  plot-hosp-only, out.width='100%'}
 draws_df_hosp_only <- get_draws_df(fit_hosp_only)
 plot_hosp_hosp_only <- get_plot_forecasted_counts(
   draws = draws_df_hosp_only,
