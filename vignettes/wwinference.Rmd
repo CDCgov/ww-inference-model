@@ -407,7 +407,7 @@ For further information on troubleshooting the model diagnostics,
 we recommend the (bayesplot tutorial)[https://mc-stan.org/bayesplot/articles/visual-mcmc-diagnostics.html].
 ```{r diagnostics-explicit}
 convergence_flag_df <- get_model_diagnostic_flags(
-  stan_fit_obj = ww_fit$fit$result,
+  x = ww_fit$fit$result,
   ebmfi_tolerance = 0.2,
   divergences_tolerance = 0.01,
   frac_high_rhat_tolerance = 0.05,

@@ -45,7 +45,6 @@ get_model_diagnostic_flags.wwinference_fit <- function(x, ...) {
   )
 }
 
-#' @keywords internal
 #' @rdname get_model_diagnostic_flags
 get_model_diagnostic_flags.default <- function(x,
                                                ebmfi_tolerance = 0.2,

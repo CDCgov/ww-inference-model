@@ -48,7 +48,6 @@ get_draws_df.wwinference_fit <- function(x, ...) {
   )
 }
 
-#' @keywords internal
 #' @rdname get_draws_df
 get_draws_df.default <- function(x,
                                  count_data,

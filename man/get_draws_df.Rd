@@ -48,4 +48,3 @@ method for objects of class 'wwinference_fit'
 This method overloads the generic get_draws_df function specifically
 for objects of type 'wwinference_fit'.
 }
-\keyword{internal}

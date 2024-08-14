@@ -60,4 +60,3 @@ Other diagnostics:
 \code{\link{parameter_diagnostics}()}
 }
 \concept{diagnostics}
-\keyword{internal}
