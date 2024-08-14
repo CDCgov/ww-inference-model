@@ -15,7 +15,6 @@ validate_ww_conc_data <- function(ww_data,
                                   call = rlang::caller_env()) {
   assert_df_not_empty(ww_data, arg = "ww_data", call)
 
-
   ww_conc <- ww_data |> dplyr::pull({
     conc_col_name
   })
