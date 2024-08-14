@@ -6,6 +6,7 @@
 #' @param global_rt_sd The variation in the R(t) estimate to add
 #' intrinsic variability to the infection dynamics
 #'
+#' @family Model components
 #' @return a weekly R(t) estimate with added noise
 get_global_rt <- function(r_in_weeks,
                           n_weeks,
