@@ -167,9 +167,10 @@ get_plot_global_rt <- function(draws,
     draw %in% !!sampled_draws
   )
 
-  # R(t) of the hypothetical state
+  # R(t) timeseries
   p <- ggplot(draws_to_plot) +
-    geom_line(aes(x = date, y = pred_value, group = draw),
+    ggplot2::geom_segment(
+      aes(x = date, y = pred_value, group = draw),
       color = "blue4", alpha = 0.1, linewidth = 0.2
     ) +
     geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
@@ -225,7 +226,7 @@ get_plot_subpop_rt <- function(draws,
   )
 
   p <- ggplot(draws_to_plot) +
-    geom_line(
+    ggplot2::geom_segment(
       aes(
         x = date, y = pred_value, group = draw,
         color = subpop
