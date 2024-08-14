@@ -128,19 +128,20 @@ calibration_time <- 90
 forecast_horizon <- 28
 include_ww <- 1
 ww_fit <- wwinference(input_ww_data,
-                      input_count_data,
-                      model_spec = get_model_spec(
-                        forecast_date = forecast_date,
-                        calibration_time = calibration_time,
-                        forecast_horizon = forecast_horizon,
-                        generation_interval = generation_interval,
-                        inf_to_count_delay = inf_to_coutn_delay,
-                        infection_feedback_pmf = infection_feedback_pmf,
-                        params = params),
-                     mcmc_options = get_mcmc_options(
-                        iter_warmup = 250,
-                        iter_sampling = 250,
-                        n_chains = 2
-                     )
-                     )
+  input_count_data,
+  model_spec = get_model_spec(
+    forecast_date = forecast_date,
+    calibration_time = calibration_time,
+    forecast_horizon = forecast_horizon,
+    generation_interval = generation_interval,
+    inf_to_count_delay = inf_to_coutn_delay,
+    infection_feedback_pmf = infection_feedback_pmf,
+    params = params
+  ),
+  mcmc_options = get_mcmc_options(
+    iter_warmup = 250,
+    iter_sampling = 250,
+    n_chains = 2
+  )
+)
 }
