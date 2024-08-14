@@ -43,6 +43,7 @@ get_draws_df <- function(ww_data,
 #'
 #' @param ww_output an object of the `wwinference_fit` class
 #' @rdname get_draws_df
+#' @export
 get_draws_df.wwinference_fit <- function(ww_output, ...) {
   get_draws_df.default(
     ww_data = ww_output$input_data$input_ww_data,
