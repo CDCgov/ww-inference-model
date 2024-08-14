@@ -5,6 +5,7 @@
 #' @param calibration_time integer indicating the max duration in days that
 #' the model is calibrated to the count data for
 #' @return datatframe of count data passed to stan
+#' @export
 get_input_count_data_for_stan <- function(preprocessed_count_data,
                                           calibration_time) {
   # Get the last date that there were observations of the epidemiological
@@ -35,6 +36,7 @@ get_input_count_data_for_stan <- function(preprocessed_count_data,
 #' @param calibration_time integer indicating the max duration in days that
 #' the model is calibrated to the count data for
 #' @return dataframe of the ww data passed to stan
+#' @export
 get_input_ww_data_for_stan <- function(preprocessed_ww_data,
                                        first_count_data_date,
                                        last_count_data_date,
