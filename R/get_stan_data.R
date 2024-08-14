@@ -182,9 +182,11 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #'   input_count_data,
 #'   calibration_time
 #' )
-#' last_count_data_date <- max(preprocessed_count_data$date, na.rm = TRUE)
+#' last_count_data_date <- max(input_count_data_for_stan$date, na.rm = TRUE)
+#' first_count_data_date <- min(input_count_data_for_stan$date, na.rm = TRUE)
 #' input_ww_data_for_stan <- get_input_ww_data_for_stan(
 #'   input_ww_data,
+#'   first_count_data_date,
 #'   last_count_data_date,
 #'   calibration_time
 #' )
