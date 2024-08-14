@@ -6,17 +6,13 @@
 \alias{get_draws_df.default}
 \title{Postprocess to generate a draws dataframe}
 \usage{
-get_draws_df(ww_output, ...)
+get_draws_df(ww_data, count_data, stan_args, fit_obj, ...)
 
 \method{get_draws_df}{wwinference_fit}(ww_output, ...)
 
 \method{get_draws_df}{default}(ww_data, count_data, stan_args, fit_obj, ...)
 }
 \arguments{
-\item{ww_output}{an object of the \code{wwinference_fit} class}
-
-\item{...}{additional arguments}
-
 \item{ww_data}{A dataframe of the preprocessed wastewater concentration data
 used to fit the model}
 
@@ -28,6 +24,10 @@ the model}
 
 \item{fit_obj}{a CmdStan object that is the output of fitting the model to
 the \code{ww_data} and \code{count_data}}
+
+\item{...}{additional arguments}
+
+\item{ww_output}{an object of the \code{wwinference_fit} class}
 }
 \value{
 A tibble containing the full set of posterior draws of the
@@ -42,5 +42,12 @@ This function takes in the two input data sources, the CmdStan fit object,
 and the 3 relevant mappings from stan indices to the real data, in order
 to generate a dataframe containing the posterior draws of the counts (e.g.
 hospital admissions), the wastewater concentration values, the "global" R(t),
-and the "local" R(t) estimates + the critical metadata in the data
+and the "local" R(t) estimates + the critical metadata in the data.
+This funtion has a default method that takes the tow sets of input data,
+the last of stan arguments, and the CmdStan fitting object, as well as an S3
+method for objects of class 'wwinference_fit'
+
+This method overloads the generic get_draws_df function specifically
+for objects of type 'wwinference_fit'.
 }
+\keyword{internal}

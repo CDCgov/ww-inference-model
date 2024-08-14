@@ -5,7 +5,10 @@
 #' and the 3 relevant mappings from stan indices to the real data, in order
 #' to generate a dataframe containing the posterior draws of the counts (e.g.
 #' hospital admissions), the wastewater concentration values, the "global" R(t),
-#' and the "local" R(t) estimates + the critical metadata in the data
+#' and the "local" R(t) estimates + the critical metadata in the data.
+#' This funtion has a default method that takes the tow sets of input data,
+#' the last of stan arguments, and the CmdStan fitting object, as well as an S3
+#' method for objects of class 'wwinference_fit'
 #'
 #'
 #' @param ww_data A dataframe of the preprocessed wastewater concentration data
@@ -16,7 +19,6 @@
 #' the model
 #' @param fit_obj a CmdStan object that is the output of fitting the model to
 #' the `ww_data` and `count_data`
-#' @param ww_output an object of the `wwinference_fit` class
 #' @param ... additional arguments
 #' @return  A tibble containing the full set of posterior draws of the
 #' estimated, nowcasted, and forecasted: counts, site-level wastewater
@@ -25,9 +27,21 @@
 #' are observations, the data will be joined to each draw of the predicted
 #' observation to facilitate plotting.
 #' @export
-get_draws_df <- function(ww_output, ...) UseMethod("get_draws_df")
+get_draws_df <- function(ww_data,
+                         count_data,
+                         stan_args,
+                         fit_obj,
+                         ...) {
+  UseMethod("get_draws_df")
+}
 
-#' @export
+#' S3 method for extracting posterior draws alongside data for a
+#' wwinference_fit object
+#'
+#' This method overloads the generic get_draws_df function specifically
+#' for objects of type 'wwinference_fit'.
+#'
+#' @param ww_output an object of the `wwinference_fit` class
 #' @rdname get_draws_df
 get_draws_df.wwinference_fit <- function(ww_output, ...) {
   get_draws_df.default(
@@ -38,7 +52,7 @@ get_draws_df.wwinference_fit <- function(ww_output, ...) {
   )
 }
 
-#' @export
+#' @keywords internal
 #' @rdname get_draws_df
 get_draws_df.default <- function(ww_data,
                                  count_data,
