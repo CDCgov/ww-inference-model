@@ -61,18 +61,35 @@
 #' @rdname wwinference
 wwinference <- function(ww_data,
                         count_data,
-                        model_spec = wwinference::get_model_spec(),
-                        mcmc_options = wwinference::get_mcmc_options(),
+                        model_spec = get_model_spec(),
+                        mcmc_options = get_mcmc_options(),
                         generate_initial_values = TRUE,
-                        compiled_model = wwinference::compile_model()) {
+                        compiled_model = compile_model()) {
   # Check that data is compatible with specifications
   assert_no_dates_after_max(ww_data$date, model_spec$forecast_date)
   assert_no_dates_after_max(count_data$date, model_spec$forecast_date)
 
+  input_count_data <- get_input_count_data_for_stan(
+    count_data,
+    calibration_time
+  )
+  last_count_data_date <- max(input_count_data$date, na.rm = TRUE)
+  first_count_data_date <- min(input_count_data$date, na.rm = TRUE)
+  input_ww_data <- get_input_ww_data_for_stan(
+    ww_data,
+    first_count_data_date,
+    last_count_data_date,
+    calibration_time
+  )
+  input_data <- list(
+    input_count_data = input_count_data,
+    input_ww_data = input_ww_data
+  )
+
   # If checks pass, create stan data object
-  input_data_and_args <- get_stan_data(
-    input_count_data = count_data,
-    input_ww_data = ww_data,
+  stan_args <- get_stan_data(
+    input_count_data = input_count_data,
+    input_ww_data = input_ww_data,
     forecast_date = model_spec$forecast_date,
     calibration_time = model_spec$calibration_time,
     forecast_horizon = model_spec$forecast_horizon,
@@ -83,15 +100,12 @@ wwinference <- function(ww_data,
     include_ww = as.numeric(model_spec$include_ww),
     compute_likelihood = 1
   )
-  # We want to return these to the user
-  input_data <- input_data_and_args$input_data
-  stan_args <- input_data_and_args$stan_args
 
   init_lists <- NULL
   if (generate_initial_values) {
     init_lists <- c()
     for (i in 1:mcmc_options$n_chains) {
-      init_lists[[i]] <- get_inits(stan_args, params)
+      init_lists[[i]] <- get_inits_for_one_chain(stan_args, params)
     }
   }
 

@@ -19,5 +19,7 @@ default is the empty string (\code{""})}
 NULL invisible
 }
 \description{
-Assert that the vector of dates being passed in contains dates for each day
+This function checks to make sure that the date vector being passed in
+is complete for every day between the minimum and maximum dates. It can
+have repeated values.
 }

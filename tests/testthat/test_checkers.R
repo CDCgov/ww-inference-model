@@ -51,7 +51,7 @@ test_that(
     x <- c(4, 4, 5)
     expect_error(assert_no_repeated_elements(x, "x"))
 
-    x <- c("2024-03-03", "2024-03-03")
+    x <- c("2024-03-03", "2024-03-03", "2024-03-04")
     expect_error(assert_no_repeated_elements(x, "x"))
   }
 )
@@ -189,10 +189,10 @@ test_that(
   "Test that check on non-empty dataframe works as expected.",
   {
     df_with_cols <- data.frame(Col1 = c(1, 2), Column2 = c(3, 4))
-    expect_no_error(assert_not_empty(df_with_cols, "df_with_cols"))
+    expect_no_error(assert_df_not_empty(df_with_cols, "df_with_cols"))
 
     empty_df_with_cols <- data.frame(Col1 = numeric(), Column2 = character())
-    expect_error(assert_not_empty(empty_df_with_cols, "empty_df_with_cols"))
+    expect_error(assert_df_not_empty(empty_df_with_cols, "empty_df_with_cols"))
   }
 )
 

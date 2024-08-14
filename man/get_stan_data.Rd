@@ -19,12 +19,12 @@ get_stan_data(
 )
 }
 \arguments{
-\item{input_count_data}{a dataframe with the input count data, must have
-the following columns: date, count, total_pop}
+\item{input_count_data}{a dataframe of the count data to be passed
+directly to stan, , must have the following columns: date, count, total_pop}
 
-\item{input_ww_data}{a dataframe with the input wastewater data with no gaps,
-must have the following columns: date, site, lab, genome_copies_per_ml,
-site_pop, below_lod, and if removing outliers, flag_as_ww_outlier}
+\item{input_ww_data}{a dataframe of the wastewater data to be passed
+directly to stan, must have the following columns: date, site, lab,
+genome_copies_per_ml, site_pop, below_lod, and exclude}
 
 \item{forecast_date}{string indicating the forecast date in ISO8601
 convention e.g. YYYY-MM-DD}
@@ -53,11 +53,6 @@ wastewater data or not, default is 1}
 compute the likelihood, default = \code{1}}
 }
 \value{
-a nested list containing the following:
-\code{input_data}: a list containing two dataframes:
-\code{input_ww_data}: wastewater data passed to stan
-\code{input_count_data}: count data passed to stan
-
 \code{stan_args}: named variables to pass to stan
 }
 \description{
@@ -82,7 +77,6 @@ ww_data_preprocessed <- preprocess_ww_data(ww_data,
   lod_col_name = "lod"
 )
 input_ww_data <- indicate_ww_exclusions(ww_data_preprocessed)
-
 
 hosp_data <- tibble::tibble(
   date = seq(
@@ -116,9 +110,21 @@ forecast_date <- "2023-11-06"
 calibration_time <- 90
 forecast_horizon <- 28
 include_ww <- 1
-input_data_and_args <- get_stan_data(
+input_count_data_for_stan <- get_input_count_data_for_stan(
   input_count_data,
+  calibration_time
+)
+last_count_data_date <- max(input_count_data_for_stan$date, na.rm = TRUE)
+first_count_data_date <- min(input_count_data_for_stan$date, na.rm = TRUE)
+input_ww_data_for_stan <- get_input_ww_data_for_stan(
   input_ww_data,
+  first_count_data_date,
+  last_count_data_date,
+  calibration_time
+)
+stan_args <- get_stan_data(
+  input_count_data_for_stan,
+  input_ww_data_for_stan,
   forecast_date,
   forecast_horizon,
   calibration_time,
@@ -128,8 +134,4 @@ input_data_and_args <- get_stan_data(
   params,
   include_ww
 )
-input_data <- input_data_and_args$input_data
-input_ww_data <- input_data$input_ww_data
-input_count_data <- input_data$input_count_data
-stan_args <- input_data_and_args$stan_args
 }
