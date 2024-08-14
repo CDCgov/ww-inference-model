@@ -71,17 +71,3 @@ infections per capita in the global population
 \description{
 Get the subpopulation level incident infections
 }
-\seealso{
-Other Model components:
-\code{\link{calc_rt}()},
-\code{\link{create_site_lab_map}()},
-\code{\link{downsample_ww_obs}()},
-\code{\link{format_hosp_data}()},
-\code{\link{format_ww_data}()},
-\code{\link{get_global_rt}()},
-\code{\link{get_pred_obs_conc}()},
-\code{\link{get_pred_subpop_gen_per_n}()},
-\code{\link{get_time_varying_daily_ihr}()},
-\code{\link{subpop_rt_process}()}
-}
-\concept{Model components}

@@ -6,7 +6,6 @@
 #' @param global_rt_sd The variation in the R(t) estimate to add
 #' intrinsic variability to the infection dynamics
 #'
-#' @family Model components
 #' @return a weekly R(t) estimate with added noise
 get_global_rt <- function(r_in_weeks,
                           n_weeks,
@@ -30,7 +29,6 @@ get_global_rt <- function(r_in_weeks,
 #' @param subpop_level_rt_variation  The standard deviation of the Gaussian
 #' to generate deviation at the site level in the R(t) estimate
 #'
-#' @family Model components
 #' @return A n_sites+1 by n_weeks matrix containing the subpopulation R(t)s
 subpop_rt_process <- function(n_subpops,
                               r_weeks,
@@ -88,7 +86,6 @@ subpop_rt_process <- function(n_subpops,
 #' subpopulation level R(t) estimate, i_n_global: vector of daily incident
 #' infections per capita in the global population
 #'
-#' @family Model components
 subpop_inf_process <- function(generate_inf_fxn,
                                n_subpops,
                                uot,
@@ -165,7 +162,6 @@ subpop_inf_process <- function(generate_inf_fxn,
 #' @param p_hosp_w_sd_sd the standard deviation in logit scale of the
 #' IHR
 #'
-#' @family Model components
 #' @return a vector of daily IHR values
 get_time_varying_daily_ihr <- function(p_hosp_mean,
                                        uot,
@@ -210,7 +206,6 @@ get_time_varying_daily_ihr <- function(p_hosp_mean,
 #' @param vl_trajectory vector of simplex indicating the proportion of all
 #' shedding occuring on each day after infection
 #'
-#' @family Model components
 #' @return A matrix of `n_sites` rows and `ot`+ `ht` columns indicating
 #' the predicted number of genomes per person per day in each site each day
 get_pred_subpop_gen_per_n <- function(convolve_fxn,
@@ -254,7 +249,6 @@ get_pred_subpop_gen_per_n <- function(convolve_fxn,
 #' @param ml_of_ww_per_person_day Scalar indicating the number of mL of
 #' wastewater produced per person per day
 #'
-#' @family Model components
 #' @return A matrix of `n_lab_sites` rows and `ot` + `ht` columns indcating the
 #' predicted concentration of wastewater in each lab-site and day
 get_pred_obs_conc <- function(n_lab_sites,
@@ -297,7 +291,6 @@ get_pred_obs_conc <- function(n_lab_sites,
 #' @param lab_site_reporting_latency vector indicating the time from
 #'  forecast date to last wastewater sample collection date in each lab-site
 #'
-#' @family Model components
 #' @return A sparse matrix of `n_lab_sites` rows and `ot` + `ht` columns of
 #' but with NAs for when observations are not measured/reported.
 downsample_ww_obs <- function(log_conc_lab_site,
@@ -336,7 +329,6 @@ downsample_ww_obs <- function(log_conc_lab_site,
 #' @param lod_lab_site vector of numerics indicating the LOD in each lab and
 #' site combination
 #'
-#' @family Model components
 #' @return a tidy dataframe containing the observed wastewater concentrations
 #' in each site and lab at each time point
 format_ww_data <- function(log_obs_conc_lab_site,
@@ -397,7 +389,6 @@ format_ww_data <- function(log_obs_conc_lab_site,
 #' @param date_df tibble of columns `date` and `t` that map time in days to
 #' dates
 #'
-#' @family Model components
 #' @return a tidy dataframe containing counts of admissions by date alongside
 #' population size
 format_hosp_data <- function(pred_obs_hosp,
@@ -433,7 +424,6 @@ format_hosp_data <- function(pred_obs_hosp,
 #' @param tot_time integer indicating the total time we have incident
 #' infections for
 #'
-#' @family Model components
 #' @return a numeric vector of length(`tot_time` - `uot`) that represents
 #' the effective reproductive number
 #' @export
@@ -457,7 +447,6 @@ calc_rt <- function(new_i,
 #' @param ww_pop_sites vector of integers indicating the population size in
 #' each site
 #'
-#' @family Model components
 #' @return a tibble mapping sites, labs and population sizes
 create_site_lab_map <- function(site,
                                 lab,

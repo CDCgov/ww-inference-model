@@ -40,17 +40,3 @@ in each site and lab at each time point
 \description{
 Format the wastewater data as a tidy data frame
 }
-\seealso{
-Other Model components:
-\code{\link{calc_rt}()},
-\code{\link{create_site_lab_map}()},
-\code{\link{downsample_ww_obs}()},
-\code{\link{format_hosp_data}()},
-\code{\link{get_global_rt}()},
-\code{\link{get_pred_obs_conc}()},
-\code{\link{get_pred_subpop_gen_per_n}()},
-\code{\link{get_time_varying_daily_ihr}()},
-\code{\link{subpop_inf_process}()},
-\code{\link{subpop_rt_process}()}
-}
-\concept{Model components}
