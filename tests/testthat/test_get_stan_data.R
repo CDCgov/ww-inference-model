@@ -15,7 +15,7 @@ ww_data_preprocessed <- preprocess_ww_data(ww_data,
   conc_col_name = "conc",
   lod_col_name = "lod"
 )
-input_ww_data <- indicate_ww_exclusions(ww_data_preprocessed)
+ww_data_filtered <- indicate_ww_exclusions(ww_data_preprocessed)
 
 
 hosp_data <- tibble::tibble(
@@ -28,7 +28,7 @@ hosp_data <- tibble::tibble(
   state_pop = rep(1e6, 122)
 )
 
-input_count_data <- preprocess_count_data(
+count_data <- preprocess_count_data(
   hosp_data,
   "daily_admits",
   "state_pop"
@@ -48,63 +48,35 @@ calibration_time <- 90
 forecast_horizon <- 28
 include_ww <- 1
 
+input_count_data <- get_input_count_data_for_stan(
+  count_data,
+  calibration_time
+)
+first_count_data_date <- min(input_count_data$date, na.rm = TRUE)
+last_count_data_date <- max(input_count_data$date, na.rm = TRUE)
+input_ww_data <- get_input_ww_data_for_stan(
+  ww_data_filtered,
+  first_count_data_date,
+  last_count_data_date,
+  calibration_time
+)
 
-test_that("Test that function returns list with the necessary elements", {
-  result <- get_stan_data(
-    input_count_data,
-    input_ww_data,
-    forecast_date,
-    forecast_horizon,
-    calibration_time,
-    generation_interval,
-    inf_to_count_delay,
-    infection_feedback_pmf,
-    params,
-    include_ww
-  )
-
-
-  testthat::expect_true(all(names(result) %in% c("input_data", "stan_args")))
-})
 
 test_that(paste0(
   "Test that modifying calibration time generates data of expected",
   " length"
 ), {
-  result <- get_stan_data(
-    input_count_data,
-    input_ww_data,
-    forecast_date,
-    forecast_horizon,
-    calibration_time = 80,
-    generation_interval,
-    inf_to_count_delay,
-    infection_feedback_pmf,
-    params,
-    include_ww
+  result <- get_input_count_data_for_stan(
+    count_data,
+    calibration_time = 80
   )
-  count_data <- result$input_data$input_count_data
-  expect_true(nrow(count_data) == 80)
+  expect_true(nrow(result) == 80)
 })
 
 test_that(paste0(
   "Test that passing out of window wastewater data behaves as",
   "expected"
 ), {
-  # Make calibration time too large for input data and get an error
-  expect_error(get_stan_data(
-    input_count_data,
-    input_ww_data,
-    forecast_date,
-    forecast_horizon,
-    calibration_time = 140,
-    generation_interval,
-    inf_to_count_delay,
-    infection_feedback_pmf,
-    params,
-    include_ww
-  ))
-
   # Make wastewater data outside of scope of admissions data
   recent_ww_data <- tibble::tibble(
     date = rep(seq(
@@ -125,9 +97,16 @@ test_that(paste0(
   )
   recent_input_ww_data <- indicate_ww_exclusions(recent_ww_data_preprocessed)
 
+  recent_input_ww_data_for_stan <- get_input_ww_data_for_stan(
+    recent_input_ww_data,
+    first_count_data_date,
+    last_count_data_date,
+    calibration_time
+  )
+
   expect_error(get_stan_data(
     input_count_data,
-    recent_input_ww_data,
+    recent_input_ww_data_for_stan,
     forecast_date,
     forecast_horizon,
     calibration_time,
@@ -157,6 +136,14 @@ test_that(paste0(
     lod_col_name = "lod"
   )
   old_input_ww_data <- indicate_ww_exclusions(old_ww_data_preprocessed)
+
+  old_input_ww_data_for_stan <- get_input_ww_data_for_stan(
+    old_input_ww_data,
+    first_count_data_date,
+    last_count_data_date,
+    calibration_time
+  )
+
 
   expect_error(get_stan_data(
     input_count_data,
