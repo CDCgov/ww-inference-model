@@ -255,5 +255,14 @@ test_that(
       dates2,
       max_date
     ))
+
+    dates1 <- lubridate::ymd(c("2023-01-01", "2023-01-02"))
+    dates2 <- lubridate::ymd(c("2023-01-03", "2023-01-04"))
+    max_date <- "2022-01-05"
+    expect_error(assert_dates_within_frame(
+      dates1,
+      dates2,
+      max_date
+    ))
   }
 )

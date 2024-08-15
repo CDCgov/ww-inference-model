@@ -83,11 +83,9 @@ test_that("Population size column is renamed correctly", {
     pop_size_col_name = "state_pop"
   )
 
-  expect_false("state_pop" %in% names(processed))
-  expect_true("total_pop" %in% names(processed))
-  expect_true(checkmate::check_names(names(processed),
-    must.include = "total_pop"
-  ))
+  checkmate::expect_names(names(processed),
+    must.include = "total_pop", disjunct.from = "state_pop"
+  )
 })
 
 test_that("Function handles missing columns with an error", {
