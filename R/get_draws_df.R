@@ -49,6 +49,7 @@ get_draws_df.wwinference_fit <- function(x, ...) {
 }
 
 #' @rdname get_draws_df
+#' @export
 get_draws_df.default <- function(x,
                                  count_data,
                                  stan_args,
