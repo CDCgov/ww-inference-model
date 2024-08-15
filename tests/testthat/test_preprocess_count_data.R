@@ -119,7 +119,7 @@ test_that("No NA values are introduced during preprocessing", {
   )
 
   # Check for any new NA values introduced in any column
-  expect_true(all(complete.cases(processed)))
+  expect_false(any(is.na(processed)))
 })
 
 # Test that renaming columns works when using default parameter values
