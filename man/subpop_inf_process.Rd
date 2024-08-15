@@ -53,8 +53,8 @@ initial infections per capita across subpopulations}
 \item{generation_interval}{vector of simplex describing the probability of
 each time from infection to onwards transmission}
 
-\item{infection_feedback}{boolean indicating whether or not to include
-infection feedback}
+\item{infection_feedback}{numeric indicating the strength of the infection
+feedback}
 
 \item{infection_feedback_pmf}{vector of simplex describing the delay from
 incident infections to feedback on incident infections}

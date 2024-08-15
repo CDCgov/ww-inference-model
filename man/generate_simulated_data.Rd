@@ -29,7 +29,7 @@ generate_simulated_data(
   global_rt_sd = 0.03,
   sigma_eps = 0.05,
   sd_i0_over_n = 0.5,
-  infection_feedback = TRUE,
+  if_feedback = TRUE,
   input_params_path = fs::path_package("extdata", "example_params.toml", package =
     "wwinference")
 )
@@ -110,8 +110,10 @@ scale. Default is \code{0.05}}
 \item{sd_i0_over_n}{float indicating the standard deviation between log of
 initial infections per capita, default is \code{0.5}}
 
-\item{infection_feedback}{Boolean indicating whether or not to include
-infection feedback into the infection process, default is \code{TRUE}}
+\item{if_feedback}{Boolean indicating whether or not to include
+infection feedback into the infection process, default is \code{TRUE}. This will
+apply an infection feedback drawn from the prior. If \code{FALSE}, the strength
+of the infection feedback term will be set to 0}
 
 \item{input_params_path}{path to the toml file with the parameters to use
 to generate the simulated data}

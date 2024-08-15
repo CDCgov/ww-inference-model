@@ -74,8 +74,8 @@ subpop_rt_process <- function(n_subpops,
 #' initial infections per capita across subpopulations
 #' @param generation_interval vector of simplex describing the probability of
 #' each time from infection to onwards transmission
-#' @param infection_feedback boolean indicating whether or not to include
-#' infection feedback
+#' @param infection_feedback numeric indicating the strength of the infection
+#' feedback
 #' @param infection_feedback_pmf vector of simplex describing the delay from
 #' incident infections to feedback on incident infections
 #' @param pop_fraction vector of a simplex of length n_subpops, indicating
@@ -127,7 +127,7 @@ subpop_inf_process <- function(generate_inf_fxn,
       log_i0_over_n_site[i], # log of the initial infections per capita
       initial_growth_site[i], # initial exponential growth rate
       ht, # time after last observed hospital admission
-      as.numeric(infection_feedback), # binary indicating if infection feedback
+      as.numeric(infection_feedback), # strength of infection feedback
       rev(infection_feedback_pmf) # reversed inf feedback delay pmf
     )
     # matrix to hold infections

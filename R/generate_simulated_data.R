@@ -55,8 +55,10 @@
 #' scale. Default is `0.05`
 #' @param sd_i0_over_n float indicating the standard deviation between log of
 #' initial infections per capita, default is `0.5`
-#' @param infection_feedback Boolean indicating whether or not to include
-#' infection feedback into the infection process, default is `TRUE`
+#' @param if_feedback Boolean indicating whether or not to include
+#' infection feedback into the infection process, default is `TRUE`. This will
+#' apply an infection feedback drawn from the prior. If `FALSE`, the strength
+#' of the infection feedback term will be set to 0
 #' @param input_params_path path to the toml file with the parameters to use
 #' to generate the simulated data
 #'
@@ -116,7 +118,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                     global_rt_sd = 0.03,
                                     sigma_eps = 0.05,
                                     sd_i0_over_n = 0.5,
-                                    infection_feedback = TRUE,
+                                    if_feedback = TRUE,
                                     input_params_path =
                                       fs::path_package("extdata",
                                         "example_params.toml",
@@ -270,6 +272,15 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   # Subpopulation infection dynamics-------------------------------------
   # Function takes in all of the requirements to generation incident infections
   # and R(t) estimates for the unobserved time, calibration, and forecast time
+  if (isTRUE(if_feedback)) {
+    infection_feedback <- rlnorm(1,
+      meanlog = params$infection_feedback_prior_logmean,
+      sdlog = params$infection_feedback_prior_log_sd
+    )
+  } else {
+    infection_feedback <- 0
+  }
+
   inf_and_subpop_rt <- subpop_inf_process(
     generate_inf_fxn = model$functions$generate_infections,
     n_subpops = n_subpops,
@@ -278,16 +289,12 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     ht = ht,
     unadj_r_site = unadj_r_site,
     initial_growth = initial_growth,
-    initial_growth_prior_sd =
-      params$initial_growth_prior_sd,
+    initial_growth_prior_sd = params$initial_growth_prior_sd,
     i0_over_n = i0_over_n,
     sd_i0_over_n = sd_i0_over_n,
-    generation_interval =
-      generation_interval,
-    infection_feedback =
-      infection_feedback,
-    infection_feedback_pmf =
-      infection_feedback_pmf,
+    generation_interval = generation_interval,
+    infection_feedback = infection_feedback,
+    infection_feedback_pmf = infection_feedback_pmf,
     pop_fraction = pop_fraction
   )
 
