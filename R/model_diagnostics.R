@@ -46,6 +46,7 @@ get_model_diagnostic_flags.wwinference_fit <- function(x, ...) {
 }
 
 #' @rdname get_model_diagnostic_flags
+#' @export
 get_model_diagnostic_flags.default <- function(x,
                                                ebmfi_tolerance = 0.2,
                                                divergences_tolerance = 0.01,
