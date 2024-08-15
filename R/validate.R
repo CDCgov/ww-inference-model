@@ -239,8 +239,9 @@ validate_pmf <- function(pmf,
 
   assert_elements_non_neg(pmf,
     add_err_msg = c(
-      "Elements in {.arg {arg}} are should",
-      "be strictly positive"
+      "Elements in {.arg {arg}} must",
+      "be non-negative. Otherwise, "
+      "it is not a valid probability mass function"
     )
   )
   invisible()
