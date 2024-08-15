@@ -42,3 +42,4 @@ input_params_path <-
     "example_params.toml",
     package = "wwinference"
   )
+if_feedback <- TRUE
