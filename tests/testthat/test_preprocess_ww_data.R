@@ -21,7 +21,7 @@ test_that("Function returns dataframe with correct columns", {
     "flag_as_ww_outlier", "lab_site_name", "below_lod"
   )
 
-  expect_true(all(expected_cols %in% names(processed)))
+  checkmate::expect_names(names(processed), must.include = expected_cols)
 })
 
 # Test that concentration column is renamed correctly
