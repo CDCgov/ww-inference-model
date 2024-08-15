@@ -199,7 +199,7 @@ test_that(
 test_that(
   "Test that check on non-empty tibble works as expected.",
   {
-    df_with_cols <- tibble::tibble(Col1 = c(1, 2), Column2 = c(3, 4))
+    tibble_with_cols <- tibble::tibble(Col1 = c(1, 2), Column2 = c(3, 4))
     expect_no_error(assert_df_not_empty(df_with_cols, "df_with_cols"))
 
     empty_df_with_cols <- data.frame(Col1 = numeric(), Column2 = character())
