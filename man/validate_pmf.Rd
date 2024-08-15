@@ -3,7 +3,7 @@
 \name{validate_pmf}
 \alias{validate_pmf}
 \title{Validate that the pmf vector being passed to stan
-is a valid probability mass function sums to 1 and
+is a valid probability mass function. It must sum to 1 and
 has all non-negative entries.}
 \usage{
 validate_pmf(
@@ -32,6 +32,6 @@ NULL, invisibly
 }
 \description{
 Validate that the pmf vector being passed to stan
-is a valid probability mass function sums to 1 and
+is a valid probability mass function. It must sum to 1 and
 has all non-negative entries.
 }

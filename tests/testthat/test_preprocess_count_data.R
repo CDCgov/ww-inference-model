@@ -132,10 +132,11 @@ test_that("Renaming columns works with default parameters", {
   # Using default column names
   default_processed <- preprocess_count_data(test_hosp_data)
 
-  expect_false(any(c(
-    "daily_admits", "state_pop"
-  ) %in% names(default_processed)))
-  expect_true(all(c("count", "total_pop") %in% names(default_processed)))
+  checkmate::expect_names(
+    names(default_processed),
+    must.include = c("count", "total_pop"),
+    disjunct.from = c("daily_admits", "state_pop")
+  )
 })
 
 # Test that the function handles empty dataframes correctly

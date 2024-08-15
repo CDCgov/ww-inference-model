@@ -30,9 +30,11 @@ test_that("Concentration column is renamed correctly", {
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
-
-  expect_false("conc" %in% names(processed))
-  expect_true("genome_copies_per_ml" %in% names(processed))
+  checkmate::expect_names(
+    names(processed),
+    must.include = "genome_copies_per_ml",
+    disjunct.from = "conc"
+  )
 })
 
 # Test that LOD column is renamed correctly
@@ -44,8 +46,10 @@ test_that("LOD column is renamed correctly", {
     lod_col_name = "LOD"
   )
 
-  expect_false("LOD" %in% names(processed))
-  expect_true("lod" %in% names(processed))
+  checkmate:check_names(names(processed),
+    must.include = "lod",
+    disjunct.from = "LOD"
+  )
 })
 
 # Test that lab_site_index and site_index are created correctly
