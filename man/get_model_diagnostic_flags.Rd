@@ -16,12 +16,15 @@ get_model_diagnostic_flags(x, ...)
   divergences_tolerance = 0.01,
   frac_high_rhat_tolerance = 0.05,
   rhat_tolerance = 1.05,
-  max_tree_depth_tol = 0.01
+  max_tree_depth_tol = 0.01,
+  ...
 )
 }
 \arguments{
 \item{x}{Either an object of the 'wwinference_fit' class or
 the R6 Cmdstan Object fit object}
+
+\item{...}{additional arguments}
 
 \item{ebmfi_tolerance}{float indicating the tolerance for EBMFI
 (estimated bayesian fraction of missing information), default is \code{0.2}}
@@ -36,7 +39,7 @@ proportion of parameters rhats>rhat_tolderance, default is \code{0.05}}
 individual parameters, default is \code{1.05}}
 
 \item{max_tree_depth_tol}{float indicating the tolerance for the proportion
-of iterations that exceed the maximum tree depth, default is \code{0.01}}
+of iterations that exceed the maximum tree depth, default is \code{0.01},}
 }
 \value{
 flag_df: dataframe containing columns for each of the flags,

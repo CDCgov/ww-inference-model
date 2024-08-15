@@ -21,7 +21,8 @@
 #' @param rhat_tolerance float indicating the tolerance for the rhat for
 #' individual parameters, default is `1.05`
 #' @param max_tree_depth_tol float indicating the tolerance for the proportion
-#' of iterations that exceed the maximum tree depth, default is `0.01`
+#' of iterations that exceed the maximum tree depth, default is `0.01`,
+#' @param ... additional arguments
 #'
 #' @family diagnostics
 #' @return flag_df: dataframe containing columns for each of the flags,
@@ -52,7 +53,8 @@ get_model_diagnostic_flags.default <- function(x,
                                                divergences_tolerance = 0.01,
                                                frac_high_rhat_tolerance = 0.05,
                                                rhat_tolerance = 1.05,
-                                               max_tree_depth_tol = 0.01) {
+                                               max_tree_depth_tol = 0.01,
+                                               ...) {
   n_chains <- x$num_chains()
   iter_sampling <- x$metadata()$iter_sampling
 
@@ -95,6 +97,7 @@ get_model_diagnostic_flags.default <- function(x,
 #' for a wwinference_fit object
 #'
 #' @param ww_fit An object of class wwinference_fit
+#' @param ... additional arguments
 #'
 #' @family diagnostics
 #' @export
@@ -106,6 +109,7 @@ diagnostic_summary <- function(ww_fit, ...) {
 #' wwinference_fit_object
 #'
 #' @param ww_fit An object of class wwinference_fit
+#' @param ... additional arguments
 #'
 #' @family diagnostics
 #' @export

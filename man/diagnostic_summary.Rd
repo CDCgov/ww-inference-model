@@ -9,6 +9,8 @@ diagnostic_summary(ww_fit, ...)
 }
 \arguments{
 \item{ww_fit}{An object of class wwinference_fit}
+
+\item{...}{additional arguments}
 }
 \description{
 Method for printing the CmdStan diagnostic summary
