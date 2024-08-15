@@ -14,7 +14,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-
+```{r echo=FALSE}
+knitr::opts_chunk$set(dev = "svg")
+```
 # Quick start
 
 In this quick start, we demonstrate using `wwinference` to specify and fit a
