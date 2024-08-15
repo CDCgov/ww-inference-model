@@ -187,7 +187,10 @@ validate_both_datasets <- function(input_count_data,
     forecast_date,
     add_err_msg = c(
       "Wastewater data passed in doesn't overlap",
-      "with count data calibration period"
+      "with count data calibration period. ",
+      "There must be at least one wastewater ",
+      "observation within the date range of the count ",
+      "data in order to fit a wastewater-informed model"
     )
   )
 
