@@ -275,7 +275,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   if (isTRUE(if_feedback)) {
     infection_feedback <- rlnorm(1,
       meanlog = params$infection_feedback_prior_logmean,
-      sdlog = params$infection_feedback_prior_log_sd
+      sdlog = params$infection_feedback_prior_logsd
     )
   } else {
     infection_feedback <- 0
