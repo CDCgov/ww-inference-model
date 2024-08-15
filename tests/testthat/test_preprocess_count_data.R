@@ -14,9 +14,9 @@ test_that("Function returns dataframe with correct columns", {
 
   expected_cols <- c("date", "count", "total_pop")
 
-checkmate::expect_names(names(processed),
+  checkmate::expect_names(names(processed),
     must.include = expected_cols
-  ))
+  )
 })
 
 # Test that count column is renamed correctly
@@ -26,7 +26,9 @@ test_that("Count column is renamed correctly", {
     pop_size_col_name = "state_pop"
   )
 
-  checkmate::expect_names(names(processed), must.include = "count", disjunct.from = "daily_admits")
+  checkmate::expect_names(names(processed),
+    must.include = "count",
+    disjunct.from = "daily_admits"
   )
 })
 
@@ -37,7 +39,10 @@ test_that("Population size column is renamed correctly", {
     pop_size_col_name = "state_pop"
   )
 
-  checkmate::expect_names(names(processed), must.include = "total_pop", disjunct.from = "state_pop"))
+  checkmate::expect_names(names(processed),
+    must.include = "total_pop",
+    disjunct.from = "state_pop"
+  )
 })
 
 # Test data setup
