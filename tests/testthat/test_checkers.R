@@ -203,7 +203,7 @@ test_that(
     expect_no_error(assert_df_not_empty(tibble_with_cols, "tibble_with_cols"))
 
     empty_tibble_with_cols <- tibble::tibble(Col1 = numeric(), Column2 = character())
-    expect_error(assert_df_not_empty(empty_df_with_cols, "empty_df_with_cols"))
+    expect_error(assert_df_not_empty(empty_tibble_with_cols, "empty_tibble_with_cols"))
   }
 )
 
