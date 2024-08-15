@@ -409,7 +409,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     date_df = date_df
   )
 
-  hosp_data_for_eval <- format_hosp_data(pred_obs_hosp,
+  hosp_data_eval <- format_hosp_data(pred_obs_hosp,
     dur_obs = (ot + ht),
     pop_size = pop_size,
     date_df = date_df
