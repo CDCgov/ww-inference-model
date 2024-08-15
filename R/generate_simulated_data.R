@@ -258,6 +258,10 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     global_rt_sd = global_rt_sd
   )
 
+  # Daily unadjusted R(t)
+  ind_m <- get_ind_m((ot + ht), n_weeks)
+  unadj_r_daily <- ind_m %*% unadj_r_weeks
+
   # Subpopulation level R(t)-----------------------------------------------
   # get the matrix of subpop level R(t) estimates, assuming normally distributed
   # around the the log of the state R(t) with stdev of sigma_eps
@@ -419,11 +423,18 @@ generate_simulated_data <- function(r_in_weeks = # nolint
         daily_hosp_admits
     )
 
+  true_rt <- tibble::tibble(
+    unadj_rt_daily = undaj_r_daily,
+    realized_rt = rt
+  )
+
+
 
   example_data <- list(
     ww_data = ww_data,
     hosp_data = hosp_data,
-    hosp_data_eval = hosp_data_eval
+    hosp_data_eval = hosp_data_eval,
+    true_rt = true_rt
   )
 
   return(example_data)
