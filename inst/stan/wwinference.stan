@@ -89,6 +89,14 @@ data {
   real<lower=0> log_phi_g_prior_sd;
   real inf_feedback_prior_logmean;
   real<lower=0> inf_feedback_prior_logsd;
+
+  real log_phi_mu;
+  real log_phi_sd;
+  real l;
+  real log_sigma_generalized_mu;
+  real log_sigma_generalized_sd;
+  real log_scaling_factor_mu;
+  real log_scaling_factor_sd;
 }
 
 // The transformed data
@@ -103,15 +111,9 @@ transformed data {
   };
   for (i in 1:4) {
     for (j in 1:4) {
-      dist_matrix[i, j] = dist_array[i, j];
+      dist_matrix[i, j] = dist_array[i, j] / 114.62984;
     }
   }
-  real phi = 25;
-  real l = 1;
-  real log_sigma_generalized_mu = log(0.02^(n_subpops-1));
-  real log_sigma_generalized_sd = 0.01;
-  real scaling_factor = 1.0;
-  matrix[n_subpops-1,n_subpops-1] non_norm_omega = exponential_decay_corr_func(dist_matrix, phi, l);
   //----------------------------------------------------------------------------
 
 
@@ -172,6 +174,8 @@ parameters {
   // Site spatial params--------------------------------------------------------
   //matrix[n_subpops, n_subpops] non_norm_omega;
   real log_sigma_generalized;
+  real log_phi;
+  real log_scaling_factor;
   matrix[n_subpops-1,n_weeks] non_cent_spatial_dev_ns_mat;
   vector[n_weeks] norm_vec_aux_site;
   //----------------------------------------------------------------------------
@@ -205,7 +209,10 @@ transformed parameters {
   vector[n_subpops] growth_site;
 
   // Site spatial trans params--------------------------------------------------
+  real phi = exp(log_phi);
   real sigma_generalized = exp(log_sigma_generalized);
+  real scaling_factor = exp(log_scaling_factor);
+  matrix[n_subpops-1,n_subpops-1] non_norm_omega;
   matrix[n_subpops-1,n_subpops-1] norm_omega;
   matrix[n_subpops-1,n_subpops-1] sigma_mat;
   matrix[n_subpops-1,n_weeks] spatial_dev_ns_mat;
@@ -231,7 +238,7 @@ transformed parameters {
   growth_site = initial_growth + eta_growth * sigma_growth; // site level growth rate
 
   // Site level spatial Rt------------------------------------------------------
-  //non_norm_omega = exponential_decay_corr_func(dist_matrix, phi, l);
+  non_norm_omega = exponential_decay_corr_func(dist_matrix, phi, l);
   norm_omega = matrix_normalization(non_norm_omega);
   sigma_mat = pow(sigma_generalized, 1.0 / (n_subpops - 1)) * norm_omega;
   //sigma_mat = sigma_generalized * non_norm_omega;
@@ -346,6 +353,8 @@ model {
     to_vector(non_cent_spatial_dev_ns_mat) ~ std_normal();
     to_vector(norm_vec_aux_site) ~ std_normal();
     log_sigma_generalized ~ normal(log_sigma_generalized_mu, log_sigma_generalized_sd);
+    log_phi ~ normal(log_phi_mu, log_phi_sd);
+    log_scaling_factor ~ normal(log_scaling_factor_mu, log_scaling_factor_sd);
     //--------------------------------------------------------------------------
 
   vector[7] effect_mean = rep_vector(wday_effect_prior_mean, 7);

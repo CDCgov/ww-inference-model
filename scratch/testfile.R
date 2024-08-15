@@ -2,7 +2,7 @@ library(wwinference)
 library(dplyr)
 library(ggplot2)
 library(tidybayes)
-
+library(tidyverse)
 
 hosp_data <- wwinference::hosp_data
 hosp_data_eval <- wwinference::hosp_data_eval
@@ -34,7 +34,22 @@ hosp_data_preprocessed <- wwinference::preprocess_hosp_data(
   pop_size_col_name = "state_pop"
 )
 
+# Sites ------------------------------------------------------------------------
+site_locs <- data.frame(
+  x = c(85, 37, 36, 7),
+  y = c(12, 75, 75, 96),
+  ID = c("Site 1", "Site 2", "Site 3", "Site 4")
+)
+ggplot(data = site_locs) +
+  geom_point(aes(x = x, y = y, colour = ID, shape = ID), size = 5) +
+  labs(title = "Fake Locations") +
+  guides(
+    colour = guide_legend(title = "Locations"),
+    shape = guide_legend(title = "Locations")
+  ) +
+  theme_bw()
 
+#-------------------------------------------------------------------------------
 ggplot(ww_data_preprocessed) +
   geom_point(
     aes(
@@ -68,7 +83,7 @@ ggplot(hosp_data_preprocessed) +
   geom_point(aes(x = date, y = count)) +
   xlab("") +
   ylab("Daily hospital admissions") +
-  ggtitle("State level hospital admissions") +
+  ggtitle("Global level hospital admissions") +
   theme_bw()
 
 # Rt site-----------------------------------------------------------------------
@@ -191,9 +206,14 @@ ggplot(draws_df |> dplyr::filter(
     x = rt_global_df$date,
     y = rt_global_df$rt_global
   ), color = "red") +
-  geom_line(aes(x = date, y = pred_value, group = draw),
-    color = "blue4", alpha = 0.1, size = 0.2
+  ggplot2::geom_step(
+    aes(x = date, y = pred_value, group = draw),
+    color = "blue4",
+    alpha = 0.1, linewidth = 0.2
   ) +
+  # geom_line(aes(x = date, y = pred_value, group = draw),
+  #  color = "blue4", alpha = 0.1, size = 0.2
+  # ) +
   geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
     linetype = "dashed"
   ) +
@@ -240,12 +260,16 @@ ggplot(draws_df |> dplyr::filter(
     x = date,
     y = value
   ), color = "red") +
-  geom_line(
-    aes(
-      x = date, y = pred_value, group = draw,
-      color = subpop
-    ),
-    alpha = 0.1, size = 0.2
+  # //geom_line(
+  # // aes(
+  # //   x = date, y = pred_value, group = draw,
+  # //   color = subpop
+  # // ),
+  # // alpha = 0.1, size = 0.2
+  # //) +
+  ggplot2::geom_step(
+    aes(x = date, y = pred_value, group = draw, color = subpop),
+    alpha = 0.1, linewidth = 0.2
   ) +
   geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
     linetype = "dashed"
@@ -253,9 +277,98 @@ ggplot(draws_df |> dplyr::filter(
   facet_wrap(~subpop, scales = "free") +
   geom_hline(aes(yintercept = 1), linetype = "dashed") +
   xlab("") +
-  ylab("Subpopulation R(t) (Red line is actual)") +
-  ggtitle("R(t) estimate") +
+  ylab("Subpopulation R(t)") +
+  ggtitle("Site R(t) estimate (Red line is actual)") +
   theme_bw()
+
+
+
+summary_spatial_params <- fit$raw_fit_obj$summary() %>%
+  filter(variable %in% c(
+    "autoreg_rt_site",
+    "phi",
+    "sigma_generalized",
+    "scaling_factor"
+  )) %>%
+  mutate(actual_values = c(0.6, 0.2, 0.05^4, 1.1))
+summary_spatial_params
+
+
+
+
+temp_draws <- fit$raw_fit_obj$draws(variables = c(
+  "autoreg_rt_site",
+  "phi",
+  "sigma_generalized",
+  "scaling_factor"
+))
+temp_draws_df <- as.data.frame(as.table(temp_draws))
+names(temp_draws_df) <- c("iteration", "chain", "variable", "value")
+temp_draws_df <- temp_draws_df %>%
+  mutate(
+    variable = case_when(
+      variable == "autoreg_rt_site" ~ "AR Coefficient on Delta Terms",
+      variable == "phi" ~ "Phi for Exp. Corr. Func.",
+      variable == "sigma_generalized" ~ "Generalized Variance",
+      variable == "scaling_factor" ~ "ScalingFactor"
+    ),
+    variable = factor(variable),
+  )
+actual_values <- c(
+  "AR Coefficient on Delta Terms" = 0.6,
+  "Phi for Exp. Corr. Func." = 0.2,
+  "Generalized Variance" = 0.00000625,
+  "ScalingFactor" = 1.1
+)
+actual_values_df <- data.frame(
+  variable = names(actual_values),
+  actual_value = as.vector(actual_values)
+)
+temp_draws_df <- temp_draws_df %>%
+  left_join(
+    actual_values_df,
+    by = "variable"
+  )
+ggplot(
+  data = temp_draws_df
+) +
+  geom_histogram(
+    aes(
+      x = value
+    ),
+    color = "white",
+    fill = "darkblue"
+  ) +
+  geom_vline(
+    aes(xintercept = actual_value),
+    color = "red2",
+    linetype = "dashed",
+    size = 1.5
+  ) +
+  facet_grid(~variable, scales = "free") +
+  xlab("Sampled Value") +
+  ylab("count") +
+  ggtitle(
+    "Histograms of Spatial Parameters (red line is actual simulation value)"
+  ) +
+  theme( # //axis.title.x = element_blank(),
+    axis.title = element_text(face = "bold", size = 14),
+    axis.text = element_text(face = "bold", size = 14),
+    axis.line = element_line(colour = "black", size = 1.25),
+    axis.ticks = element_line(colour = "black", size = 1.5),
+    axis.ticks.length = unit(.25, "cm"),
+    panel.background = element_blank(),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    legend.text = element_text(colour = "white", face = "bold", size = 12),
+    legend.background = element_rect(fill = "black"),
+    legend.key.width = unit(.025, "npc"),
+    plot.title = element_text(face = "bold", size = 16),
+    strip.text = element_text(colour = "white", face = "bold", size = 12),
+    strip.background = element_rect(fill = "black")
+  )
+
+
 
 
 plot_hosp <- get_plot_forecasted_counts(

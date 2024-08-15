@@ -100,12 +100,12 @@
 #'         )
 #'       )
 #'     ),
-#'     phi = 25,
+#'     phi = 50,
 #'     l = 1
 #'   ),
 #'   phi_rt = 0.6,
-#'   sigma_generalized = 0.02^6,
-#'   scaling_factor = 0.01,
+#'   sigma_generalized = 0.05^6,
+#'   scaling_factor = 1.1,
 #'   aux_site_bool = TRUE,
 #'   init_stat = TRUE
 #' )
@@ -154,19 +154,19 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                       dist_matrix = as.matrix(
                                         dist(
                                           data.frame(
-                                            x = c(85, 37, 48, 7),
-                                            y = c(12, 75, 81, 96),
-                                            diag = TRUE,
-                                            upper = TRUE
-                                          )
+                                            x = c(85, 37, 36, 7),
+                                            y = c(12, 75, 75, 96)
+                                          ),
+                                          diag = TRUE,
+                                          upper = TRUE
                                         )
-                                      ),
-                                      phi = 25,
+                                      ) / 114.62984,
+                                      phi = 0.2,
                                       l = 1
                                     ),
                                     phi_rt = 0.6,
-                                    sigma_generalized = 0.02^4,
-                                    scaling_factor = 0.01,
+                                    sigma_generalized = 0.05^4,
+                                    scaling_factor = 1.1,
                                     aux_site_bool = TRUE,
                                     init_stat = TRUE) {
   # Some quick checks to make sure the inputs work as expected

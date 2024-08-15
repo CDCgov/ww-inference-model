@@ -245,7 +245,14 @@ get_stan_data <- function(input_count_data,
     log_phi_g_prior_mean = log_phi_g_prior_mean,
     log_phi_g_prior_sd = log_phi_g_prior_sd,
     ww_sampled_sites = ww_indices$ww_sampled_sites,
-    lab_site_to_site_map = ww_indices$lab_site_to_site_map
+    lab_site_to_site_map = ww_indices$lab_site_to_site_map,
+    log_phi_mu = log_phi_mu,
+    log_phi_sd = log_phi_sd,
+    l = l,
+    log_sigma_generalized_mu = log_sigma_generalized_mu,
+    log_sigma_generalized_sd = log_sigma_generalized_sd,
+    log_scaling_factor_mu = log_scaling_factor_mu,
+    log_scaling_factor_sd = log_scaling_factor_sd
   )
 
   return(data_renewal)
