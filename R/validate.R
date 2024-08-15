@@ -202,7 +202,7 @@ validate_both_datasets <- function(input_count_data,
 }
 
 #' Validate that the pmf vector being passed to stan
-#' is a valid probability mass function sums to 1 and
+#' is a valid probability mass function. It must sum to 1 and
 #' has all non-negative entries.
 #'
 #' @param pmf simplex vector describing a probabilty of an event ocurring on
