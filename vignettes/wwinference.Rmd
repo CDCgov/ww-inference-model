@@ -83,6 +83,7 @@ wastewater catchment area of that site
 hosp_data <- wwinference::hosp_data
 hosp_data_eval <- wwinference::hosp_data_eval
 ww_data <- wwinference::ww_data
+true_rt <- wwinference::true_rt
 
 head(ww_data)
 head(hosp_data)

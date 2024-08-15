@@ -56,9 +56,9 @@
 #' @param sd_i0_over_n float indicating the standard deviation between log of
 #' initial infections per capita, default is `0.5`
 #' @param if_feedback Boolean indicating whether or not to include
-#' infection feedback into the infection process, default is `TRUE`. This will
-#' apply an infection feedback drawn from the prior. If `FALSE`, the strength
-#' of the infection feedback term will be set to 0
+#' infection feedback into the infection process, default is `FALSE`, which
+#' sets the strength of the infection feedback to 0.
+#' If `TRUE`, this will apply an infection feedback drawn from the prior.
 #' @param input_params_path path to the toml file with the parameters to use
 #' to generate the simulated data
 #'
@@ -118,7 +118,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                     global_rt_sd = 0.03,
                                     sigma_eps = 0.05,
                                     sd_i0_over_n = 0.5,
-                                    if_feedback = TRUE,
+                                    if_feedback = FALSE,
                                     input_params_path =
                                       fs::path_package("extdata",
                                         "example_params.toml",
@@ -270,6 +270,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     r_weeks = unadj_r_weeks,
     subpop_level_rt_variation = sigma_eps
   )
+
   # Alternatively, can replace this with
   # r_site <- spatial_rt_process(input_params) #nolint
 
@@ -423,10 +424,17 @@ generate_simulated_data <- function(r_in_weeks = # nolint
         daily_hosp_admits
     )
 
+  # Global R(t)
   true_rt <- tibble::tibble(
-    unadj_rt_daily = undaj_r_daily,
+    unadj_rt_daily = as.numeric(unadj_r_daily),
     realized_rt = rt
-  )
+  ) |>
+    dplyr::mutate(
+      t = 1:(ot + ht)
+    ) |>
+    dplyr::left_join(date_df, by = "t")
+
+
 
 
 
@@ -434,7 +442,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     ww_data = ww_data,
     hosp_data = hosp_data,
     hosp_data_eval = hosp_data_eval,
-    true_rt = true_rt
+    true_global_rt = true_rt
   )
 
   return(example_data)

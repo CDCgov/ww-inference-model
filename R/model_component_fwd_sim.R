@@ -108,10 +108,12 @@ subpop_inf_process <- function(generate_inf_fxn,
     n = n_subpops, mean = initial_growth,
     sd = initial_growth_prior_sd
   )
+  # This is initial infections at the first observation time
   log_i0_over_n_site <- rnorm(
     n = n_subpops, mean = log(i0_over_n),
     sd = sd_i0_over_n
   )
+
 
   n_weeks <- ncol(unadj_r_site)
   # Set up matrix to convert from weekly to daily
@@ -377,6 +379,9 @@ format_ww_data <- function(log_obs_conc_lab_site,
 
   return(ww_data)
 }
+
+
+
 
 #' Format the hospital admissions data into a tidy dataframe
 #'
