@@ -85,14 +85,14 @@
 #'
 #' The variables are as follows:
 #' \describe{
-#'   \item{unadj_rt} The daily global unadjusted R(t). The log of the
+#'   \item{unadj_rt}{The daily global unadjusted R(t). The log of the
 #'   unadjusted R(t) is the central value around which the subpopulation
-#'   R(t) values are drawn from each week.
-#'   \item{realized_rt} The daily value of the realized global R(t). This is
+#'   R(t) values are drawn from each week.}
+#'   \item{realized_rt}{The daily value of the realized global R(t). This is
 #'   calculated by summing up the subpopulation level incident infections and
 #'   then dividing by the convolution of the total incident infections and the
 #'   generation interval to get the R(t) value that corresponds to the
-#'   global incident infections
+#'   global incident infections}
 #'   \item{t}{The time index in days}
 #'   \item{date}{Date the hospital admissions occurred, formatte din ISO8601
 #'   standatds as YYYY-MM-DD}
