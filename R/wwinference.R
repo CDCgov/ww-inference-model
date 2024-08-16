@@ -72,7 +72,7 @@ wwinference <- function(ww_data,
 
   input_count_data <- get_input_count_data_for_stan(
     count_data,
-    calibration_time
+    model_spec$calibration_time
   )
   last_count_data_date <- max(input_count_data$date, na.rm = TRUE)
   first_count_data_date <- min(input_count_data$date, na.rm = TRUE)
@@ -80,7 +80,7 @@ wwinference <- function(ww_data,
     ww_data,
     first_count_data_date,
     last_count_data_date,
-    calibration_time
+    model_spec$calibration_time
   )
   input_data <- list(
     input_count_data = input_count_data,
