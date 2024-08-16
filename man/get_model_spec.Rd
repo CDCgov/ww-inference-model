@@ -45,5 +45,5 @@ post-omicron COVID-19 model with joint inference of hospital admissions
 and data on wastewater viral concentrations
 }
 \examples{
-model_spec_list <- get_model_spec(forecast_date = "2023-12-06")
+model_spec_list <- get_model_spec()
 }
