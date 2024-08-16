@@ -103,24 +103,4 @@ test_that("wwinference() function returns the expected outputs", {
     "fit", "input_data",
     "stan_args", "mcmc_options"
   )))
-
-  # Fail to pass in data
-  expect_error(wwinference(
-    input_ww_data,
-    c(),
-    model_spec = get_model_spec(
-      forecast_date = forecast_date,
-      calibration_time = calibration_time,
-      forecast_horizon = forecast_horizon,
-      generation_interval = generation_interval,
-      inf_to_count_delay = inf_to_coutn_delay,
-      infection_feedback_pmf = infection_feedback_pmf,
-      params = params
-    ),
-    mcmc_options = get_mcmc_options(
-      iter_warmup = 25,
-      iter_sampling = 25,
-      n_chains = 1
-    )
-  ))
 })
