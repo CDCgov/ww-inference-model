@@ -282,14 +282,15 @@ pre-compiled model(`model`) to `wwinference()` where they are combined and
 used to fit the model.
 
 
+<<<<<<< HEAD
 ```{r fitting-model, warning=FALSE, message=FALSE}
 ww_fit <- wwinference::wwinference(
-  ww_data_to_fit,
-  hosp_data_preprocessed,
+  ww_data = ww_data_to_fit,
+  count_data = hosp_data_preprocessed,
+  forecast_date = forecast_date,
+  calibration_time = calibration_time,
+  forecast_horizon = forecast_horizon,
   model_spec = get_model_spec(
-    forecast_date = forecast_date,
-    calibration_time = calibration_time,
-    forecast_horizon = forecast_horizon,
     generation_interval = generation_interval,
     inf_to_count_delay = inf_to_hosp,
     infection_feedback_pmf = infection_feedback_pmf,
@@ -429,12 +430,12 @@ with the wastewater data.
 
 ```{r fit-hosp-only, warning=FALSE, message=FALSE}
 fit_hosp_only <- wwinference::wwinference(
-  ww_data_to_fit,
-  hosp_data_preprocessed,
+  ww_data = ww_data_to_fit,
+  count_data = hosp_data_preprocessed,
+  forecast_date = forecast_date,
+  calibration_time = calibration_time,
+  forecast_horizon = forecast_horizon,
   model_spec = get_model_spec(
-    forecast_date = forecast_date,
-    calibration_time = calibration_time,
-    forecast_horizon = forecast_horizon,
     generation_interval = generation_interval,
     inf_to_count_delay = inf_to_hosp,
     infection_feedback_pmf = infection_feedback_pmf,

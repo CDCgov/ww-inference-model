@@ -68,11 +68,8 @@ test_that("Function to get mcmc options produces the expected outputs", {
 })
 
 test_that("Function to get model specs produces expected outputs", {
-  # Need to specify a forecast date
-  expect_error(get_model_spec())
-  model_spec <- get_model_spec(forecast_date = "2023-11-06")
+  model_spec <- get_model_spec()
   expected_names <- c(
-    "forecast_date", "calibration_time", "forecast_horizon",
     "generation_interval", "inf_to_count_delay",
     "infection_feedback_pmf", "include_ww", "params"
   )
@@ -83,10 +80,10 @@ test_that("Function to get model specs produces expected outputs", {
 test_that("wwinference() function returns the expected outputs", {
   ww_fit <- wwinference(input_ww_data,
     input_count_data,
+    forecast_date = forecast_date,
+    calibration_time = calibration_time,
+    forecast_horizon = forecast_horizon,
     model_spec = get_model_spec(
-      forecast_date = forecast_date,
-      calibration_time = calibration_time,
-      forecast_horizon = forecast_horizon,
       generation_interval = generation_interval,
       inf_to_count_delay = inf_to_count_delay,
       infection_feedback_pmf = infection_feedback_pmf,
