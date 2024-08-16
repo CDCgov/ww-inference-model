@@ -9,7 +9,8 @@ get_ww_values(
   ww_measurement_col_name = "genome_copies_per_ml",
   ww_lod_value_col_name = "lod",
   ww_site_pop_col_name = "site_pop",
-  one_pop_per_site = TRUE
+  one_pop_per_site = TRUE,
+  padding_value = 1e-08
 )
 }
 \arguments{
@@ -31,6 +32,10 @@ wastewater catchment, default is \code{site_pop}}
 \item{one_pop_per_site}{a boolean variable indicating if there should only
 be on catchment area population per site, default is \code{TRUE} because this is
 what the stan model expects}
+
+\item{padding_value}{an smaller numeric value to add to the the
+concentration measurements to ensure that log transformation will produce
+real numbers, default value is \code{1e-8}}
 }
 \value{
 A list containing the necessary vectors of values that
