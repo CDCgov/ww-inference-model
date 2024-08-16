@@ -42,4 +42,28 @@ input_params_path <-
     "example_params.toml",
     package = "wwinference"
   )
-if_feedback <- TRUE
+if_feedback <- FALSE
+
+# R(t) comparison
+rt_r <- new_i_over_n / (convolve(new_i_over_n,
+  rev(c(0, generation_interval)),
+  type = "open"
+))[1:(uot + ot + ht)]
+
+test <- tibble::tibble(
+  rt_stan = rt,
+  rt_r = rt_r,
+  t = 1:(ot + ht)
+)
+
+ggplot(test) +
+  geom_line(aes(x = t, y = rt_r),
+    color = "black",
+    linewidth = 2
+  ) +
+  geom_line(aes(x = t, y = rt_stan), color = "red")
+
+plot(new_i_over_n)
+
+new_i_test <- rt_r * (convolve(new_i_over_n, rev(generation_interval), type = "open")[1:(ot + ht)]) # nolint
+plot(new_i_test)

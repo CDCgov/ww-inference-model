@@ -364,7 +364,10 @@ generated quantities {
   exp_state_ww_conc = exp(state_log_c);
 
   // Deterministic calculation of state level R(t) from incident infections
-  // and the generation interval
-  rt = (state_inf_per_capita ./ convolve_dot_product(state_inf_per_capita, gt_rev_pmf, uot + ot + ht))[uot+1: uot + ot + ht];
+  // and the generation interval, with a 0 added to account for the fact
+  // that our forward process assumes no contribution to onwards infections
+  // on the day of infection
+  rt = (state_inf_per_capita ./ convolve_dot_product(state_inf_per_capita,
+    reverse(append_row(0,generation_interval)), uot + ot + ht))[uot+1: uot + ot + ht];
 
 }

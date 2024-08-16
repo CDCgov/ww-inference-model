@@ -26,5 +26,11 @@ a numeric vector of length(\code{tot_time} - \code{uot}) that represents
 the effective reproductive number
 }
 \description{
-Back- calculate R(t) from incident infections and the generation interval
+Note that the forward renewal process is not a simple convolution of
+incident infections and the generation interval -- because it assumes that
+the generation interval being passed in is indexed starting at day 1, and
+that on any particular index day there is no contribution from individuals
+infected on that day. This is a reasonable assumption, but to align the
+implementation of the forward process with our backword process, we have to
+add a 0 density to day 0 of the passed in generation interval.
 }

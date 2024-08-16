@@ -393,8 +393,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     tot_time = (uot + ot + ht)
   )
 
-
-
   # Format the data-----------------------------------------------------------
 
   ww_data <- format_ww_data(

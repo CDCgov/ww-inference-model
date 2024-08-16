@@ -419,6 +419,16 @@ format_hosp_data <- function(pred_obs_hosp,
 
 #' Back- calculate R(t) from incident infections and the generation interval
 #'
+#' @description
+#' Note that the forward renewal process is not a simple convolution of
+#' incident infections and the generation interval -- because it assumes that
+#' the generation interval being passed in is indexed starting at day 1, and
+#' that on any particular index day there is no contribution from individuals
+#' infected on that day. This is a reasonable assumption, but to align the
+#' implementation of the forward process with our backword process, we have to
+#' add a 0 density to day 0 of the passed in generation interval.
+#'
+#'
 #' @param new_i vector of numerics that spans the length of `tot_time`,
 #' representing the new incident infections per day
 #' @param convolve_fxn function used to convolve infections with delay pmf
@@ -438,7 +448,8 @@ calc_rt <- function(new_i,
                     uot,
                     tot_time) {
   rt <- (new_i / convolve_fxn(
-    new_i, rev(generation_interval), tot_time
+    new_i, rev(c(0, generation_interval)), tot_time # Assert no contributions
+    # from those infected on the day of interest we're calculating.
   ))[(uot + 1):tot_time]
   return(rt)
 }
