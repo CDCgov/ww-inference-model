@@ -88,7 +88,7 @@ test_that("wwinference() function returns the expected outputs", {
       calibration_time = calibration_time,
       forecast_horizon = forecast_horizon,
       generation_interval = generation_interval,
-      inf_to_count_delay = inf_to_coutn_delay,
+      inf_to_count_delay = inf_to_count_delay,
       infection_feedback_pmf = infection_feedback_pmf,
       params = params
     ),
@@ -99,10 +99,10 @@ test_that("wwinference() function returns the expected outputs", {
     )
   )
 
-  expect_true(names(ww_fit) %in% c(
+  expect_true(all(names(ww_fit) %in% c(
     "fit", "input_data",
     "stan_args", "mcmc_options"
-  ))
+  )))
 
   # Fail to pass in data
   expect_error(wwinference(
