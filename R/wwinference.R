@@ -302,7 +302,7 @@ get_mcmc_options <- function(
 #' @export
 #'
 #' @examples
-#' model_spec_list <- get_model_spec(forecast_date = "2023-12-06")
+#' model_spec_list <- get_model_spec()
 get_model_spec <- function(
     generation_interval = wwinference::generation_interval,
     inf_to_count_delay = wwinference::inf_to_hosp,
