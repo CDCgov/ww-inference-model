@@ -8,6 +8,9 @@ data}
 wwinference(
   ww_data,
   count_data,
+  forecast_date = NULL,
+  calibration_time = 90,
+  forecast_horizon = 28,
   model_spec = get_model_spec(),
   mcmc_options = get_mcmc_options(),
   generate_initial_values = TRUE,
@@ -24,6 +27,15 @@ the following columns: \code{date}, \code{site}, \code{lab}, \code{genome_copies
 state) daily count data, pertaining to the number of events that are being
 counted on that day, e.g. number of daily cases or daily hospital admissions.
 Must contain the following columns: \code{date}, \code{count} , \code{total_pop}}
+
+\item{forecast_date}{a character string in ISO8601 format (YYYY-MM-DD)
+indicating the date that the forecast is to be made. Default is NULL}
+
+\item{calibration_time}{integer indicating the number of days to calibrate
+the model for, default is \code{90}}
+
+\item{forecast_horizon}{integer indicating the number of days, including the
+forecast date, to produce forecasts for, default is \code{28}}
 
 \item{model_spec}{The model specification parameters as defined using
 \code{get_model_spec()}. The default here pertains to the \code{forecast_date} in the
