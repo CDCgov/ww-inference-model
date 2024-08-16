@@ -74,6 +74,35 @@ test_that(paste0(
 })
 
 test_that(paste0(
+  "Test that things not flagged for removal don't get removed",
+  "and things that are flagged for removal do get removed"
+), {
+  ww_data_no_exclusions <- ww_data_filtered
+  ww_data_no_exclusions$exclude <- 0
+  input_ww_data_ne <- get_input_ww_data_for_stan(
+    ww_data_no_exclusions,
+    first_count_data_date,
+    last_count_data_date,
+    calibration_time
+  )
+
+  expect_true(nrow(input_ww_data_ne) == nrow(input_ww_data))
+
+  ww_data_w_exclusions <- ww_data_filtered
+  ww_data_w_exclusions$exclude[10] <- 1
+  input_ww_data_we <- get_input_ww_data_for_stan(
+    ww_data_w_exclusions,
+    first_count_data_date,
+    last_count_data_date,
+    calibration_time
+  )
+
+  expect_true(nrow(input_ww_data_ne) == nrow(input_ww_data_we) + 1)
+})
+
+
+
+test_that(paste0(
   "Test that passing out of window wastewater data behaves as",
   "expected"
 ), {

@@ -15,7 +15,6 @@ validate_ww_conc_data <- function(ww_data,
                                   call = rlang::caller_env()) {
   assert_df_not_empty(ww_data, arg = "ww_data", call)
 
-
   ww_conc <- ww_data |> dplyr::pull({
     conc_col_name
   })
@@ -175,8 +174,8 @@ validate_both_datasets <- function(input_count_data,
   # didn't eliminate
   assert_df_not_empty(input_ww_data,
     add_err_msg = c(
-      "Wastewater data passed in doesn't overlap",
-      "with count data calibration period"
+      "There is no wastewater data within ",
+      "the count data calibration period"
     )
   )
 
@@ -187,8 +186,11 @@ validate_both_datasets <- function(input_count_data,
     input_ww_data$date,
     forecast_date,
     add_err_msg = c(
-      "There is no wastewater data within ",
-      "the count data calibration period"
+      "Wastewater data passed in doesn't overlap",
+      "with count data calibration period. ",
+      "There must be at least one wastewater ",
+      "observation within the date range of the count ",
+      "data in order to fit a wastewater-informed model"
     )
   )
 
@@ -202,7 +204,9 @@ validate_both_datasets <- function(input_count_data,
   invisible()
 }
 
-#' Validate that the pmf being passed to stan
+#' Validate that the pmf vector being passed to stan
+#' is a valid probability mass function. It must sum to 1 and
+#' have all non-negative entries.
 #'
 #' @param pmf simplex vector describing a probabilty of an event ocurring on
 #' each day
@@ -235,5 +239,13 @@ validate_pmf <- function(pmf,
       )
     )
   }
+
+  assert_elements_non_neg(pmf,
+    add_err_msg = c(
+      "Elements in {.arg {arg}} must",
+      "be non-negative. Otherwise, ",
+      "it is not a valid probability mass function"
+    )
+  )
   invisible()
 }

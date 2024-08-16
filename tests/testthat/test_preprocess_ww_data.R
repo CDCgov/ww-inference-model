@@ -21,7 +21,7 @@ test_that("Function returns dataframe with correct columns", {
     "flag_as_ww_outlier", "lab_site_name", "below_lod"
   )
 
-  expect_true(all(expected_cols %in% names(processed)))
+  checkmate::expect_names(names(processed), must.include = expected_cols)
 })
 
 # Test that concentration column is renamed correctly
@@ -30,9 +30,11 @@ test_that("Concentration column is renamed correctly", {
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
-
-  expect_false("conc" %in% names(processed))
-  expect_true("genome_copies_per_ml" %in% names(processed))
+  checkmate::expect_names(
+    names(processed),
+    must.include = "genome_copies_per_ml",
+    disjunct.from = "conc"
+  )
 })
 
 # Test that LOD column is renamed correctly
@@ -44,8 +46,10 @@ test_that("LOD column is renamed correctly", {
     lod_col_name = "LOD"
   )
 
-  expect_false("LOD" %in% names(processed))
-  expect_true("lod" %in% names(processed))
+  checkmate::check_names(names(processed),
+    must.include = "lod",
+    disjunct.from = "LOD"
+  )
 })
 
 # Test that lab_site_index and site_index are created correctly
@@ -260,20 +264,21 @@ test_that("No NA values are introduced during preprocessing", {
   )
 
   # Check for any new NA values introduced in any column
-  expect_true(all(complete.cases(processed)))
+  expect_true(all(!is.na(processed)))
 })
 
 # Test that the function can handle LOD values equal to concentration values
 # (edge case)
 test_that("Function handles LOD values equal to concentration values", {
   edge_case_ww_data <- ww_data |>
-    dplyr::mutate(conc = lod) # Set concentration equal to LOD
+    dplyr::mutate(conc = lod) # Set concentration equal to LOD,
+  # we expect this should get flagged as below LOD
 
   processed_edge_case <- preprocess_ww_data(edge_case_ww_data,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
 
-  # Check if below_lod is set to 0 when concentration equals LOD
-  expect_equal(processed_edge_case$below_lod, rep(0, nrow(edge_case_ww_data)))
+  # Check if below_lod is set to 1 when concentration equals LOD
+  expect_equal(processed_edge_case$below_lod, rep(1, nrow(edge_case_ww_data)))
 })

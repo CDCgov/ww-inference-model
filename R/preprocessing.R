@@ -8,7 +8,9 @@
 #'  `genome_copies_per_ml`
 #' @param lod_col_name string indicating the name of the column containing
 #' the concentration measurements in the wastewater data, default is
-#'  `genome_copies_per_ml`
+#'  `genome_copies_per_ml`. Note that any values in the `conc_col_name`
+#'  equal to the limit of detection will be treated as below the limit of
+#'  detection.
 #' @return a dataframe containing the same columns as ww_data except
 #' the `conc_col_name` will be replaced with `genome_copies_per_ml` and
 #' the `lod_col_name` will be replaced with `lod` plus the following
@@ -68,7 +70,7 @@ preprocess_ww_data <- function(ww_data,
     ) |>
     dplyr::mutate(
       lab_site_name = glue::glue("Site: {site}, Lab: {lab}"),
-      below_lod = ifelse(genome_copies_per_ml < lod, 1, 0)
+      below_lod = ifelse(genome_copies_per_ml <= lod, 1, 0)
     )
 
   # Get an extra column that identifies the wastewater outliers using the

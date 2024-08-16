@@ -22,7 +22,9 @@ the concentration measurements in the wastewater data, default is
 
 \item{lod_col_name}{string indicating the name of the column containing
 the concentration measurements in the wastewater data, default is
-\code{genome_copies_per_ml}}
+\code{genome_copies_per_ml}. Note that any values in the \code{conc_col_name}
+equal to the limit of detection will be treated as below the limit of
+detection.}
 }
 \value{
 a dataframe containing the same columns as ww_data except

@@ -14,7 +14,9 @@ test_that("Function returns dataframe with correct columns", {
 
   expected_cols <- c("date", "count", "total_pop")
 
-  expect_true(all(expected_cols %in% names(processed)))
+  checkmate::expect_names(names(processed),
+    must.include = expected_cols
+  )
 })
 
 # Test that count column is renamed correctly
@@ -24,8 +26,10 @@ test_that("Count column is renamed correctly", {
     pop_size_col_name = "state_pop"
   )
 
-  expect_false("daily_admits" %in% names(processed))
-  expect_true("count" %in% names(processed))
+  checkmate::expect_names(names(processed),
+    must.include = "count",
+    disjunct.from = "daily_admits"
+  )
 })
 
 # Test that population size column is renamed correctly
@@ -35,8 +39,10 @@ test_that("Population size column is renamed correctly", {
     pop_size_col_name = "state_pop"
   )
 
-  expect_false("state_pop" %in% names(processed))
-  expect_true("total_pop" %in% names(processed))
+  checkmate::expect_names(names(processed),
+    must.include = "total_pop",
+    disjunct.from = "state_pop"
+  )
 })
 
 # Test data setup
@@ -54,8 +60,9 @@ test_that("Function returns dataframe with correct columns", {
   )
 
   expected_cols <- c("date", "count", "total_pop")
-
-  expect_true(all(expected_cols %in% names(processed)))
+  expect_true(checkmate::check_names(names(processed),
+    must.include = expected_cols
+  ))
 })
 
 # Test that count column is renamed correctly
@@ -66,7 +73,7 @@ test_that("Count column is renamed correctly", {
   )
 
   expect_false("daily_admits" %in% names(processed))
-  expect_true("count" %in% names(processed))
+  expect_true(checkmate::check_names(names(processed), must.include = "count"))
 })
 
 # Test that population size column is renamed correctly
@@ -76,14 +83,14 @@ test_that("Population size column is renamed correctly", {
     pop_size_col_name = "state_pop"
   )
 
-  expect_false("state_pop" %in% names(processed))
-  expect_true("total_pop" %in% names(processed))
+  checkmate::expect_names(names(processed),
+    must.include = "total_pop", disjunct.from = "state_pop"
+  )
 })
 
 test_that("Function handles missing columns with an error", {
-  incomplete_hosp_data <- hosp_data[, -which(names(
-    hosp_data
-  ) == "daily_admits")]
+  incomplete_hosp_data <- hosp_data |> dplyr::select(-daily_admits)
+
 
   expect_error(preprocess_count_data(incomplete_hosp_data,
     count_col_name = "daily_admits",
@@ -110,7 +117,7 @@ test_that("No NA values are introduced during preprocessing", {
   )
 
   # Check for any new NA values introduced in any column
-  expect_true(all(complete.cases(processed)))
+  expect_false(any(is.na(processed)))
 })
 
 # Test that renaming columns works when using default parameter values
@@ -123,10 +130,11 @@ test_that("Renaming columns works with default parameters", {
   # Using default column names
   default_processed <- preprocess_count_data(test_hosp_data)
 
-  expect_false(any(c(
-    "daily_admits", "state_pop"
-  ) %in% names(default_processed)))
-  expect_true(all(c("count", "total_pop") %in% names(default_processed)))
+  checkmate::expect_names(
+    names(default_processed),
+    must.include = c("count", "total_pop"),
+    disjunct.from = c("daily_admits", "state_pop")
+  )
 })
 
 # Test that the function handles empty dataframes correctly

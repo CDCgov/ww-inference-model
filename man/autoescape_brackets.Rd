@@ -16,7 +16,3 @@ brackets
 \description{
 Escape brackets returned in a string for passing to glue
 }
-\examples{
-test_string <- "{my_var}"
-glue::glue(autoescape_brackets(test_string))
-}
