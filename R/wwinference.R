@@ -147,7 +147,7 @@ wwinference <- function(ww_data,
     ww_data,
     first_count_data_date,
     last_count_data_date,
-    calibration_time
+    model_spec$calibration_time
   )
   input_data <- list(
     input_count_data = input_count_data,
