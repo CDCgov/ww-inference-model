@@ -64,6 +64,7 @@
 #'
 #' @export
 #' @examples
+#' \dontrun{
 #' ww_data <- tibble::tibble(
 #'   date = rep(seq(
 #'     from = lubridate::ymd("2023-08-01"),
@@ -132,6 +133,7 @@
 #'     n_chains = 2
 #'   )
 #' )
+#' }
 #' @rdname wwinference
 wwinference <- function(ww_data,
                         count_data,

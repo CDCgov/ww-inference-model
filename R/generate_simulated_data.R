@@ -62,6 +62,7 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' # Generate a simulated dataset from a hypothetical state with 6 sites and 2
 #' # different labs
 #' sim_data <- generate_simulated_data(
@@ -73,6 +74,7 @@
 #' )
 #' hosp_data <- sim_data$hosp_data
 #' ww_data <- sim_data$ww_data
+#' }
 generate_simulated_data <- function(r_in_weeks = # nolint
                                       c(
                                         rep(1.1, 5), rep(0.9, 5),

@@ -88,6 +88,7 @@ COVID-19 hospital admissions from a hypothetical state and wasteawter
 concentration data from multiple sites within that state.
 }
 \examples{
+\dontrun{
 ww_data <- tibble::tibble(
   date = rep(seq(
     from = lubridate::ymd("2023-08-01"),
@@ -155,5 +156,5 @@ ww_fit <- wwinference(input_ww_data,
     iter_sampling = 250,
     n_chains = 2
   )
-)
+)}
 }

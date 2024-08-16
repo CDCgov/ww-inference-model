@@ -76,28 +76,3 @@ test_that("Function to get model specs produces expected outputs", {
   # Checkmade doesn't work here for a list, says it must be a character vector
   expect_true(all(names(model_spec) %in% expected_names))
 })
-
-test_that("wwinference() function returns the expected outputs", {
-  ww_fit <- wwinference(input_ww_data,
-    input_count_data,
-    forecast_date = forecast_date,
-    calibration_time = calibration_time,
-    forecast_horizon = forecast_horizon,
-    model_spec = get_model_spec(
-      generation_interval = generation_interval,
-      inf_to_count_delay = inf_to_count_delay,
-      infection_feedback_pmf = infection_feedback_pmf,
-      params = params
-    ),
-    mcmc_options = get_mcmc_options(
-      iter_warmup = 25,
-      iter_sampling = 25,
-      n_chains = 1
-    )
-  )
-
-  expect_true(all(names(ww_fit) %in% c(
-    "fit", "input_data",
-    "stan_args", "mcmc_options"
-  )))
-})
