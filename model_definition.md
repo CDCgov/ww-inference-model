@@ -38,7 +38,7 @@ We decompose the instantaneous reproduction number $\mathcal{R}(t)$ into two com
 We assume that the unadjusted reproduction number $\mathcal{R}^\mathrm{u}(t)$ is a piecewise-constant function with weekly change points (i.e., if $t$ and $t'$ are days in the same week, then $\mathcal{R}^\mathrm{u}(t)$ = $\mathcal{R}^\mathrm{u}(t')$ ). To account for the dependence of the unadjusted reproduction number in a given week on the previous week, we use a differenced auto-regressive process for the log-scale reproduction number. A log-scale representation is used to ensure that the reproduction number is positive and so that week-to-week changes are multiplicative rather than additive.
 
 $$
-\log[\mathcal{R}^\mathrm{u}(t_i)] \sim \mathrm{Normal}\left(\log[\mathcal{R}^\mathrm{u}(t_{i-1})] + \beta \left(\log[\mathcal{R}^\mathrm{u}(t_{i-2})] - \log[\mathcal{R}^\mathrm{u}(t_1)]\right), \sigma_r \right)
+\log[\mathcal{R}^\mathrm{u}(t_i)] \sim \mathrm{Normal}\left(\log[\mathcal{R}^\mathrm{u}(t_{i-1})] + \beta \left(\log[\mathcal{R}^\mathrm{u}(t_{i-2})] - \log[\mathcal{R}^\mathrm{u}(t_{i-1})]\right), \sigma_r \right)
 $$
 
 where $t_i$, $t_{i-1}$, and $t_{i-2}$ are days in three successive weeks, $\beta$ is an autoregression coefficient which serves to make week-to-week changes correlated, and $\sigma_r$ determines the overall variation in week-to-week changes.
