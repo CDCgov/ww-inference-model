@@ -115,7 +115,7 @@ I(t) = \frac{1}{\sum\nolimits_{k=1}^{K_\mathrm{total}} n_k} \sum_{k=1}^{K_\mathr
 We infer the site level initial per capita incidence $I_k(0)$ hierarchically. Specifically, we treat $\mathrm{logit}[I_k(0)]$ as Normally distributed about the corresponding jurisdiction-level value $\mathrm{logit}[I(0)]$, with an estimated standard deviation $\sigma_{i0}$:
 
 $$
-\mathrm{logit}[I_k(0)] \sim \mathrm{Normal}(\mathrm{logit}[I(0)], \sigma_{k0})
+\mathrm{logit}[I_k(0)] \sim \mathrm{Normal}(\mathrm{logit}[I(0)], \sigma_{i0})
 $$
 
 
