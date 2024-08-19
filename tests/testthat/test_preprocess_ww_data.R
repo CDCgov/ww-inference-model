@@ -46,7 +46,7 @@ test_that("LOD column is renamed correctly", {
     lod_col_name = "LOD"
   )
 
-  checkmate::check_names(names(processed),
+  checkmate::expect_names(names(processed),
     must.include = "lod",
     disjunct.from = "LOD"
   )
