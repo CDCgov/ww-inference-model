@@ -50,7 +50,9 @@ test_that("Test the wastewater inference model on simulated data.", {
     "sigma_ww_site_sd",
     "p_hosp_w_sd", "t_peak", "dur_shed", "ww_site_mod_sd", "rt", "rt_site_t",
     "p_hosp", "w", "hosp_wday_effect", "eta_i0", "eta_growth",
-    "infection_feedback", "p_hosp_mean"
+    "infection_feedback", "p_hosp_mean", "log_phi_mu", "log_phi_sd",
+    "l", "log_sigma_generalized_mu", "log_sigma_generalized_sd",
+    "log_scaling_factor_mu", "log_scaling_factor_sd"
   )
 
   for (param in model_params) {

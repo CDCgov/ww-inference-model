@@ -11,7 +11,9 @@ wwinference(
   model_spec = wwinference::get_model_spec(forecast_date = "2023-12-06"),
   mcmc_options = wwinference::get_mcmc_options(),
   generate_initial_values = TRUE,
-  compiled_model = wwinference::compile_model()
+  compiled_model = wwinference::compile_model(),
+  dist_matrix = as.matrix(dist(data.frame(x = c(85, 37, 36, 7), y = c(12, 75, 75, 96)),
+    diag = TRUE, upper = TRUE))/114.62984
 )
 }
 \arguments{
@@ -41,6 +43,9 @@ function}
 
 \item{compiled_model}{The pre-compiled model as defined using
 \code{compile_model()}}
+
+\item{dist_matrix}{Distance matrix for spatial correlation in distance
+correlation function.}
 }
 \value{
 A nested list of the following items, intended to allow the user to

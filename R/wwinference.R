@@ -34,6 +34,8 @@
 #' function
 #' @param compiled_model The pre-compiled model as defined using
 #' `compile_model()`
+#' @param dist_matrix Distance matrix for spatial correlation in distance
+#' correlation function.
 #'
 #' @return A nested list of the following items, intended to allow the user to
 #' quickly and easily plot results from their inference, while also being able
@@ -68,7 +70,17 @@ wwinference <- function(ww_data,
                         ),
                         mcmc_options = wwinference::get_mcmc_options(),
                         generate_initial_values = TRUE,
-                        compiled_model = wwinference::compile_model()) {
+                        compiled_model = wwinference::compile_model(),
+                        dist_matrix = as.matrix(
+                          dist(
+                            data.frame(
+                              x = c(85, 37, 36, 7),
+                              y = c(12, 75, 75, 96)
+                            ),
+                            diag = TRUE,
+                            upper = TRUE
+                          )
+                        ) / 114.62984) {
   # Check that data is compatible with specifications
   check_date(ww_data, model_spec$forecast_date)
   check_date(count_data, model_spec$forecast_date)
@@ -84,7 +96,8 @@ wwinference <- function(ww_data,
     inf_to_count_delay = model_spec$inf_to_count_delay,
     infection_feedback_pmf = model_spec$infection_feedback_pmf,
     params = model_spec$params,
-    compute_likelihood = 1
+    compute_likelihood = 1,
+    dist_matrix
   )
 
   init_lists <- NULL

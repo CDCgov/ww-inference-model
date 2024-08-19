@@ -20,6 +20,8 @@
 #' @param params a dataframe of parameter names and numeric values
 #' @param compute_likelihood indicator variable telling stan whether or not to
 #' compute the likelihood, default = `1`
+#' @param dist_matrix Distance matrix for spatial correlation in distance
+#' correlation function.
 #'
 #' @return a list of named variables to pass to stan
 #' @export
@@ -32,7 +34,8 @@ get_stan_data <- function(input_count_data,
                           inf_to_count_delay,
                           infection_feedback_pmf,
                           params,
-                          compute_likelihood = 1) {
+                          compute_likelihood = 1,
+                          dist_matrix) {
   # Assign parameter names
   par_names <- colnames(params)
   for (i in seq_along(par_names)) {
@@ -252,7 +255,8 @@ get_stan_data <- function(input_count_data,
     log_sigma_generalized_mu = log_sigma_generalized_mu,
     log_sigma_generalized_sd = log_sigma_generalized_sd,
     log_scaling_factor_mu = log_scaling_factor_mu,
-    log_scaling_factor_sd = log_scaling_factor_sd
+    log_scaling_factor_sd = log_scaling_factor_sd,
+    dist_matrix = dist_matrix
   )
 
   return(data_renewal)

@@ -97,26 +97,11 @@ data {
   real log_sigma_generalized_sd;
   real log_scaling_factor_mu;
   real log_scaling_factor_sd;
+  matrix[n_subpops-1, n_subpops-1] dist_matrix;
 }
 
 // The transformed data
 transformed data {
-  // Site spatial data----------------------------------------------------------
-  matrix[4,4] dist_matrix;
-  array[4, 4] real dist_array = {
-    {0, 79.20, 78.29, 114.63},
-    {79.20, 0, 12.53, 36.62},
-    {78.29, 12.53, 0, 43.66},
-    {114.63, 36.62, 43.66, 0}
-  };
-  for (i in 1:4) {
-    for (j in 1:4) {
-      dist_matrix[i, j] = dist_array[i, j] / 114.62984;
-    }
-  }
-  //----------------------------------------------------------------------------
-
-
   // viral shedding parameters
   real t_peak_mean = viral_shedding_pars[1];
   real<lower=0> t_peak_sd = viral_shedding_pars[2];
