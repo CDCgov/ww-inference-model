@@ -182,7 +182,7 @@ Note there is no need to scale by wastewater catchment population size because $
 This approach assumes that $G$ and $\alpha$ are constant through time and across individuals.
 In fact, there is substantial inter-individual variability in shedding kinetics and total shedding.
 This approximation is more accurate when population sizes are large.
-Incorporating the expected variability in the observed concentrations as a function of the number of contributing infected individduals is an area of active development.
+Incorporating the expected variability in the observed concentrations as a function of the number of contributing infected individuals is an area of active development.
 
 We model the shedding kinetics $s(\tau)$ as a discretized, scaled triangular distribution[^Larremore2021]:
 
@@ -194,7 +194,7 @@ We model the shedding kinetics $s(\tau)$ as a discretized, scaled triangular dis
 \end{cases}
 ```
 
-where $V_\mathrm{peak}$ is the peak number or viral genomes shed on any day, $\tau_\mathrm{peak}$ is the time from infection to peak shedding, and $\tau_\mathrm{shed}$ is the total duration of shedding. Then:
+where $V_\mathrm{peak}$ is the peak number or viral genomes shed on any day, $\tau_\mathrm{peak}$ is the time from infection to peak shedding, and $\tau_\mathrm{shed}$ is the total duration of shedding.
 
 Future iterations of this model will evaluate the utility of mechanistic modeling of wastewater collection and processing.
 
