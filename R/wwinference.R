@@ -71,16 +71,7 @@ wwinference <- function(ww_data,
                         mcmc_options = wwinference::get_mcmc_options(),
                         generate_initial_values = TRUE,
                         compiled_model = wwinference::compile_model(),
-                        dist_matrix = as.matrix(
-                          dist(
-                            data.frame(
-                              x = c(85, 37, 36, 7),
-                              y = c(12, 75, 75, 96)
-                            ),
-                            diag = TRUE,
-                            upper = TRUE
-                          )
-                        ) / 114.62984) {
+                        dist_matrix = NULL) {
   # Check that data is compatible with specifications
   check_date(ww_data, model_spec$forecast_date)
   check_date(count_data, model_spec$forecast_date)

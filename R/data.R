@@ -1,4 +1,4 @@
-#' Example wastewater dataset with site correlations from correlation func.
+#' Example wastewater dataset with site correlations from exp. corr. func.
 #'
 #' A dataset containing the simulated wastewater concentrations
 #' (labeled here as `genome_copies_per_ml`) by sample collection date (`date`),
@@ -78,7 +78,7 @@
 
 
 
-#' Example hospital admissions dataset using correlation function.
+#' Example hospital admissions data with site correlations from exp. corr. func.
 #'
 #'  A dataset containing the simulated daily hospital admissions
 #' (labeled here as `daily_hosp_admits`) by date of admission (`date`).
@@ -146,7 +146,7 @@
 
 
 
-#' Example hospital admissions dataset for evaluation using corr. func.
+#' Example hospital admissions dataset for evaluation using  exp. corr. func.
 #'
 #'  A dataset containing the simulated daily hospital admissions that the model
 #'  will be evaluated against (labeled here as `daily_hosp_admits_for_eval`)

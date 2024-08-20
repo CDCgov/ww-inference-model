@@ -20,8 +20,9 @@
 #' @param params a dataframe of parameter names and numeric values
 #' @param compute_likelihood indicator variable telling stan whether or not to
 #' compute the likelihood, default = `1`
-#' @param dist_matrix Distance matrix for spatial correlation in distance
-#' correlation function.
+#' @param dist_matrix Distance matrix, n_sites x n_sites, for spatial
+#' correlation in distance correlation function.  NULL currently implies
+#' ind. corr. func.
 #'
 #' @return a list of named variables to pass to stan
 #' @export
@@ -173,6 +174,20 @@ get_stan_data <- function(input_count_data,
 
   inf_to_count_delay_max <- length(inf_to_count_delay)
 
+
+  # If dist_matrix null use independence correlation and update flag
+  if (is.null(dist_matrix)) {
+    ind_corr_func <- 1
+    # This dist_matrix will not be used, only needed for stan data specs.
+    dist_matrix <- matrix(
+      0,
+      nrow = subpop_data$n_subpops - 1,
+      ncol = subpop_data$n_subpops - 1
+    )
+  } else {
+    ind_corr_func <- 0
+  }
+
   data_renewal <- list(
     gt_max = gt_max,
     hosp_delay_max = inf_to_count_delay_max,
@@ -249,14 +264,15 @@ get_stan_data <- function(input_count_data,
     log_phi_g_prior_sd = log_phi_g_prior_sd,
     ww_sampled_sites = ww_indices$ww_sampled_sites,
     lab_site_to_site_map = ww_indices$lab_site_to_site_map,
-    log_phi_mu = log_phi_mu,
-    log_phi_sd = log_phi_sd,
+    log_phi_mu_prior = log_phi_mu_prior,
+    log_phi_sd_prior = log_phi_sd_prior,
     l = l,
-    log_sigma_generalized_mu = log_sigma_generalized_mu,
-    log_sigma_generalized_sd = log_sigma_generalized_sd,
-    log_scaling_factor_mu = log_scaling_factor_mu,
-    log_scaling_factor_sd = log_scaling_factor_sd,
-    dist_matrix = dist_matrix
+    log_sigma_generalized_mu_prior = log_sigma_generalized_mu_prior,
+    log_sigma_generalized_sd_prior = log_sigma_generalized_sd_prior,
+    log_scaling_factor_mu_prior = log_scaling_factor_mu_prior,
+    log_scaling_factor_sd_prior = log_scaling_factor_sd_prior,
+    dist_matrix = dist_matrix,
+    ind_corr_func = ind_corr_func
   )
 
   return(data_renewal)

@@ -57,8 +57,8 @@
 #' defaulted to presets for exponential decay correlation function
 #' @param phi_rt Coefficient for AR(1) temporal correlation on subpopulation
 #' deviations
-#' @param sigma_generalized Parameter for construction of covariance
-#' matrix of spatial epsilon.  Generalized variance.
+#' @param sigma_generalized  Generalized variance of the spatial epsilon
+#' (determinant of the covariance matrix).
 #' @param scaling_factor Scaling factor for aux site
 #' @param aux_site_bool Boolean to use the aux site framework with
 #' scaling factor.
@@ -100,7 +100,7 @@
 #'         )
 #'       )
 #'     ),
-#'     phi = 50,
+#'     phi = 0.2,
 #'     l = 1
 #'   ),
 #'   phi_rt = 0.6,
@@ -160,7 +160,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                           diag = TRUE,
                                           upper = TRUE
                                         )
-                                      ) / 114.62984,
+                                      ),
                                       phi = 0.2,
                                       l = 1
                                     ),
@@ -357,6 +357,11 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   }
 
   # Using stan exposed functions for forward spatial Rt process.
+  if ("dist_matrix" %in% names(corr_fun_params)) {
+    corr_fun_params$dist_matrix <- dist_matrix_normalization(
+      corr_fun_params$dist_matrix
+    )
+  }
   sigma_matrix <- (sigma_generalized^(1 / n_sites)) * matrix_normalization(
     corr_function(corr_fun_params)
   )
@@ -378,7 +383,8 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     )
   }
 
-  log_r_site <- construct_spatial_rt(log_r_state_week,
+  log_r_site <- construct_spatial_rt(
+    log_state_rt = log_r_state_week,
     spatial_deviation_ar_coeff = phi_rt,
     spatial_deviation_noise_matrix
   )
@@ -389,12 +395,13 @@ generate_simulated_data <- function(r_in_weeks = # nolint
       mean = 0,
       sd = 1
     )
-    log_r_site_aux <- construct_aux_rt(log_r_state_week,
+    log_r_site_aux <- construct_aux_rt(
+      log_state_rt = log_r_state_week,
       state_deviation_ar_coeff = phi_rt,
-      scaling_factor,
-      sigma_generalized^(1 / n_sites),
-      state_deviation_noise_vec,
-      init_stat
+      scaling_factor = scaling_factor,
+      sigma_eps = sigma_generalized^(1 / n_sites),
+      z = state_deviation_noise_vec,
+      init_stat = init_stat
     )
     log_r_site <- rbind(
       log_r_site,
@@ -591,8 +598,8 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     ww_data = ww_data,
     hosp_data = hosp_data,
     hosp_data_eval = hosp_data_eval,
-    rt_site_data = r_site, # temp?
-    rt_global_data = rt # temp?
+    rt_site_data = r_site,
+    rt_global_data = rt
   )
 
   return(example_data)

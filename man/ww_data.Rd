@@ -3,7 +3,7 @@
 \docType{data}
 \name{ww_data}
 \alias{ww_data}
-\title{Example wastewater dataset with site correlations from correlation func.}
+\title{Example wastewater dataset with site correlations from exp. corr. func.}
 \format{
 \subsection{ww_data}{
 

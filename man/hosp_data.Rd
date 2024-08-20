@@ -3,7 +3,7 @@
 \docType{data}
 \name{hosp_data}
 \alias{hosp_data}
-\title{Example hospital admissions dataset using correlation function.}
+\title{Example hospital admissions data with site correlations from exp. corr. func.}
 \format{
 An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 90 rows and 3 columns.
 }

@@ -3,13 +3,13 @@ uot = 50
 
 [infection_process]
 # spatial params
-log_phi_mu = -1.609438 # log(0.2)
-log_phi_sd = 0.2
+log_phi_mu_prior = -1.609438 # log(0.2)
+log_phi_sd_prior = 0.2
 l = 1
-log_sigma_generalized_mu = -11.98293 # log(0.05^4)
-log_sigma_generalized_sd = 0.2
-log_scaling_factor_mu = 0.09531018 # log(1.1)
-log_scaling_factor_sd = 0.15
+log_sigma_generalized_mu_prior = -11.98293 # log(0.05^4)
+log_sigma_generalized_sd_prior = 0.2
+log_scaling_factor_mu_prior = 0.09531018 # log(1.1)
+log_scaling_factor_sd_prior = 0.15
 
 r_prior_mean = 1
 r_prior_sd = 1

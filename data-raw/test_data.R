@@ -45,7 +45,7 @@ dist_matrix <- as.matrix(
     diag = TRUE,
     upper = TRUE
   )
-) / 114.62984
+)
 
 # Assign infection feedback equal to the generation interval
 infection_feedback_pmf <- generation_interval

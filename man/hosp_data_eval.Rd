@@ -3,7 +3,7 @@
 \docType{data}
 \name{hosp_data_eval}
 \alias{hosp_data_eval}
-\title{Example hospital admissions dataset for evaluation using corr. func.}
+\title{Example hospital admissions dataset for evaluation using  exp. corr. func.}
 \format{
 An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 127 rows and 3 columns.
 }
