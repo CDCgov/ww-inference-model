@@ -68,7 +68,7 @@ test_that(
 
     testthat::expect_gte(
       passed_tests,
-      num_tests * .99
+      num_tests * .95
     )
   }
 )

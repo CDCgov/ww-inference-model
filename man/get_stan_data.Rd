@@ -14,7 +14,8 @@ get_stan_data(
   inf_to_count_delay,
   infection_feedback_pmf,
   params,
-  compute_likelihood = 1
+  compute_likelihood = 1,
+  dist_matrix
 )
 }
 \arguments{
@@ -47,6 +48,11 @@ delay of infection feedback}
 
 \item{compute_likelihood}{indicator variable telling stan whether or not to
 compute the likelihood, default = \code{1}}
+
+\item{dist_matrix}{Distance matrix, n_sites x n_sites, passed to a
+distance-based correlation function for epsilon. If NULL, use an independence
+correlation function (i.e. all sites' epsilon values are independent and
+identically distributed).}
 }
 \value{
 a list of named variables to pass to stan

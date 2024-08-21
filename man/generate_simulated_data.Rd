@@ -30,11 +30,11 @@ generate_simulated_data(
     "wwinference"),
   use_spatial_corr = TRUE,
   corr_function = exponential_decay_corr_func_r,
-  corr_fun_params = list(dist_matrix = as.matrix(dist(data.frame(x = c(85, 37, 48, 7), y
-    = c(12, 75, 81, 96), diag = TRUE, upper = TRUE))), phi = 25, l = 1),
+  corr_fun_params = list(dist_matrix = as.matrix(dist(data.frame(x = c(85, 37, 36, 7), y
+    = c(12, 75, 75, 96)), diag = TRUE, upper = TRUE)), phi = 0.2, l = 1),
   phi_rt = 0.6,
-  sigma_eps = sqrt(0.02),
-  scaling_factor = 0.01,
+  sigma_generalized = 0.05^4,
+  scaling_factor = 1.1,
   aux_site_bool = TRUE,
   init_stat = TRUE
 )
@@ -119,8 +119,8 @@ defaulted to presets for exponential decay correlation function}
 \item{phi_rt}{Coefficient for AR(1) temporal correlation on subpopulation
 deviations}
 
-\item{sigma_eps}{Parameter for construction of covariance matrix of spatial
-epsilon}
+\item{sigma_generalized}{Generalized variance of the spatial epsilon
+(determinant of the covariance matrix).}
 
 \item{scaling_factor}{Scaling factor for aux site}
 
@@ -131,7 +131,7 @@ scaling factor.}
 from the process's stationary distribution (\code{TRUE}) or from the process's
 conditional error distribution (\code{FALSE})? Note that the process only has
 a defined stationary distribution if \code{phi_rt} < 1.
-Default \code{FALSE}.}
+Default \code{TRUE}.}
 }
 \value{
 a list containing three dataframes. hosp_data is a dataframe
@@ -170,12 +170,12 @@ sim_data <- generate_simulated_data(
         )
       )
     ),
-    phi = 25,
+    phi = 0.2,
     l = 1
   ),
   phi_rt = 0.6,
-  sigma_eps = sqrt(0.02),
-  scaling_factor = 0.01,
+  sigma_generalized = 0.05^6,
+  scaling_factor = 1.1,
   aux_site_bool = TRUE,
   init_stat = TRUE
 )

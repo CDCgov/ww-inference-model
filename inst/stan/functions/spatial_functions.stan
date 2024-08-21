@@ -12,4 +12,5 @@ functions{
   #include state_deviation_noise_vec_aux_rng.stan
   #include aux_site_process_rng.stan
   #include matrix_normalization.stan
+  #include dist_matrix_normalization.stan
 }

@@ -6,6 +6,12 @@ functions {
 #include functions/infections.stan
 #include functions/observation_model.stan
 #include functions/utils.stan
+#include functions/construct_spatial_rt.stan
+#include functions/dist_matrix_normalization.stan
+#include functions/matrix_normalization.stan
+#include functions/independence_corr_func.stan
+#include functions/exponential_decay_corr_func.stan
+#include functions/construct_aux_rt.stan
 
 }
 
@@ -50,8 +56,6 @@ data {
   int<lower=0,upper=1> compute_likelihood; // 1= use data to compute likelihood
   int<lower=0,upper=1> include_ww; // 1= include wastewater data in likelihood calculation
   int<lower=0,upper=1> include_hosp; // 1 = fit to hosp, 0 = only fit wastewater model
-
-  // Priors
   vector[6] viral_shedding_pars;// tpeak, viral peak, shedding duration mean and sd
   real<lower=0> autoreg_rt_a;
   real<lower=0> autoreg_rt_b;
@@ -87,6 +91,16 @@ data {
   real<lower=0> log_phi_g_prior_sd;
   real inf_feedback_prior_logmean;
   real<lower=0> inf_feedback_prior_logsd;
+
+  real log_phi_mu_prior;
+  real log_phi_sd_prior;
+  real l;
+  real log_sigma_generalized_mu_prior;
+  real log_sigma_generalized_sd_prior;
+  real log_scaling_factor_mu_prior;
+  real log_scaling_factor_sd_prior;
+  matrix[n_subpops-1, n_subpops-1] dist_matrix;
+  int<lower=0, upper=1> ind_corr_func;
 }
 
 // The transformed data
@@ -106,6 +120,9 @@ transformed data {
   // reversed generation interval
   vector<lower=0,upper=1>[gt_max] gt_rev_pmf = reverse(generation_interval);
   vector<lower=0,upper=1>[if_l] infection_feedback_rev_pmf = reverse(infection_feedback_pmf);
+
+  // normalizing dist matrix using largest dist
+  matrix[n_subpops - 1, n_subpops - 1] norm_dist_matrix = dist_matrix_normalization(dist_matrix);
 }
 
 // The parameters accepted by the model.
@@ -117,7 +134,6 @@ parameters {
   real<lower=0> sigma_rt; // magnitude of site level variation from state level
   real<lower=0, upper=1> autoreg_rt_site;
   real<lower=0, upper=1> autoreg_p_hosp;
-  matrix[n_subpops, n_weeks] error_site; // matrix of subpopulations
   real<lower=0,upper=1> i0_over_n; // initial per capita
   // infection incidence
   vector[n_subpops] eta_i0; // z-score on logit scale of state
@@ -145,6 +161,14 @@ parameters {
   simplex[7] hosp_wday_effect; // day of week reporting effect, sums to 1
   real<lower=0> infection_feedback; // infection feedback
 
+  // Site spatial params--------------------------------------------------------
+  //matrix[n_subpops, n_subpops] non_norm_omega;
+  real log_sigma_generalized;
+  real log_phi;
+  real log_scaling_factor;
+  matrix[n_subpops-1,n_weeks] non_cent_spatial_dev_ns_mat;
+  vector[n_weeks] norm_vec_aux_site;
+  //----------------------------------------------------------------------------
 }
 //
 transformed parameters {
@@ -174,6 +198,19 @@ transformed parameters {
   // per capita infection incidence
   vector[n_subpops] growth_site;
 
+  // Site spatial trans params--------------------------------------------------
+  real phi = exp(log_phi);
+  real sigma_generalized = exp(log_sigma_generalized);
+  real scaling_factor = exp(log_scaling_factor);
+  matrix[n_subpops-1,n_subpops-1] non_norm_omega;
+  matrix[n_subpops-1,n_subpops-1] norm_omega;
+  matrix[n_subpops-1,n_subpops-1] sigma_mat;
+  matrix[n_subpops-1,n_weeks] spatial_dev_ns_mat;
+  matrix[n_subpops-1,n_weeks] log_r_site_t_in_weeks_matrix;
+  vector[n_weeks] log_r_aux_site_t_in_weeks;
+  matrix[n_subpops, n_weeks] combined_log_r_site_t_in_weeks;
+  vector[n_weeks] log_r_site_t_in_weeks_vector;
+  //----------------------------------------------------------------------------
 
   // State-leve R(t) AR + RW implementation:
   log_r_mu_t_in_weeks = diff_ar1(log_r_mu_intercept,
@@ -190,15 +227,44 @@ transformed parameters {
   // Site level disease dynamic estimates!
   i0_site_over_n = inv_logit(logit(i0_over_n) + eta_i0 * sigma_i0);
   growth_site = initial_growth + eta_growth * sigma_growth; // site level growth rate
+
+  // Site level spatial Rt------------------------------------------------------
+  if (ind_corr_func){
+    // If no dist matrix given, use n_sites + 1 = n_subpops were all ind.
+    non_norm_omega = independence_corr_func(n_subpops - 1);
+    norm_omega = non_norm_omega;
+  }
+  else {
+    non_norm_omega = exponential_decay_corr_func(norm_dist_matrix, phi, l);
+    norm_omega = matrix_normalization(non_norm_omega);
+  }
+  sigma_mat = pow(sigma_generalized, 1.0 / (n_subpops - 1)) * norm_omega;
+  for (i in 1:n_weeks) {
+    spatial_dev_ns_mat[,i] = cholesky_decompose(sigma_mat) * non_cent_spatial_dev_ns_mat[,i];
+  }
+  log_r_site_t_in_weeks_matrix = construct_spatial_rt(
+    log_r_mu_t_in_weeks,
+    autoreg_rt_site,
+    spatial_dev_ns_mat
+  );
+  //----------------------------------------------------------------------------
+  // AUX site Rt----------------------------------------------------------------
+  log_r_aux_site_t_in_weeks = construct_aux_rt(
+    log_r_mu_t_in_weeks,
+    autoreg_rt_site,
+    scaling_factor,
+    sigma_generalized,
+    norm_vec_aux_site,
+    0
+  );
+  //----------------------------------------------------------------------------
+  // Site Comb with AUX---------------------------------------------------------
+  combined_log_r_site_t_in_weeks = append_row(log_r_site_t_in_weeks_matrix, log_r_aux_site_t_in_weeks');
+  //----------------------------------------------------------------------------
   for (i in 1:n_subpops) {
-    // Let site-level R(t) vary around the hierarchical mean R(t)
-    // log(R(t)site) ~ log(R(t)state) + log(R(t)state-log(R(t)site)) + eta_site
-    log_r_site_t_in_weeks = ar1(log_r_mu_t_in_weeks,
-                                autoreg_rt_site, sigma_rt,
-                                to_vector(error_site[i]),
-                                1);
      //convert from weekly to daily
-     unadj_r_site_t = exp(to_row_vector(ind_m*(log_r_site_t_in_weeks)));
+     log_r_site_t_in_weeks_vector = to_vector(combined_log_r_site_t_in_weeks[i, :]);
+     unadj_r_site_t = exp(to_row_vector(ind_m*(log_r_site_t_in_weeks_vector)));
 
     {
       tuple(vector[num_elements(state_inf_per_capita)], vector[num_elements(unadj_r)]) output;
@@ -273,6 +339,14 @@ transformed parameters {
 // Prior and sampling distribution
 model {
   // priors
+    // for spatial--------------------------------------------------------------
+    to_vector(non_cent_spatial_dev_ns_mat) ~ std_normal();
+    norm_vec_aux_site ~ std_normal();
+    log_sigma_generalized ~ normal(log_sigma_generalized_mu_prior, log_sigma_generalized_sd_prior);
+    log_phi ~ normal(log_phi_mu_prior, log_phi_sd_prior);
+    log_scaling_factor ~ normal(log_scaling_factor_mu_prior, log_scaling_factor_sd_prior);
+    //--------------------------------------------------------------------------
+
   vector[7] effect_mean = rep_vector(wday_effect_prior_mean, 7);
   w ~ std_normal();
   eta_sd ~ normal(0, eta_sd_sd);
@@ -281,7 +355,6 @@ model {
   autoreg_rt ~ beta(autoreg_rt_a, autoreg_rt_b);
   autoreg_p_hosp ~ beta(autoreg_p_hosp_a, autoreg_p_hosp_b);
   log_r_mu_intercept ~ normal(r_logmean, r_logsd);
-  to_vector(error_site) ~ std_normal();
   sigma_rt ~ normal(0, sigma_rt_prior);
   i0_over_n ~ beta(i0_over_n_prior_a,
                    i0_over_n_prior_b);

@@ -36,6 +36,17 @@ forecast_horizon <- 28
 generation_interval <- wwinference::generation_interval
 inf_to_hosp <- wwinference::inf_to_hosp
 
+dist_matrix <- as.matrix(
+  dist(
+    data.frame(
+      x = c(85, 37, 36, 7),
+      y = c(12, 75, 75, 96)
+    ),
+    diag = TRUE,
+    upper = TRUE
+  )
+)
+
 # Assign infection feedback equal to the generation interval
 infection_feedback_pmf <- generation_interval
 model <- wwinference::compile_model()
@@ -74,7 +85,8 @@ toy_stan_data <- wwinference::get_stan_data(
   inf_to_count_delay = model_spec$inf_to_count_delay,
   infection_feedback_pmf = model_spec$infection_feedback_pmf,
   params = model_spec$params,
-  compute_likelihood = 1
+  compute_likelihood = 1,
+  dist_matrix = dist_matrix
 )
 
 
