@@ -69,7 +69,7 @@ data {
   real<lower=0> i0_over_n_prior_b;
   real sigma_i0_prior_mode;
   real<lower=0> sigma_i0_prior_sd;
-  real wday_effect_prior_mean;
+  vector<lower=0>[7] hosp_wday_effect_prior_alpha;
   real<lower=0> wday_effect_prior_sd;
   real initial_growth_prior_mean;
   real<lower=0> initial_growth_prior_sd;
@@ -296,7 +296,7 @@ model {
   sigma_ww_site_sd ~ normal(sigma_ww_site_prior_sd_mean, sigma_ww_site_prior_sd_sd);
   sigma_ww_site_raw ~ std_normal();
   log10_g ~ normal(log10_g_prior_mean, log10_g_prior_sd);
-  hosp_wday_effect ~ normal(effect_mean, wday_effect_prior_sd);
+  hosp_wday_effect ~ dirichlet(hosp_wday_effect_prior_alpha);
   p_hosp_mean ~ normal(logit(p_hosp_prior_mean), p_hosp_sd_logit); // logit scale
   p_hosp_w ~ std_normal();
   p_hosp_w_sd ~ normal(0, p_hosp_w_sd_sd);
