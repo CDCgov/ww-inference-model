@@ -144,7 +144,7 @@ function assumes that the original data contains the column `date`, and will
 return a dataframe with the column names needed to pass to the downstream model
 fitting functions.
 ```{r}
-hosp_data_preprocessed <- wwinference::preprocess_hosp_data(
+hosp_data_preprocessed <- wwinference::preprocess_count_data(
   hosp_data,
   count_col_name = "daily_hosp_admits",
   pop_size_col_name = "state_pop"
@@ -282,14 +282,15 @@ pre-compiled model(`model`) to `wwinference()` where they are combined and
 used to fit the model.
 
 
-```{r warning=FALSE, message=FALSE}
-fit <- wwinference::wwinference(
-  ww_data_to_fit,
-  hosp_data_preprocessed,
+<<<<<<< HEAD
+```{r fitting-model, warning=FALSE, message=FALSE}
+ww_fit <- wwinference::wwinference(
+  ww_data = ww_data_to_fit,
+  count_data = hosp_data_preprocessed,
+  forecast_date = forecast_date,
+  calibration_time = calibration_time,
+  forecast_horizon = forecast_horizon,
   model_spec = get_model_spec(
-    forecast_date = forecast_date,
-    calibration_time = calibration_time,
-    forecast_horizon = forecast_horizon,
     generation_interval = generation_interval,
     inf_to_count_delay = inf_to_hosp,
     infection_feedback_pmf = infection_feedback_pmf,
@@ -300,28 +301,54 @@ fit <- wwinference::wwinference(
 )
 ```
 
-# The `wwinference` object
-The `wwinference()` function returns a `wwinference` object which includes
-a `draws_df`, the underlying `CmdStan` object (`raw_fit_obj`), and three
-"spines" that map the stan indices to the data which include:a
-`date_time_spine`, `lab_site_spine`, and `subpop_spine`. The `draws_df` is
-intended to provide an easy to work with tibble of posterior draws of
-the estimated, nowcasted, and forecasted expected observed hospital admissions
-and wastewater concentrations, as well as the latent variables of interest
-including the site-level R(t) estimates and the state-level R(t) estimate.
-```{r}
-head(fit)
-```
-# Summarizing and plotting the model fit
-The `draws_df` object is intended to be used to easily plot relevant model
-outputs against data. This can be useful to get a sense of if you're model is
-fitting the data well, and if the nowcasted/forecast quantities look reasonable.
+# The `wwinference_fit` object
+The `wwinference()` function returns a `wwinference_fit` object which includes
+the underlying and the underlying
+[`CmdStanModel` object](https://mc-stan.org/cmdstanr/reference/CmdStanModel.html)
+ (`fit`), a list of the two sources of input
+data (`input_data`), the list of the arguments passed to stan
+(`stan_data_args`), and the list of the MCMC options (`mcmc_options`) passed to
+stan. We show how to generate downstream elements from a `wwinference_fit`
+object.
 
-We can create the plots using the fitting wrapper functions (figures can
-also created directly using the `draws_df`)
+## Extracting the posterior predictions
+
+Working with the posterior predictions alongside the input data can be useful
+to check that your model is fitting the data well and that the
+nowcasted/forecast quantities look reasonable.
+
+We will generate a dataframe that we'll call `draws_df`, that contains
+the posterior draws of the estimated, nowcasted, and forecasted expected
+observed hospital admissions and wastewater concentrations, as well as the
+latent variables of interest including the site-level R(t) estimates and the
+state-level R(t) estimate.
+
+We can generate this directly on the output of `wwinference()` using:
+```{r extracting-draws}
+draws_df <- get_draws_df(ww_fit)
+```
+
+### Using explicit passed arguments rather than S3 methods
+
+Rather than using S3 methods supplied for `wwinference()`, the elements in the
+`wwinference_fit` object can also be used directly to create this dataframe.
+This is demonstrated below:
+```{r extracting-draws-explicit}
+draws_df_explicit <- get_draws_df(
+  x = ww_fit$input_data$input_ww_data,
+  count_data = ww_fit$input_data$input_count_data,
+  stan_args = ww_fit$stan_args,
+  fit_obj = ww_fit$fit
+)
+```
+
+## Plotting the outputs
+
+We can create plots of the outputs using `draws_df` and
+the fitting wrapper functions.
 
 ```{r generating-figures,  out.width='100%'}
-draws_df <- get_draws_df(fit)
+draws_df <- get_draws_df(ww_fit)
 
 plot_hosp <- get_plot_forecasted_counts(
   draws = draws_df,
@@ -342,23 +369,55 @@ plot_subpop_rt
 ```
 
 ## Diagnostics
-While the `wwinference()` function will print out messaging if any of the
-diagnostics flags fail, we recommend running diagnostics as a separate
-post-processing step on the `CmdStan` fit object. Start by running function
-`get_model_diagnostic_flags()` on the stan fit object. Then, we recommend
-looking at the `raw_fit_obj$summary()` which will show the diagnostic
-metrics for each parameter in the model and can help identify which parameters
-are likely to be driving any convergence issues. We have set default thresholds
-on the model diagnostics for production-level runs, we recommend adjusting
-as needed. For further information on troubleshooting the model diagnostics,
+We strongly recommend running diagnostics as a post-processing step on the
+model outputs.
+
+This can be done by passing the output of
+`wwinference()` into the `get_model_diagnostic_flags()`, `diagnostic_summary()`,
+and `parameter_diagnostics()` functions.
+
+`get_model_diagnostic_flags()` will print out a table of any flags, if any of
+these are TRUE, it will print out a warning.
+We have set default thresholds on the model diagnostics for production-level
+runs, we recommend adjusting as needed (see below)
+
+To further troubleshoot, you can look at
+the diagnostic summary and the diagnostics of the individual parameters using
+the functions `diagnostic_summary()` and `parameter_diagnostics()`
+
+```{r diagnostics-using-S3-methods}
+convergence_flag_df <- get_model_diagnostic_flags(ww_fit)
+print(convergence_flag_df)
+diagnostic_summary(ww_fit)
+parameter_diagnostics(ww_fit)
+```
+This can also be done explicitly by parsing the elements of the
+`wwinference_fit` object into the custom functions we built / directly calling
+`CmdStan`'s built in functions.
+
+Start by passing the stan fit object(`ww_fit$fit$result`) into the
+`get_model_diagnostic_flags()` and adjusting the thresholds if desired.
+
+Then, we recommend looking at the diagnostics summary provided by `CmdStan`,
+which we had wrapped into the `diagnostic_summary()` call above. Lastly,
+we recommend looking at the individual model parameters provided by `CmdStan`
+to identify which components of the model might be driving the convergence
+issues.
+
+For further information on troubleshooting the model diagnostics,
 we recommend the (bayesplot tutorial)[https://mc-stan.org/bayesplot/articles/visual-mcmc-diagnostics.html].
-```{r}
-convergence_flag_df <- wwinference::get_model_diagnostic_flags(
-  stan_fit_obj =
-    fit$fit$result
+```{r diagnostics-explicit}
+convergence_flag_df <- get_model_diagnostic_flags(
+  x = ww_fit$fit$result,
+  ebmfi_tolerance = 0.2,
+  divergences_tolerance = 0.01,
+  frac_high_rhat_tolerance = 0.05,
+  rhat_tolerance = 1.05,
+  max_tree_depth_tol = 0.01
 )
-parameter_diagnostics <- fit$fit$result$summary()
-diagnostic_summary <- fit$fit$result$diagnostic_summary(quiet = TRUE)
+# Get the tables using the CmdStan functions directly
+parameter_diagnostics <- ww_fit$fit$result$summary()
+diagnostic_summary <- ww_fit$fit$result$diagnostic_summary(quiet = TRUE)
 head(convergence_flag_df)
 ```
 
@@ -369,14 +428,14 @@ has on the forecast, or as a part of a pipeline where one might choose to
 rely on the admissions only model if their are covergence or known data issues
 with the wastewater data.
 
-```{r warning=FALSE, message=FALSE}
+```{r fit-hosp-only, warning=FALSE, message=FALSE}
 fit_hosp_only <- wwinference::wwinference(
-  ww_data_to_fit,
-  hosp_data_preprocessed,
+  ww_data = ww_data_to_fit,
+  count_data = hosp_data_preprocessed,
+  forecast_date = forecast_date,
+  calibration_time = calibration_time,
+  forecast_horizon = forecast_horizon,
   model_spec = get_model_spec(
-    forecast_date = forecast_date,
-    calibration_time = calibration_time,
-    forecast_horizon = forecast_horizon,
     generation_interval = generation_interval,
     inf_to_count_delay = inf_to_hosp,
     infection_feedback_pmf = infection_feedback_pmf,
@@ -388,7 +447,7 @@ fit_hosp_only <- wwinference::wwinference(
 )
 ```
 
-```{r,  out.width='100%'}
+```{r,  plot-hosp-only, out.width='100%'}
 draws_df_hosp_only <- get_draws_df(fit_hosp_only)
 plot_hosp_hosp_only <- get_plot_forecasted_counts(
   draws = draws_df_hosp_only,

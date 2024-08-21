@@ -5,9 +5,6 @@
 \title{Get model specifications}
 \usage{
 get_model_spec(
-  forecast_date,
-  calibration_time = 90,
-  forecast_horizon = 28,
   generation_interval = wwinference::generation_interval,
   inf_to_count_delay = wwinference::inf_to_hosp,
   infection_feedback_pmf = wwinference::generation_interval,
@@ -17,15 +14,6 @@ get_model_spec(
 )
 }
 \arguments{
-\item{forecast_date}{a character string in ISO8601 format (YYYY-MM-DD)
-indicating the date that the forecast is to be made. Default is}
-
-\item{calibration_time}{integer indicating the number of days to calibrate
-the model for, default is \code{90}}
-
-\item{forecast_horizon}{integer indicating the number of days, including the
-forecast date, to produce forecasts for, default is \code{28}}
-
 \item{generation_interval}{vector of a simplex (must sum to 1) describing
 the daily probability of onwards transmission, default is package data
 provided for the COVID-19 generation interval post-Omicron}
@@ -57,5 +45,5 @@ post-omicron COVID-19 model with joint inference of hospital admissions
 and data on wastewater viral concentrations
 }
 \examples{
-model_spec_list <- get_model_spec(forecast_date = "2023-12-06")
+model_spec_list <- get_model_spec()
 }

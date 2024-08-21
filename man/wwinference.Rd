@@ -8,10 +8,13 @@ data}
 wwinference(
   ww_data,
   count_data,
-  model_spec = wwinference::get_model_spec(forecast_date = "2023-12-06"),
-  mcmc_options = wwinference::get_mcmc_options(),
+  forecast_date = NULL,
+  calibration_time = 90,
+  forecast_horizon = 28,
+  model_spec = get_model_spec(),
+  mcmc_options = get_mcmc_options(),
   generate_initial_values = TRUE,
-  compiled_model = wwinference::compile_model()
+  compiled_model = compile_model()
 )
 }
 \arguments{
@@ -24,6 +27,15 @@ the following columns: \code{date}, \code{site}, \code{lab}, \code{genome_copies
 state) daily count data, pertaining to the number of events that are being
 counted on that day, e.g. number of daily cases or daily hospital admissions.
 Must contain the following columns: \code{date}, \code{count} , \code{total_pop}}
+
+\item{forecast_date}{a character string in ISO8601 format (YYYY-MM-DD)
+indicating the date that the forecast is to be made. Default is NULL}
+
+\item{calibration_time}{integer indicating the number of days to calibrate
+the model for, default is \code{90}}
+
+\item{forecast_horizon}{integer indicating the number of days, including the
+forecast date, to produce forecasts for, default is \code{28}}
 
 \item{model_spec}{The model specification parameters as defined using
 \code{get_model_spec()}. The default here pertains to the \code{forecast_date} in the
@@ -43,22 +55,18 @@ function}
 \code{compile_model()}}
 }
 \value{
-A nested list of the following items, intended to allow the user to
-quickly and easily plot results from their inference, while also being able
-to have the full user functionality of running the model themselves in stan
-by providing the raw model object and diagnostics. If the model runs, this
+An object of the \code{ww_inference_fit} class containing the following
+items that are intended to be passed to downstream functions to do things
+like extract posterior draws, get diangostic behavior, and plot results
+(for example). If the model runs, this
 function will return:
-\code{draws_df}: A tibble containing the full set of posterior draws of the
-estimated, nowcasted, and forecasted: counts, site-level wastewater
-concentrations, "global"(e.g. state) R(t) estimate, and the  "local" (site +
-the one auxiliary subpopulation) R(t) estimates. In the instance where there
-are observations, the data will be joined to each draw of the predicted
-observation to facilitate plotting.
-\code{raw_fit_obj}: The CmdStan object that is returned from the call to
+\code{fit}: The CmdStan object that is returned from the call to
 \code{cmdstanr::sample()}. Can be used to access draws, summary, diagnostics, etc.
-\code{date_time_spine}: Mapping from time in stan to dates
-\code{lab_site_spine}: Mapping from lab_site_index in stan to lab and site
-\code{subpop_spine}: Mapping from site index in stan to site
+\code{input_data}: a list containing the input \code{ww_data} and the input
+\code{count_data} used in the model.
+\code{stan_data_args}: a list containing the inputs passed directly to the
+stan model
+\code{mcmc_options}: a list of the MCMC specifications passed to stan
 
 If the model fails to run, a list containing the follow will be returned:
 \code{error}: the error message provided from stan, indicating why the model
@@ -78,4 +86,75 @@ interval and delay from infection to the event that is counted. See the
 getting started vignette for an example model specifications fitting
 COVID-19 hospital admissions from a hypothetical state and wasteawter
 concentration data from multiple sites within that state.
+}
+\examples{
+\dontrun{
+ww_data <- tibble::tibble(
+  date = rep(seq(
+    from = lubridate::ymd("2023-08-01"),
+    to = lubridate::ymd("2023-11-01"),
+    by = "weeks"
+  ), 2),
+  site = c(rep(1, 14), rep(2, 14)),
+  lab = c(rep(1, 28)),
+  conc = abs(rnorm(28, mean = 500, sd = 50)),
+  lod = c(rep(20, 14), rep(15, 14)),
+  site_pop = c(rep(2e5, 14), rep(4e5, 14))
+)
+
+ww_data_preprocessed <- preprocess_ww_data(ww_data,
+  conc_col_name = "conc",
+  lod_col_name = "lod"
+)
+input_ww_data <- indicate_ww_exclusions(ww_data_preprocessed)
+
+hosp_data <- tibble::tibble(
+  date = seq(
+    from = lubridate::ymd("2023-07-01"),
+    to = lubridate::ymd("2023-10-30"),
+    by = "days"
+  ),
+  daily_admits = sample(5:70, 122, replace = TRUE),
+  state_pop = rep(1e6, 122)
+)
+
+input_count_data <- preprocess_count_data(
+  hosp_data,
+  "daily_admits",
+  "state_pop"
+)
+
+generation_interval <- to_simplex(c(0.01, 0.2, 0.3, 0.2, 0.1, 0.1, 0.01))
+inf_to_count_delay <- to_simplex(c(
+  rep(0.01, 12), rep(0.2, 4),
+  rep(0.01, 10)
+))
+infection_feedback_pmf <- generation_interval
+
+params <- get_params(
+  system.file("extdata", "example_params.toml",
+    package = "wwinference"
+  )
+)
+forecast_date <- "2023-11-06"
+calibration_time <- 90
+forecast_horizon <- 28
+include_ww <- 1
+ww_fit <- wwinference(input_ww_data,
+  input_count_data,
+  model_spec = get_model_spec(
+    forecast_date = forecast_date,
+    calibration_time = calibration_time,
+    forecast_horizon = forecast_horizon,
+    generation_interval = generation_interval,
+    inf_to_count_delay = inf_to_coutn_delay,
+    infection_feedback_pmf = infection_feedback_pmf,
+    params = params
+  ),
+  mcmc_options = get_mcmc_options(
+    iter_warmup = 250,
+    iter_sampling = 250,
+    n_chains = 2
+  )
+)}
 }

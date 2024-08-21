@@ -5,23 +5,21 @@
 #' and the 3 relevant mappings from stan indices to the real data, in order
 #' to generate a dataframe containing the posterior draws of the counts (e.g.
 #' hospital admissions), the wastewater concentration values, the "global" R(t),
-#' and the "local" R(t) estimates + the critical metadata in the data
+#' and the "local" R(t) estimates + the critical metadata in the data.
+#' This funtion has a default method that takes the two sets of input data,
+#' the last of stan arguments, and the CmdStan fitting object, as well as an S3
+#' method for objects of class 'wwinference_fit'
 #'
 #'
-#' @param ww_data A dataframe of the preprocessed wastewater concentration data
-#' used to fit the model
+#' @param x Either a dataframe of wastewater observations, or an object of
+#' class wwinference_fit
 #' @param count_data A dataframe of the preprocessed daily count data (e.g.
 #' hospital admissions) from the "global" population
+#' @param stan_args A list containing all the data passed to stan for fitting
+#' the model
 #' @param fit_obj a CmdStan object that is the output of fitting the model to
-#' the `ww_data` and `count_data`
-#' @param date_time_spine A tibble mapping the time index in stan (observed +
-#' nowcast + forecast) to real dates
-#' @param lab_site_spine A tibble mapping the site-lab index in stan to the
-#' corresponding site, lab, and site population
-#' @param subpop_spine A tibble mapping the site index in stan to the
-#' corresponding subpopulation (either a site or the auxiliary site we add to
-#' represent the rest of the population)
-#'
+#' `x` and `count_data`
+#' @param ... additional arguments
 #' @return  A tibble containing the full set of posterior draws of the
 #' estimated, nowcasted, and forecasted: counts, site-level wastewater
 #' concentrations, "global"(e.g. state) R(t) estimate, and the  "local" (site +
@@ -29,31 +27,60 @@
 #' are observations, the data will be joined to each draw of the predicted
 #' observation to facilitate plotting.
 #' @export
-get_draws_df <- function(ww_data, ...) UseMethod("get_draws_df")
+get_draws_df <- function(x, ...) {
+  UseMethod("get_draws_df")
+}
 
-#' @export
+#' S3 method for extracting posterior draws alongside data for a
+#' wwinference_fit object
+#'
+#' This method overloads the generic get_draws_df function specifically
+#' for objects of type 'wwinference_fit'.
+#'
 #' @rdname get_draws_df
-get_draws_df.wwinference_fit <- function(ww_data, ...) {
+#' @export
+get_draws_df.wwinference_fit <- function(x, ...) {
   get_draws_df.default(
-    ww_data = ww_data$ww_data,
-    count_data = ww_data$count_data,
-    fit_obj = ww_data$fit,
-    date_time_spine = ww_data$date_time_spine,
-    lab_site_spine = ww_data$lab_site_spine,
-    subpop_spine = ww_data$subpop_spine
+    x = x$input_data$input_ww_data,
+    count_data = x$input_data$input_count_data,
+    stan_args = x$stan_args,
+    fit_obj = x$fit
   )
 }
 
-#' @export
 #' @rdname get_draws_df
-get_draws_df.default <- function(ww_data,
+#' @export
+get_draws_df.default <- function(x,
                                  count_data,
+                                 stan_args,
                                  fit_obj,
-                                 date_time_spine,
-                                 lab_site_spine,
-                                 subpop_spine,
                                  ...) {
   draws <- fit_obj$result$draws()
+
+  # Get the necessary mappings needed to join draws to data
+  date_time_spine <- tibble::tibble(
+    date = seq(
+      from = min(count_data$date),
+      to = min(count_data$date) + stan_args$ot + stan_args$ht,
+      by = "days"
+    )
+  ) |>
+    dplyr::mutate(t = row_number())
+  # Lab-site index to corresponding lab, site, and site population size
+  lab_site_spine <- x |>
+    dplyr::distinct(site, lab, lab_site_index, site_pop)
+  # Site index to corresponding site and subpopulation size
+  subpop_spine <- x |>
+    dplyr::distinct(site, site_index, site_pop) |>
+    dplyr::mutate(site = as.factor(site)) |>
+    dplyr::bind_rows(tibble::tibble(
+      site = "remainder of pop",
+      site_index = max(x$site_index) + 1,
+      site_pop = stan_args$subpop_size[
+        length(unique(stan_args$subpop_size))
+      ]
+    ))
+
 
   count_draws <- draws |>
     tidybayes::spread_draws(pred_hosp[t]) |>
@@ -64,7 +91,11 @@ get_draws_df.default <- function(ww_data,
     ) |>
     dplyr::select(name, t, pred_value, draw) |>
     dplyr::left_join(date_time_spine, by = "t") |>
-    dplyr::left_join(count_data, by = "date") |>
+    dplyr::left_join(
+      count_data |>
+        dplyr::select(-t),
+      by = "date"
+    ) |>
     dplyr::ungroup() |>
     dplyr::rename(observed_value = count) |>
     dplyr::mutate(
@@ -92,10 +123,14 @@ get_draws_df.default <- function(ww_data,
     dplyr::select(name, lab_site_index, t, pred_value, draw) |>
     dplyr::left_join(date_time_spine, by = "t") |>
     dplyr::left_join(lab_site_spine, by = "lab_site_index") |>
-    dplyr::left_join(ww_data, by = c(
-      "lab_site_index", "date",
-      "lab", "site", "site_pop"
-    )) |>
+    dplyr::left_join(
+      x |>
+        dplyr::select(-t),
+      by = c(
+        "lab_site_index", "date",
+        "lab", "site", "site_pop"
+      )
+    ) |>
     dplyr::ungroup() |>
     dplyr::mutate(observed_value = genome_copies_per_ml) |>
     dplyr::mutate(
@@ -115,7 +150,11 @@ get_draws_df.default <- function(ww_data,
     ) |>
     dplyr::select(name, t, pred_value, draw) |>
     dplyr::left_join(date_time_spine, by = "t") |>
-    dplyr::left_join(count_data, by = "date") |>
+    dplyr::left_join(
+      count_data |>
+        dplyr::select(-t),
+      by = "date"
+    ) |>
     dplyr::ungroup() |>
     dplyr::rename(observed_value = count) |>
     dplyr::mutate(

@@ -5,14 +5,14 @@
 \title{Validate user-provided count data}
 \usage{
 validate_count_data(
-  hosp_data,
+  count_data,
   count_col_name,
   pop_size_col_name,
   call = rlang::caller_env()
 )
 }
 \arguments{
-\item{hosp_data}{tibble containing the input count data}
+\item{count_data}{tibble containing the input count data}
 
 \item{count_col_name}{string indicating the name of the column containing
 the count data}
