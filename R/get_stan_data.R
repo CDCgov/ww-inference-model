@@ -178,7 +178,7 @@ get_stan_data <- function(input_count_data,
 
   # If dist_matrix null use independence correlation and update flag
   if (is.null(dist_matrix)) {
-    ind_corr_func <- 1
+    ind_corr_func <- 1L
     # This dist_matrix will not be used, only needed for stan data specs.
     dist_matrix <- matrix(
       0,
