@@ -232,7 +232,6 @@ wwinference <- function(ww_data,
     )
     message(fit$error[[1]])
   } else {
-
     convergence_flag_df <- get_model_diagnostic_flags(fit$result)
 
     out <- list(
