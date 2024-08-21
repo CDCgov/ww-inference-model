@@ -272,17 +272,17 @@ summary.wwinference_fit <- function(object, ...) {
 
 #' Model fitting function
 #' @param compiled_model The compiled model object
-#' @param standata The stan data object
+#' @param stan_args The stan data object
 #' @param mcmc_options The MCMC specifications
 #' @param init_lists A list of initial values for the sampler
 #' @return The fit object from the model
 #' @noRd
 fit_model <- function(compiled_model,
-                      stan_data,
+                      stan_args,
                       mcmc_options,
                       init_lists) {
   compiled_model$sample(
-    data = stan_data,
+    data = stan_args,
     init = init_lists,
     seed = mcmc_options$seed,
     iter_sampling = mcmc_options$iter_sampling,
