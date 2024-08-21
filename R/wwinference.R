@@ -1,33 +1,3 @@
-#' Fit a Stan model using the specified arguments and options
-#'
-#' This function fits a compiled Stan model using the provided arguments and
-#' options.
-#'
-#' @param compiled_model The compiled Stan model object
-#' @param stan_args A list of data arguments to be passed to the Stan model
-#' @param mcmc_options A list of MCMC options for sampling
-#' @param init_lists A list of initial values for the model parameters
-#'
-#' @return The fitted Stan model object
-#' @noRd
-fit_model <- function(compiled_model,
-                      stan_args,
-                      mcmc_options,
-                      init_lists) {
-  fit <- compiled_model$sample(
-    data = stan_args,
-    init = init_lists,
-    seed = mcmc_options$seed,
-    iter_sampling = mcmc_options$iter_sampling,
-    iter_warmup = mcmc_options$iter_warmup,
-    max_treedepth = mcmc_options$max_treedepth,
-    chains = mcmc_options$n_chains,
-    parallel_chains = mcmc_options$n_chains
-  )
-
-  return(fit)
-}
-
 #' @title Joint inference of count data (e.g. cases/admissions) and wastewater
 #' data
 #'
