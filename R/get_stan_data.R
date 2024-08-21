@@ -186,7 +186,7 @@ get_stan_data <- function(input_count_data,
       ncol = subpop_data$n_subpops - 1
     )
   } else {
-    ind_corr_func <- 0
+    ind_corr_func <- 0L
   }
 
   data_renewal <- list(
