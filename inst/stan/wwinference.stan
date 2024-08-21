@@ -100,7 +100,7 @@ data {
   real log_scaling_factor_mu_prior;
   real log_scaling_factor_sd_prior;
   matrix[n_subpops-1, n_subpops-1] dist_matrix;
-  real ind_corr_func;
+  int<lower=0, upper=1> ind_corr_func;
 }
 
 // The transformed data
@@ -207,7 +207,7 @@ transformed parameters {
   matrix[n_subpops-1,n_subpops-1] sigma_mat;
   matrix[n_subpops-1,n_weeks] spatial_dev_ns_mat;
   matrix[n_subpops-1,n_weeks] log_r_site_t_in_weeks_matrix;
-  vector[n_weeks] log_r_auz_site_t_in_weeks;
+  vector[n_weeks] log_r_aux_site_t_in_weeks;
   matrix[n_subpops, n_weeks] combined_log_r_site_t_in_weeks;
   vector[n_weeks] log_r_site_t_in_weeks_vector;
   //----------------------------------------------------------------------------
@@ -229,14 +229,15 @@ transformed parameters {
   growth_site = initial_growth + eta_growth * sigma_growth; // site level growth rate
 
   // Site level spatial Rt------------------------------------------------------
-  if (ind_corr_func == 1){
+  if (ind_corr_func){
     // If no dist matrix given, use n_sites + 1 = n_subpops were all ind.
     non_norm_omega = independence_corr_func(n_subpops - 1);
+    norm_omega = non_norm_omega;
   }
   else {
     non_norm_omega = exponential_decay_corr_func(norm_dist_matrix, phi, l);
+    norm_omega = matrix_normalization(non_norm_omega);
   }
-  norm_omega = matrix_normalization(non_norm_omega);
   sigma_mat = pow(sigma_generalized, 1.0 / (n_subpops - 1)) * norm_omega;
   for (i in 1:n_weeks) {
     spatial_dev_ns_mat[,i] = cholesky_decompose(sigma_mat) * non_cent_spatial_dev_ns_mat[,i];
@@ -248,7 +249,7 @@ transformed parameters {
   );
   //----------------------------------------------------------------------------
   // AUX site Rt----------------------------------------------------------------
-  log_r_auz_site_t_in_weeks = construct_aux_rt(
+  log_r_aux_site_t_in_weeks = construct_aux_rt(
     log_r_mu_t_in_weeks,
     autoreg_rt_site,
     scaling_factor,
@@ -258,15 +259,9 @@ transformed parameters {
   );
   //----------------------------------------------------------------------------
   // Site Comb with AUX---------------------------------------------------------
-  combined_log_r_site_t_in_weeks = append_row(log_r_site_t_in_weeks_matrix, log_r_auz_site_t_in_weeks');
+  combined_log_r_site_t_in_weeks = append_row(log_r_site_t_in_weeks_matrix, log_r_aux_site_t_in_weeks');
   //----------------------------------------------------------------------------
   for (i in 1:n_subpops) {
-    // Let site-level R(t) vary around the hierarchical mean R(t)
-    // log(R(t)site) ~ log(R(t)state) + log(R(t)state-log(R(t)site)) + eta_site
-    //log_r_site_t_in_weeks = ar1(log_r_mu_t_in_weeks,
-    //                            autoreg_rt_site, sigma_rt,
-    //                            to_vector(error_site[i]),
-    //                            1);
      //convert from weekly to daily
      log_r_site_t_in_weeks_vector = to_vector(combined_log_r_site_t_in_weeks[i, :]);
      unadj_r_site_t = exp(to_row_vector(ind_m*(log_r_site_t_in_weeks_vector)));
@@ -360,7 +355,6 @@ model {
   autoreg_rt ~ beta(autoreg_rt_a, autoreg_rt_b);
   autoreg_p_hosp ~ beta(autoreg_p_hosp_a, autoreg_p_hosp_b);
   log_r_mu_intercept ~ normal(r_logmean, r_logsd);
-  //to_vector(error_site) ~ std_normal();
   sigma_rt ~ normal(0, sigma_rt_prior);
   i0_over_n ~ beta(i0_over_n_prior_a,
                    i0_over_n_prior_b);

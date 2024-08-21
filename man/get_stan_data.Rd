@@ -49,9 +49,10 @@ delay of infection feedback}
 \item{compute_likelihood}{indicator variable telling stan whether or not to
 compute the likelihood, default = \code{1}}
 
-\item{dist_matrix}{Distance matrix, n_sites x n_sites, for spatial
-correlation in distance correlation function.  NULL currently implies
-ind. corr. func.}
+\item{dist_matrix}{Distance matrix, n_sites x n_sites, passed to a
+distance-based correlation function for epsilon. If NULL, use an independence
+correlation function (i.e. all sites' epsilon values are independent and
+identically distributed).}
 }
 \value{
 a list of named variables to pass to stan

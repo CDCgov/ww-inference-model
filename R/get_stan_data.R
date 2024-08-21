@@ -20,9 +20,10 @@
 #' @param params a dataframe of parameter names and numeric values
 #' @param compute_likelihood indicator variable telling stan whether or not to
 #' compute the likelihood, default = `1`
-#' @param dist_matrix Distance matrix, n_sites x n_sites, for spatial
-#' correlation in distance correlation function.  NULL currently implies
-#' ind. corr. func.
+#' @param dist_matrix Distance matrix, n_sites x n_sites, passed to a
+#' distance-based correlation function for epsilon. If NULL, use an independence
+#' correlation function (i.e. all sites' epsilon values are independent and
+#' identically distributed).
 #'
 #' @return a list of named variables to pass to stan
 #' @export
