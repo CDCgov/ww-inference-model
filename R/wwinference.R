@@ -194,6 +194,26 @@ wwinference <- function(ww_data,
     }
   }
 
+
+
+  fit_model <- function(compiled_model,
+                        stan_args,
+                        mcmc_options,
+                        init_lists) {
+    fit <- compiled_model$sample(
+      data = stan_args,
+      init = init_lists,
+      seed = mcmc_options$seed,
+      iter_sampling = mcmc_options$iter_sampling,
+      iter_warmup = mcmc_options$iter_warmup,
+      max_treedepth = mcmc_options$max_treedepth,
+      chains = mcmc_options$n_chains,
+      parallel_chains = mcmc_options$n_chains
+    )
+
+    return(fit)
+  }
+
   # This returns the cmdstan object if the model runs, and result = NULL if
   # the model errors
   safe_fit_model <- purrr::safely(fit_model)
@@ -212,6 +232,7 @@ wwinference <- function(ww_data,
     )
     message(fit$error[[1]])
   } else {
+
     convergence_flag_df <- get_model_diagnostic_flags(fit$result)
 
     out <- list(
