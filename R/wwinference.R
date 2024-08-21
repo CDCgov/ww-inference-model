@@ -1,3 +1,33 @@
+#' Fit a Stan model using the specified arguments and options
+#'
+#' This function fits a compiled Stan model using the provided arguments and
+#' options.
+#'
+#' @param compiled_model The compiled Stan model object
+#' @param stan_args A list of data arguments to be passed to the Stan model
+#' @param mcmc_options A list of MCMC options for sampling
+#' @param init_lists A list of initial values for the model parameters
+#'
+#' @return The fitted Stan model object
+#' @noRd
+fit_model <- function(compiled_model,
+                      stan_args,
+                      mcmc_options,
+                      init_lists) {
+  fit <- compiled_model$sample(
+    data = stan_args,
+    init = init_lists,
+    seed = mcmc_options$seed,
+    iter_sampling = mcmc_options$iter_sampling,
+    iter_warmup = mcmc_options$iter_warmup,
+    max_treedepth = mcmc_options$max_treedepth,
+    chains = mcmc_options$n_chains,
+    parallel_chains = mcmc_options$n_chains
+  )
+
+  return(fit)
+}
+
 #' @title Joint inference of count data (e.g. cases/admissions) and wastewater
 #' data
 #'
@@ -61,6 +91,7 @@
 #' `check_diagnostics()` function on the `diagnostic_summary` as part of any
 #' pipeline to ensure model convergence.
 #' @name wwinference
+#' @family diagnostics
 #'
 #' @export
 #' @examples
@@ -135,6 +166,7 @@
 #' )
 #' }
 #' @rdname wwinference
+#' @aliases wwinference_fit
 wwinference <- function(ww_data,
                         count_data,
                         forecast_date = NULL,
@@ -194,35 +226,15 @@ wwinference <- function(ww_data,
     }
   }
 
-
-
-  fit_model <- function(compiled_model,
-                        stan_args,
-                        mcmc_options,
-                        init_lists) {
-    fit <- compiled_model$sample(
-      data = stan_args,
-      init = init_lists,
-      seed = mcmc_options$seed,
-      iter_sampling = mcmc_options$iter_sampling,
-      iter_warmup = mcmc_options$iter_warmup,
-      max_treedepth = mcmc_options$max_treedepth,
-      chains = mcmc_options$n_chains,
-      parallel_chains = mcmc_options$n_chains
-    )
-
-    return(fit)
-  }
-
   # This returns the cmdstan object if the model runs, and result = NULL if
   # the model errors
   safe_fit_model <- purrr::safely(fit_model)
 
   fit <- safe_fit_model(
-    compiled_model,
-    stan_args,
-    mcmc_options,
-    init_lists
+    compiled_model = compiled_model,
+    stan_args = stan_args,
+    mcmc_options = mcmc_options,
+    init_lists = init_lists
   )
 
   if (!is.null(fit$error)) { # If the model errors, return a list with the
@@ -253,24 +265,38 @@ wwinference <- function(ww_data,
 }
 
 
-#' @title Printing method for object of class `wwinference_fit`
-#'
-#' @description
-#' Prints the labeled elements of the `wwinference_fit` object
-#'
-#' @param x Object of class `wwinference.fit`
-#'
-#' @param ... Additional parameters
-#' @return NULL
-#'
+#' @param x,object Object of class `wwinference_fit`
+#' @param ... Additional parameters passed to the corresponding method
 #' @export
+#' @rdname wwinference
+#' @return
+#' - The print method prints out information about the model and
+#' returns the object invisibly.
 print.wwinference_fit <- function(x, ...) {
   cat("wwinference_fit object\n")
-  cat("Model fit object: ", x$fit, "\n")
-  cat("Input data: ", x$input_data, "\n")
-  cat("Stan arguments: ", x$stan_args, "\n")
-  cat("MCMC options: ", x$mcmc_options, "\n")
+  cat("N of WW sites    :", x$stan_args$n_ww_sites, "\n")
+  cat("N of lab sites   :", x$stan_args$n_ww_lab_sites, "\n")
+  cat("State population :", formatC(
+    x$stan_args$state_pop,
+    format = "d"
+  ), "\n")
+  cat("N of weeks       :", x$stan_args$n_weeks, "\n")
+  cat("--------------------\n")
+  cat("For more details, you can access the following:\n")
+  cat(" - `$fit` for the CmdStan object\n")
+  cat(" - `$input_data` for the input data\n")
+  cat(" - `$stan_args` for the stan data arguments\n")
+  cat(" - `$mcmc_options` for the MCMC options\n")
   invisible(x)
+}
+
+#' @export
+#' @rdname wwinference
+#' @return
+#' - The summary method returns the outcome from the
+#' `$summary` ([cmdstanr::summary()]) function.
+summary.wwinference_fit <- function(object, ...) {
+  object$fit$result$summary(...)
 }
 
 

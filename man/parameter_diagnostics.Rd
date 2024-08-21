@@ -19,6 +19,7 @@ wwinference_fit_object
 \seealso{
 Other diagnostics:
 \code{\link{diagnostic_summary}()},
-\code{\link{get_model_diagnostic_flags}()}
+\code{\link{get_model_diagnostic_flags}()},
+\code{\link{wwinference}()}
 }
 \concept{diagnostics}

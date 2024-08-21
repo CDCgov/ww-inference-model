@@ -2,6 +2,9 @@
 % Please edit documentation in R/wwinference.R
 \name{wwinference}
 \alias{wwinference}
+\alias{wwinference_fit}
+\alias{print.wwinference_fit}
+\alias{summary.wwinference_fit}
 \title{Joint inference of count data (e.g. cases/admissions) and wastewater
 data}
 \usage{
@@ -16,6 +19,10 @@ wwinference(
   generate_initial_values = TRUE,
   compiled_model = compile_model()
 )
+
+\method{print}{wwinference_fit}(x, ...)
+
+\method{summary}{wwinference_fit}(object, ...)
 }
 \arguments{
 \item{ww_data}{A dataframe containing the pre-processed, site-level
@@ -53,6 +60,10 @@ function}
 
 \item{compiled_model}{The pre-compiled model as defined using
 \code{compile_model()}}
+
+\item{x, object}{Object of class \code{wwinference_fit}}
+
+\item{...}{Additional parameters passed to the corresponding method}
 }
 \value{
 An object of the \code{ww_inference_fit} class containing the following
@@ -74,6 +85,15 @@ failed to run. Note, the model might still run and produce draws even if it
 has major model issues. We recommend the user always run the
 \code{check_diagnostics()} function on the \code{diagnostic_summary} as part of any
 pipeline to ensure model convergence.
+
+\itemize{
+\item The print method prints out information about the model and
+returns the object invisibly.
+}
+
+\itemize{
+\item The summary method returns the outcome from the \verb{$summary} (\code{\link[cmdstanr:fit-method-summary]{cmdstanr::summary()}}) function.
+}
 }
 \description{
 Provides a user friendly interface around package functionality
@@ -156,5 +176,13 @@ ww_fit <- wwinference(input_ww_data,
     iter_sampling = 250,
     n_chains = 2
   )
-)}
+)
 }
+}
+\seealso{
+Other diagnostics:
+\code{\link{diagnostic_summary}()},
+\code{\link{get_model_diagnostic_flags}()},
+\code{\link{parameter_diagnostics}()}
+}
+\concept{diagnostics}

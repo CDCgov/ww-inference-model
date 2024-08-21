@@ -102,7 +102,7 @@ get_model_diagnostic_flags.default <- function(x,
 #' @family diagnostics
 #' @export
 diagnostic_summary <- function(ww_fit, ...) {
-  ww_fit$fit$result$summary()
+  ww_fit$fit$result$diagnostic_summary()
 }
 
 #' Method for printing the CmdStan parameter diagnostics for a
