@@ -14,7 +14,9 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-
+```{r echo=FALSE}
+knitr::opts_chunk$set(dev = "svg")
+```
 # Quick start
 
 In this quick start, we demonstrate using `wwinference` to specify and fit a
@@ -95,6 +97,7 @@ single location and a single forecast date. We will need to do some
 pre-processing to add some additional variables that the model will need to be
 able apply features such as outlier exclusion and censoring of values below the
 limit of detection.
+
 ## Parameters
 Get the default parameters from the package. Note that some of these are COVID
 specific, others are more general to the model. This is indicated in the
@@ -144,7 +147,7 @@ function assumes that the original data contains the column `date`, and will
 return a dataframe with the column names needed to pass to the downstream model
 fitting functions.
 ```{r}
-hosp_data_preprocessed <- wwinference::preprocess_hosp_data(
+hosp_data_preprocessed <- wwinference::preprocess_count_data(
   hosp_data,
   count_col_name = "daily_hosp_admits",
   pop_size_col_name = "state_pop"
@@ -208,8 +211,7 @@ ww_data_to_fit <- wwinference::indicate_ww_exclusions(
 
 
 # Model specification:
-We will need to set some metadata to facilitate model specification. In addition
-to assigning the forecast date (done above), this also includes:
+We will need to set some metadata to facilitate model specification. This includes:
 - forecast date (the date we are making a forecast)
 - number of days to calibrate the model for
 - number of days to forecast
@@ -284,12 +286,12 @@ used to fit the model.
 
 ```{r warning=FALSE, message=FALSE}
 fit <- wwinference::wwinference(
-  ww_data_to_fit,
-  hosp_data_preprocessed,
+  ww_data = ww_data_to_fit,
+  count_data = hosp_data_preprocessed,
+  forecast_date = forecast_date,
+  calibration_time = calibration_time,
+  forecast_horizon = forecast_horizon,
   model_spec = get_model_spec(
-    forecast_date = forecast_date,
-    calibration_time = calibration_time,
-    forecast_horizon = forecast_horizon,
     generation_interval = generation_interval,
     inf_to_count_delay = inf_to_hosp,
     infection_feedback_pmf = infection_feedback_pmf,
@@ -314,7 +316,7 @@ head(fit)
 ```
 # Summarizing and plotting the model fit
 The `draws_df` object is intended to be used to easily plot relevant model
-outputs against data. This can be useful to get a sense of if you're model is
+outputs against data. This can be useful to get a sense of if your model is
 fitting the data well, and if the nowcasted/forecast quantities look reasonable.
 
 We can create the plots using the fitting wrapper functions (figures can
@@ -366,17 +368,17 @@ head(convergence_flag_df)
 The package also has functionality to fit the model without wastewater data.
 This can be useful when doing comparisons of the impact the wastewater data
 has on the forecast, or as a part of a pipeline where one might choose to
-rely on the admissions only model if their are covergence or known data issues
+rely on the admissions only model if there are covergence or known data issues
 with the wastewater data.
 
 ```{r warning=FALSE, message=FALSE}
 fit_hosp_only <- wwinference::wwinference(
-  ww_data_to_fit,
-  hosp_data_preprocessed,
+  ww_data = ww_data_to_fit,
+  count_data = hosp_data_preprocessed,
+  forecast_date = forecast_date,
+  calibration_time = calibration_time,
+  forecast_horizon = forecast_horizon,
   model_spec = get_model_spec(
-    forecast_date = forecast_date,
-    calibration_time = calibration_time,
-    forecast_horizon = forecast_horizon,
     generation_interval = generation_interval,
     inf_to_count_delay = inf_to_hosp,
     infection_feedback_pmf = infection_feedback_pmf,

@@ -4,14 +4,19 @@
 \alias{get_ww_data_indices}
 \title{Get wastewater data indices}
 \usage{
-get_ww_data_indices(ww_data, input_hosp_data, owt, lod_col_name = "below_lod")
+get_ww_data_indices(
+  ww_data,
+  first_count_data_date,
+  owt,
+  lod_col_name = "below_lod"
+)
 }
 \arguments{
 \item{ww_data}{Input wastewater dataframe containing one row
 per observation, with outliers already removed}
 
-\item{input_hosp_data}{Input hospital admissions data frame with one row
-per day and location}
+\item{first_count_data_date}{The earliest day with an observation in the '
+count dataset, in ISO8601 format YYYY-MM-DD}
 
 \item{owt}{number of wastewater observations}
 
