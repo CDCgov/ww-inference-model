@@ -37,7 +37,8 @@ get_stan_data <- function(input_count_data,
                           infection_feedback_pmf,
                           params,
                           compute_likelihood = 1,
-                          dist_matrix) {
+                          dist_matrix,
+                          bool_spatial_comp) {
   # Assign parameter names
   par_names <- colnames(params)
   for (i in seq_along(par_names)) {
@@ -176,8 +177,12 @@ get_stan_data <- function(input_count_data,
   inf_to_count_delay_max <- length(inf_to_count_delay)
 
 
-  # If dist_matrix null use independence correlation and update flag
-  if (is.null(dist_matrix)) {
+  # If user does / doesn't want spatial comps.
+  # We can add an extra step here for when spatial desired and dist_matrix
+  #   not given.
+  if (bool_spatial_comp) {
+    ind_corr_func <- 0L
+  } else {
     ind_corr_func <- 1L
     # This dist_matrix will not be used, only needed for stan data specs.
     dist_matrix <- matrix(
@@ -185,8 +190,6 @@ get_stan_data <- function(input_count_data,
       nrow = subpop_data$n_subpops - 1,
       ncol = subpop_data$n_subpops - 1
     )
-  } else {
-    ind_corr_func <- 0L
   }
 
   data_renewal <- list(

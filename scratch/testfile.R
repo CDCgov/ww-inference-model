@@ -171,7 +171,10 @@ fit <- wwinference::wwinference(
   ),
   mcmc_options = get_mcmc_options(),
   compiled_model = model,
-  dist_matrix = as.matrix(dist_matrix)
+  dist_matrix = as.matrix(dist_matrix),
+  bool_spatial_comp = TRUE
+  # // dist_matrix = NULL,
+  # // bool_spatial_comp = TRUE
 )
 
 

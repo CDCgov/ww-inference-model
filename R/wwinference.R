@@ -71,10 +71,19 @@ wwinference <- function(ww_data,
                         mcmc_options = wwinference::get_mcmc_options(),
                         generate_initial_values = TRUE,
                         compiled_model = wwinference::compile_model(),
-                        dist_matrix = NULL) {
+                        dist_matrix = NULL,
+                        bool_spatial_comp = FALSE) {
   # Check that data is compatible with specifications
   check_date(ww_data, model_spec$forecast_date)
   check_date(count_data, model_spec$forecast_date)
+
+  if (bool_spatial_comp == TRUE && is.null(dist_matrix)) {
+    stop(
+      "Spatial Components Desired, but Distance Matrix Not Supplied!!!\n
+          *distance matrix required for current implementation*"
+    )
+  }
+
 
   # If checks pass, create stan data object
   stan_data <- get_stan_data(
@@ -88,7 +97,8 @@ wwinference <- function(ww_data,
     infection_feedback_pmf = model_spec$infection_feedback_pmf,
     params = model_spec$params,
     compute_likelihood = 1,
-    dist_matrix
+    dist_matrix,
+    bool_spatial_comp
   )
 
   init_lists <- NULL
