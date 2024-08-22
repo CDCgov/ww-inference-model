@@ -11,7 +11,7 @@ calc_rt(new_i, convolve_fxn, generation_interval, uot, tot_time)
 representing the new incident infections per day}
 
 \item{convolve_fxn}{function used to convolve infections with delay pmf
-This will typically take \code{convolve_dot_product()} from the
+This will typically take the \code{convolve_dot_product()} function from the
 \code{wwinference.stan} model}
 
 \item{generation_interval}{vector of simplex describing the probability of

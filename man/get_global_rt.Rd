@@ -8,7 +8,7 @@ get_global_rt(r_in_weeks, n_weeks, global_rt_sd, zero_padding = 1e-08)
 }
 \arguments{
 \item{r_in_weeks}{The mean R(t) for each week of the simulation in natural
-scale, can be longer than the 7*n_weeks}
+scale, can be longer than the n_weeks}
 
 \item{n_weeks}{The number of weeks that we want to simulate the data for}
 

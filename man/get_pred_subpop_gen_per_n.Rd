@@ -17,7 +17,7 @@ get_pred_subpop_gen_per_n(
 }
 \arguments{
 \item{convolve_fxn}{function used to convolve infections with delay pmf.
-This will typically take \code{convolve_dot_product()} from the
+This will typically take \code{convolve_dot_product()} function from the
 \code{wwinference.stan} model}
 
 \item{n_sites}{integer indicating the number of sites}
