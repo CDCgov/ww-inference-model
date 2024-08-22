@@ -425,7 +425,7 @@ format_hosp_data <- function(pred_obs_hosp,
 #' the generation interval being passed in is indexed starting at day 1, and
 #' that on any particular index day there is no contribution from individuals
 #' infected on that day. This is a reasonable assumption, but to align the
-#' implementation of the forward process with our backword process, we have to
+#' implementation of the forward process with our backward process, we have to
 #' add a 0 density to day 0 of the passed in generation interval.
 #'
 #'
