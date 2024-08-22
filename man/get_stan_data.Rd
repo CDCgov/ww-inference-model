@@ -15,7 +15,8 @@ get_stan_data(
   infection_feedback_pmf,
   params,
   compute_likelihood = 1,
-  dist_matrix
+  dist_matrix,
+  bool_spatial_comp
 )
 }
 \arguments{
@@ -53,6 +54,9 @@ compute the likelihood, default = \code{1}}
 distance-based correlation function for epsilon. If NULL, use an independence
 correlation function (i.e. all sites' epsilon values are independent and
 identically distributed).}
+
+\item{bool_spatial_comp}{Boolean for whether or not user wants a spatial
+model.}
 }
 \value{
 a list of named variables to pass to stan

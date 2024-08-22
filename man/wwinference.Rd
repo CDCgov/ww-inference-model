@@ -12,7 +12,8 @@ wwinference(
   mcmc_options = wwinference::get_mcmc_options(),
   generate_initial_values = TRUE,
   compiled_model = wwinference::compile_model(),
-  dist_matrix = NULL
+  dist_matrix = NULL,
+  bool_spatial_comp = FALSE
 )
 }
 \arguments{
@@ -45,6 +46,9 @@ function}
 
 \item{dist_matrix}{Distance matrix for spatial correlation in distance
 correlation function.}
+
+\item{bool_spatial_comp}{Boolean for whether or not user wants a spatial
+model.}
 }
 \value{
 A nested list of the following items, intended to allow the user to

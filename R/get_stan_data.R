@@ -24,6 +24,8 @@
 #' distance-based correlation function for epsilon. If NULL, use an independence
 #' correlation function (i.e. all sites' epsilon values are independent and
 #' identically distributed).
+#' @param bool_spatial_comp Boolean for whether or not user wants a spatial
+#' model.
 #'
 #' @return a list of named variables to pass to stan
 #' @export

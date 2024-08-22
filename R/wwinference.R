@@ -36,6 +36,8 @@
 #' `compile_model()`
 #' @param dist_matrix Distance matrix for spatial correlation in distance
 #' correlation function.
+#' @param bool_spatial_comp Boolean for whether or not user wants a spatial
+#' model.
 #'
 #' @return A nested list of the following items, intended to allow the user to
 #' quickly and easily plot results from their inference, while also being able
