@@ -74,7 +74,7 @@ toy_stan_data <- wwinference::get_stan_data(
   inf_to_count_delay = model_spec$inf_to_count_delay,
   infection_feedback_pmf = model_spec$infection_feedback_pmf,
   params = model_spec$params,
-  include_ww = as.numeric(model_spec$include_ww),
+  include_ww = as.integer(model_spec$include_ww),
   compute_likelihood = 1
 )
 

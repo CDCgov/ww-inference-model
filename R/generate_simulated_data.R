@@ -142,7 +142,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   model$expose_functions(global = TRUE)
 
   # Get other variables needed for forward simulation ------------------------
-  params <- get_params(input_params_path) # load in a single row tibble
+  params <- get_params(input_params_path) # load in parameters
 
   # Get pop fractions of each subpop. There will n_sites + 1 subpops
   pop_fraction <- c(
@@ -271,8 +271,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     subpop_level_rt_variation = sigma_eps
   )
 
-  # Alternatively, can replace this with
-  # r_site <- spatial_rt_process(input_params) #nolint
 
   # Subpopulation infection dynamics-------------------------------------
   # Function takes in all of the requirements to generation incident infections
