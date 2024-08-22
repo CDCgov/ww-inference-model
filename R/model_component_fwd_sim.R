@@ -1,7 +1,7 @@
 #' Function to generate a global weekly R(t) estimate with added noise
 #'
 #' @param r_in_weeks The mean R(t) for each week of the simulation in natural
-#' scale, can be longer than the 7*n_weeks
+#' scale, can be longer than the n_weeks
 #' @param n_weeks The number of weeks that we want to simulate the data for
 #' @param global_rt_sd The variation in the R(t) estimate to add
 #' intrinsic variability to the infection dynamics
