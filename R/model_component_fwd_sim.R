@@ -59,7 +59,7 @@ subpop_rt_process <- function(n_subpops,
 #'
 #' @param generate_inf_fxn function indicating how to generate infections,
 #' This will typically take the `generate_infections()` function from the
-#' [wwinference.stan] model.
+#' `wwinference.stan` model.
 #' @param n_subpops integer indicating the number of subpopulations
 #' @param uot integer indicating the days for exponential growth initialization
 #' to occur (referred to as unobserved time)
@@ -201,7 +201,7 @@ get_time_varying_daily_ihr <- function(p_hosp_mean,
 #'
 #' @param convolve_fxn function used to convolve infections with delay pmf.
 #' This will typically take `convolve_dot_product()` from the
-#' [wwinference.stan] model
+#' `wwinference.stan` model
 #' @param n_sites integer indicating the number of sites
 #' @param uot integer indicating the days for exponential growth initialization
 #' to occur (referred to as unobserved time)
@@ -440,7 +440,7 @@ format_hosp_data <- function(pred_obs_hosp,
 #' representing the new incident infections per day
 #' @param convolve_fxn function used to convolve infections with delay pmf
 #' This will typically take `convolve_dot_product()` from the
-#' [wwinference.stan] model
+#' `wwinference.stan` model
 #' @param generation_interval vector of simplex describing the probability of
 #' each time from infection to onwards transmission
 #' @param uot integer indicating the days for exponential growth initialization

@@ -12,7 +12,7 @@ representing the new incident infections per day}
 
 \item{convolve_fxn}{function used to convolve infections with delay pmf
 This will typically take \code{convolve_dot_product()} from the
-\link{wwinference.stan} model}
+\code{wwinference.stan} model}
 
 \item{generation_interval}{vector of simplex describing the probability of
 each time from infection to onwards transmission}
