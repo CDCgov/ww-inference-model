@@ -1,21 +1,24 @@
 #' Function to generate a global weekly R(t) estimate with added noise
 #'
-#' @param r_in_weeks The mean R(t) for each week of the simulation, can be
-#' longer than the 7*n_weeks
+#' @param r_in_weeks The mean R(t) for each week of the simulation in natural
+#' scale, can be longer than the 7*n_weeks
 #' @param n_weeks The number of weeks that we want to simulate the data for
 #' @param global_rt_sd The variation in the R(t) estimate to add
 #' intrinsic variability to the infection dynamics
-#'
+#' @param zero_padding Numeric value to replace any negative R(t) values with.
 #' @return a weekly R(t) estimate with added noise
 get_global_rt <- function(r_in_weeks,
                           n_weeks,
-                          global_rt_sd) {
+                          global_rt_sd,
+                          zero_padding = 1e-8) {
   # Generate the state level weekly R(t) before infection feedback
   # Adds a bit of noise, can add more...
   r_weeks_w_noise <- (r_in_weeks * rnorm(
     length(r_in_weeks),
     1, global_rt_sd
   ))[1:n_weeks]
+  # Replace negative values if any with very small number
+  r_weeks_w_noise[r_weeks_w_noise < 0] <- zero_padding
 
   return(r_weeks_w_noise)
 }
@@ -54,7 +57,9 @@ subpop_rt_process <- function(n_subpops,
 
 #' Get the subpopulation level incident infections
 #'
-#' @param generate_inf_fxn function indicating how to generate infections
+#' @param generate_inf_fxn function indicating how to generate infections,
+#' This will typically take the `generate_infections()` function from the
+#' [wwinference.stan] model.
 #' @param n_subpops integer indicating the number of subpopulations
 #' @param uot integer indicating the days for exponential growth initialization
 #' to occur (referred to as unobserved time)
@@ -194,7 +199,9 @@ get_time_varying_daily_ihr <- function(p_hosp_mean,
 
 #' Get the predicted genomes per person in each subpopulation
 #'
-#' @param convolve_fxn function used to convolve infections with delay pmf
+#' @param convolve_fxn function used to convolve infections with delay pmf.
+#' This will typically take `convolve_dot_product()` from the
+#' [wwinference.stan] model
 #' @param n_sites integer indicating the number of sites
 #' @param uot integer indicating the days for exponential growth initialization
 #' to occur (referred to as unobserved time)
@@ -432,6 +439,8 @@ format_hosp_data <- function(pred_obs_hosp,
 #' @param new_i vector of numerics that spans the length of `tot_time`,
 #' representing the new incident infections per day
 #' @param convolve_fxn function used to convolve infections with delay pmf
+#' This will typically take `convolve_dot_product()` from the
+#' [wwinference.stan] model
 #' @param generation_interval vector of simplex describing the probability of
 #' each time from infection to onwards transmission
 #' @param uot integer indicating the days for exponential growth initialization
