@@ -116,7 +116,7 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #'  infection to counts
 #' @param infection_feedback_pmf a vector with a normalized pmf dictating the
 #' delay of infection feedback
-#' @param params a dataframe of parameter names and numeric values
+#' @param params a list mapping parameter names to their values
 #' @param include_ww integer either 1 or 0 indicating whether to fit the
 #' wastewater data or not, default is 1
 #' @param compute_likelihood indicator variable telling stan whether or not to

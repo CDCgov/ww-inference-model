@@ -11,8 +11,8 @@ get_params(param_file)
 parameter values.}
 }
 \value{
-a dataframe with numeric values for parameter values passed to the
-model
+a flat list mapping parameter names to corresponding
+values.
 }
 \description{
 Get parameters for model run

@@ -4,8 +4,8 @@
 #' @param param_file Path to a `.toml` file defining
 #' parameter values.
 #'
-#' @return a dataframe with numeric values for parameter values passed to the
-#'  model
+#' @return a flat list mapping parameter names to corresponding
+#' values.
 #' @export
 #'
 #' @examples
@@ -25,10 +25,7 @@ get_params <- function(param_file) {
     paramlist$wastewater_observation_process
   )
 
-  ## this preserves the dataframe structure
-  params <- as.data.frame(flat_paramlist)
-
-  return(params)
+  return(flat_paramlist)
 }
 
 #' Validate a parameter list

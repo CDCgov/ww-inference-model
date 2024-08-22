@@ -143,11 +143,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   model$expose_functions(global = TRUE)
 
   # Pull parameter values into memory
-  params <- get_params(input_params_path) # load in a single row tibble
-  par_names <- colnames(params) # pull them into memory
-  for (i in seq_along(par_names)) {
-    assign(par_names[i], as.double(params[i]))
-  }
+  params <- get_params(input_params_path)
 
   # Create a tibble that maps sites, labs, and population sizes of the sites
   n_sites <- length(unique(site))
@@ -166,6 +162,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
 
   # Define some time variables
   ht <- nt + forecast_horizon
+  uot <- params$uot
   n_weeks <- ceiling((ot + ht) / 7) # calibration + forecast time
   tot_weeks <- ceiling((uot + ot + ht) / 7) # initialization time +
   # calibration + forecast time
@@ -220,7 +217,8 @@ generate_simulated_data <- function(r_in_weeks = # nolint
 
   # Double censored, zero truncated, generation interval
   generation_interval <- simulate_double_censored_pmf(
-    max = gt_max, meanlog = mu_gi, sdlog = sigma_gi, fun_dist = rlnorm, n = 5e6
+    max = params$gt_max, meanlog = params$mu_gi,
+    sdlog = params$sigma_gi, fun_dist = rlnorm, n = 5e6
   ) |> drop_first_and_renormalize()
 
   # Set infection feedback to generation interval
@@ -234,17 +232,19 @@ generate_simulated_data <- function(r_in_weeks = # nolint
 
   # Get incubation period for COVID.
   inc <- make_incubation_period_pmf(
-    backward_scale, backward_shape, r
+    params$backward_scale, params$backward_shape, params$r
   )
-  sym_to_hosp <- make_hospital_onset_delay_pmf(neg_binom_mu, neg_binom_size)
+  sym_to_hosp <- make_hospital_onset_delay_pmf(
+    params$neg_binom_mu, params$neg_binom_size
+  )
 
   # Infection to hospital admissions delay distribution
   inf_to_hosp <- make_reporting_delay_pmf(inc, sym_to_hosp)
 
   # Shedding kinetics delay distribution
   vl_trajectory <- model$functions$get_vl_trajectory(
-    t_peak_mean, viral_peak_mean,
-    duration_shedding_mean, gt_max
+    params$t_peak_mean, params$viral_peak_mean,
+    params$duration_shedding_mean, params$gt_max
   )
 
   # Generate the state level weekly R(t) before infection feedback
@@ -282,7 +282,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     # Generate deviations in the initial growth rate and initial incidence
     initial_growth_site[i] <- rnorm(
       n = 1, mean = initial_growth,
-      sd = initial_growth_prior_sd
+      sd = params$initial_growth_prior_sd
     )
     # This is I0/N at the first unobserved time
     log_i0_over_n_site[i] <- rnorm(
@@ -323,12 +323,13 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   # Generate expected state level hospitalizations from subpop infections -----
 
   # Generate a time varying P(hosp|infection),
-  p_hosp_int_logit <- qlogis(p_hosp_mean) # p_hosp_mean is in linear scale
+  p_hosp_int_logit <- qlogis(params$p_hosp_mean)
+  # p_hosp_mean is in linear scale
   p_hosp_m <- get_ind_m(uot + ot + ht, tot_weeks) # matrix needed to convert
   # from weekly to daily
   p_hosp_w_logit <- p_hosp_int_logit + rnorm(
     tot_weeks - 1, 0,
-    p_hosp_w_sd_sd
+    params$p_hosp_w_sd_sd
   )
   # random walk on p_hosp in logit scale
   p_hosp_logit_weeks <- c(
@@ -360,7 +361,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   # Add observation error, get hospital admissions in the forecast period
   exp_obs_hosp <- rnbinom(
     n = length(exp_hosp), mu = exp_hosp,
-    size = 1 / ((inv_sqrt_phi_prior_mean)^2)
+    size = 1 / ((params$inv_sqrt_phi_prior_mean)^2)
   )
 
 
@@ -376,7 +377,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
       (uot + ot + ht)
     )[(uot + 1):(uot + ot + ht)]
     # Scale by average genomes shed per infection
-    log_g_over_n_site[i, ] <- log(10) * log10_g_prior_mean +
+    log_g_over_n_site[i, ] <- log(10) * params$log10_g_prior_mean +
       log(model_net_i + 1e-8)
   }
 
@@ -403,7 +404,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     stl <- pmin((ot + nt - lab_site_reporting_latency[i]), st)
     # Calculate log concentration for the days that we have observations
     log_obs_conc_lab_site[i, stl] <- log_obs_g_over_n_lab_site[i, stl] -
-      log(ml_of_ww_per_person_day)
+      log(params$ml_of_ww_per_person_day)
   }
 
   # Format the data-----------------------------------------------------------

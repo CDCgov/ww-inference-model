@@ -70,7 +70,6 @@ data {
   real sigma_i0_prior_mode;
   real<lower=0> sigma_i0_prior_sd;
   vector<lower=0>[7] hosp_wday_effect_prior_alpha;
-  real<lower=0> wday_effect_prior_sd;
   real initial_growth_prior_mean;
   real<lower=0> initial_growth_prior_sd;
   real sigma_ww_site_prior_mean_mean;
