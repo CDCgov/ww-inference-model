@@ -38,7 +38,7 @@ We decompose the instantaneous reproduction number $\mathcal{R}(t)$ into two com
 We assume that the unadjusted reproduction number $\mathcal{R}^\mathrm{u}(t)$ is a piecewise-constant function with weekly change points (i.e., if $t$ and $t'$ are days in the same week, then $\mathcal{R}^\mathrm{u}(t)$ = $\mathcal{R}^\mathrm{u}(t')$ ). To account for the dependence of the unadjusted reproduction number in a given week on the previous week, we use a differenced auto-regressive process for the log-scale reproduction number. A log-scale representation is used to ensure that the reproduction number is positive and so that week-to-week changes are multiplicative rather than additive.
 
 $$
-\log[\mathcal{R}^\mathrm{u}(t_i)] \sim \mathrm{Normal}\left(\log[\mathcal{R}^\mathrm{u}(t_{i-1})] + \beta \left(\log[\mathcal{R}^\mathrm{u}(t_{i-2})] - \log[\mathcal{R}^\mathrm{u}(t_1)]\right), \sigma_r \right)
+\log[\mathcal{R}^\mathrm{u}(t_i)] \sim \mathrm{Normal}\left(\log[\mathcal{R}^\mathrm{u}(t_{i-1})] + \beta \left(\log[\mathcal{R}^\mathrm{u}(t_{i-2})] - \log[\mathcal{R}^\mathrm{u}(t_{i-1})]\right), \sigma_r \right)
 $$
 
 where $t_i$, $t_{i-1}$, and $t_{i-2}$ are days in three successive weeks, $\beta$ is an autoregression coefficient which serves to make week-to-week changes correlated, and $\sigma_r$ determines the overall variation in week-to-week changes.
@@ -115,7 +115,7 @@ I(t) = \frac{1}{\sum\nolimits_{k=1}^{K_\mathrm{total}} n_k} \sum_{k=1}^{K_\mathr
 We infer the site level initial per capita incidence $I_k(0)$ hierarchically. Specifically, we treat $\mathrm{logit}[I_k(0)]$ as Normally distributed about the corresponding jurisdiction-level value $\mathrm{logit}[I(0)]$, with an estimated standard deviation $\sigma_{i0}$:
 
 $$
-\mathrm{logit}[I_k(0)] \sim \mathrm{Normal}(\mathrm{logit}[I(0)], \sigma_{k0})
+\mathrm{logit}[I_k(0)] \sim \mathrm{Normal}(\mathrm{logit}[I(0)], \sigma_{i0})
 $$
 
 
@@ -182,7 +182,7 @@ Note there is no need to scale by wastewater catchment population size because $
 This approach assumes that $G$ and $\alpha$ are constant through time and across individuals.
 In fact, there is substantial inter-individual variability in shedding kinetics and total shedding.
 This approximation is more accurate when population sizes are large.
-Incorporating the expected variability in the observed concentrations as a function of the number of contributing infected individduals is an area of active development.
+Incorporating the expected variability in the observed concentrations as a function of the number of contributing infected individuals is an area of active development.
 
 We model the shedding kinetics $s(\tau)$ as a discretized, scaled triangular distribution[^Larremore2021]:
 
@@ -194,7 +194,7 @@ We model the shedding kinetics $s(\tau)$ as a discretized, scaled triangular dis
 \end{cases}
 ```
 
-where $V_\mathrm{peak}$ is the peak number or viral genomes shed on any day, $\tau_\mathrm{peak}$ is the time from infection to peak shedding, and $\tau_\mathrm{shed}$ is the total duration of shedding. Then:
+where $V_\mathrm{peak}$ is the peak number or viral genomes shed on any day, $\tau_\mathrm{peak}$ is the time from infection to peak shedding, and $\tau_\mathrm{shed}$ is the total duration of shedding.
 
 Future iterations of this model will evaluate the utility of mechanistic modeling of wastewater collection and processing.
 

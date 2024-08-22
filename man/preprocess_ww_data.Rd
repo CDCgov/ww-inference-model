@@ -13,7 +13,8 @@ preprocess_ww_data(
 }
 \arguments{
 \item{ww_data}{dataframe containing the following columns: site, lab,
-date, a column for concentration, and lod}
+date, site_pop, a column for concentration, and  a column for the
+limit of detection}
 
 \item{conc_col_name}{string indicating the name of the column containing
 the concentration measurements in the wastewater data, default is
@@ -21,15 +22,17 @@ the concentration measurements in the wastewater data, default is
 
 \item{lod_col_name}{string indicating the name of the column containing
 the concentration measurements in the wastewater data, default is
-\code{genome_copies_per_ml}}
+\code{genome_copies_per_ml}. Note that any values in the \code{conc_col_name}
+equal to the limit of detection will be treated as below the limit of
+detection.}
 }
 \value{
 a dataframe containing the same columns as ww_data except
 the \code{conc_col_name} will be replaced with \code{genome_copies_per_ml} and
 the \code{lod_col_name} will be replaced with \code{lod} plus the following
 additional columns needed for the stan model:
-lab_site_index, site_index, flag_as_ww_outlier, lab_site_name,
-forecast_date
+lab_site_index, site_index, flag_as_ww_outlier, below_lod, lab_site_name,
+exclude
 }
 \description{
 Pre-process wastewater input data, adding needed indices and flagging

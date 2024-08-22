@@ -8,7 +8,6 @@ dummy_data <- tibble::tibble(
   below_lod = c(0, 0, 0, 0, 0, 0, 0, 0, 1, 0)
 )
 
-testthat::context("Testing flag_ww_outliers")
 
 test_that("function returns a dataframe with correct columns", {
   result <- flag_ww_outliers(dummy_data)
