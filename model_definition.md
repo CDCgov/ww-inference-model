@@ -126,7 +126,7 @@ Following other semi-mechanistic renewal frameworks, we model the _expected_ hos
 
 To account for day-of-week effects in hospital reporting, we use an estimated _weekday effect_ $\omega(t)$.
 If $t$ and $t'$ are the same day of the week, $\omega(t) = \omega(t')$.
-The seven values that $\omega(t)$ takes on are constrained to be non-negative and have a mean of 1.
+The seven values that $\omega(t)$ takes on (given by the length-7 vector $\vec{\omega}$) are constrained to be non-negative and have a mean of 1 (so $\frac{\vec{\omega}}{7}$ is a simplex).
 This allows us to model the possibility that certain days of the week could have systematically high or low admissions reporting while holding the predicted weekly total reported admissions constant (i.e. the predicted weekly total is the same with and without these day-of-week reporting effects).
 
 $$H(t) = \omega(t) p_\mathrm{hosp}(t) \sum_{\tau = 0}^{T_d} d(\tau) I(t-\tau)$$
@@ -248,6 +248,7 @@ We use informative priors for parameters that have been well characterized in th
 | Initial infections per capita $I_0$ | $I_0 \sim \mathrm{Beta}(1 + k i_\mathrm{est}, 1 + k (1-i_\mathrm{est}))$ | where $i_\mathrm{est}$ is the sum of the last 7 days of hospital admissions, divided by jurisdiction population, and divided by the prior mode for $p_\mathrm{hosp}$, and $k = 5$ is a parameter governing the informativeness ("certainty") of the Beta distribution |
 | Initial exponential growth rate | $r \sim \mathrm{Normal}(0, 0.01)$ | Chosen to assume flat dynamics prior to observations |
 | Infection feedback term | $\gamma \sim \mathrm{logNormal}(6.37, 0.4)$ | Weakly informative prior chosen to have a mode of 500 in natural scale, based on posterior estimates of peaks from prior seasons in a few jurisdictions |
+| Day of the week effects | $\frac{\vec{\omega}}{7} \sim \mathrm{Dirichlet}(5, 5, 5, 5, 5, 5, 5)$ | Weakly informative prior with a mode at even daily reporting (no effects) | 
 
 ### Scalar parameters
 
