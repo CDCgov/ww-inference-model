@@ -439,7 +439,7 @@ format_hosp_data <- function(pred_obs_hosp,
 #' @param new_i vector of numerics that spans the length of `tot_time`,
 #' representing the new incident infections per day
 #' @param convolve_fxn function used to convolve infections with delay pmf
-#' This will typically take `convolve_dot_product()` from the
+#' This will typically take the `convolve_dot_product()` function from the
 #' `wwinference.stan` model
 #' @param generation_interval vector of simplex describing the probability of
 #' each time from infection to onwards transmission
