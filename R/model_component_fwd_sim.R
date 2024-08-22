@@ -200,7 +200,7 @@ get_time_varying_daily_ihr <- function(p_hosp_mean,
 #' Get the predicted genomes per person in each subpopulation
 #'
 #' @param convolve_fxn function used to convolve infections with delay pmf.
-#' This will typically take `convolve_dot_product()` from the
+#' This will typically take `convolve_dot_product()` function from the
 #' `wwinference.stan` model
 #' @param n_sites integer indicating the number of sites
 #' @param uot integer indicating the days for exponential growth initialization
