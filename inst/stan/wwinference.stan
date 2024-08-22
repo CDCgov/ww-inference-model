@@ -273,7 +273,6 @@ transformed parameters {
 // Prior and sampling distribution
 model {
   // priors
-  vector[7] effect_mean = rep_vector(wday_effect_prior_mean, 7);
   w ~ std_normal();
   eta_sd ~ normal(0, eta_sd_sd);
   autoreg_rt_site ~ beta(autoreg_rt_site_a, autoreg_rt_site_b);
