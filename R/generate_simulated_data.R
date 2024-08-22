@@ -271,8 +271,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     subpop_level_rt_variation = sigma_eps
   )
 
-  # Alternatively, can replace this with
-  # r_site <- spatial_rt_process(input_params) #nolint
 
   # Subpopulation infection dynamics-------------------------------------
   # Function takes in all of the requirements to generation incident infections
