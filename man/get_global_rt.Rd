@@ -4,16 +4,18 @@
 \alias{get_global_rt}
 \title{Function to generate a global weekly R(t) estimate with added noise}
 \usage{
-get_global_rt(r_in_weeks, n_weeks, global_rt_sd)
+get_global_rt(r_in_weeks, n_weeks, global_rt_sd, zero_padding = 1e-08)
 }
 \arguments{
-\item{r_in_weeks}{The mean R(t) for each week of the simulation, can be
-longer than the 7*n_weeks}
+\item{r_in_weeks}{The mean R(t) for each week of the simulation in natural
+scale, can be longer than the 7*n_weeks}
 
 \item{n_weeks}{The number of weeks that we want to simulate the data for}
 
 \item{global_rt_sd}{The variation in the R(t) estimate to add
 intrinsic variability to the infection dynamics}
+
+\item{zero_padding}{Numeric value to replace any negative R(t) values with.}
 }
 \value{
 a weekly R(t) estimate with added noise

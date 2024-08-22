@@ -22,7 +22,9 @@ subpop_inf_process(
 )
 }
 \arguments{
-\item{generate_inf_fxn}{function indicating how to generate infections}
+\item{generate_inf_fxn}{function indicating how to generate infections,
+This will typically take the \code{generate_infections()} function from the
+\link{wwinference.stan} model.}
 
 \item{n_subpops}{integer indicating the number of subpopulations}
 

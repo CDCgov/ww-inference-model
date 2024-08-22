@@ -60,9 +60,8 @@ assert_rt_correct_length <- function(r_in_weeks,
         "The weekly R(t) specifed isn't long enough to produce",
         "infections for the specified observed/calibration time (`ot`)",
         "nowcast period (`nt`), and forecast horizon (`forecast_horizon`)",
-        "Got a length {length(r_in_weeks)} weekly R(t) for a total time period ",
-        "of {(ot + nt + forecast_horizon) / 7} weeks"
-        
+        "Got a length {length(r_in_weeks)} weekly R(t) for a total time ",
+        " period of {(ot + nt + forecast_horizon) / 7} weeks"
       ),
       call = call,
       class = "wwinference_fwd_sim_specification_error"

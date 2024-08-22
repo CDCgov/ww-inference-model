@@ -10,7 +10,9 @@ calc_rt(new_i, convolve_fxn, generation_interval, uot, tot_time)
 \item{new_i}{vector of numerics that spans the length of \code{tot_time},
 representing the new incident infections per day}
 
-\item{convolve_fxn}{function used to convolve infections with delay pmf}
+\item{convolve_fxn}{function used to convolve infections with delay pmf
+This will typically take \code{convolve_dot_product()} from the
+\link{wwinference.stan} model}
 
 \item{generation_interval}{vector of simplex describing the probability of
 each time from infection to onwards transmission}
@@ -31,6 +33,6 @@ incident infections and the generation interval -- because it assumes that
 the generation interval being passed in is indexed starting at day 1, and
 that on any particular index day there is no contribution from individuals
 infected on that day. This is a reasonable assumption, but to align the
-implementation of the forward process with our backword process, we have to
+implementation of the forward process with our backward process, we have to
 add a 0 density to day 0 of the passed in generation interval.
 }
