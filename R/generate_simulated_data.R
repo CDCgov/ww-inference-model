@@ -11,9 +11,9 @@
 #' @param ww_pop_sites vector indicating the population size in the
 #' catchment area in each of those sites (order must match)
 #' @param pop_size integer indicating the population size in the hypothetical
-#' state
+#' state, default is `3e6`
 #' @param site vector of integers indicating which site (WWTP) each separate
-#' lab-site observation comes frm
+#' lab-site observation comes from
 #' @param lab vector of integers indicating which lab the lab-site observations
 #' come from
 #' @param ot integer indicating the observed time: length of hospital admissions
@@ -48,6 +48,17 @@
 #' @param mean_log_lod float indicating the mean log of the LOD in each lab-site
 #' @param sd_log_lod float indicating the standard deviation in the log of the
 #' LOD across sites
+#' @param global_rt_sd float indicating the ammount of standard deviation to
+#' add to the passed in weekly R(t) to add variability. Default is `0.03`
+#' @param sigma_eps float indicating the standard deviation between the log of
+#' the state R(t) and the log of the subpopulation R(t) across time, in log
+#' scale. Default is `0.05`
+#' @param sd_i0_over_n float indicating the standard deviation between log of
+#' initial infections per capita, default is `0.5`
+#' @param if_feedback Boolean indicating whether or not to include
+#' infection feedback into the infection process, default is `FALSE`, which
+#' sets the strength of the infection feedback to 0.
+#' If `TRUE`, this will apply an infection feedback drawn from the prior.
 #' @param input_params_path path to the toml file with the parameters to use
 #' to generate the simulated data
 #'
@@ -104,33 +115,21 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                     sd_reporting_latency = 3,
                                     mean_log_lod = 3.8,
                                     sd_log_lod = 0.2,
+                                    global_rt_sd = 0.03,
+                                    sigma_eps = 0.05,
+                                    sd_i0_over_n = 0.5,
+                                    if_feedback = FALSE,
                                     input_params_path =
                                       fs::path_package("extdata",
                                         "example_params.toml",
                                         package = "wwinference"
                                       )) {
-  # Some quick checks to make sure the inputs work as expected
-  stopifnot(
-    "weekly R(t) passed in isn't long enough" =
-      length(r_in_weeks) >= (ot + nt + forecast_horizon) / 7
-  )
-  stopifnot(
-    "Sum of wastewater site populations is greater than state pop" =
-      pop_size > sum(ww_pop_sites)
-  )
-  stopifnot(
-    "Site and lab indices don't align" =
-      length(site) == length(lab)
-  )
+  # Some quick checks to make sure the inputs work as expected-----------------
+  assert_rt_correct_length(r_in_weeks, ot, nt, forecast_horizon)
+  assert_ww_site_pops_lt_total(pop_size, ww_pop_sites)
+  assert_site_lab_indices_align(site, lab)
 
-
-  # Get pop fractions of each subpop. There will n_sites + 1 subpops
-  pop_fraction <- c(
-    ww_pop_sites / pop_size,
-    (pop_size - sum(ww_pop_sites)) / pop_size
-  )
-
-  # Expose the stan functions into the global environment
+  # Expose the stan functions into the global environment--------------------
   model <- cmdstanr::cmdstan_model(
     stan_file = system.file(
       "stan", "wwinference.stan",
@@ -142,30 +141,35 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   )
   model$expose_functions(global = TRUE)
 
-  # Pull parameter values into memory
-  params <- get_params(input_params_path)
+  # Get other variables needed for forward simulation ------------------------
+  params <- get_params(input_params_path) # load in parameters
+
+  # Get pop fractions of each subpop. There will n_sites + 1 subpops
+  pop_fraction <- c(
+    ww_pop_sites / pop_size,
+    (pop_size - sum(ww_pop_sites)) / pop_size
+  )
+  n_subpops <- length(pop_fraction)
 
   # Create a tibble that maps sites, labs, and population sizes of the sites
   n_sites <- length(unique(site))
-  site_lab_map <- data.frame(
-    site,
-    lab
-  ) |>
-    dplyr::mutate(
-      lab_site = dplyr::row_number()
-    ) |>
-    dplyr::left_join(data.frame(
-      site = 1:n_sites,
-      ww_pop = ww_pop_sites
-    ))
+  site_lab_map <- create_site_lab_map(
+    site = site,
+    lab = lab,
+    ww_pop_sites = ww_pop_sites
+  )
+
+
   n_lab_sites <- nrow(site_lab_map)
 
   # Define some time variables
+  uot <- params$uot # Time period of exponential growth outside of
+  # admissions calibratin window (initialization of renewal process)
   ht <- nt + forecast_horizon
-  uot <- params$uot
   n_weeks <- ceiling((ot + ht) / 7) # calibration + forecast time
   tot_weeks <- ceiling((uot + ot + ht) / 7) # initialization time +
   # calibration + forecast time
+
 
   # We need dates to get a weekday vector
   dates <- seq(
@@ -212,276 +216,229 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   # Set a lab-site-specific LOD in log scale
   lod_lab_site <- rnorm(n_lab_sites, mean = mean_log_lod, sd = sd_log_lod)
 
-  # Delay distributions: Note, these are COVID specific, and we will
+  # Delay distributions ------------------------------------------------------
+  # Note, these are COVID specific, and we will
   # generally want to specify these outside model configuration
 
-  # Double censored, zero truncated, generation interval
+  ## Generation interval------------------------------------------------------
+  # Double censored and zero-truncated
   generation_interval <- simulate_double_censored_pmf(
-    max = params$gt_max, meanlog = params$mu_gi,
-    sdlog = params$sigma_gi, fun_dist = rlnorm, n = 5e6
+    max = params$gt_max, meanlog = params$mu_gi, sdlog = params$sigma_gi,
+    fun_dist = rlnorm, n = 5e6
   ) |> drop_first_and_renormalize()
 
   # Set infection feedback to generation interval
   infection_feedback_pmf <- generation_interval
-  infection_feedback_rev_pmf <- rev(infection_feedback_pmf)
-  infection_feedback <- 0
-  if_feedback <- 1
 
-  # Delay from infection to hospital admission: incubation period +
-  # time from symptom onset to hospital admission
+  ## Delay from infection to hospital admission ----------------------------
+  # incubation period + # time from symptom onset to hospital admission
 
   # Get incubation period for COVID.
   inc <- make_incubation_period_pmf(
     params$backward_scale, params$backward_shape, params$r
   )
   sym_to_hosp <- make_hospital_onset_delay_pmf(
-    params$neg_binom_mu, params$neg_binom_size
+    params$neg_binom_mu,
+    params$neg_binom_size
   )
 
-  # Infection to hospital admissions delay distribution
+  # Final infection to hospital admissions delay distribution
   inf_to_hosp <- make_reporting_delay_pmf(inc, sym_to_hosp)
 
-  # Shedding kinetics delay distribution
+  ## Shedding kinetics delay distribution-------------------------------
   vl_trajectory <- model$functions$get_vl_trajectory(
     params$t_peak_mean, params$viral_peak_mean,
     params$duration_shedding_mean, params$gt_max
   )
 
-  # Generate the state level weekly R(t) before infection feedback
-  # Adds a bit of noise, can add more...
-  unadj_r_weeks <- (r_in_weeks * rnorm(length(r_in_weeks), 1, 0.03))[1:n_weeks]
+  # Global undadjusted R(t) ---------------------------------------------------
+  unadj_r_weeks <- get_global_rt(
+    r_in_weeks = r_in_weeks,
+    n_weeks = n_weeks,
+    global_rt_sd = global_rt_sd
+  )
 
-  # Convert to daily for input into renewal equation
-  ind_m <- get_ind_m(ot + ht, n_weeks)
-  unadj_r <- ind_m %*% unadj_r_weeks
+  # Daily unadjusted R(t)
+  ind_m <- get_ind_m((ot + ht), n_weeks)
+  unadj_r_daily <- ind_m %*% unadj_r_weeks
+
+  # Subpopulation level R(t)-----------------------------------------------
+  # get the matrix of subpop level R(t) estimates, assuming normally distributed
+  # around the the log of the state R(t) with stdev of sigma_eps
+  unadj_r_site <- subpop_rt_process(
+    n_subpops = n_subpops,
+    r_weeks = unadj_r_weeks,
+    subpop_level_rt_variation = sigma_eps
+  )
 
 
-  # Generate the site-level expected observed concentrations -----------------
-  # first by adding variation to the site-level R(t) in each site,
-  # and then adding lab-site level multiplier and observation error
-
-
-  ### Generate the site level infection dynamics-------------------------------
-  new_i_over_n_site <- matrix(nrow = n_sites + 1, ncol = (uot + ot + ht))
-  r_site <- matrix(nrow = n_sites + 1, ncol = (ot + ht))
-  # Generate site-level R(t)
-  log_r_state_week <- log(unadj_r_weeks)
-  log_r_site <- matrix(nrow = n_sites + 1, ncol = n_weeks)
-  initial_growth_site <- vector(length = n_sites + 1)
-  log_i0_over_n_site <- vector(length = n_sites + 1)
-  for (i in 1:(n_sites + 1)) {
-    # This creates each R(t) vector for each subpopulation, by sampling
-    # from a normal distribution centered on the state R(t).
-    # In the model, this is an AR(1) process based on the previous deviation
-    log_r_site[i, ] <- rnorm(
-      n = n_weeks,
-      mean = log_r_state_week,
-      sd = 0.05
-    ) # sigma_rt
-
-    # Generate deviations in the initial growth rate and initial incidence
-    initial_growth_site[i] <- rnorm(
-      n = 1, mean = initial_growth,
-      sd = params$initial_growth_prior_sd
+  # Subpopulation infection dynamics-------------------------------------
+  # Function takes in all of the requirements to generation incident infections
+  # and R(t) estimates for the unobserved time, calibration, and forecast time
+  if (isTRUE(if_feedback)) {
+    infection_feedback <- rlnorm(1,
+      meanlog = params$infection_feedback_prior_logmean,
+      sdlog = params$infection_feedback_prior_logsd
     )
-    # This is I0/N at the first unobserved time
-    log_i0_over_n_site[i] <- rnorm(
-      n = 1, mean = log_i0_over_n,
-      sd = 0.5
-    )
+  } else {
+    infection_feedback <- 0
   }
 
+  inf_and_subpop_rt <- subpop_inf_process(
+    generate_inf_fxn = model$functions$generate_infections,
+    n_subpops = n_subpops,
+    uot = uot,
+    ot = ot,
+    ht = ht,
+    unadj_r_site = unadj_r_site,
+    initial_growth = initial_growth,
+    initial_growth_prior_sd = params$initial_growth_prior_sd,
+    i0_over_n = i0_over_n,
+    sd_i0_over_n = sd_i0_over_n,
+    generation_interval = generation_interval,
+    infection_feedback = infection_feedback,
+    infection_feedback_pmf = infection_feedback_pmf,
+    pop_fraction = pop_fraction
+  )
 
-  new_i_over_n <- rep(0, (uot + ot + ht)) # State infections
-  for (i in 1:(n_sites + 1)) {
-    unadj_r_site <- ind_m %*% exp(log_r_site[i, ]) # daily R site
+  new_i_over_n_site <- inf_and_subpop_rt$i_n
+  r_site <- inf_and_subpop_rt$r_site
+  new_i_over_n <- inf_and_subpop_rt$i_n_global
 
-    site_output <- model$functions$generate_infections(
-      unadj_r_site, # Daily unadjusted R(t) in each site
-      uot, # the duration of initialization time for exponential growth
-      rev(generation_interval), # the reversed generation interval
-      log_i0_over_n_site[i], # log of the initial infections per capita
-      initial_growth_site[i], # initial exponential growth rate
-      ht, # time after last observed hospital admission
-      infection_feedback, # binary indicating whether or not inf feedback
-      infection_feedback_rev_pmf # inf feedback delay pmf
-    )
-    # matrix to hold infections
-    new_i_over_n_site[i, ] <- site_output[[1]]
-    # Cumulatively sum infections to get overall state infections
-    new_i_over_n <- new_i_over_n + pop_fraction[i] * site_output[[1]]
-    # Adjusted R(t) estimate in each site
-    r_site[i, ] <- site_output[[2]]
-  }
-
-  # State adjusted R(t) = I(t)/convolve(I(t), g(t))
-  rt <- (new_i_over_n / model$functions$convolve_dot_product(
-    new_i_over_n, rev(generation_interval), uot + ot + ht
-  ))[(uot + 1):(uot + ot + ht)]
 
 
   # Generate expected state level hospitalizations from subpop infections -----
 
-  # Generate a time varying P(hosp|infection),
-  p_hosp_int_logit <- qlogis(params$p_hosp_mean)
-  # p_hosp_mean is in linear scale
-  p_hosp_m <- get_ind_m(uot + ot + ht, tot_weeks) # matrix needed to convert
-  # from weekly to daily
-  p_hosp_w_logit <- p_hosp_int_logit + rnorm(
-    tot_weeks - 1, 0,
-    params$p_hosp_w_sd_sd
+  ## Generate a time varying P(hosp|infection)----------------------------------
+  p_hosp_days <- get_time_varying_daily_ihr(
+    p_hosp_mean = params$p_hosp_mean,
+    uot = params$uot,
+    ot = ot,
+    ht = ht,
+    tot_weeks = tot_weeks,
+    p_hosp_w_sd_sd = params$p_hosp_w_sd_sd
   )
-  # random walk on p_hosp in logit scale
-  p_hosp_logit_weeks <- c(
-    p_hosp_int_logit,
-    p_hosp_w_logit
-  ) # combine with intercept
-  p_hosp_logit_days <- p_hosp_m %*% c(
-    p_hosp_int_logit,
-    p_hosp_w_logit
-  ) # convert to days
-  p_hosp_days <- plogis(p_hosp_logit_days) # convert back to linear scale
 
-
-  # Get expected trajectory of hospital admissions from incident infections
-  # by convolving scaled incident infections with delay from infection to
-  # hospital admission
+  ## Latent per capita admissions--------------------------------------------
   model_hosp_over_n <- model$functions$convolve_dot_product(
     p_hosp_days * new_i_over_n, # individuals who will be hospitalized
     rev(inf_to_hosp),
     uot + ot + ht
   )[(uot + 1):(uot + ot + ht)]
-  # only care about hospital admission in observed time, but need uot infections
 
-  exp_hosp <- pop_size * model$functions$day_of_week_effect(
+
+  ## Add weekday effect on hospital admissions-------------------------------
+  pred_hosp <- pop_size * model$functions$day_of_week_effect(
     model_hosp_over_n,
     day_of_week_vector,
     hosp_wday_effect
   )
-  # Add observation error, get hospital admissions in the forecast period
-  exp_obs_hosp <- rnbinom(
-    n = length(exp_hosp), mu = exp_hosp,
+  ## Add observation error---------------------------------------------------
+  # This is negative binomial but could swap out for a different obs error
+  pred_obs_hosp <- rnbinom(
+    n = length(pred_hosp), mu = pred_hosp,
     size = 1 / ((params$inv_sqrt_phi_prior_mean)^2)
   )
 
 
 
-  ## Generate site-level mean genomes from infections in each site-------
-  log_g_over_n_site <- matrix(nrow = n_sites, ncol = (ot + ht))
+  # Generate expected observed concentrations from infections in each site-----
+  ## Genomes per person per day in each site----------------------------------
 
-  for (i in 1:n_sites) {
-    # Convolve infections with shedding kinetics
-    model_net_i <- model$functions$convolve_dot_product(
-      new_i_over_n_site[i, ],
-      rev(vl_trajectory),
-      (uot + ot + ht)
-    )[(uot + 1):(uot + ot + ht)]
-    # Scale by average genomes shed per infection
-    log_g_over_n_site[i, ] <- log(10) * params$log10_g_prior_mean +
-      log(model_net_i + 1e-8)
-  }
+  log_g_over_n_site <- get_pred_subpop_gen_per_n(
+    convolve_fxn = model$functions$convolve_dot_product,
+    n_sites = n_sites,
+    uot = uot,
+    ot = ot,
+    ht = ht,
+    new_i_over_n_site = new_i_over_n_site,
+    log10_g_prior_mean = params$log10_g_prior_mean,
+    vl_trajectory = vl_trajectory
+  )
+  ## Site-lab level observation error----------------------------------------
+  log_conc_lab_site <- get_pred_obs_conc(
+    n_lab_sites = n_lab_sites,
+    ot = ot,
+    ht = ht,
+    log_g_over_n_site = log_g_over_n_site,
+    log_m_lab_sites = log_m_lab_sites,
+    sigma_ww_lab_site = sigma_ww_lab_site,
+    site = site,
+    ml_of_ww_per_person_day = params$ml_of_ww_per_person_day
+  )
+
+  ## Downsample to simulate reporting/collection process---------------------
+
+  log_obs_conc_lab_site <- downsample_ww_obs(
+    log_conc_lab_site = log_conc_lab_site,
+    n_lab_sites = n_lab_sites,
+    ot = ot,
+    ht = ht,
+    nt = nt,
+    lab_site_reporting_freq = lab_site_reporting_freq,
+    lab_site_reporting_latency = lab_site_reporting_latency
+  )
 
 
-  # Add on site-lab-level observation error -----------------------------------
-  log_obs_g_over_n_lab_site <- matrix(nrow = n_lab_sites, ncol = (ot + ht))
-  for (i in 1:n_lab_sites) {
-    log_g_w_multiplier <- log_g_over_n_site[site[i], ] +
-      log_m_lab_sites[i] # Add site level multiplier in log scale
-    log_obs_g_over_n_lab_site[i, ] <- log_g_w_multiplier +
-      rnorm(
-        n = (ot + ht), mean = 0,
-        sd = sigma_ww_lab_site[i]
-      ) # + add observation error in log scale
-  }
-
-  # Sample from some lab-sites more frequently than others and add different
-  # latencies for each lab-site
-  log_obs_conc_lab_site <- matrix(nrow = n_lab_sites, ncol = ot + ht)
-  for (i in 1:n_lab_sites) {
-    # Get the indices where we observe concentrations
-    st <- sample(1:(ot + nt), round((ot + nt) * lab_site_reporting_freq[i]))
-    # cut off end based on latency
-    stl <- pmin((ot + nt - lab_site_reporting_latency[i]), st)
-    # Calculate log concentration for the days that we have observations
-    log_obs_conc_lab_site[i, stl] <- log_obs_g_over_n_lab_site[i, stl] -
-      log(params$ml_of_ww_per_person_day)
-  }
+  # Global adjusted R(t) --------------------------------------------------
+  # I(t)/convolve(I(t), g(t)) #nolint
+  # This is not used directly, but we want to have it for comparing to the
+  # fit.
+  rt <- calc_rt(new_i_over_n,
+    convolve_fxn = model$functions$convolve_dot_product,
+    generation_interval = generation_interval,
+    uot = uot,
+    tot_time = (uot + ot + ht)
+  )
 
   # Format the data-----------------------------------------------------------
 
-  ww_data <- as.data.frame(t(log_obs_conc_lab_site)) |>
-    dplyr::mutate(t = 1:(ot + ht)) |>
-    tidyr::pivot_longer(!t,
-      names_to = "lab_site",
-      names_prefix = "V",
-      values_to = "log_conc"
-    ) |>
-    dplyr::mutate(
-      lab_site = as.integer(lab_site)
-    ) |>
-    dplyr::left_join(date_df, by = "t") |>
-    dplyr::left_join(site_lab_map,
-      by = "lab_site"
-    ) |>
-    dplyr::left_join(
-      data.frame(
-        lab_site = 1:n_lab_sites,
-        lod_sewage = lod_lab_site
-      ),
-      by = c("lab_site")
-    ) |> # Remove below LOD values
-    dplyr::mutate(
-      lod_sewage =
-        dplyr::case_when(
-          is.na(log_conc) ~ NA,
-          !is.na(log_conc) ~ lod_sewage
-        )
-    ) |>
-    dplyr::mutate(
-      genome_copies_per_ml = exp(log_conc),
-      lod = exp(lod_sewage)
-    ) |>
-    dplyr::filter(!is.na(genome_copies_per_ml)) |>
-    dplyr::rename(site_pop = ww_pop) |>
-    dplyr::arrange(site, lab, date) |>
-    dplyr::select(date, site, lab, genome_copies_per_ml, lod, site_pop)
+  ww_data <- format_ww_data(
+    log_obs_conc_lab_site = log_obs_conc_lab_site,
+    ot = ot,
+    ht = ht,
+    date_df = date_df,
+    site_lab_map = site_lab_map,
+    lod_lab_site = lod_lab_site
+  )
+
 
   # Make a hospital admissions dataframe for model calibration
-  hosp_data <- tibble::tibble(
-    t = 1:ot,
-    daily_hosp_admits = exp_obs_hosp[1:ot],
-    state_pop = pop_size
+  hosp_data <- format_hosp_data(pred_obs_hosp,
+    dur_obs = ot,
+    pop_size = pop_size,
+    date_df = date_df
+  )
+
+  hosp_data_eval <- format_hosp_data(pred_obs_hosp,
+    dur_obs = (ot + ht),
+    pop_size = pop_size,
+    date_df = date_df
   ) |>
-    dplyr::left_join(
-      date_df,
-      by = "t"
-    ) |>
-    dplyr::select(
-      date,
-      daily_hosp_admits,
-      state_pop
+    dplyr::rename(
+      daily_hosp_admits_for_eval =
+        daily_hosp_admits
     )
 
-  # Make another one for model evaluation
-  hosp_data_eval <- tibble::tibble(
-    t = 1:(ot + ht),
-    daily_hosp_admits_for_eval = exp_obs_hosp,
-    state_pop = pop_size
+  # Global R(t)
+  true_rt <- tibble::tibble(
+    unadj_rt_daily = as.numeric(unadj_r_daily),
+    realized_rt = rt
   ) |>
-    dplyr::left_join(
-      date_df,
-      by = "t"
+    dplyr::mutate(
+      t = 1:(ot + ht)
     ) |>
-    dplyr::select(
-      date,
-      daily_hosp_admits_for_eval,
-      state_pop
-    )
+    dplyr::left_join(date_df, by = "t")
+
+
+
+
 
   example_data <- list(
     ww_data = ww_data,
     hosp_data = hosp_data,
-    hosp_data_eval = hosp_data_eval
+    hosp_data_eval = hosp_data_eval,
+    true_global_rt = true_rt
   )
 
   return(example_data)

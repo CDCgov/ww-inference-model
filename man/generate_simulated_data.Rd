@@ -26,6 +26,10 @@ generate_simulated_data(
   sd_reporting_latency = 3,
   mean_log_lod = 3.8,
   sd_log_lod = 0.2,
+  global_rt_sd = 0.03,
+  sigma_eps = 0.05,
+  sd_i0_over_n = 0.5,
+  if_feedback = FALSE,
   input_params_path = fs::path_package("extdata", "example_params.toml", package =
     "wwinference")
 )
@@ -41,10 +45,10 @@ week-to-week variation.}
 catchment area in each of those sites (order must match)}
 
 \item{pop_size}{integer indicating the population size in the hypothetical
-state}
+state, default is \code{3e6}}
 
 \item{site}{vector of integers indicating which site (WWTP) each separate
-lab-site observation comes frm}
+lab-site observation comes from}
 
 \item{lab}{vector of integers indicating which lab the lab-site observations
 come from}
@@ -95,6 +99,21 @@ across sites}
 
 \item{sd_log_lod}{float indicating the standard deviation in the log of the
 LOD across sites}
+
+\item{global_rt_sd}{float indicating the ammount of standard deviation to
+add to the passed in weekly R(t) to add variability. Default is \code{0.03}}
+
+\item{sigma_eps}{float indicating the standard deviation between the log of
+the state R(t) and the log of the subpopulation R(t) across time, in log
+scale. Default is \code{0.05}}
+
+\item{sd_i0_over_n}{float indicating the standard deviation between log of
+initial infections per capita, default is \code{0.5}}
+
+\item{if_feedback}{Boolean indicating whether or not to include
+infection feedback into the infection process, default is \code{FALSE}, which
+sets the strength of the infection feedback to 0.
+If \code{TRUE}, this will apply an infection feedback drawn from the prior.}
 
 \item{input_params_path}{path to the toml file with the parameters to use
 to generate the simulated data}
