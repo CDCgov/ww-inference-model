@@ -116,7 +116,7 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #'  infection to counts
 #' @param infection_feedback_pmf a vector with a normalized pmf dictating the
 #' delay of infection feedback
-#' @param params a dataframe of parameter names and numeric values
+#' @param params a list mapping parameter names to their values
 #' @param include_ww integer either 1 or 0 indicating whether to fit the
 #' wastewater data or not, default is 1
 #' @param compute_likelihood indicator variable telling stan whether or not to
@@ -408,8 +408,7 @@ get_stan_data <- function(input_count_data,
     log10_g_prior_sd = params$log10_g_prior_sd,
     i0_over_n_prior_a = 1 + params$i0_certainty * (i0 / pop),
     i0_over_n_prior_b = 1 + params$i0_certainty * (1 - (i0 / pop)),
-    wday_effect_prior_mean = params$wday_effect_prior_mean,
-    wday_effect_prior_sd = params$wday_effect_prior_sd,
+    hosp_wday_effect_prior_alpha = params$hosp_wday_effect_prior_alpha,
     initial_growth_prior_mean = params$initial_growth_prior_mean,
     initial_growth_prior_sd = params$initial_growth_prior_sd,
     sigma_ww_site_prior_mean_mean = params$sigma_ww_site_prior_mean_mean,

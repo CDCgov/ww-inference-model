@@ -384,7 +384,8 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   # I(t)/convolve(I(t), g(t)) #nolint
   # This is not used directly, but we want to have it for comparing to the
   # fit.
-  rt <- calc_rt(new_i_over_n,
+  rt <- calc_rt(
+    new_i = new_i_over_n,
     convolve_fxn = model$functions$convolve_dot_product,
     generation_interval = generation_interval,
     uot = uot,

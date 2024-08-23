@@ -44,7 +44,7 @@ infection to counts}
 \item{infection_feedback_pmf}{a vector with a normalized pmf dictating the
 delay of infection feedback}
 
-\item{params}{a dataframe of parameter names and numeric values}
+\item{params}{a list mapping parameter names to their values}
 
 \item{include_ww}{integer either 1 or 0 indicating whether to fit the
 wastewater data or not, default is 1}

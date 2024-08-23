@@ -81,7 +81,9 @@ get_inits_for_one_chain <- function(stan_data, params, stdev = 0.01) {
     log10_g = stats::rnorm(1, params$log10_g_prior_mean, 0.5),
     ww_site_mod_raw = abs(stats::rnorm(n_ww_lab_sites, 0, stdev)),
     ww_site_mod_sd = abs(stats::rnorm(1, 0, stdev)),
-    hosp_wday_effect = to_simplex(stats::rnorm(7, 1 / 7, stdev)),
+    hosp_wday_effect = to_simplex(abs(
+      stats::rnorm(7, 1 / 7, stdev)
+    )),
     infection_feedback = abs(stats::rnorm(1, 500, 20))
   )
   return(init_list)
