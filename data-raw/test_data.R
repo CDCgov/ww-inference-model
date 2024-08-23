@@ -56,7 +56,10 @@ fit <- wwinference::wwinference(
   mcmc_options = wwinference::get_mcmc_options(
     n_chains = 1,
     iter_sampling = 25,
-    iter_warmup = 25
+    iter_warmup = 100,
+    adapt_delta = 0.9,
+    max_treedepth = 5,
+    seed = 123
   ),
   generate_initial_values = FALSE,
   compiled_model = model

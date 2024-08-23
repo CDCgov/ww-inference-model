@@ -6,9 +6,14 @@ test_that("Test the wastewater inference model on simulated data.", {
   fit <- model$sample(
     data = toy_stan_data,
     seed = 123,
+    chains = 1,
     iter_sampling = 25,
-    iter_warmup = 25,
-    chains = 1
+    iter_warmup = 100,
+    adapt_delta = 0.9,
+    show_messages = FALSE,
+    show_exceptions = FALSE,
+    max_treedepth = 5,
+    diagnostics = c()
   )
 
   obs_last_draw <- posterior::subset_draws(fit$draws(), draw = 25)
