@@ -27,4 +27,4 @@ jobs:
     - name: "Check wwinference package"
       uses: r-lib/actions/check-r-package@v2
       with:
-        args: 'c("--no-manual", "--as-cran", "--no-vignettes")'
+        args: 'c("--no-manual", "--as-cran", "--no-build-vignettes")'
