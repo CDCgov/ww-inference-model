@@ -9,12 +9,15 @@ get_plot_forecasted_counts(
   count_data_eval,
   count_data_eval_col_name,
   forecast_date,
-  count_type = "hospital admissions"
+  count_type = "hospital admissions",
+  n_draws_to_plot = 100
 )
 }
 \arguments{
 \item{draws}{A dataframe containing the posterior draws with the data joined
-to it. This is the \code{draws_df} output of a call to \code{\link[=wwinference]{wwinference()}}}
+to it. This is the \code{draws_df} output of a call to \code{\link[=wwinference]{wwinference()}}. It
+expects the following column names: \code{date}, \code{pred_value}, \code{draw},
+and \code{name}}
 
 \item{count_data_eval}{A dataframe containing the count data we will
 evaluate the forecasts against. Must contain the columns \code{date} and
@@ -29,6 +32,9 @@ plotting, in ISO8601 format YYYY-MM-DD}
 
 \item{count_type}{A string indicating what data the counts refer to,
 default is \verb{hospital admissions}}
+
+\item{n_draws_to_plot}{An integer indicating how many draws from the
+posterior to include in the plot, default is \code{100}}
 }
 \value{
 A ggplot object containing the posterior draw of the estimated,

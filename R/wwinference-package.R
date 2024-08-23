@@ -18,4 +18,5 @@
 #' @importFrom MASS mvrnorm
 #' @importFrom cramer cramer.test
 #' @importFrom expm sqrtm
+#' @importFrom tibble tibble
 NULL

@@ -10,7 +10,7 @@ to_simplex(vector)
 \item{vector}{numeric vector}
 }
 \value{
-vector whos sum adds to 1
+vector whose entries sum to 1
 }
 \description{
 Normalize vector to a simplex

@@ -14,17 +14,18 @@ get_stan_data(
   inf_to_count_delay,
   infection_feedback_pmf,
   params,
+  include_ww,
   compute_likelihood = 1,
   dist_matrix
 )
 }
 \arguments{
-\item{input_count_data}{a dataframe with the input count data, must have
-the following columns: date, count, total_pop}
+\item{input_count_data}{a dataframe of the count data to be passed
+directly to stan, , must have the following columns: date, count, total_pop}
 
-\item{input_ww_data}{a dataframe with the input wastewater data with no gaps,
-must have the following columns: date, site, lab, genome_copies_per_ml,
-site_pop, below_lod, and if removing outliers, flag_as_ww_outlier}
+\item{input_ww_data}{a dataframe of the wastewater data to be passed
+directly to stan, must have the following columns: date, site, lab,
+genome_copies_per_ml, site_pop, below_lod, and exclude}
 
 \item{forecast_date}{string indicating the forecast date in ISO8601
 convention e.g. YYYY-MM-DD}
@@ -44,7 +45,10 @@ infection to counts}
 \item{infection_feedback_pmf}{a vector with a normalized pmf dictating the
 delay of infection feedback}
 
-\item{params}{a dataframe of parameter names and numeric values}
+\item{params}{a list mapping parameter names to their values}
+
+\item{include_ww}{integer either 1 or 0 indicating whether to fit the
+wastewater data or not, default is 1}
 
 \item{compute_likelihood}{indicator variable telling stan whether or not to
 compute the likelihood, default = \code{1}}
@@ -55,8 +59,85 @@ correlation function (i.e. all sites' epsilon values are independent and
 identically distributed).}
 }
 \value{
-a list of named variables to pass to stan
+\code{stan_args}: named variables to pass to stan
 }
 \description{
 Get stan data for ww + hosp model
+}
+\examples{
+ww_data <- tibble::tibble(
+  date = rep(seq(
+    from = lubridate::ymd("2023-08-01"),
+    to = lubridate::ymd("2023-11-01"),
+    by = "weeks"
+  ), 2),
+  site = c(rep(1, 14), rep(2, 14)),
+  lab = c(rep(1, 28)),
+  conc = abs(rnorm(28, mean = 500, sd = 50)),
+  lod = c(rep(20, 14), rep(15, 14)),
+  site_pop = c(rep(2e5, 14), rep(4e5, 14))
+)
+
+ww_data_preprocessed <- preprocess_ww_data(ww_data,
+  conc_col_name = "conc",
+  lod_col_name = "lod"
+)
+input_ww_data <- indicate_ww_exclusions(ww_data_preprocessed)
+
+hosp_data <- tibble::tibble(
+  date = seq(
+    from = lubridate::ymd("2023-07-01"),
+    to = lubridate::ymd("2023-10-30"),
+    by = "days"
+  ),
+  daily_admits = sample(5:70, 122, replace = TRUE),
+  state_pop = rep(1e6, 122)
+)
+
+input_count_data <- preprocess_count_data(
+  hosp_data,
+  "daily_admits",
+  "state_pop"
+)
+
+generation_interval <- to_simplex(c(0.01, 0.2, 0.3, 0.2, 0.1, 0.1, 0.01))
+inf_to_count_delay <- to_simplex(c(
+  rep(0.01, 12), rep(0.2, 4),
+  rep(0.01, 10)
+))
+infection_feedback_pmf <- generation_interval
+
+params <- get_params(
+  system.file("extdata", "example_params.toml",
+    package = "wwinference"
+  )
+)
+forecast_date <- "2023-11-06"
+calibration_time <- 90
+forecast_horizon <- 28
+include_ww <- 1
+input_count_data_for_stan <- get_input_count_data_for_stan(
+  input_count_data,
+  calibration_time
+)
+last_count_data_date <- max(input_count_data_for_stan$date, na.rm = TRUE)
+first_count_data_date <- min(input_count_data_for_stan$date, na.rm = TRUE)
+input_ww_data_for_stan <- get_input_ww_data_for_stan(
+  input_ww_data,
+  first_count_data_date,
+  last_count_data_date,
+  calibration_time
+)
+stan_args <- get_stan_data(
+  input_count_data_for_stan,
+  input_ww_data_for_stan,
+  forecast_date,
+  forecast_horizon,
+  calibration_time,
+  generation_interval,
+  inf_to_count_delay,
+  infection_feedback_pmf,
+  params,
+  include_ww
+)
 }
