@@ -40,7 +40,7 @@ get_draws_df <- function(x, ...) {
 #' @rdname get_draws_df
 #' @export
 get_draws_df.wwinference_fit <- function(x, ...) {
-  get_draws_df.default(
+  get_draws_df.data.frame(
     x = x$input_data$input_ww_data,
     count_data = x$input_data$input_count_data,
     stan_args = x$stan_args,
@@ -53,7 +53,8 @@ get_draws_df.wwinference_fit <- function(x, ...) {
 get_draws_df.default <- function(x, ...) {
   stop(
     "No method defined for get_draws_df for object of class(es) ",
-    paste(class(x), collapse = ", "),
+    paste(class(x), collapse = ", "), 
+    ". Use directly on a wwinference_fit object or a dataframe of wastewater observations.",
     call. = FALSE
   )
 }

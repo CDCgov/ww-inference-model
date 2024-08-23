@@ -93,18 +93,6 @@ get_model_diagnostic_flags.default <- function(x,
 }
 
 
-#' Method for printing the CmdStan diagnostic summary
-#' for a wwinference_fit object
-#'
-#' @param ww_fit An object of class wwinference_fit
-#' @param ... additional arguments
-#'
-#' @family diagnostics
-#' @export
-diagnostic_summary <- function(ww_fit, ...) {
-  ww_fit$fit$result$diagnostic_summary()
-}
-
 #' Method for printing the CmdStan parameter diagnostics for a
 #' wwinference_fit_object
 #'

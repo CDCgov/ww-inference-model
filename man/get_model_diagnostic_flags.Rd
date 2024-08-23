@@ -59,7 +59,6 @@ specifically for objects of type 'wwinference_fit'.
 }
 \seealso{
 Other diagnostics: 
-\code{\link{diagnostic_summary}()},
 \code{\link{parameter_diagnostics}()},
 \code{\link{wwinference}()}
 }
