@@ -143,6 +143,8 @@ stan_args <- get_stan_data(
   inf_to_count_delay,
   infection_feedback_pmf,
   params,
-  include_ww
+  include_ww,
+  dist_matrix = NULL,
+  bool_spatial_comp = FALSE
 )
 }
