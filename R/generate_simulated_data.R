@@ -207,6 +207,16 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     force_recompile = TRUE
   )
   model$expose_functions(global = TRUE)
+  spatial_fxns <- cmdstanr::cmdstan_model(
+    stan_file = system.file(
+      "stan", "functions", "spatial_functions.stan",
+      package = "wwinference"
+    ),
+    compile = TRUE,
+    compile_standalone = TRUE,
+    force_recompile = TRUE
+  )
+  spatial_fxns$expose_functions(global = TRUE)
 
   # Get other variables needed for forward simulation ------------------------
   params <- get_params(input_params_path) # load in parameters
