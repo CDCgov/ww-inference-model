@@ -206,7 +206,9 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #'   inf_to_count_delay,
 #'   infection_feedback_pmf,
 #'   params,
-#'   include_ww
+#'   include_ww,
+#'   dist_matrix = NULL,
+#'   bool_spatial_comp = FALSE
 #' )
 get_stan_data <- function(input_count_data,
                           input_ww_data,
