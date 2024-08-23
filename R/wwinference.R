@@ -21,6 +21,12 @@
 #' state) daily count data, pertaining to the number of events that are being
 #' counted on that day, e.g. number of daily cases or daily hospital admissions.
 #' Must contain the following columns: `date`, `count` , `total_pop`
+#' @param forecast_date a character string in ISO8601 format (YYYY-MM-DD)
+#' indicating the date that the forecast is to be made. Default is NULL
+#' @param calibration_time integer indicating the number of days to calibrate
+#' the model for, default is `90`
+#' @param forecast_horizon integer indicating the number of days, including the
+#' forecast date, to produce forecasts for, default is `28`
 #' @param model_spec The model specification parameters as defined using
 #' `get_model_spec()`. The default here pertains to the `forecast_date` in the
 #' example data provided by the package, but this should be specified by the
@@ -34,10 +40,13 @@
 #' function
 #' @param compiled_model The pre-compiled model as defined using
 #' `compile_model()`
-#' @param dist_matrix Distance matrix for spatial correlation in distance
-#' correlation function.
-#' @param bool_spatial_comp Boolean for whether or not user wants a spatial
-#' model.
+#' @param dist_matrix Distance matrix, n_sites x n_sites, passed to a
+#' distance-based correlation function for epsilon. If NULL, use an independence
+#' correlation function, for current implementation (i.e. all sites' epsilon
+#' values are independent and identically distributed) .
+#' @param bool_spatial_comp Switch for whether or not infer
+#' site-to-site/"spatial" correlation matrix, currently correlation matrix
+#' follows exponential correlation structure.
 #'
 #' @return A nested list of the following items, intended to allow the user to
 #' quickly and easily plot results from their inference, while also being able
@@ -66,18 +75,41 @@
 #'
 wwinference <- function(ww_data,
                         count_data,
-                        model_spec = wwinference::get_model_spec(
-                          forecast_date =
-                            "2023-12-06"
-                        ),
-                        mcmc_options = wwinference::get_mcmc_options(),
+                        forecast_date = NULL,
+                        calibration_time = 90,
+                        forecast_horizon = 28,
+                        model_spec = get_model_spec(),
+                        mcmc_options = get_mcmc_options(),
                         generate_initial_values = TRUE,
-                        compiled_model = wwinference::compile_model(),
+                        compiled_model = compile_model(),
                         dist_matrix = NULL,
                         bool_spatial_comp = FALSE) {
+  if (is.null(forecast_date)) {
+    cli::cli_abort(
+      "The user must specify a forecast date"
+    )
+  }
+
   # Check that data is compatible with specifications
-  check_date(ww_data, model_spec$forecast_date)
-  check_date(count_data, model_spec$forecast_date)
+  assert_no_dates_after_max(ww_data$date, forecast_date)
+  assert_no_dates_after_max(count_data$date, forecast_date)
+
+  input_count_data <- get_input_count_data_for_stan(
+    count_data,
+    calibration_time
+  )
+  last_count_data_date <- max(input_count_data$date, na.rm = TRUE)
+  first_count_data_date <- min(input_count_data$date, na.rm = TRUE)
+  input_ww_data <- get_input_ww_data_for_stan(
+    ww_data,
+    first_count_data_date,
+    last_count_data_date,
+    calibration_time
+  )
+  input_data <- list(
+    input_count_data = input_count_data,
+    input_ww_data = input_ww_data
+  )
 
   if (bool_spatial_comp == TRUE && is.null(dist_matrix)) {
     stop(
@@ -88,16 +120,17 @@ wwinference <- function(ww_data,
 
 
   # If checks pass, create stan data object
-  stan_data <- get_stan_data(
-    input_count_data = count_data,
-    input_ww_data = ww_data,
-    forecast_date = model_spec$forecast_date,
-    calibration_time = model_spec$calibration_time,
-    forecast_horizon = model_spec$forecast_horizon,
+  stan_args <- get_stan_data(
+    input_count_data = input_count_data,
+    input_ww_data = input_ww_data,
+    forecast_date = forecast_date,
+    calibration_time = calibration_time,
+    forecast_horizon = forecast_horizon,
     generation_interval = model_spec$generation_interval,
     inf_to_count_delay = model_spec$inf_to_count_delay,
     infection_feedback_pmf = model_spec$infection_feedback_pmf,
     params = model_spec$params,
+    include_ww = as.numeric(model_spec$include_ww),
     compute_likelihood = 1,
     dist_matrix,
     bool_spatial_comp
@@ -107,17 +140,17 @@ wwinference <- function(ww_data,
   if (generate_initial_values) {
     init_lists <- c()
     for (i in 1:mcmc_options$n_chains) {
-      init_lists[[i]] <- get_inits(stan_data, params)
+      init_lists[[i]] <- get_inits_for_one_chain(stan_args, params)
     }
   }
 
 
   fit_model <- function(compiled_model,
-                        standata,
+                        stan_args,
                         model_spec,
                         init_lists) {
     fit <- compiled_model$sample(
-      data = stan_data,
+      data = stan_args,
       init = init_lists,
       seed = mcmc_options$seed,
       iter_sampling = mcmc_options$iter_sampling,
@@ -136,7 +169,7 @@ wwinference <- function(ww_data,
 
   fit <- safe_fit_model(
     compiled_model,
-    standata,
+    stan_args,
     model_spec,
     init_lists
   )
@@ -154,7 +187,7 @@ wwinference <- function(ww_data,
     date_time_spine <- tibble::tibble(
       date = seq(
         from = min(count_data$date),
-        to = min(count_data$date) + stan_data$ot + stan_data$ht,
+        to = min(count_data$date) + stan_args$ot + stan_args$ht,
         by = "days"
       )
     ) |>
@@ -169,8 +202,8 @@ wwinference <- function(ww_data,
       dplyr::bind_rows(tibble::tibble(
         site = "remainder of pop",
         site_index = max(ww_data$site_index) + 1,
-        site_pop = stan_data$subpop_size[
-          length(unique(stan_data$subpop_size))
+        site_pop = stan_args$subpop_size[
+          length(unique(stan_args$subpop_size))
         ]
       ))
 
@@ -267,13 +300,6 @@ get_mcmc_options <- function(
 #' post-omicron COVID-19 model with joint inference of hospital admissions
 #' and data on wastewater viral concentrations
 #'
-#'
-#' @param forecast_date a character string in ISO8601 format (YYYY-MM-DD)
-#' indicating the date that the forecast is to be made. Default is
-#' @param calibration_time integer indicating the number of days to calibrate
-#' the model for, default is `90`
-#' @param forecast_horizon integer indicating the number of days, including the
-#' forecast date, to produce forecasts for, default is `28`
 #' @param generation_interval vector of a simplex (must sum to 1) describing
 #' the daily probability of onwards transmission, default is package data
 #' provided for the COVID-19 generation interval post-Omicron
@@ -284,6 +310,9 @@ get_mcmc_options <- function(
 #' @param infection_feedback_pmf vector of a simplex (must sum to 1) describing
 #' the delay from incident infection to feedback in the transmission dynamics.
 #' The default is the COVID-19 generation interval
+#' @param include_ww Boolean indicating whether or not to include the wastewater
+#' data into the model, default is `TRUE` which will get passed to stan and
+#' tell the model to evaluate the likelihood with the wastewater data
 #' @param params a 1 row dataframe of parameters corresponding to model
 #' priors and disease/data specific parameters. Default is for COVID-19 hospital
 #' admissions and viral concentrations in wastewater
@@ -292,26 +321,22 @@ get_mcmc_options <- function(
 #' @export
 #'
 #' @examples
-#' model_spec_list <- get_model_spec(forecast_date = "2023-12-06")
+#' model_spec_list <- get_model_spec()
 get_model_spec <- function(
-    forecast_date,
-    calibration_time = 90,
-    forecast_horizon = 28,
     generation_interval = wwinference::generation_interval,
     inf_to_count_delay = wwinference::inf_to_hosp,
     infection_feedback_pmf = wwinference::generation_interval,
+    include_ww = TRUE,
     params = get_params(
       system.file("extdata", "example_params.toml",
         package = "wwinference"
       )
     )) {
   model_specs <- list(
-    forecast_date = forecast_date,
-    calibration_time = calibration_time,
-    forecast_horizon = forecast_horizon,
     generation_interval = generation_interval,
     inf_to_count_delay = inf_to_hosp,
     infection_feedback_pmf = infection_feedback_pmf,
+    include_ww = include_ww,
     params = params
   )
   return(model_specs)

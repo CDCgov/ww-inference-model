@@ -21,17 +21,18 @@ params <- get_params(
 )
 
 
+
+hosp_data_preprocessed <- wwinference::preprocess_count_data(
+  hosp_data,
+  count_col_name = "daily_hosp_admits",
+  pop_size_col_name = "state_pop"
+)
+
+
 ww_data_preprocessed <- wwinference::preprocess_ww_data(
   ww_data,
   conc_col_name = "genome_copies_per_ml",
   lod_col_name = "lod"
-)
-
-
-hosp_data_preprocessed <- wwinference::preprocess_hosp_data(
-  hosp_data,
-  count_col_name = "daily_hosp_admits",
-  pop_size_col_name = "state_pop"
 )
 
 # Sites ------------------------------------------------------------------------
@@ -159,15 +160,16 @@ model <- wwinference::compile_model(
 
 
 fit <- wwinference::wwinference(
-  ww_data_to_fit,
-  hosp_data_preprocessed,
+  ww_data = ww_data_to_fit,
+  count_data = hosp_data_preprocessed,
+  forecast_date = forecast_date,
+  calibration_time = calibration_time,
+  forecast_horizon = forecast_horizon,
   model_spec = get_model_spec(
-    forecast_date = forecast_date,
-    calibration_time = calibration_time,
-    forecast_horizon = forecast_horizon,
     generation_interval = generation_interval,
     inf_to_count_delay = inf_to_hosp,
-    infection_feedback_pmf = infection_feedback_pmf
+    infection_feedback_pmf = infection_feedback_pmf,
+    params = params
   ),
   mcmc_options = get_mcmc_options(),
   compiled_model = model,

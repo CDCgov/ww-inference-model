@@ -8,10 +8,13 @@ data}
 wwinference(
   ww_data,
   count_data,
-  model_spec = wwinference::get_model_spec(forecast_date = "2023-12-06"),
-  mcmc_options = wwinference::get_mcmc_options(),
+  forecast_date = NULL,
+  calibration_time = 90,
+  forecast_horizon = 28,
+  model_spec = get_model_spec(),
+  mcmc_options = get_mcmc_options(),
   generate_initial_values = TRUE,
-  compiled_model = wwinference::compile_model(),
+  compiled_model = compile_model(),
   dist_matrix = NULL,
   bool_spatial_comp = FALSE
 )
@@ -26,6 +29,15 @@ the following columns: \code{date}, \code{site}, \code{lab}, \code{genome_copies
 state) daily count data, pertaining to the number of events that are being
 counted on that day, e.g. number of daily cases or daily hospital admissions.
 Must contain the following columns: \code{date}, \code{count} , \code{total_pop}}
+
+\item{forecast_date}{a character string in ISO8601 format (YYYY-MM-DD)
+indicating the date that the forecast is to be made. Default is NULL}
+
+\item{calibration_time}{integer indicating the number of days to calibrate
+the model for, default is \code{90}}
+
+\item{forecast_horizon}{integer indicating the number of days, including the
+forecast date, to produce forecasts for, default is \code{28}}
 
 \item{model_spec}{The model specification parameters as defined using
 \code{get_model_spec()}. The default here pertains to the \code{forecast_date} in the
@@ -44,11 +56,14 @@ function}
 \item{compiled_model}{The pre-compiled model as defined using
 \code{compile_model()}}
 
-\item{dist_matrix}{Distance matrix for spatial correlation in distance
-correlation function.}
+\item{dist_matrix}{Distance matrix, n_sites x n_sites, passed to a
+distance-based correlation function for epsilon. If NULL, use an independence
+correlation function, for current implementation (i.e. all sites' epsilon
+values are independent and identically distributed) .}
 
-\item{bool_spatial_comp}{Boolean for whether or not user wants a spatial
-model.}
+\item{bool_spatial_comp}{Switch for whether or not infer
+site-to-site/"spatial" correlation matrix, currently correlation matrix
+follows exponential correlation structure.}
 }
 \value{
 A nested list of the following items, intended to allow the user to

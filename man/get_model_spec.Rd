@@ -5,26 +5,15 @@
 \title{Get model specifications}
 \usage{
 get_model_spec(
-  forecast_date,
-  calibration_time = 90,
-  forecast_horizon = 28,
   generation_interval = wwinference::generation_interval,
   inf_to_count_delay = wwinference::inf_to_hosp,
   infection_feedback_pmf = wwinference::generation_interval,
+  include_ww = TRUE,
   params = get_params(system.file("extdata", "example_params.toml", package =
     "wwinference"))
 )
 }
 \arguments{
-\item{forecast_date}{a character string in ISO8601 format (YYYY-MM-DD)
-indicating the date that the forecast is to be made. Default is}
-
-\item{calibration_time}{integer indicating the number of days to calibrate
-the model for, default is \code{90}}
-
-\item{forecast_horizon}{integer indicating the number of days, including the
-forecast date, to produce forecasts for, default is \code{28}}
-
 \item{generation_interval}{vector of a simplex (must sum to 1) describing
 the daily probability of onwards transmission, default is package data
 provided for the COVID-19 generation interval post-Omicron}
@@ -37,6 +26,10 @@ delay distribution from COVID-19 infection to hospital admission}
 \item{infection_feedback_pmf}{vector of a simplex (must sum to 1) describing
 the delay from incident infection to feedback in the transmission dynamics.
 The default is the COVID-19 generation interval}
+
+\item{include_ww}{Boolean indicating whether or not to include the wastewater
+data into the model, default is \code{TRUE} which will get passed to stan and
+tell the model to evaluate the likelihood with the wastewater data}
 
 \item{params}{a 1 row dataframe of parameters corresponding to model
 priors and disease/data specific parameters. Default is for COVID-19 hospital
@@ -52,5 +45,5 @@ post-omicron COVID-19 model with joint inference of hospital admissions
 and data on wastewater viral concentrations
 }
 \examples{
-model_spec_list <- get_model_spec(forecast_date = "2023-12-06")
+model_spec_list <- get_model_spec()
 }

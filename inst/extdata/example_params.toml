@@ -49,8 +49,8 @@ p_hosp_w_sd_sd = 0.01
 
 inv_sqrt_phi_prior_mean = 0.1 # 1 / sqrt(100)
 inv_sqrt_phi_prior_sd = 0.1414214 # 1 / sqrt(50)
-wday_effect_prior_mean = 0.1428571 # 1 / 7
-wday_effect_prior_sd = 0.05
+hosp_wday_effect_prior_alpha = [5, 5, 5, 5, 5, 5, 5]
+# centered on equal effects for all days
 
 [wastewater_observation_process]
 ml_of_ww_per_person_day = 22.7e4

@@ -1,37 +1,53 @@
 #' Pre-process wastewater input data, adding needed indices and flagging
 #' potential outliers
 #' @param ww_data dataframe containing the following columns: site, lab,
-#' date, a column for concentration, and lod
+#' date, site_pop, a column for concentration, and  a column for the
+#' limit of detection
 #' @param conc_col_name string indicating the name of the column containing
 #' the concentration measurements in the wastewater data, default is
 #'  `genome_copies_per_ml`
 #' @param lod_col_name string indicating the name of the column containing
 #' the concentration measurements in the wastewater data, default is
-#'  `genome_copies_per_ml`
+#'  `genome_copies_per_ml`. Note that any values in the `conc_col_name`
+#'  equal to the limit of detection will be treated as below the limit of
+#'  detection.
 #' @return a dataframe containing the same columns as ww_data except
 #' the `conc_col_name` will be replaced with `genome_copies_per_ml` and
 #' the `lod_col_name` will be replaced with `lod` plus the following
 #' additional columns needed for the stan model:
-#' lab_site_index, site_index, flag_as_ww_outlier, lab_site_name,
-#' forecast_date
+#' lab_site_index, site_index, flag_as_ww_outlier, below_lod, lab_site_name,
+#' exclude
 #' @export
 #'
 #' @examples
 #' ww_data <- tibble::tibble(
-#'   date = rep(c("2023-11-01", "2023-11-02"), 2),
+#'   date = lubridate::ymd(rep(c("2023-11-01", "2023-11-02"), 2)),
 #'   site = c(rep(1, 2), rep(2, 2)),
 #'   lab = c(1, 1, 1, 1),
 #'   conc = c(345.2, 784.1, 401.5, 681.8),
-#'   lod = c(20, 20, 15, 15)
+#'   lod = c(20, 20, 15, 15),
+#'   site_pop = c(rep(2e5, 2), rep(4e5, 2))
 #' )
-
 #' ww_data_preprocessed <- preprocess_ww_data(ww_data,
-#'                                            conc_col_name = "conc",
-#'                                            lod_col_name = "lod"
-#'                                            )
+#'   conc_col_name = "conc",
+#'   lod_col_name = "lod"
+#' )
 preprocess_ww_data <- function(ww_data,
                                conc_col_name = "genome_copies_per_ml",
                                lod_col_name = "lod") {
+  check_req_ww_cols_present(
+    ww_data,
+    conc_col_name,
+    lod_col_name
+  )
+  # Perform some checks on the contents of the ww_data dataframe
+  validate_ww_conc_data(ww_data,
+    conc_col_name = conc_col_name,
+    lod_col_name = lod_col_name
+  )
+
+
+
   # Add some columns
   ww_data_add_cols <- ww_data |>
     dplyr::left_join(
@@ -53,8 +69,8 @@ preprocess_ww_data <- function(ww_data,
       genome_copies_per_ml = {{ conc_col_name }}
     ) |>
     dplyr::mutate(
-      lab_site_name = glue::glue("Site: {site},  Lab:  {lab}"),
-      below_lod = ifelse(genome_copies_per_ml < lod, 1, 0)
+      lab_site_name = glue::glue("Site: {site}, Lab: {lab}"),
+      below_lod = ifelse(genome_copies_per_ml <= lod, 1, 0)
     )
 
   # Get an extra column that identifies the wastewater outliers using the
@@ -69,7 +85,7 @@ preprocess_ww_data <- function(ww_data,
 
 #' Pre-process hospital admissions data, converting column names to those
 #' that [get_stan_data()] expects.
-#' @param hosp_data dataframe containing the following columns: date,
+#' @param count_data dataframe containing the following columns: date,
 #' a count column, and a population size column
 #' @param count_col_name name of the column containing the epidemiological
 #' indicator, default is `daily_hosp_admits`
@@ -82,25 +98,38 @@ preprocess_ww_data <- function(ww_data,
 #'
 #' @examples
 #' hosp_data <- tibble::tibble(
-#'   date = c("2023-11-01", "2023-11-02"),
+#'   date = lubridate::ymd(c("2023-11-01", "2023-11-02")),
 #'   daily_admits = c(10, 20),
 #'   state_pop = c(1e6, 1e6)
 #' )
-#' hosp_data_preprocessed <- preprocess_hosp_data(
+#' hosp_data_preprocessed <- preprocess_count_data(
 #'   hosp_data,
 #'   "daily_admits",
 #'   "state_pop"
 #' )
-preprocess_hosp_data <- function(hosp_data,
-                                 count_col_name = "daily_hosp_admits",
-                                 pop_size_col_name = "state_pop") {
-  hosp_data_preprocessed <- hosp_data |>
+preprocess_count_data <- function(count_data,
+                                  count_col_name = "daily_hosp_admits",
+                                  pop_size_col_name = "state_pop") {
+  # This checks that we have all the right column names
+  check_req_count_cols_present(
+    count_data,
+    count_col_name,
+    pop_size_col_name
+  )
+  # Perform some checks on the contents of the hosp_data df
+  validate_count_data(count_data,
+    count_col_name = count_col_name,
+    pop_size_col_name = pop_size_col_name
+  )
+
+
+  count_data_preprocessed <- count_data |>
     dplyr::rename(
       count = {{ count_col_name }},
       total_pop = {{ pop_size_col_name }}
     )
 
-  return(hosp_data_preprocessed)
+  return(count_data_preprocessed)
 }
 
 
@@ -242,7 +271,7 @@ flag_ww_outliers <- function(ww_data,
 #'
 #' @examples
 #' data <- tibble::tibble(
-#'   date = c("2023-10-01", "2023-10-02"),
+#'   date = lubridate::ymd(c("2023-10-01", "2023-10-02")),
 #'   genome_copies_per_mL = c(300, 3e6),
 #'   flag_as_ww_outlier = c(0, 1),
 #'   exclude = c(0, 0)
@@ -266,8 +295,10 @@ indicate_ww_exclusions <- function(data,
     # Port over the outliers flagged to the exclude column
     data_w_exclusions <- data |>
       dplyr::mutate(
-        exclude = ifelse({{ outlier_col_name }} == 1, 1, exclude)
+        exclude = ifelse(.data[[outlier_col_name]] == 1, 1, exclude)
       )
+  } else {
+    data_w_exclusions <- data
   }
   return(data_w_exclusions)
 }

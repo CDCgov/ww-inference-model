@@ -24,7 +24,7 @@ jobs:
       id-token: write
       pages: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: r-lib/actions/setup-pandoc@v2
         with:
@@ -52,7 +52,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Upload artifact for GH pages deployment
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: "docs/"
 
@@ -71,4 +71,4 @@ jobs:
 
     steps:
       - name: Deploy to GitHub pages
-        uses: actions/deploy-pages@v2.0.4
+        uses: actions/deploy-pages@v4
