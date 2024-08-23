@@ -92,7 +92,8 @@ returns the object invisibly.
 }
 
 \itemize{
-\item The summary method returns the outcome from the \verb{$summary} (\code{\link[cmdstanr:fit-method-summary]{cmdstanr::summary()}}) function.
+\item The summary method returns the outcome from the
+\verb{$summary} (\code{\link[cmdstanr:fit-method-summary]{cmdstanr::summary()}}) function.
 }
 }
 \description{
@@ -180,7 +181,7 @@ ww_fit <- wwinference(input_ww_data,
 }
 }
 \seealso{
-Other diagnostics:
+Other diagnostics: 
 \code{\link{diagnostic_summary}()},
 \code{\link{get_model_diagnostic_flags}()},
 \code{\link{parameter_diagnostics}()}

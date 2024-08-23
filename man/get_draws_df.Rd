@@ -4,13 +4,16 @@
 \alias{get_draws_df}
 \alias{get_draws_df.wwinference_fit}
 \alias{get_draws_df.default}
+\alias{get_draws_df.data.frame}
 \title{Postprocess to generate a draws dataframe}
 \usage{
 get_draws_df(x, ...)
 
 \method{get_draws_df}{wwinference_fit}(x, ...)
 
-\method{get_draws_df}{default}(x, count_data, stan_args, fit_obj, ...)
+\method{get_draws_df}{default}(x, ...)
+
+\method{get_draws_df}{data.frame}(x, count_data, stan_args, fit_obj, ...)
 }
 \arguments{
 \item{x}{Either a dataframe of wastewater observations, or an object of

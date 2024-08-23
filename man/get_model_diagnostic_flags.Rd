@@ -58,7 +58,7 @@ This method overloads the generic get_model_diagnostic_flags function
 specifically for objects of type 'wwinference_fit'.
 }
 \seealso{
-Other diagnostics:
+Other diagnostics: 
 \code{\link{diagnostic_summary}()},
 \code{\link{parameter_diagnostics}()},
 \code{\link{wwinference}()}

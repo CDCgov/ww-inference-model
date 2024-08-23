@@ -207,12 +207,10 @@ wwinference <- function(ww_data,
     init_lists = init_lists
   )
 
-  if (!is.null(fit$error)) { # If the model errors, return a list with the
-    # error and everything else NULL
-    out <- list(
-      error = fit$error[[1]]
-    )
-    message(fit$error[[1]])
+  if (!is.null(fit$error)) { # If the model errors, return the error message
+    
+    return(fit$error)
+
   } else {
     convergence_flag_df <- get_model_diagnostic_flags(fit$result)
 
@@ -231,9 +229,45 @@ wwinference <- function(ww_data,
     }
   }
 
-  structure(out, class = "wwinference_fit")
+  do.call(new_wwinference_fit, out)
+
 }
 
+#' Constructor for the `wwinference_fit` class
+#' @param fit The CmdStan object that is the output of fitting the model
+#' @param input_data A list containing all the data passed to stan for fitting
+#' the model
+#' @param stan_args A list containing the inputs passed directly to the stan model
+#' @param mcmc_options A list of the MCMC specifications passed to stan
+#' @return An object of the `wwinference_fit` class.
+#' @noRd 
+#' 
+new_wwinference_fit <- function(
+  fit,
+  input_data,
+  stan_args,
+  mcmc_options 
+) {
+
+  # Checking
+  stopifnot(
+    inherits(fit, "CmdStanMCMC"),
+    inherits(input_data, "list"),
+    inherits(stan_args, "list"),
+    inherits(mcmc_options, "list")
+  )
+
+  structure(
+    list(
+      fit = fit,
+      input_data = input_data,
+      stan_args = stan_args,
+      mcmc_options = mcmc_options
+    ),
+    class = "wwinference_fit"
+  )
+
+}
 
 #' @param x,object Object of class `wwinference_fit`
 #' @param ... Additional parameters passed to the corresponding method
@@ -245,7 +279,7 @@ wwinference <- function(ww_data,
 print.wwinference_fit <- function(x, ...) {
   cat("wwinference_fit object\n")
   cat("N of WW sites    :", x$stan_args$n_ww_sites, "\n")
-  cat("N of lab sites   :", x$stan_args$n_ww_lab_sites, "\n")
+  cat("N of unique lab-site pairs  :", x$stan_args$n_ww_lab_sites, "\n")
   cat("State population :", formatC(
     x$stan_args$state_pop,
     format = "d"

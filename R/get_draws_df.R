@@ -48,9 +48,19 @@ get_draws_df.wwinference_fit <- function(x, ...) {
   )
 }
 
+#' @export 
+#' @rdname get_draws_df
+get_draws_df.default <- function(x, ...) {
+  stop(
+    "No method defined for get_draws_df for object of class(es) ",
+    paste(class(x), collapse = ", "),
+    call. = FALSE
+  )
+}
+
 #' @rdname get_draws_df
 #' @export
-get_draws_df.default <- function(x,
+get_draws_df.data.frame <- function(x,
                                  count_data,
                                  stan_args,
                                  fit_obj,
