@@ -143,7 +143,9 @@ test_that(paste0(
     inf_to_count_delay,
     infection_feedback_pmf,
     params,
-    include_ww
+    include_ww,
+    dist_matrix = NULL,
+    bool_spatial_comp = FALSE
   ))
 
   # Make wastewater data outside of scope of admissions data
@@ -184,7 +186,9 @@ test_that(paste0(
     inf_to_count_delay,
     infection_feedback_pmf,
     params,
-    include_ww
+    include_ww,
+    dist_matrix = NULL,
+    bool_spatial_comp = FALSE
   ))
 })
 
@@ -199,7 +203,9 @@ test_that("Test that pmf check works as expected", {
     inf_to_count_delay,
     infection_feedback_pmf,
     params,
-    include_ww
+    include_ww,
+    dist_matrix = NULL,
+    bool_spatial_comp = FALSE
   ))
 
   expect_warning(get_stan_data(
@@ -212,7 +218,9 @@ test_that("Test that pmf check works as expected", {
     inf_to_count_delay = to_simplex(rep(1, 100)),
     infection_feedback_pmf,
     params,
-    include_ww
+    include_ww,
+    dist_matrix = NULL,
+    bool_spatial_comp = FALSE
   ))
 
   expect_warning(get_stan_data(
@@ -225,7 +233,9 @@ test_that("Test that pmf check works as expected", {
     inf_to_count_delay,
     infection_feedback_pmf = to_simplex(rep(1, 100)),
     params,
-    include_ww
+    include_ww,
+    dist_matrix = NULL,
+    bool_spatial_comp = FALSE
   ))
 
   expect_error(get_stan_data(
@@ -238,6 +248,8 @@ test_that("Test that pmf check works as expected", {
     inf_to_count_delay,
     infection_feedback_pmf = c(0.5, 0.4, 0.2),
     params,
-    include_ww
+    include_ww,
+    dist_matrix = NULL,
+    bool_spatial_comp = FALSE
   ))
 })
