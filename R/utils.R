@@ -137,10 +137,29 @@ convert_to_logsd <- function(mean, sd) {
 #'
 #' @param vector numeric vector
 #'
-#' @return vector whos sum adds to 1
+#' @return vector whose entries sum to 1
 #' @export
 #' @examples
 #' to_simplex(c(1, 1, 1))
 to_simplex <- function(vector) {
+  if (any(vector < 0)) {
+    cli::cli_abort(
+      c(
+        "Cannot normalize a vector with ",
+        "negative entries to a simplex. ",
+        "Got {vector}"
+      )
+    )
+  }
   return(vector / sum(vector))
+}
+
+#' Escape brackets returned in a string for passing to glue
+#'
+#' @param string A string vector containing `{}`
+#'
+#' @return A string vector where all single brackets are replaced with double
+#' brackets
+autoescape_brackets <- function(string) {
+  return(gsub("\\{(.*)\\}", "{{\\1}}", string))
 }
