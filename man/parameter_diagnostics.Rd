@@ -17,7 +17,7 @@ Method for printing the CmdStan parameter diagnostics for a
 wwinference_fit_object
 }
 \seealso{
-Other diagnostics: 
+Other diagnostics:
 \code{\link{get_model_diagnostic_flags}()},
 \code{\link{wwinference}()}
 }
