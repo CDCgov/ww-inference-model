@@ -13,7 +13,7 @@ get_draws_df(x, ...)
 
 \method{get_draws_df}{default}(x, ...)
 
-\method{get_draws_df}{data.frame}(x, count_data, stan_args, fit_obj, ...)
+\method{get_draws_df}{data.frame}(x, count_data, stan_data_list, fit_obj, ...)
 }
 \arguments{
 \item{x}{Either a dataframe of wastewater observations, or an object of
@@ -24,11 +24,11 @@ class wwinference_fit}
 \item{count_data}{A dataframe of the preprocessed daily count data (e.g.
 hospital admissions) from the "global" population}
 
-\item{stan_args}{A list containing all the data passed to stan for fitting
-the model}
-
 \item{fit_obj}{a CmdStan object that is the output of fitting the model to
 \code{x} and \code{count_data}}
+
+\item{stan_args}{A list containing all the data passed to stan for fitting
+the model}
 }
 \value{
 A tibble containing the full set of posterior draws of the

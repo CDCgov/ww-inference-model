@@ -15,7 +15,7 @@ wwinference(
   calibration_time = 90,
   forecast_horizon = 28,
   model_spec = get_model_spec(),
-  mcmc_options = get_mcmc_options(),
+  fit_opts = get_mcmc_options(),
   generate_initial_values = TRUE,
   compiled_model = compile_model()
 )
@@ -49,8 +49,8 @@ forecast date, to produce forecasts for, default is \code{28}}
 example data provided by the package, but this should be specified by the
 user based on the date they are producing a forecast}
 
-\item{mcmc_options}{The MCMC parameters as defined using
-\code{get_mcmc_options()}.}
+\item{fit_opts}{The fit options, which in this case default to the
+MCMC parameters as defined using \code{get_mcmc_options()}.}
 
 \item{generate_initial_values}{Boolean indicating whether or not to specify
 the initialization of the sampler, default is \code{TRUE}, meaning that
@@ -73,11 +73,11 @@ like extract posterior draws, get diangostic behavior, and plot results
 function will return:
 \code{fit}: The CmdStan object that is returned from the call to
 \code{cmdstanr::sample()}. Can be used to access draws, summary, diagnostics, etc.
-\code{input_data}: a list containing the input \code{ww_data} and the input
+\code{raw_input_data}: a list containing the input \code{ww_data} and the input
 \code{count_data} used in the model.
-\code{stan_data_args}: a list containing the inputs passed directly to the
+\code{stan_data_list}: a list containing the inputs passed directly to the
 stan model
-\code{mcmc_options}: a list of the MCMC specifications passed to stan
+\code{fit_opts}: a list of the MCMC specifications passed to stan
 
 If the model fails to run, a list containing the follow will be returned:
 \code{error}: the error message provided from stan, indicating why the model
@@ -181,7 +181,7 @@ ww_fit <- wwinference(input_ww_data,
 }
 }
 \seealso{
-Other diagnostics: 
+Other diagnostics:
 \code{\link{get_model_diagnostic_flags}()},
 \code{\link{parameter_diagnostics}()}
 }

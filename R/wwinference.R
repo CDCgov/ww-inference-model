@@ -31,8 +31,8 @@
 #' `get_model_spec()`. The default here pertains to the `forecast_date` in the
 #' example data provided by the package, but this should be specified by the
 #' user based on the date they are producing a forecast
-#' @param mcmc_options The MCMC parameters as defined using
-#' `get_mcmc_options()`.
+#' @param fit_opts The fit options, which in this case default to the
+#' MCMC parameters as defined using `get_mcmc_options()`.
 #' @param generate_initial_values Boolean indicating whether or not to specify
 #' the initialization of the sampler, default is `TRUE`, meaning that
 #' initialization lists will be generated and passed as the `init` argument
@@ -48,11 +48,11 @@
 #' function will return:
 #' `fit`: The CmdStan object that is returned from the call to
 #' `cmdstanr::sample()`. Can be used to access draws, summary, diagnostics, etc.
-#' `input_data`: a list containing the input `ww_data` and the input
+#' `raw_input_data`: a list containing the input `ww_data` and the input
 #' `count_data` used in the model.
-#' `stan_data_args`: a list containing the inputs passed directly to the
+#' `stan_data_list`: a list containing the inputs passed directly to the
 #' stan model
-#' `mcmc_options`: a list of the MCMC specifications passed to stan
+#' `fit_opts`: a list of the MCMC specifications passed to stan
 #'
 #' If the model fails to run, a list containing the follow will be returned:
 #' `error`: the error message provided from stan, indicating why the model
@@ -143,7 +143,7 @@ wwinference <- function(ww_data,
                         calibration_time = 90,
                         forecast_horizon = 28,
                         model_spec = get_model_spec(),
-                        mcmc_options = get_mcmc_options(),
+                        fit_opts = get_mcmc_options(),
                         generate_initial_values = TRUE,
                         compiled_model = compile_model()) {
   if (is.null(forecast_date)) {
@@ -168,13 +168,13 @@ wwinference <- function(ww_data,
     last_count_data_date,
     calibration_time
   )
-  input_data <- list(
+  raw_input_data <- list(
     input_count_data = input_count_data,
     input_ww_data = input_ww_data
   )
 
   # If checks pass, create stan data object
-  stan_args <- get_stan_data(
+  stan_data_list <- get_stan_data(
     input_count_data = input_count_data,
     input_ww_data = input_ww_data,
     forecast_date = forecast_date,
@@ -191,8 +191,8 @@ wwinference <- function(ww_data,
   init_lists <- NULL
   if (generate_initial_values) {
     init_lists <- c()
-    for (i in 1:mcmc_options$n_chains) {
-      init_lists[[i]] <- get_inits_for_one_chain(stan_args, params)
+    for (i in 1:fit_opts$n_chains) {
+      init_lists[[i]] <- get_inits_for_one_chain(stan_data_list, params)
     }
   }
 
@@ -202,23 +202,22 @@ wwinference <- function(ww_data,
 
   fit <- safe_fit_model(
     compiled_model = compiled_model,
-    stan_args = stan_args,
-    mcmc_options = mcmc_options,
+    stan_data_list = stan_data_list,
+    fit_opts = fit_opts,
     init_lists = init_lists
   )
 
   if (!is.null(fit$error)) { # If the model errors, return the error message
-    
-    return(fit$error)
 
+    return(fit$error)
   } else {
     convergence_flag_df <- get_model_diagnostic_flags(fit$result)
 
     out <- list(
       fit = fit,
-      input_data = input_data,
-      stan_args = stan_args,
-      mcmc_options = mcmc_options
+      raw_input_data = raw_input_data,
+      stan_data_list = stan_data_list,
+      fit_opts = fit_opts
     )
 
     # Message if a flag doesn't pass. Still return
@@ -230,43 +229,41 @@ wwinference <- function(ww_data,
   }
 
   do.call(new_wwinference_fit, out)
-
 }
 
 #' Constructor for the `wwinference_fit` class
 #' @param fit The CmdStan object that is the output of fitting the model
-#' @param input_data A list containing all the data passed to stan for fitting
-#' the model
-#' @param stan_args A list containing the inputs passed directly to the stan model
-#' @param mcmc_options A list of the MCMC specifications passed to stan
+#' @param raw_input_data A list containing all the data passed to stan
+#' for fitting the model
+#' @param stan_data_list A list containing the inputs passed directly to the
+#' stan model
+#' @param fit_opts A list of the the fitting options, in this case the
+#' MCMC specifications passed to stan
 #' @return An object of the `wwinference_fit` class.
-#' @noRd 
-#' 
+#' @noRd
+#'
 new_wwinference_fit <- function(
-  fit,
-  input_data,
-  stan_args,
-  mcmc_options 
-) {
-
+    fit,
+    raw_input_data,
+    stan_data_list,
+    fit_opts) {
   # Checking
   stopifnot(
     inherits(fit, "CmdStanMCMC"),
-    inherits(input_data, "list"),
-    inherits(stan_args, "list"),
-    inherits(mcmc_options, "list")
+    inherits(raw_input_data, "list"),
+    inherits(stan_data_list, "list"),
+    inherits(fit_opts, "list")
   )
 
   structure(
     list(
       fit = fit,
-      input_data = input_data,
-      stan_args = stan_args,
-      mcmc_options = mcmc_options
+      raw_input_data = raw_input_data,
+      stan_data_list = stan_data_list,
+      fit_opts = fit_opts
     ),
     class = "wwinference_fit"
   )
-
 }
 
 #' @param x,object Object of class `wwinference_fit`
@@ -278,13 +275,13 @@ new_wwinference_fit <- function(
 #' returns the object invisibly.
 print.wwinference_fit <- function(x, ...) {
   cat("wwinference_fit object\n")
-  cat("N of WW sites    :", x$stan_args$n_ww_sites, "\n")
-  cat("N of unique lab-site pairs  :", x$stan_args$n_ww_lab_sites, "\n")
+  cat("N of WW sites    :", x$stan_data_list$n_ww_sites, "\n")
+  cat("N of unique lab-site pairs  :", x$stan_data_list$n_ww_lab_sites, "\n")
   cat("State population :", formatC(
-    x$stan_args$state_pop,
+    x$stan_data_list$state_pop,
     format = "d"
   ), "\n")
-  cat("N of weeks       :", x$stan_args$n_weeks, "\n")
+  cat("N of weeks       :", x$stan_data_list$n_weeks, "\n")
   cat("--------------------\n")
   cat("For more details, you can access the following:\n")
   cat(" - `$fit` for the CmdStan object\n")
@@ -306,25 +303,27 @@ summary.wwinference_fit <- function(object, ...) {
 
 #' Model fitting function
 #' @param compiled_model The compiled model object
-#' @param stan_args The stan data object
-#' @param mcmc_options The MCMC specifications
+#' @param stan_data_list The list of data to pass to stan
+#' @param fit_opts The fitting specifications
 #' @param init_lists A list of initial values for the sampler
 #' @return The fit object from the model
 #' @noRd
 fit_model <- function(compiled_model,
-                      stan_args,
-                      mcmc_options,
+                      stan_data_list,
+                      fit_opts,
                       init_lists) {
-  compiled_model$sample(
-    data = stan_args,
+  fit <- compiled_model$sample(
+    data = stan_data_list,
     init = init_lists,
-    seed = mcmc_options$seed,
-    iter_sampling = mcmc_options$iter_sampling,
-    iter_warmup = mcmc_options$iter_warmup,
-    max_treedepth = mcmc_options$max_treedepth,
-    chains = mcmc_options$n_chains,
-    parallel_chains = mcmc_options$n_chains
+    seed = fit_opts$seed,
+    iter_sampling = fit_opts$iter_sampling,
+    iter_warmup = fit_opts$iter_warmup,
+    max_treedepth = fit_opts$max_treedepth,
+    chains = fit_opts$n_chains,
+    parallel_chains = fit_opts$n_chains
   )
+
+  return(fit)
 }
 
 

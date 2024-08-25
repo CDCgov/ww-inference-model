@@ -309,7 +309,7 @@ ww_fit <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  mcmc_options = get_mcmc_options(),
+  fit_opts = get_mcmc_options(),
   compiled_model = model
 )
 ```
@@ -350,9 +350,9 @@ This is demonstrated below:
 
 ```{r extracting-draws-explicit}
 draws_df_explicit <- get_draws_df(
-  x = ww_fit$input_data$input_ww_data,
-  count_data = ww_fit$input_data$input_count_data,
-  stan_args = ww_fit$stan_args,
+  x = ww_fit$raw_input_data$input_ww_data,
+  count_data = ww_fit$raw_input_data$input_count_data,
+  stan_data_list = ww_fit$stan_data_list,
   fit_obj = ww_fit$fit
 )
 ```
@@ -462,7 +462,7 @@ fit_hosp_only <- wwinference::wwinference(
     include_ww = FALSE,
     params = params
   ),
-  mcmc_options = get_mcmc_options(),
+  fit_opts = get_mcmc_options(),
   compiled_model = model
 )
 ```
