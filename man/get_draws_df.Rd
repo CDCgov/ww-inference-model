@@ -24,11 +24,11 @@ class wwinference_fit}
 \item{count_data}{A dataframe of the preprocessed daily count data (e.g.
 hospital admissions) from the "global" population}
 
+\item{stan_data_list}{A list containing all the data passed to stan for
+fitting the model}
+
 \item{fit_obj}{a CmdStan object that is the output of fitting the model to
 \code{x} and \code{count_data}}
-
-\item{stan_args}{A list containing all the data passed to stan for fitting
-the model}
 }
 \value{
 A tibble containing the full set of posterior draws of the

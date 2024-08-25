@@ -128,7 +128,7 @@
 #'     infection_feedback_pmf = infection_feedback_pmf,
 #'     params = params
 #'   ),
-#'   mcmc_options = get_mcmc_options(
+#'   fit_opts = get_mcmc_options(
 #'     iter_warmup = 250,
 #'     iter_sampling = 250,
 #'     n_chains = 2
@@ -228,6 +228,7 @@ wwinference <- function(ww_data,
     }
   }
 
+  # Constructs the wwinference_fit class object
   do.call(new_wwinference_fit, out)
 }
 
@@ -285,9 +286,9 @@ print.wwinference_fit <- function(x, ...) {
   cat("--------------------\n")
   cat("For more details, you can access the following:\n")
   cat(" - `$fit` for the CmdStan object\n")
-  cat(" - `$input_data` for the input data\n")
-  cat(" - `$stan_args` for the stan data arguments\n")
-  cat(" - `$mcmc_options` for the MCMC options\n")
+  cat(" - `$raw_input_data` for the input data\n")
+  cat(" - `$stan_data_list` for the stan data arguments\n")
+  cat(" - `$fit_opts` for the fitting options\n")
   invisible(x)
 }
 

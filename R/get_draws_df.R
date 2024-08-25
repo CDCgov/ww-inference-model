@@ -15,8 +15,8 @@
 #' class wwinference_fit
 #' @param count_data A dataframe of the preprocessed daily count data (e.g.
 #' hospital admissions) from the "global" population
-#' @param stan_args A list containing all the data passed to stan for fitting
-#' the model
+#' @param stan_data_list A list containing all the data passed to stan for
+#' fitting the model
 #' @param fit_obj a CmdStan object that is the output of fitting the model to
 #' `x` and `count_data`
 #' @param ... additional arguments
@@ -43,7 +43,7 @@ get_draws_df.wwinference_fit <- function(x, ...) {
   get_draws_df.data.frame(
     x = x$raw_input_data$input_ww_data,
     count_data = x$raw_input_data$input_count_data,
-    stan_args = x$stan_data_list,
+    stan_data_list = x$stan_data_list,
     fit_obj = x$fit
   )
 }
@@ -88,8 +88,8 @@ get_draws_df.data.frame <- function(x,
     dplyr::bind_rows(tibble::tibble(
       site = "remainder of pop",
       site_index = max(x$site_index) + 1,
-      site_pop = stan_args$subpop_size[
-        length(unique(stan_args$subpop_size))
+      site_pop = stan_data_list$subpop_size[
+        length(unique(stan_data_list$subpop_size))
       ]
     ))
 

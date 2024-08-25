@@ -172,7 +172,7 @@ ww_fit <- wwinference(input_ww_data,
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  mcmc_options = get_mcmc_options(
+  fit_opts = get_mcmc_options(
     iter_warmup = 250,
     iter_sampling = 250,
     n_chains = 2
