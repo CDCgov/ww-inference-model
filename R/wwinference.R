@@ -250,7 +250,7 @@ new_wwinference_fit <- function(
     fit_opts) {
   # Checking
   stopifnot(
-    inherits(fit, "CmdStanMCMC"),
+    inherits(fit$result, what="CmdStanFit"),
     inherits(raw_input_data, "list"),
     inherits(stan_data_list, "list"),
     inherits(fit_opts, "list")
