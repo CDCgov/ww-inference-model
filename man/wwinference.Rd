@@ -83,7 +83,7 @@ If the model fails to run, a list containing the follow will be returned:
 \code{error}: the error message provided from stan, indicating why the model
 failed to run. Note, the model might still run and produce draws even if it
 has major model issues. We recommend the user always run the
-\code{check_diagnostics()} function on the \code{diagnostic_summary} as part of any
+\code{check_diagnostics()} function on the \code{parameter_diagnostics} as part of any
 pipeline to ensure model convergence.
 
 \itemize{

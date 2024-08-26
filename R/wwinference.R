@@ -58,7 +58,7 @@
 #' `error`: the error message provided from stan, indicating why the model
 #' failed to run. Note, the model might still run and produce draws even if it
 #' has major model issues. We recommend the user always run the
-#' `check_diagnostics()` function on the `diagnostic_summary` as part of any
+#' `check_diagnostics()` function on the `parameter_diagnostics` as part of any
 #' pipeline to ensure model convergence.
 #' @name wwinference
 #' @family diagnostics

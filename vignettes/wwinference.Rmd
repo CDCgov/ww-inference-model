@@ -309,7 +309,7 @@ ww_fit <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(),
+  fit_opts = get_mcmc_options(iter_warmup = 100, iter_sampling = 100),
   compiled_model = model
 )
 ```
@@ -390,7 +390,7 @@ We strongly recommend running diagnostics as a post-processing step on the
 model outputs.
 
 This can be done by passing the output of
-`wwinference()` into the `get_model_diagnostic_flags()`, `diagnostic_summary()`,
+`wwinference()` into the `get_model_diagnostic_flags()`, `parameter_diagnostics()`,
 and `parameter_diagnostics()` functions.
 
 `get_model_diagnostic_flags()` will print out a table of any flags, if any of
@@ -400,12 +400,11 @@ runs, we recommend adjusting as needed (see below)
 
 To further troubleshoot, you can look at
 the diagnostic summary and the diagnostics of the individual parameters using
-the functions `diagnostic_summary()` and `parameter_diagnostics()`
+the `parameter_diagnostics()` function.
 
 ```{r diagnostics-using-S3-methods}
 convergence_flag_df <- get_model_diagnostic_flags(ww_fit)
 print(convergence_flag_df)
-diagnostic_summary(ww_fit)
 parameter_diagnostics(ww_fit)
 ```
 
@@ -417,7 +416,7 @@ Start by passing the stan fit object(`ww_fit$fit$result`) into the
 `get_model_diagnostic_flags()` and adjusting the thresholds if desired.
 
 Then, we recommend looking at the diagnostics summary provided by `CmdStan`,
-which we had wrapped into the `diagnostic_summary()` call above. Lastly,
+which we had wrapped into the `parameter_diagnostics()` call above. Lastly,
 we recommend looking at the individual model parameters provided by `CmdStan`
 to identify which components of the model might be driving the convergence
 issues.
@@ -436,7 +435,7 @@ convergence_flag_df <- get_model_diagnostic_flags(
 )
 # Get the tables using the CmdStan functions via wrappers
 summary(ww_fit)
-diagnostic_summary(ww_fit, quiet = TRUE)
+parameter_diagnostics(ww_fit, quiet = TRUE)
 head(convergence_flag_df)
 ```
 
