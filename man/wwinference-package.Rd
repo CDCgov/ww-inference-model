@@ -21,12 +21,12 @@ Useful links:
 
 Authors:
 \itemize{
-  \item Sam Abbott \email{contact@samabbott.co.uk} (\href{https://orcid.org/0000-0001-8057-8037}{ORCID})
-  \item Zachary Susswein \email{utb2@cdc.gov}
-  \item Andrew Magee \email{rzg0@cdc.gov}
   \item Dylan Morris \email{dylan@dylanhmorris.com} (\href{https://orcid.org/0000-0002-3655-406X}{ORCID})
-  \item Scott Olesen \email{ulp7@cdc.gov}
+  \item Sam Abbott \email{contact@samabbott.co.uk} (\href{https://orcid.org/0000-0001-8057-8037}{ORCID})
+  \item Christian Bernal Zelaya \email{xuk0@cdc.gov}
   \item Damon Bayer \email{xum8@cdc.gov}
+  \item Andrew Magee \email{rzg0@cdc.gov}
+  \item Scott Olesen \email{ulp7@cdc.gov}
 }
 
 Other contributors:
