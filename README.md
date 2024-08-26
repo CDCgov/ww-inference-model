@@ -60,13 +60,13 @@ CmdStan path set to: {a path on your file system}
 If you run into trouble, consult the official [`cmdstanr`](https://mc-stan.org/cmdstanr/index.html) website for further installation guides and help.
 
 ## User install
-Once `cmdstanr` and `CmdStan` are installed, the next step is to download this repository and install the package, `wwinference`. The package provides tools for specifying and running the model, and installs other needed dependencies. 
-The package can be installed directly from github by running the following within an R session: 
+Once `cmdstanr` and `CmdStan` are installed, the next step is to download this repository and install the package, `wwinference`. The package provides tools for specifying and running the model, and installs other needed dependencies.
+The package can be installed directly from github by running the following within an R session:
 ```R
 remotes::install_github("CDCgov/ww-inference-model")
 ```
 
-If you are interested in contributing to the package, this can be done by cloning the repository: 
+If you are interested in contributing to the package, this can be done by cloning the repository:
 ## Developer install: Clone this repository and install the project package (`wwinference`)
 Once you have downloaded this repository, navigate to it within an R session and run the following:
 
