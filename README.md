@@ -68,7 +68,9 @@ Once `cmdstanr` and `CmdStan` are installed, the next step is to download this r
 The package can be installed directly from github by running the following within an R session:
 ```R
 remotes::install_github("CDCgov/ww-inference-model")
-Once you have downloaded this repository, navigate to it within an R session and run the following:
+```
+### Developer install
+If you are intersted in contributing to the `wwinference` clone the repository, navigate to it within an R session and run the following:
 
 ```R
 install.packages('remotes')
