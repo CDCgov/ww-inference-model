@@ -15,8 +15,8 @@
 #' class wwinference_fit
 #' @param count_data A dataframe of the preprocessed daily count data (e.g.
 #' hospital admissions) from the "global" population
-#' @param stan_args A list containing all the data passed to stan for fitting
-#' the model
+#' @param stan_data_list A list containing all the data passed to stan for
+#' fitting the model
 #' @param fit_obj a CmdStan object that is the output of fitting the model to
 #' `x` and `count_data`
 #' @param ... additional arguments
@@ -41,20 +41,21 @@ get_draws_df <- function(x, ...) {
 #' @export
 get_draws_df.wwinference_fit <- function(x, ...) {
   get_draws_df.data.frame(
-    x = x$input_data$input_ww_data,
-    count_data = x$input_data$input_count_data,
-    stan_args = x$stan_args,
+    x = x$raw_input_data$input_ww_data,
+    count_data = x$raw_input_data$input_count_data,
+    stan_data_list = x$stan_data_list,
     fit_obj = x$fit
   )
 }
 
-#' @export 
+#' @export
 #' @rdname get_draws_df
 get_draws_df.default <- function(x, ...) {
   stop(
     "No method defined for get_draws_df for object of class(es) ",
-    paste(class(x), collapse = ", "), 
-    ". Use directly on a wwinference_fit object or a dataframe of wastewater observations.",
+    paste(class(x), collapse = ", "),
+    ". Use directly on a wwinference_fit object or a",
+    "dataframe of wastewater observations.",
     call. = FALSE
   )
 }
@@ -62,17 +63,17 @@ get_draws_df.default <- function(x, ...) {
 #' @rdname get_draws_df
 #' @export
 get_draws_df.data.frame <- function(x,
-                                 count_data,
-                                 stan_args,
-                                 fit_obj,
-                                 ...) {
+                                    count_data,
+                                    stan_data_list,
+                                    fit_obj,
+                                    ...) {
   draws <- fit_obj$result$draws()
 
   # Get the necessary mappings needed to join draws to data
   date_time_spine <- tibble::tibble(
     date = seq(
       from = min(count_data$date),
-      to = min(count_data$date) + stan_args$ot + stan_args$ht,
+      to = min(count_data$date) + stan_data_list$ot + stan_data_list$ht,
       by = "days"
     )
   ) |>
@@ -87,8 +88,8 @@ get_draws_df.data.frame <- function(x,
     dplyr::bind_rows(tibble::tibble(
       site = "remainder of pop",
       site_index = max(x$site_index) + 1,
-      site_pop = stan_args$subpop_size[
-        length(unique(stan_args$subpop_size))
+      site_pop = stan_data_list$subpop_size[
+        length(unique(stan_data_list$subpop_size))
       ]
     ))
 
