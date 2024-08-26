@@ -70,13 +70,6 @@ The package can be installed directly from github by running the following withi
 install.packages("remotes")
 remotes::install_github("CDCgov/ww-inference-model")
 ```
-### Developer install
-If you are interested in contributing to the `wwinference`, clone the repository, navigate to it within an R session, and run the following:
-
-```R
-remotes::install_local()
-```
-
 ## R dependencies
 Installing the project package should take care of almost all dependencies installations. Confirm that package installation has succeeded by running the following within an R session:
 
