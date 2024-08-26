@@ -73,7 +73,6 @@ remotes::install_github("CDCgov/ww-inference-model")
 If you are interested in contributing to the `wwinference`, clone the repository, navigate to it within an R session, and run the following:
 
 ```R
-install.packages('remotes')
 remotes::install_local()
 ```
 
