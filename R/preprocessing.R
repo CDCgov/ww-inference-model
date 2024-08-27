@@ -60,7 +60,7 @@ preprocess_ww_data <- function(ww_data,
     ) |>
     dplyr::left_join(
       ww_data |>
-        dplyr::distinct(site) |>
+        dplyr::distinct(.data$site) |>
         dplyr::mutate(site_index = dplyr::row_number()),
       by = "site"
     ) |>
@@ -70,7 +70,7 @@ preprocess_ww_data <- function(ww_data,
     ) |>
     dplyr::mutate(
       lab_site_name = glue::glue("Site: {site}, Lab: {lab}"),
-      below_lod = ifelse(genome_copies_per_ml <= lod, 1, 0)
+      below_lod = ifelse(.data$genome_copies_per_ml <= .data$lod, 1, 0)
     )
 
   # Get an extra column that identifies the wastewater outliers using the
@@ -167,7 +167,7 @@ flag_ww_outliers <- function(ww_data,
                              threshold_n_dps = 1) {
   n_dps <- ww_data |>
     dplyr::filter(below_lod == 0) |>
-    dplyr::group_by(lab_site_index) |>
+    dplyr::group_by(.data$lab_site_index) |>
     dplyr::summarise(n_data_points = dplyr::n())
 
   # Get the ww statistics we need for outlier detection
@@ -181,7 +181,7 @@ flag_ww_outliers <- function(ww_data,
       below_lod == 0,
       n_data_points > threshold_n_dps
     ) |>
-    dplyr::group_by(lab_site_index) |>
+    dplyr::group_by(.data$lab_site_index) |>
     dplyr::arrange(date, "desc") |>
     dplyr::mutate(
       log_conc = log(!!rlang::sym(conc_col_name)),
@@ -191,7 +191,7 @@ flag_ww_outliers <- function(ww_data,
       diff_time = as.numeric(difftime(date, prev_date)),
       rho = diff_log_conc / diff_time
     ) |>
-    dplyr::select(date, lab_site_index, rho) |>
+    dplyr::select("date", "lab_site_index", "rho") |>
     dplyr::distinct()
 
   # Combine stats with ww data
@@ -202,7 +202,7 @@ flag_ww_outliers <- function(ww_data,
   ww_z_scored <- ww_rho |>
     dplyr::left_join(
       ww_rho |>
-        dplyr::group_by(lab_site_index) |>
+        dplyr::group_by(.data$lab_site_index) |>
         dplyr::summarise(
           mean_rho = mean(rho, na.rm = TRUE),
           std_rho = sd(rho, na.rm = TRUE),
@@ -211,7 +211,7 @@ flag_ww_outliers <- function(ww_data,
         ),
       by = "lab_site_index"
     ) |>
-    dplyr::group_by(lab_site_index) |>
+    dplyr::group_by(.data$lab_site_index) |>
     mutate(
       z_score_conc = (!!rlang::sym(conc_col_name) - mean_conc) / std_conc,
       z_score_rho = (rho - mean_rho) / std_rho
@@ -246,8 +246,8 @@ flag_ww_outliers <- function(ww_data,
   ww_w_outliers_flagged <- ww_z_scored |>
     dplyr::select(
       colnames(ww_data),
-      flag_as_ww_outlier,
-      exclude
+      "flag_as_ww_outlier",
+      "exclude"
     )
 
   return(ww_w_outliers_flagged)

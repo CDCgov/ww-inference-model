@@ -380,9 +380,12 @@ format_ww_data <- function(log_obs_conc_lab_site,
       lod = exp(lod_sewage)
     ) |>
     dplyr::filter(!is.na(genome_copies_per_ml)) |>
-    dplyr::rename(site_pop = ww_pop) |>
-    dplyr::arrange(site, lab, date) |>
-    dplyr::select(date, site, lab, genome_copies_per_ml, lod, site_pop)
+    dplyr::rename("site_pop" = "ww_pop") |>
+    dplyr::arrange(.data$site, .data$lab, .data$date) |>
+    dplyr::select(
+      "date", "site", "lab", "genome_copies_per_ml", "lod",
+      "site_pop"
+    )
 
   return(ww_data)
 }
@@ -417,9 +420,9 @@ format_hosp_data <- function(pred_obs_hosp,
       by = "t"
     ) |>
     dplyr::select(
-      date,
-      daily_hosp_admits,
-      state_pop
+      "date",
+      "daily_hosp_admits",
+      "state_pop"
     )
   return(hosp_data)
 }

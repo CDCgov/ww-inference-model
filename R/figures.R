@@ -33,8 +33,8 @@ get_plot_forecasted_counts <- function(draws,
   sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
   draws_to_plot <- draws |> dplyr::filter(
-    name == "pred_counts",
-    draw %in% !!sampled_draws
+    .data$name == "pred_counts",
+    .data$draw %in% !!sampled_draws
   )
 
   p <- ggplot(draws_to_plot) +
@@ -95,8 +95,8 @@ get_plot_ww_conc <- function(draws,
 
   draws_to_plot <- draws |>
     dplyr::filter(
-      name == "pred_ww",
-      draw %in% !!sampled_draws
+      .data$name == "pred_ww",
+      .data$draw %in% !!sampled_draws
     ) |>
     dplyr::mutate(
       site_lab_name = glue::glue("{subpop}, Lab: {lab}")
@@ -163,8 +163,8 @@ get_plot_global_rt <- function(draws,
   sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
   draws_to_plot <- draws |> dplyr::filter(
-    name == "global R(t)",
-    draw %in% !!sampled_draws
+    .data$name == "global R(t)",
+    .data$draw %in% !!sampled_draws
   )
 
   # R(t) timeseries
@@ -221,8 +221,8 @@ get_plot_subpop_rt <- function(draws,
   sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
   draws_to_plot <- draws |> dplyr::filter(
-    name == "subpop R(t)",
-    draw %in% !!sampled_draws
+    .data$name == "subpop R(t)",
+    .data$draw %in% !!sampled_draws
   )
 
   p <- ggplot(draws_to_plot) +

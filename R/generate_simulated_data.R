@@ -184,8 +184,8 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   )
 
   forecast_date <- date_df |>
-    dplyr::filter(t == ot + nt) |>
-    dplyr::pull(date)
+    dplyr::filter(.data$t == .data$ot + .data$nt) |>
+    dplyr::pull(.data$date)
 
   # Set the lab-site multiplier presumably from lab measurement processes
   log_m_lab_sites <- rnorm(n_lab_sites,
@@ -427,7 +427,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     realized_rt = rt
   ) |>
     dplyr::mutate(
-      t = 1:(ot + ht)
+      t = 1:(.data$ot + .data$ht)
     ) |>
     dplyr::left_join(date_df, by = "t")
 
