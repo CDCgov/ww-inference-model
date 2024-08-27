@@ -122,6 +122,9 @@ transformed data {
 
   // normalizing dist matrix using largest dist
   matrix[n_subpops - 1, n_subpops - 1] norm_dist_matrix = dist_matrix_normalization(dist_matrix);
+
+
+  int<lower=0,upper=1> exp_corr_func = 0;
 }
 
 // The parameters accepted by the model.
@@ -167,6 +170,7 @@ parameters {
   real log_scaling_factor;
   matrix[n_subpops-1,n_weeks] non_cent_spatial_dev_ns_mat;
   vector[n_weeks] norm_vec_aux_site;
+  cholesky_factor_corr[n_subpops-1] L_Omega;
   //----------------------------------------------------------------------------
 }
 //
@@ -233,8 +237,12 @@ transformed parameters {
     non_norm_omega = independence_corr_func(n_subpops - 1);
     norm_omega = non_norm_omega;
   }
-  else {
+  else if (exp_corr_func){
     non_norm_omega = exponential_decay_corr_func(norm_dist_matrix, phi, l);
+    norm_omega = matrix_normalization(non_norm_omega);
+  }
+  else {
+    non_norm_omega = multiply_lower_tri_self_transpose(L_Omega);
     norm_omega = matrix_normalization(non_norm_omega);
   }
   sigma_mat = pow(sigma_generalized, 1.0 / (n_subpops - 1)) * norm_omega;
@@ -344,6 +352,7 @@ model {
     log_sigma_generalized ~ normal(log_sigma_generalized_mu_prior, log_sigma_generalized_sd_prior);
     log_phi ~ normal(log_phi_mu_prior, log_phi_sd_prior);
     log_scaling_factor ~ normal(log_scaling_factor_mu_prior, log_scaling_factor_sd_prior);
+    L_Omega ~ lkj_corr_cholesky(2.0);
     //--------------------------------------------------------------------------
 
   w ~ std_normal();
