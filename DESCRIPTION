@@ -85,7 +85,7 @@ Imports:
     posterior,
     MASS,
     cramer,
-    expm
+    expm,
     checkmate
 Remotes:
     stan-dev/cmdstanr

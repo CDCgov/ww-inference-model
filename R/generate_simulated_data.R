@@ -184,35 +184,17 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                     scaling_factor = 1.1,
                                     aux_site_bool = TRUE,
                                     init_stat = TRUE) {
-  # Some quick checks to make sure the inputs work as expected
-  stopifnot(
-    "weekly R(t) passed in isn't long enough" =
-      length(r_in_weeks) >= (ot + nt + forecast_horizon) / 7
-  )
-  stopifnot(
-    "Sum of wastewater site populations is greater than state pop" =
-      pop_size > sum(ww_pop_sites)
-  )
-  stopifnot(
-    "Site and lab indices don't align" =
-      length(site) == length(lab)
-  )
+  # Some quick checks to make sure the inputs work as expected-----------------
+  assert_rt_correct_length(r_in_weeks, ot, nt, forecast_horizon)
+  assert_ww_site_pops_lt_total(pop_size, ww_pop_sites)
+  assert_site_lab_indices_align(site, lab)
+
 
   # Spatial bool check, if no spatial use ind. corr. func. with n+1 sites.
   if (!use_spatial_corr) {
     corr_function <- independence_corr_func
     corr_fun_params <- list(num_sites = n_sites + 1)
   }
-
-  # Get pop fractions of each subpop. There will n_sites + 1 subpops
-  pop_fraction <- c(
-    ww_pop_sites / pop_size,
-    (pop_size - sum(ww_pop_sites)) / pop_size
-  )
-  # Some quick checks to make sure the inputs work as expected-----------------
-  assert_rt_correct_length(r_in_weeks, ot, nt, forecast_horizon)
-  assert_ww_site_pops_lt_total(pop_size, ww_pop_sites)
-  assert_site_lab_indices_align(site, lab)
 
   # Expose the stan functions into the global environment--------------------
   model <- cmdstanr::cmdstan_model(
@@ -346,20 +328,18 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     params$duration_shedding_mean, params$gt_max
   )
 
-  # Generate the state level weekly R(t) before infection feedback
-  # Adds a bit of noise, can add more...
-  unadj_r_weeks <- (r_in_weeks * rnorm(length(r_in_weeks), 1, 0.03))[1:n_weeks]
+  # Global undadjusted R(t) ---------------------------------------------------
+  unadj_r_weeks <- get_global_rt(
+    r_in_weeks = r_in_weeks,
+    n_weeks = n_weeks,
+    global_rt_sd = global_rt_sd
+  )
 
-  # Convert to daily for input into renewal equation
-  ind_m <- get_ind_m(ot + ht, n_weeks)
-  unadj_r <- ind_m %*% unadj_r_weeks
+  # Daily unadjusted R(t)
+  ind_m <- get_ind_m((ot + ht), n_weeks)
+  unadj_r_daily <- ind_m %*% unadj_r_weeks
 
-
-  # Generate the site-level expected observed concentrations -----------------
-  # first by adding variation to the site-level R(t) in each site,
-  # and then adding lab-site level multiplier and observation error
-
-
+  # Subpopulation level R(t)-----------------------------------------------
   ### Generate the site level infection dynamics-------------------------------
   new_i_over_n_site <- matrix(nrow = n_sites + 1, ncol = (uot + ot + ht))
   r_site <- matrix(nrow = n_sites + 1, ncol = (ot + ht))
@@ -371,7 +351,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     # Generate deviations in the initial growth rate and initial incidence
     initial_growth_site[i] <- rnorm(
       n = 1, mean = initial_growth,
-      sd = initial_growth_prior_sd
+      sd = params$initial_growth_prior_sd
     )
     # This is I0/N at the first unobserved time
     log_i0_over_n_site[i] <- rnorm(
@@ -452,7 +432,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     uot = uot,
     ot = ot,
     ht = ht,
-    unadj_r_site = unadj_r_site,
+    unadj_r_site = exp(log_r_site),
     initial_growth = initial_growth,
     initial_growth_prior_sd = params$initial_growth_prior_sd,
     i0_over_n = i0_over_n,

@@ -40,8 +40,13 @@
 #' function
 #' @param compiled_model The pre-compiled model as defined using
 #' `compile_model()`
-#' @param dist_matrix Distance matrix for spatial correlation in distance
-#' correlation function.
+#' @param dist_matrix Distance matrix, n_sites x n_sites, passed to a
+#' distance-based correlation function for epsilon. If NULL, use an independence
+#' correlation function, for current implementation (i.e. all sites' epsilon
+#' values are independent and identically distributed) .
+#' @param bool_spatial_comp Switch for whether or not infer
+#' site-to-site/"spatial" correlation matrix, currently correlation matrix
+#' follows exponential correlation structure.
 #'
 #' @return A nested list of the following items, intended to allow the user to
 #' quickly and easily plot results from their inference, while also being able
@@ -77,7 +82,8 @@ wwinference <- function(ww_data,
                         mcmc_options = get_mcmc_options(),
                         generate_initial_values = TRUE,
                         compiled_model = compile_model(),
-                        dist_matrix = NULL) {
+                        dist_matrix = NULL,
+                        bool_spatial_comp = FALSE) {
   if (is.null(forecast_date)) {
     cli::cli_abort(
       "The user must specify a forecast date"
@@ -105,6 +111,14 @@ wwinference <- function(ww_data,
     input_ww_data = input_ww_data
   )
 
+  if (bool_spatial_comp == TRUE && is.null(dist_matrix)) {
+    stop(
+      "Spatial Components Desired, but Distance Matrix Not Supplied!!!\n
+          *distance matrix required for current implementation*"
+    )
+  }
+
+
   # If checks pass, create stan data object
   stan_args <- get_stan_data(
     input_count_data = input_count_data,
@@ -118,7 +132,8 @@ wwinference <- function(ww_data,
     params = model_spec$params,
     include_ww = as.numeric(model_spec$include_ww),
     compute_likelihood = 1,
-    dist_matrix
+    dist_matrix,
+    bool_spatial_comp
   )
 
   init_lists <- NULL

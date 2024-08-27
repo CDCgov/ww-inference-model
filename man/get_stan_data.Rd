@@ -16,7 +16,8 @@ get_stan_data(
   params,
   include_ww,
   compute_likelihood = 1,
-  dist_matrix
+  dist_matrix,
+  bool_spatial_comp
 )
 }
 \arguments{
@@ -55,8 +56,12 @@ compute the likelihood, default = \code{1}}
 
 \item{dist_matrix}{Distance matrix, n_sites x n_sites, passed to a
 distance-based correlation function for epsilon. If NULL, use an independence
-correlation function (i.e. all sites' epsilon values are independent and
-identically distributed).}
+correlation function, for current implementation (i.e. all sites' epsilon
+values are independent and identically distributed) .}
+
+\item{bool_spatial_comp}{Switch for whether or not infer
+site-to-site/"spatial" correlation matrix, currently correlation matrix
+follows exponential correlation structure.}
 }
 \value{
 \code{stan_args}: named variables to pass to stan
@@ -138,6 +143,8 @@ stan_args <- get_stan_data(
   inf_to_count_delay,
   infection_feedback_pmf,
   params,
-  include_ww
+  include_ww,
+  dist_matrix = NULL,
+  bool_spatial_comp = FALSE
 )
 }

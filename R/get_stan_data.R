@@ -123,8 +123,11 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #' compute the likelihood, default = `1`
 #' @param dist_matrix Distance matrix, n_sites x n_sites, passed to a
 #' distance-based correlation function for epsilon. If NULL, use an independence
-#' correlation function (i.e. all sites' epsilon values are independent and
-#' identically distributed).
+#' correlation function, for current implementation (i.e. all sites' epsilon
+#' values are independent and identically distributed) .
+#' @param bool_spatial_comp Switch for whether or not infer
+#' site-to-site/"spatial" correlation matrix, currently correlation matrix
+#' follows exponential correlation structure.
 #'
 #' @return `stan_args`: named variables to pass to stan
 #' @export
@@ -203,7 +206,9 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #'   inf_to_count_delay,
 #'   infection_feedback_pmf,
 #'   params,
-#'   include_ww
+#'   include_ww,
+#'   dist_matrix = NULL,
+#'   bool_spatial_comp = FALSE
 #' )
 get_stan_data <- function(input_count_data,
                           input_ww_data,
@@ -216,7 +221,8 @@ get_stan_data <- function(input_count_data,
                           params,
                           include_ww,
                           compute_likelihood = 1,
-                          dist_matrix) {
+                          dist_matrix,
+                          bool_spatial_comp) {
   # Assign parameter names
   par_names <- colnames(params)
   for (i in seq_along(par_names)) {
@@ -368,8 +374,12 @@ get_stan_data <- function(input_count_data,
 
   inf_to_count_delay_max <- length(inf_to_count_delay)
 
-  # If dist_matrix null use independence correlation and update flag
-  if (is.null(dist_matrix)) {
+  # If user does / doesn't want spatial comps.
+  # We can add an extra step here for when spatial desired and dist_matrix
+  #   not given.
+  if (bool_spatial_comp) {
+    ind_corr_func <- 0L
+  } else {
     ind_corr_func <- 1L
     # This dist_matrix will not be used, only needed for stan data specs.
     dist_matrix <- matrix(
@@ -377,8 +387,6 @@ get_stan_data <- function(input_count_data,
       nrow = subpop_data$n_subpops - 1,
       ncol = subpop_data$n_subpops - 1
     )
-  } else {
-    ind_corr_func <- 0L
   }
 
   stan_args <- list(
@@ -456,13 +464,13 @@ get_stan_data <- function(input_count_data,
     log_phi_g_prior_sd = params$log_phi_g_prior_sd,
     ww_sampled_sites = ww_indices$ww_sampled_sites,
     lab_site_to_site_map = ww_indices$lab_site_to_site_map,
-    log_phi_mu_prior = log_phi_mu_prior,
-    log_phi_sd_prior = log_phi_sd_prior,
-    l = l,
-    log_sigma_generalized_mu_prior = log_sigma_generalized_mu_prior,
-    log_sigma_generalized_sd_prior = log_sigma_generalized_sd_prior,
-    log_scaling_factor_mu_prior = log_scaling_factor_mu_prior,
-    log_scaling_factor_sd_prior = log_scaling_factor_sd_prior,
+    log_phi_mu_prior = params$log_phi_mu_prior,
+    log_phi_sd_prior = params$log_phi_sd_prior,
+    l = params$l,
+    log_sigma_generalized_mu_prior = params$log_sigma_generalized_mu_prior,
+    log_sigma_generalized_sd_prior = params$log_sigma_generalized_sd_prior,
+    log_scaling_factor_mu_prior = params$log_scaling_factor_mu_prior,
+    log_scaling_factor_sd_prior = params$log_scaling_factor_sd_prior,
     dist_matrix = dist_matrix,
     ind_corr_func = ind_corr_func
   )

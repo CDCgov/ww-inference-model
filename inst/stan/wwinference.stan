@@ -346,7 +346,6 @@ model {
     log_scaling_factor ~ normal(log_scaling_factor_mu_prior, log_scaling_factor_sd_prior);
     //--------------------------------------------------------------------------
 
-  vector[7] effect_mean = rep_vector(wday_effect_prior_mean, 7);
   w ~ std_normal();
   eta_sd ~ normal(0, eta_sd_sd);
   autoreg_rt_site ~ beta(autoreg_rt_site_a, autoreg_rt_site_b);

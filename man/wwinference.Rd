@@ -15,7 +15,8 @@ wwinference(
   mcmc_options = get_mcmc_options(),
   generate_initial_values = TRUE,
   compiled_model = compile_model(),
-  dist_matrix = NULL
+  dist_matrix = NULL,
+  bool_spatial_comp = FALSE
 )
 }
 \arguments{
@@ -55,8 +56,14 @@ function}
 \item{compiled_model}{The pre-compiled model as defined using
 \code{compile_model()}}
 
-\item{dist_matrix}{Distance matrix for spatial correlation in distance
-correlation function.}
+\item{dist_matrix}{Distance matrix, n_sites x n_sites, passed to a
+distance-based correlation function for epsilon. If NULL, use an independence
+correlation function, for current implementation (i.e. all sites' epsilon
+values are independent and identically distributed) .}
+
+\item{bool_spatial_comp}{Switch for whether or not infer
+site-to-site/"spatial" correlation matrix, currently correlation matrix
+follows exponential correlation structure.}
 }
 \value{
 A nested list of the following items, intended to allow the user to
