@@ -21,7 +21,11 @@ get_inits_for_one_chain <- function(stan_data, params, stdev = 0.01) {
   n_subpops <- as.numeric(stan_data$n_subpops)
   n_ww_lab_sites <- as.numeric(stan_data$n_ww_lab_sites)
   # Estimate of number of initial infections
-  i0 <- mean(stan_data$hosp[1:7], na.rm = TRUE) / params$p_hosp_mean
+  i_first_obs_est <- (
+    mean(stan_data$hosp[1:7], na.rm = TRUE) / params$p_hosp_mean
+  )
+
+  logit_i_frac_est <- stats::qlogis(i_first_obs_est / pop)
 
   n_subpops <- as.numeric(stan_data$n_subpops)
   n_ww_lab_sites <- as.numeric(stan_data$n_ww_lab_sites)
@@ -29,10 +33,10 @@ get_inits_for_one_chain <- function(stan_data, params, stdev = 0.01) {
   init_list <- list(
     w = stats::rnorm(n_weeks - 1, 0, stdev),
     eta_sd = abs(stats::rnorm(1, 0, stdev)),
-    eta_i0 = abs(stats::rnorm(n_subpops, 0, stdev)),
-    sigma_i0 = abs(stats::rnorm(1, 0, stdev)),
-    eta_growth = abs(stats::rnorm(n_subpops, 0, stdev)),
-    sigma_growth = abs(stats::rnorm(1, 0, stdev)),
+    eta_i_first_obs = abs(stats::rnorm(n_subpops, 0, stdev)),
+    sigma_i_first_obs = abs(stats::rnorm(1, 0, stdev)),
+    eta_initial_exp_growth_rate = abs(stats::rnorm(n_subpops, 0, stdev)),
+    sigma_initial_exp_growth_rate = abs(stats::rnorm(1, 0, stdev)),
     autoreg_rt = abs(stats::rnorm(
       1,
       params$autoreg_rt_a / (params$autoreg_rt_a + params$autoreg_rt_b),
@@ -54,8 +58,9 @@ get_inits_for_one_chain <- function(stan_data, params, stdev = 0.01) {
     autoreg_rt_site = abs(stats::rnorm(1, 0.5, 0.05)),
     autoreg_p_hosp = abs(stats::rnorm(1, 1 / 100, 0.001)),
     sigma_rt = abs(stats::rnorm(1, 0, stdev)),
-    i0_over_n = stats::plogis(stats::rnorm(1, stats::qlogis(i0 / pop), 0.05)),
-    initial_growth = stats::rnorm(1, 0, stdev),
+    i_first_obs_over_n =
+      stats::plogis(stats::rnorm(1, logit_i_frac_est), 0.05),
+    mean_initial_exp_growth_rate = stats::rnorm(1, 0, stdev),
     inv_sqrt_phi_h = 1 / sqrt(200) + stats::rnorm(1, 1 / 10000, 1 / 10000),
     sigma_ww_site_mean = abs(stats::rnorm(
       1, params$sigma_ww_site_prior_mean_mean,
