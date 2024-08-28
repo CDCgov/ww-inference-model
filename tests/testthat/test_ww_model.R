@@ -2,26 +2,22 @@ test_that("Test the wastewater inference model on simulated data.", {
   #######
   # run model briefly on the simulated data
   #######
-  model <- compiled_site_inf_model
-  fit <- model$sample(
-    data = toy_stan_data,
-    seed = 123,
-    chains = 1,
-    iter_sampling = 25,
-    iter_warmup = 100,
-    adapt_delta = 0.9,
-    show_messages = FALSE,
-    show_exceptions = FALSE,
-    max_treedepth = 5,
-    diagnostics = c()
-  )
+  withr::with_seed(5, {
+    fit <- do.call(
+      wwinference::wwinference,
+      model_test_data
+    )
+  })
 
-  obs_last_draw <- posterior::subset_draws(fit$draws(), draw = 25)
+  params <- model_test_data$model_spec$params
+  obs_last_draw <- posterior::subset_draws(fit$raw_fit_obj$draws(),
+    draw = 25
+  )
 
   # Check all parameters (ignoring their dimensions) are in both fits
   # But in a way that makes error messages easy to understand
   obs_par_names <- get_nonmatrix_names_from_draws(obs_last_draw)
-  exp_par_names <- get_nonmatrix_names_from_draws(toy_stan_fit_last_draw)
+  exp_par_names <- get_nonmatrix_names_from_draws(test_fit_last_draw)
 
   expect_true(
     all(!!obs_par_names %in% !!exp_par_names)
@@ -33,7 +29,7 @@ test_that("Test the wastewater inference model on simulated data.", {
 
   # Check dims
   obs_par_lens <- get_par_dims_flat(obs_last_draw)
-  exp_par_lens <- get_par_dims_flat(toy_stan_fit_last_draw)
+  exp_par_lens <- get_par_dims_flat(test_fit_last_draw)
 
   agg_names <- c(names(obs_par_lens), names(exp_par_lens)) |> unique()
   for (param in agg_names) {
@@ -62,7 +58,7 @@ test_that("Test the wastewater inference model on simulated data.", {
     # Compare everything, with numerical tolerance
     testthat::expect_equal(
       obs_last_draw,
-      toy_stan_fit_last_draw,
+      test_fit_last_draw,
       tolerance = 0.0001
     )
   }

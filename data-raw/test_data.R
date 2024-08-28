@@ -61,10 +61,12 @@ model_test_data <- list(
   generate_initial_values = generate_initial_values
 )
 
-fit <- do.call(
-  wwinference::wwinference,
-  model_test_data
-)
+withr::with_seed(5, {
+  fit <- do.call(
+    wwinference::wwinference,
+    model_test_data
+  )
+})
 
 
 # Generate the last draw of a very short run for testing
