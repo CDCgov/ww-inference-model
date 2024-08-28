@@ -295,8 +295,7 @@ get_mcmc_options <- function(
 #' @param compute_likelihood Boolean indicating whether or not to compute the
 #' likelihood using the data, default is `TRUE` which will fit the model to the
 #' data. If set to `FALSE`, the model will sample from the priors.
-#'
-#' @param params a 1 row dataframe of parameters corresponding to model
+#' @param params a list of parameters corresponding to model
 #' priors and disease/data specific parameters. Default is for COVID-19 hospital
 #' admissions and viral concentrations in wastewater
 #'
