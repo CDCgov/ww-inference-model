@@ -135,7 +135,7 @@
 #' transmission to occur on the same day.
 #' }
 #' @source covid_pmfs.R
-"generation_interval"
+"default_covid_gi"
 
 #' COVID-19 time delay distribution from infection to hospital admission
 #'
@@ -147,4 +147,4 @@
 #' on the same day
 #' }
 #' @source covid_pmfs.R
-"inf_to_hosp"
+"default_covid_inf_to_hosp"
