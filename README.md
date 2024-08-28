@@ -70,7 +70,6 @@ The package can be installed directly from github by running the following withi
 install.packages("remotes")
 remotes::install_github("CDCgov/ww-inference-model")
 ```
-## R dependencies
 Confirm that package installation has succeeded by running the following within an R session:
 
 ```R
