@@ -309,7 +309,7 @@ ww_fit <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(iter_warmup = 100, iter_sampling = 100),
+  fit_opts = get_mcmc_options(),
   compiled_model = model
 )
 ```
@@ -324,6 +324,19 @@ data (`raw_input_data`), the list of the arguments passed to stan
 (`stan_data_list`), and the list of the MCMC options (`fit_opts`) passed to
 stan. We show how to generate downstream elements from a `wwinference_fit`
 object.
+
+`wwinference_fit` objects currently have the following methods available:
+
+```{r show-methods}
+methods(class = "wwinference_fit")
+```
+
+The `print` and `summary` methods can provide some information about the model. In particular, the `summary` method is a wrapper for `cmdstanr::summary()`:
+
+```{r print-and-summary}
+print(ww_fit)
+summary(ww_fit)
+```
 
 ## Extracting the posterior predictions
 

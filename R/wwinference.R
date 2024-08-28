@@ -276,13 +276,13 @@ new_wwinference_fit <- function(
 #' returns the object invisibly.
 print.wwinference_fit <- function(x, ...) {
   cat("wwinference_fit object\n")
-  cat("N of WW sites    :", x$stan_data_list$n_ww_sites, "\n")
-  cat("N of unique lab-site pairs  :", x$stan_data_list$n_ww_lab_sites, "\n")
-  cat("State population :", formatC(
+  cat("N of WW sites              :", x$stan_data_list$n_ww_sites, "\n")
+  cat("N of unique lab-site pairs :", x$stan_data_list$n_ww_lab_sites, "\n")
+  cat("State population           :", formatC(
     x$stan_data_list$state_pop,
     format = "d"
   ), "\n")
-  cat("N of weeks       :", x$stan_data_list$n_weeks, "\n")
+  cat("N of weeks                 :", x$stan_data_list$n_weeks, "\n")
   cat("--------------------\n")
   cat("For more details, you can access the following:\n")
   cat(" - `$fit` for the CmdStan object\n")
