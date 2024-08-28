@@ -294,7 +294,7 @@ get_mcmc_options <- function(
 #' @param include_ww Boolean indicating whether or not to include the wastewater
 #' data into the model, default is `TRUE` which will get passed to stan and
 #' tell the model to evaluate the likelihood with the wastewater data
-#' @param params a 1 row dataframe of parameters corresponding to model
+#' @param params a list of parameters corresponding to model
 #' priors and disease/data specific parameters. Default is for COVID-19 hospital
 #' admissions and viral concentrations in wastewater
 #'
