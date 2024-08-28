@@ -71,7 +71,7 @@ install.packages("remotes")
 remotes::install_github("CDCgov/ww-inference-model")
 ```
 ## R dependencies
-Installing the project package should take care of almost all dependency installations. Confirm that package installation has succeeded by running the following within an R session:
+Confirm that package installation has succeeded by running the following within an R session:
 
 ```R
 library(wwinference)
