@@ -48,7 +48,8 @@ model_spec <- wwinference::get_model_spec(
 
 mcmc_options <- wwinference::get_mcmc_options(
   seed = 55,
-  iter_sampling = 25
+  iter_warmup = 500,
+  iter_sampling = 250
 )
 
 generate_initial_values <- TRUE
