@@ -306,7 +306,7 @@ get_mcmc_options <- function(
 get_model_spec <- function(
     generation_interval = wwinference::default_covid_gi,
     inf_to_count_delay = wwinference::default_covid_inf_to_hosp,
-    infection_feedback_pmf = wwinference::default_covid_generation_interval,
+    infection_feedback_pmf = wwinference::default_covid_gi,
     include_ww = TRUE,
     params = get_params(
       system.file("extdata", "example_params.toml",
@@ -315,7 +315,7 @@ get_model_spec <- function(
     )) {
   model_specs <- list(
     generation_interval = generation_interval,
-    inf_to_count_delay = inf_to_hosp,
+    inf_to_count_delay = inf_to_count_delay,
     infection_feedback_pmf = infection_feedback_pmf,
     include_ww = include_ww,
     params = params
