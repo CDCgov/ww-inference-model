@@ -121,7 +121,10 @@ wwinference <- function(ww_data,
   if (generate_initial_values) {
     init_lists <- c()
     for (i in 1:mcmc_options$n_chains) {
-      init_lists[[i]] <- get_inits_for_one_chain(stan_args, params)
+      init_lists[[i]] <- get_inits_for_one_chain(
+        stan_data = stan_args,
+        params = model_spec$params
+      )
     }
   }
 
