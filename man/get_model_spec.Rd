@@ -7,7 +7,7 @@
 get_model_spec(
   generation_interval = wwinference::default_covid_gi,
   inf_to_count_delay = wwinference::default_covid_inf_to_hosp,
-  infection_feedback_pmf = wwinference::default_covid_generation_interval,
+  infection_feedback_pmf = wwinference::default_covid_gi,
   include_ww = TRUE,
   params = get_params(system.file("extdata", "example_params.toml", package =
     "wwinference"))
