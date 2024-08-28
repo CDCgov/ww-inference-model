@@ -33,8 +33,8 @@ ww_data_to_fit <- wwinference::indicate_ww_exclusions(
 forecast_date <- "2023-12-06"
 calibration_time <- 90
 forecast_horizon <- 28
-generation_interval <- wwinference::generation_interval
-inf_to_hosp <- wwinference::inf_to_hosp
+generation_interval <- wwinference::default_covid_gi
+inf_to_hosp <- wwinference::default_covid_inf_to_hosp
 
 # Assign infection feedback equal to the generation interval
 infection_feedback_pmf <- generation_interval
