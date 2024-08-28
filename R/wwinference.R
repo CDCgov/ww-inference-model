@@ -113,8 +113,8 @@ wwinference <- function(ww_data,
     inf_to_count_delay = model_spec$inf_to_count_delay,
     infection_feedback_pmf = model_spec$infection_feedback_pmf,
     params = model_spec$params,
-    include_ww = as.numeric(model_spec$include_ww),
-    compute_likelihood = 1
+    include_ww = as.integer(model_spec$include_ww),
+    compute_likelihood = as.integer(model_spec$compute_likelihood)
   )
 
   init_lists <- NULL
@@ -245,9 +245,6 @@ wwinference <- function(ww_data,
 #' probability, default is `0.95`
 #' @param max_treedepth integer indicating the maximum tree depth of the
 #' sampler, default is 12
-#' @param compute_likelihood integer indicating whether or not to compute the
-#' likelihood using the data, default is `1` which will fit the model to the
-#' data. If set to 0, the model will sample from the prior only
 #'
 #' @return a list of mcmc settings with the values given by the  function
 #' arguments
@@ -261,16 +258,14 @@ get_mcmc_options <- function(
     n_chains = 4,
     seed = 123,
     adapt_delta = 0.95,
-    max_treedepth = 12,
-    compute_likelihood = 1) {
+    max_treedepth = 12) {
   mcmc_settings <- list(
     iter_warmup = iter_warmup,
     iter_sampling = iter_sampling,
     n_chains = n_chains,
     seed = seed,
     adapt_delta = adapt_delta,
-    max_treedepth = max_treedepth,
-    compute_likelihood = compute_likelihood
+    max_treedepth = max_treedepth
   )
 
   return(mcmc_settings)
@@ -297,6 +292,10 @@ get_mcmc_options <- function(
 #' @param include_ww Boolean indicating whether or not to include the wastewater
 #' data into the model, default is `TRUE` which will get passed to stan and
 #' tell the model to evaluate the likelihood with the wastewater data
+#' @param compute_likelihood Boolean indicating whether or not to compute the
+#' likelihood using the data, default is `TRUE` which will fit the model to the
+#' data. If set to `FALSE`, the model will sample from the priors.
+#'
 #' @param params a 1 row dataframe of parameters corresponding to model
 #' priors and disease/data specific parameters. Default is for COVID-19 hospital
 #' admissions and viral concentrations in wastewater
@@ -311,6 +310,7 @@ get_model_spec <- function(
     inf_to_count_delay = wwinference::inf_to_hosp,
     infection_feedback_pmf = wwinference::generation_interval,
     include_ww = TRUE,
+    compute_likelihood = TRUE,
     params = get_params(
       system.file("extdata", "example_params.toml",
         package = "wwinference"
@@ -321,6 +321,7 @@ get_model_spec <- function(
     inf_to_count_delay = inf_to_hosp,
     infection_feedback_pmf = infection_feedback_pmf,
     include_ww = include_ww,
+    compute_likelihood = compute_likelihood,
     params = params
   )
   return(model_specs)

@@ -9,6 +9,7 @@ get_model_spec(
   inf_to_count_delay = wwinference::inf_to_hosp,
   infection_feedback_pmf = wwinference::generation_interval,
   include_ww = TRUE,
+  compute_likelihood = TRUE,
   params = get_params(system.file("extdata", "example_params.toml", package =
     "wwinference"))
 )
@@ -30,6 +31,10 @@ The default is the COVID-19 generation interval}
 \item{include_ww}{Boolean indicating whether or not to include the wastewater
 data into the model, default is \code{TRUE} which will get passed to stan and
 tell the model to evaluate the likelihood with the wastewater data}
+
+\item{compute_likelihood}{Boolean indicating whether or not to compute the
+likelihood using the data, default is \code{TRUE} which will fit the model to the
+data. If set to \code{FALSE}, the model will sample from the priors.}
 
 \item{params}{a 1 row dataframe of parameters corresponding to model
 priors and disease/data specific parameters. Default is for COVID-19 hospital
