@@ -68,11 +68,11 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
   # data. Arrange data for indexing. This is what will be returned.
   ww_data <- preprocessed_ww_data |>
     dplyr::filter(
-      exclude != 1,
-      date > last_count_data_date -
+      .data$exclude != 1,
+      .data$date > last_count_data_date -
         lubridate::days(calibration_time)
     ) |>
-    dplyr::arrange(date, lab_site_index)
+    dplyr::arrange(.data$date, .data$lab_site_index)
 
   ww_data_sizes <- get_ww_data_sizes(
     ww_data,
@@ -713,7 +713,7 @@ add_time_indexing <- function(input_count_data) {
 
   count_data <- input_count_data |>
     dplyr::left_join(date_df, by = "date") |>
-    dplyr::arrange(.data$date)
+    arrange(.data$date)
 
   return(count_data)
 }

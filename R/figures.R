@@ -37,28 +37,29 @@ get_plot_forecasted_counts <- function(draws,
     .data$draw %in% !!sampled_draws
   )
 
-  p <- ggplot(draws_to_plot) +
-    geom_line(aes(x = date, y = pred_value, group = draw),
+  p <- ggplot2::ggplot(draws_to_plot) +
+    ggplot2::geom_line(
+      aes(x = .data$date, y = .data$pred_value, group = .data$draw),
       color = "red4", alpha = 0.1, linewidth = 0.2
     ) +
-    geom_point(
+    ggplot2::geom_point(
       data = count_data_eval,
-      aes(x = date, y = .data[[count_data_eval_col_name]]),
+      aes(x = .data$date, y = .data[[count_data_eval_col_name]]),
       shape = 21, color = "black", fill = "white"
     ) +
-    geom_point(aes(x = date, y = observed_value)) +
-    geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
+    ggplot2::geom_point(aes(x = .data$date, y = .data$observed_value)) +
+    ggplot2::geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
       linetype = "dashed"
     ) +
-    xlab("") +
-    ylab(glue::glue("Daily {count_type}")) +
-    ggtitle(glue::glue("Fit and forecasted {count_type}")) +
-    scale_x_date(
+    ggplot2::xlab("") +
+    ggplot2::ylab(glue::glue("Daily {count_type}")) +
+    ggplot2::ggtitle(glue::glue("Fit and forecasted {count_type}")) +
+    ggplot2::scale_x_date(
       date_breaks = "2 weeks",
       labels = scales::date_format("%Y-%m-%d")
     ) +
-    theme_bw() +
-    theme(
+    ggplot2::theme_bw() +
+    ggplot2::theme(
       axis.text.x = element_text(
         size = 8, vjust = 1,
         hjust = 1, angle = 45
@@ -102,32 +103,32 @@ get_plot_ww_conc <- function(draws,
       site_lab_name = glue::glue("{subpop}, Lab: {lab}")
     )
 
-  p <- ggplot(draws_to_plot) +
-    geom_line(
+  p <- ggplot2::ggplot(draws_to_plot) +
+    ggplot2::geom_line(
       aes(
-        x = date, y = log(pred_value),
-        color = subpop,
-        group = draw
+        x = .data$date, y = log(.data$pred_value),
+        color = .data$subpop,
+        group = .data$draw
       ),
       alpha = 0.1, linewidth = 0.2,
       show.legend = FALSE
     ) +
-    geom_point(aes(x = date, y = log(observed_value)),
+    ggplot2::geom_point(aes(x = .data$date, y = log(.data$observed_value)),
       color = "black", show.legend = FALSE
     ) +
-    facet_wrap(~site_lab_name, scales = "free") +
-    geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
+    ggplot2::facet_wrap(~site_lab_name, scales = "free") +
+    ggplot2::geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
       linetype = "dashed"
     ) +
-    xlab("") +
-    ylab("Log(Genome copies/mL)") +
-    ggtitle("Lab-site level wastewater concentration") +
-    scale_x_date(
+    ggplot2::xlab("") +
+    ggplot2::ylab("Log(Genome copies/mL)") +
+    ggplot2::ggtitle("Lab-site level wastewater concentration") +
+    ggplot2::scale_x_date(
       date_breaks = "2 weeks",
       labels = scales::date_format("%Y-%m-%d")
     ) +
-    theme_bw() +
-    theme(
+    ggplot2::theme_bw() +
+    ggplot2::theme(
       axis.text.x = element_text(
         size = 8, vjust = 1,
         hjust = 1, angle = 45
@@ -168,24 +169,24 @@ get_plot_global_rt <- function(draws,
   )
 
   # R(t) timeseries
-  p <- ggplot(draws_to_plot) +
+  p <- ggplot2::ggplot(draws_to_plot) +
     ggplot2::geom_step(
-      aes(x = date, y = pred_value, group = draw),
+      aes(x = .data$date, y = .data$pred_value, group = .data$draw),
       color = "blue4", alpha = 0.1, linewidth = 0.2
     ) +
-    geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
+    ggplot2::geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
       linetype = "dashed"
     ) +
-    geom_hline(aes(yintercept = 1), linetype = "dashed") +
-    xlab("") +
-    ylab("Global R(t)") +
-    ggtitle("Global R(t) estimate") +
-    scale_x_date(
+    ggplot2::geom_hline(aes(yintercept = 1), linetype = "dashed") +
+    ggplot2::xlab("") +
+    ggplot2::ylab("Global R(t)") +
+    ggplot2::ggtitle("Global R(t) estimate") +
+    ggplot2::scale_x_date(
       date_breaks = "2 weeks",
       labels = scales::date_format("%Y-%m-%d")
     ) +
-    theme_bw() +
-    theme(
+    ggplot2::theme_bw() +
+    ggplot2::theme(
       axis.text.x = element_text(
         size = 8, vjust = 1,
         hjust = 1, angle = 45
@@ -225,37 +226,37 @@ get_plot_subpop_rt <- function(draws,
     .data$draw %in% !!sampled_draws
   )
 
-  p <- ggplot(draws_to_plot) +
+  p <- ggplot2::ggplot(draws_to_plot) +
     ggplot2::geom_step(
       aes(
-        x = date, y = pred_value, group = draw,
-        color = subpop
+        x = .data$date, y = .data$pred_value, group = .data$draw,
+        color = .data$subpop
       ),
       alpha = 0.1, linewidth = 0.2,
       show.legend = FALSE
     ) +
-    geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
+    ggplot2::geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
       linetype = "dashed",
       show.legend = FALSE
     ) +
-    facet_wrap(~subpop, scales = "free") +
-    geom_hline(aes(yintercept = 1), linetype = "dashed") +
-    xlab("") +
-    ylab("Subpopulation R(t)") +
-    ggtitle("R(t) estimate of each subpopulation") +
-    scale_x_date(
+    ggplot2::facet_wrap(~subpop, scales = "free") +
+    ggplot2::geom_hline(aes(yintercept = 1), linetype = "dashed") +
+    ggplot2::xlab("") +
+    ggplot2::ylab("Subpopulation R(t)") +
+    ggplot2::ggtitle("R(t) estimate of each subpopulation") +
+    ggplot2::scale_x_date(
       date_breaks = "2 weeks",
       labels = scales::date_format("%Y-%m-%d")
     ) +
-    theme_bw() +
-    theme(
-      axis.text.x = element_text(
+    ggplot2::theme_bw() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(
         size = 8, vjust = 1,
         hjust = 1, angle = 45
       ),
-      axis.title.x = element_text(size = 12),
-      axis.title.y = element_text(size = 12),
-      plot.title = element_text(
+      axis.title.x = ggplot2::element_text(size = 12),
+      axis.title.y = ggplot2::element_text(size = 12),
+      plot.title = ggplot2::element_text(
         size = 10,
         vjust = 0.5, hjust = 0.5
       )

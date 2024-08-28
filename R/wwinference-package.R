@@ -12,7 +12,7 @@
 #' @importFrom cmdstanr cmdstan_model
 #' @importFrom posterior subset_draws as_draws_list
 #' @importFrom fs path_package
-#' @importFrom rlang sym
+#' @importFrom rlang sym .data
 #' @importFrom stats dnbinom dweibull ecdf plogis qlogis rlnorm rnbinom rnorm
 #' rt sd time
 #' @importFrom tibble tibble

@@ -184,7 +184,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   )
 
   forecast_date <- date_df |>
-    dplyr::filter(.data$t == .data$ot + .data$nt) |>
+    dplyr::filter(.data$t == ot + nt) |>
     dplyr::pull(.data$date)
 
   # Set the lab-site multiplier presumably from lab measurement processes
@@ -418,7 +418,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   ) |>
     dplyr::rename(
       daily_hosp_admits_for_eval =
-        daily_hosp_admits
+        .data$daily_hosp_admits
     )
 
   # Global R(t)
@@ -427,7 +427,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     realized_rt = rt
   ) |>
     dplyr::mutate(
-      t = 1:(.data$ot + .data$ht)
+      t = 1:(ot + ht)
     ) |>
     dplyr::left_join(date_df, by = "t")
 

@@ -166,7 +166,7 @@ flag_ww_outliers <- function(ww_data,
                              log_conc_threshold = 3,
                              threshold_n_dps = 1) {
   n_dps <- ww_data |>
-    dplyr::filter(below_lod == 0) |>
+    dplyr::filter(.data$below_lod == 0) |>
     dplyr::group_by(.data$lab_site_index) |>
     dplyr::summarise(n_data_points = dplyr::n())
 
@@ -178,18 +178,18 @@ flag_ww_outliers <- function(ww_data,
     # exclude below LOD from z scoring and remove lab-sites with too
     # few data points
     dplyr::filter(
-      below_lod == 0,
-      n_data_points > threshold_n_dps
+      .data$below_lod == 0,
+      .data$n_data_points > threshold_n_dps
     ) |>
     dplyr::group_by(.data$lab_site_index) |>
-    dplyr::arrange(date, "desc") |>
+    dplyr::arrange(.data$date, "desc") |>
     dplyr::mutate(
       log_conc = log(!!rlang::sym(conc_col_name)),
-      prev_log_conc = dplyr::lag(log_conc, 1),
-      prev_date = dplyr::lag(date, 1),
-      diff_log_conc = log_conc - prev_log_conc,
-      diff_time = as.numeric(difftime(date, prev_date)),
-      rho = diff_log_conc / diff_time
+      prev_log_conc = dplyr::lag(.data$log_conc, 1),
+      prev_date = dplyr::lag(.data$date, 1),
+      diff_log_conc = .data$log_conc - .data$prev_log_conc,
+      diff_time = as.numeric(difftime(.data$date, .data$prev_date)),
+      rho = .data$diff_log_conc / .data$diff_time
     ) |>
     dplyr::select("date", "lab_site_index", "rho") |>
     dplyr::distinct()
@@ -204,38 +204,39 @@ flag_ww_outliers <- function(ww_data,
       ww_rho |>
         dplyr::group_by(.data$lab_site_index) |>
         dplyr::summarise(
-          mean_rho = mean(rho, na.rm = TRUE),
-          std_rho = sd(rho, na.rm = TRUE),
+          mean_rho = mean(.data$rho, na.rm = TRUE),
+          std_rho = sd(.data$rho, na.rm = TRUE),
           mean_conc = mean(!!rlang::sym(conc_col_name), na.rm = TRUE),
           std_conc = sd(!!rlang::sym(conc_col_name), na.rm = TRUE)
         ),
       by = "lab_site_index"
     ) |>
     dplyr::group_by(.data$lab_site_index) |>
-    mutate(
-      z_score_conc = (!!rlang::sym(conc_col_name) - mean_conc) / std_conc,
-      z_score_rho = (rho - mean_rho) / std_rho
+    dplyr::mutate(
+      z_score_conc = (!!rlang::sym(conc_col_name) - .data$mean_conc) /
+        .data$std_conc,
+      z_score_rho = (.data$rho - .data$mean_rho) / .data$std_rho
     ) |>
     dplyr::mutate(
-      z_score_rho_t_plus_1 = dplyr::lead(z_score_rho, 1),
+      z_score_rho_t_plus_1 = dplyr::lead(.data$z_score_rho, 1),
       flagged_for_removal_conc = dplyr::case_when(
-        abs(z_score_conc) >= log_conc_threshold ~ 1,
-        is.na(z_score_conc) ~ 0,
+        abs(.data$z_score_conc) >= log_conc_threshold ~ 1,
+        is.na(.data$z_score_conc) ~ 0,
         TRUE ~ 0
       ),
       flagged_for_removal_rho = dplyr::case_when(
         (
-          abs(z_score_rho) >= rho_threshold &
-            (abs(z_score_rho_t_plus_1) >= rho_threshold) &
-            sign(z_score_rho != sign(z_score_rho_t_plus_1))
+          abs(.data$z_score_rho) >= rho_threshold &
+            (abs(.data$z_score_rho_t_plus_1) >= rho_threshold) &
+            sign(.data$z_score_rho != sign(.data$z_score_rho_t_plus_1))
         ) ~ 1,
-        is.na(z_score_rho) ~ NA,
+        is.na(.data$z_score_rho) ~ NA,
         TRUE ~ 0
       )
     ) |>
     dplyr::mutate(flag_as_ww_outlier = dplyr::case_when(
-      flagged_for_removal_rho == 1 ~ 1,
-      flagged_for_removal_conc == 1 ~ 1,
+      .data$flagged_for_removal_rho == 1 ~ 1,
+      .data$flagged_for_removal_conc == 1 ~ 1,
       TRUE ~ 0
     )) |>
     dplyr::ungroup() |>

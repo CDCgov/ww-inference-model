@@ -41,7 +41,7 @@ get_draws_df <- function(ww_data,
     tidybayes::spread_draws(pred_hosp[t]) |>
     dplyr::rename("pred_value" = "pred_hosp") |>
     dplyr::mutate(
-      draw = `.draw`,
+      draw = .data$`.draw`,
       name = "pred_counts"
     ) |>
     dplyr::select("name", "t", "pred_value", "draw") |>
@@ -67,7 +67,7 @@ get_draws_df <- function(ww_data,
     tidybayes::spread_draws(pred_ww[lab_site_index, t]) |>
     dplyr::rename("pred_value" = "pred_ww") |>
     dplyr::mutate(
-      draw = `.draw`,
+      draw = .data$`.draw`,
       name = "pred_ww",
       pred_value = exp(.data$pred_value)
     ) |>
@@ -138,7 +138,7 @@ get_draws_df <- function(ww_data,
       observation_type = "latent variable",
       type_of_quantity = "local",
       total_pop = NA,
-      subpop = ifelse(site != "remainder of pop",
+      subpop = ifelse(.data$site != "remainder of pop",
         glue::glue("Site: {site}"), "remainder of pop"
       )
     ) |>
