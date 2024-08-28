@@ -320,7 +320,7 @@ The `wwinference()` function returns a `wwinference_fit` object which includes
 the underlying and the underlying
 [`CmdStanModel` object](https://mc-stan.org/cmdstanr/reference/CmdStanModel.html)
  (`fit`), a list of the two sources of input
-data (`input_data`), the list of the arguments passed to stan
+data (`raw_input_data`), the list of the arguments passed to stan
 (`stan_data_list`), and the list of the MCMC options (`fit_opts`) passed to
 stan. We show how to generate downstream elements from a `wwinference_fit`
 object.
