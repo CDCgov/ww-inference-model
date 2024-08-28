@@ -74,7 +74,7 @@ test_that(paste0(
 })
 
 test_that(paste0(
-  "Test that things not flagged for removal don't get removed",
+  "Test that things not flagged for removal don't get removed ",
   "and things that are flagged for removal do get removed"
 ), {
   ww_data_no_exclusions <- ww_data_filtered
