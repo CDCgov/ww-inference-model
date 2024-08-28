@@ -31,7 +31,7 @@ The default is the COVID-19 generation interval}
 data into the model, default is \code{TRUE} which will get passed to stan and
 tell the model to evaluate the likelihood with the wastewater data}
 
-\item{params}{a 1 row dataframe of parameters corresponding to model
+\item{params}{a list of parameters corresponding to model
 priors and disease/data specific parameters. Default is for COVID-19 hospital
 admissions and viral concentrations in wastewater}
 }
