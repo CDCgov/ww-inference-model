@@ -575,7 +575,7 @@ get_ww_data_indices <- function(ww_data,
     # Need a vector of indices indicating the site for each lab-site
     lab_site_to_site_map <- ww_data |>
       dplyr::select("lab_site_index", "site_index") |>
-      dplyr::arrange(lab_site_index, "desc") |>
+      dplyr::arrange(.data$lab_site_index, "desc") |>
       dplyr::distinct() |>
       dplyr::pull(.data$site_index)
 
@@ -652,7 +652,7 @@ get_ww_values <- function(ww_data,
         dplyr::select("site_index", {{ ww_site_pop_col_name }}) |>
         dplyr::group_by(.data$site_index) |>
         dplyr::summarise(pop_avg = mean(.data[[ww_site_pop_col_name]])) |>
-        dplyr::arrange(site_index, "desc") |>
+        dplyr::arrange(.data$site_index, "desc") |>
         dplyr::pull(.data$pop_avg)
     } else {
       # Want a vector of length of the number of observations, corresponding to

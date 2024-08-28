@@ -4,3 +4,11 @@
 ^\.github$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+
+# Misc
+^data-raw$
+^model_definition\.md$
+^scratch$
+
+# Hidden files/folders
+^\..+

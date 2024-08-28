@@ -173,13 +173,20 @@ wwinference <- function(ww_data,
       )
     ) |>
       dplyr::mutate(t = row_number())
+
     # Lab-site index to corresponding lab, site, and site population size
     lab_site_spine <- ww_data |>
-      dplyr::distinct(site, lab, lab_site_index, site_pop)
+      dplyr::distinct(
+        .data$site,
+        .data$lab,
+        .data$lab_site_index,
+        .data$site_pop
+      )
+
     # Site index to corresponding site and subpopulation size
     subpop_spine <- ww_data |>
-      dplyr::distinct(site, site_index, site_pop) |>
-      dplyr::mutate(site = as.factor(site)) |>
+      dplyr::distinct(.data$site, .data$site_index, .data$site_pop) |>
+      dplyr::mutate(site = as.factor(.data$site)) |>
       dplyr::bind_rows(tibble::tibble(
         site = "remainder of pop",
         site_index = max(ww_data$site_index) + 1,
@@ -315,7 +322,7 @@ get_model_spec <- function(
     )) {
   model_specs <- list(
     generation_interval = generation_interval,
-    inf_to_count_delay = inf_to_hosp,
+    inf_to_count_delay = inf_to_count_delay,
     infection_feedback_pmf = infection_feedback_pmf,
     include_ww = include_ww,
     params = params

@@ -1,3 +1,21 @@
+# The following variables are used by the tidybayes::spread_draws function.
+# Since the function uses expressions as main argument, there is no easier way
+# to avoid R CMD check to complain about these variables. For other cases
+# featuring data-masking (like in the dplyr package), use the instructions
+# here: https://dplyr.tidyverse.org/articles/in-packages.html
+utils::globalVariables(
+  c(
+    "pred_hosp",
+    "t",
+    "pred_ww",
+    "lab_site_index",
+    "rt",
+    "r_site_t",
+    "site_index"
+  )
+)
+
+
 #' @title Postprocess to generate a draws dataframe
 #'
 #' @description
@@ -92,7 +110,7 @@ get_draws_df <- function(ww_data,
     tidybayes::spread_draws(rt[t]) |>
     dplyr::rename("pred_value" = "rt") |>
     dplyr::mutate(
-      draw = `.draw`,
+      draw = .data$`.draw`,
       name = "global R(t)"
     ) |>
     dplyr::select("name", "t", "pred_value", "draw") |>
@@ -119,7 +137,7 @@ get_draws_df <- function(ww_data,
     tidybayes::spread_draws(r_site_t[site_index, t]) |>
     dplyr::rename("pred_value" = "r_site_t") |>
     dplyr::mutate(
-      draw = `.draw`,
+      draw = .data$`.draw`,
       name = "subpop R(t)",
       pred_value = .data$pred_value
     ) |>

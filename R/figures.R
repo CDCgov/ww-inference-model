@@ -60,13 +60,13 @@ get_plot_forecasted_counts <- function(draws,
     ) +
     ggplot2::theme_bw() +
     ggplot2::theme(
-      axis.text.x = element_text(
+      axis.text.x = ggplot2::element_text(
         size = 8, vjust = 1,
         hjust = 1, angle = 45
       ),
-      axis.title.x = element_text(size = 12),
-      axis.title.y = element_text(size = 12),
-      plot.title = element_text(
+      axis.title.x = ggplot2::element_text(size = 12),
+      axis.title.y = ggplot2::element_text(size = 12),
+      plot.title = ggplot2::element_text(
         size = 10,
         vjust = 0.5, hjust = 0.5
       )
@@ -129,13 +129,13 @@ get_plot_ww_conc <- function(draws,
     ) +
     ggplot2::theme_bw() +
     ggplot2::theme(
-      axis.text.x = element_text(
+      axis.text.x = ggplot2::element_text(
         size = 8, vjust = 1,
         hjust = 1, angle = 45
       ),
-      axis.title.x = element_text(size = 12),
-      axis.title.y = element_text(size = 12),
-      plot.title = element_text(
+      axis.title.x = ggplot2::element_text(size = 12),
+      axis.title.y = ggplot2::element_text(size = 12),
+      plot.title = ggplot2::element_text(
         size = 10,
         vjust = 0.5, hjust = 0.5
       )
@@ -187,13 +187,13 @@ get_plot_global_rt <- function(draws,
     ) +
     ggplot2::theme_bw() +
     ggplot2::theme(
-      axis.text.x = element_text(
+      axis.text.x = ggplot2::element_text(
         size = 8, vjust = 1,
         hjust = 1, angle = 45
       ),
-      axis.title.x = element_text(size = 12),
-      axis.title.y = element_text(size = 12),
-      plot.title = element_text(
+      axis.title.x = ggplot2::element_text(size = 12),
+      axis.title.y = ggplot2::element_text(size = 12),
+      plot.title = ggplot2::element_text(
         size = 10,
         vjust = 0.5, hjust = 0.5
       )

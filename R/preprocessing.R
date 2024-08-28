@@ -52,7 +52,7 @@ preprocess_ww_data <- function(ww_data,
   ww_data_add_cols <- ww_data |>
     dplyr::left_join(
       ww_data |>
-        dplyr::distinct(lab, site) |>
+        dplyr::distinct(.data$lab, .data$site) |>
         dplyr::mutate(
           lab_site_index = dplyr::row_number()
         ),
@@ -296,7 +296,7 @@ indicate_ww_exclusions <- function(data,
     # Port over the outliers flagged to the exclude column
     data_w_exclusions <- data |>
       dplyr::mutate(
-        exclude = ifelse(.data[[outlier_col_name]] == 1, 1, exclude)
+        exclude = ifelse(.data[[outlier_col_name]] == 1, 1, .data$exclude)
       )
   } else {
     data_w_exclusions <- data
