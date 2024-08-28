@@ -36,7 +36,7 @@ tell the model to evaluate the likelihood with the wastewater data}
 likelihood using the data, default is \code{TRUE} which will fit the model to the
 data. If set to \code{FALSE}, the model will sample from the priors.}
 
-\item{params}{a 1 row dataframe of parameters corresponding to model
+\item{params}{a list of parameters corresponding to model
 priors and disease/data specific parameters. Default is for COVID-19 hospital
 admissions and viral concentrations in wastewater}
 }
