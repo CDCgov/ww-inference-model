@@ -168,7 +168,7 @@ parameters {
   real log_scaling_factor;
   matrix[n_subpops-1,n_weeks] non_cent_spatial_dev_ns_mat;
   vector[n_weeks] norm_vec_aux_site;
-  cholesky_factor_corr[n_subpops-1] L_Omega;
+  cholesky_factor_corr[ind_corr_func == 0 && exp_corr_func == 0 ? n_subpops-1 : 0] L_Omega;
   //----------------------------------------------------------------------------
 }
 //
@@ -350,7 +350,9 @@ model {
     log_sigma_generalized ~ normal(log_sigma_generalized_mu_prior, log_sigma_generalized_sd_prior);
     log_phi ~ normal(log_phi_mu_prior, log_phi_sd_prior);
     log_scaling_factor ~ normal(log_scaling_factor_mu_prior, log_scaling_factor_sd_prior);
-    L_Omega ~ lkj_corr_cholesky(2.0);
+    if (ind_corr_func == 0 && exp_corr_func == 0){
+      L_Omega ~ lkj_corr_cholesky(2.0);
+    }
     //--------------------------------------------------------------------------
 
   w ~ std_normal();

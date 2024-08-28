@@ -344,8 +344,7 @@ ggplot(cor_matrix_draws_df) +
     size = 1.25
   ) +
   facet_grid(
-    Var1 ~ Var2,
-    scales = "free"
+    Var1 ~ Var2
   ) +
   ylab("Frequency") +
   xlab("Correlation") +
