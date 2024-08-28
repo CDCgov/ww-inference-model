@@ -128,6 +128,10 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #' @param bool_spatial_comp Switch for whether or not infer
 #' site-to-site/"spatial" correlation matrix, currently correlation matrix
 #' follows exponential correlation structure.
+#' @param bool_spatial_corr_struct_exp Switch for whether or not inferred
+#' correlation matrix is structured with an exponential correlation
+#' function based off distance matrix.  Does nothing if `bool_spatial_comp`
+#' is set to false.
 #'
 #' @return `stan_args`: named variables to pass to stan
 #' @export
@@ -208,7 +212,8 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #'   params,
 #'   include_ww,
 #'   dist_matrix = NULL,
-#'   bool_spatial_comp = FALSE
+#'   bool_spatial_comp = FALSE,
+#'   bool_spatial_corr_struct_exp = FALSE
 #' )
 get_stan_data <- function(input_count_data,
                           input_ww_data,
@@ -222,7 +227,8 @@ get_stan_data <- function(input_count_data,
                           include_ww,
                           compute_likelihood = 1,
                           dist_matrix,
-                          bool_spatial_comp) {
+                          bool_spatial_comp,
+                          bool_spatial_corr_struct_exp) {
   # Assign parameter names
   par_names <- colnames(params)
   for (i in seq_along(par_names)) {
@@ -379,6 +385,11 @@ get_stan_data <- function(input_count_data,
   #   not given.
   if (bool_spatial_comp) {
     ind_corr_func <- 0L
+    if (bool_spatial_corr_struct_exp) {
+      exp_corr_func <- 1
+    } else {
+      exp_corr_func <- 0
+    }
   } else {
     ind_corr_func <- 1L
     # This dist_matrix will not be used, only needed for stan data specs.
@@ -387,6 +398,7 @@ get_stan_data <- function(input_count_data,
       nrow = subpop_data$n_subpops - 1,
       ncol = subpop_data$n_subpops - 1
     )
+    exp_corr_func <- 0
   }
 
   stan_args <- list(
@@ -472,7 +484,8 @@ get_stan_data <- function(input_count_data,
     log_scaling_factor_mu_prior = params$log_scaling_factor_mu_prior,
     log_scaling_factor_sd_prior = params$log_scaling_factor_sd_prior,
     dist_matrix = dist_matrix,
-    ind_corr_func = ind_corr_func
+    ind_corr_func = ind_corr_func,
+    exp_corr_func = exp_corr_func
   )
 
 

@@ -173,7 +173,8 @@ fit <- wwinference::wwinference(
   mcmc_options = get_mcmc_options(),
   compiled_model = model,
   dist_matrix = as.matrix(dist_matrix),
-  bool_spatial_comp = TRUE
+  bool_spatial_comp = TRUE,
+  bool_spatial_corr_struct_exp = FALSE
   # // dist_matrix = NULL,
   # // bool_spatial_comp = TRUE
 )
@@ -307,7 +308,16 @@ cor_matrix_draws_df <- as.table(
       Var2 == 2 ~ "Site 2",
       Var2 == 3 ~ "Site 3",
       Var2 == 4 ~ "Site 4"
-    ),
+    )
+  ) %>%
+  left_join(
+    corr_df,
+    by = c(
+      "Var1",
+      "Var2"
+    )
+  ) %>%
+  mutate(
     Var1 = factor(
       Var1,
       levels = c(
@@ -319,13 +329,6 @@ cor_matrix_draws_df <- as.table(
     ),
     Var2 = factor(
       Var2
-    )
-  ) %>%
-  left_join(
-    corr_df,
-    by = c(
-      "Var1",
-      "Var2"
     )
   )
 ggplot(cor_matrix_draws_df) +

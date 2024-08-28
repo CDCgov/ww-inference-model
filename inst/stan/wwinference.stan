@@ -100,6 +100,7 @@ data {
   real log_scaling_factor_sd_prior;
   matrix[n_subpops-1, n_subpops-1] dist_matrix;
   int<lower=0, upper=1> ind_corr_func;
+  int<lower=0, upper=1> exp_corr_func;
 }
 
 // The transformed data
@@ -122,9 +123,6 @@ transformed data {
 
   // normalizing dist matrix using largest dist
   matrix[n_subpops - 1, n_subpops - 1] norm_dist_matrix = dist_matrix_normalization(dist_matrix);
-
-
-  int<lower=0,upper=1> exp_corr_func = 0;
 }
 
 // The parameters accepted by the model.

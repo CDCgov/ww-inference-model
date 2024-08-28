@@ -17,7 +17,8 @@ get_stan_data(
   include_ww,
   compute_likelihood = 1,
   dist_matrix,
-  bool_spatial_comp
+  bool_spatial_comp,
+  bool_spatial_corr_struct_exp
 )
 }
 \arguments{
@@ -62,6 +63,11 @@ values are independent and identically distributed) .}
 \item{bool_spatial_comp}{Switch for whether or not infer
 site-to-site/"spatial" correlation matrix, currently correlation matrix
 follows exponential correlation structure.}
+
+\item{bool_spatial_corr_struct_exp}{Switch for whether or not inferred
+correlation matrix is structured with an exponential correlation
+function based off distance matrix.  Does nothing if \code{bool_spatial_comp}
+is set to false.}
 }
 \value{
 \code{stan_args}: named variables to pass to stan
@@ -145,6 +151,7 @@ stan_args <- get_stan_data(
   params,
   include_ww,
   dist_matrix = NULL,
-  bool_spatial_comp = FALSE
+  bool_spatial_comp = FALSE,
+  bool_spatial_corr_struct_exp = FALSE
 )
 }

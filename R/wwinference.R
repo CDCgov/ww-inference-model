@@ -47,6 +47,10 @@
 #' @param bool_spatial_comp Switch for whether or not infer
 #' site-to-site/"spatial" correlation matrix, currently correlation matrix
 #' follows exponential correlation structure.
+#' @param bool_spatial_corr_struct_exp Switch for whether or not inferred
+#' correlation matrix is structured with an exponential correlation
+#' function based off distance matrix.  Does nothing if `bool_spatial_comp`
+#' is set to false.
 #'
 #' @return A nested list of the following items, intended to allow the user to
 #' quickly and easily plot results from their inference, while also being able
@@ -83,7 +87,8 @@ wwinference <- function(ww_data,
                         generate_initial_values = TRUE,
                         compiled_model = compile_model(),
                         dist_matrix = NULL,
-                        bool_spatial_comp = FALSE) {
+                        bool_spatial_comp = FALSE,
+                        bool_spatial_corr_struct_exp = FALSE) {
   if (is.null(forecast_date)) {
     cli::cli_abort(
       "The user must specify a forecast date"
@@ -133,7 +138,8 @@ wwinference <- function(ww_data,
     include_ww = as.numeric(model_spec$include_ww),
     compute_likelihood = 1,
     dist_matrix,
-    bool_spatial_comp
+    bool_spatial_comp,
+    bool_spatial_corr_struct_exp
   )
 
   init_lists <- NULL
