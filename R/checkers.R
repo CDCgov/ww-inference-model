@@ -35,6 +35,97 @@ assert_no_dates_after_max <- function(date_vector,
 }
 
 
+#' Assert that R(t) specified for generating simulated data is of sufficient
+#' length
+#'
+#' @param r_in_weeks a vector indicating the R(t) in weeks
+#' @param ot integer indicating the observed time: length of hospital admissions
+#'  calibration time in days
+#' @param nt integer indicating the nowcast time: length of time between last
+#' hospital admissions date and forecast date in days
+#' @param forecast_horizon integer indicating the duration of the forecast in
+#' days e.g. 28 days
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#'
+#' @return NULL, invisible
+assert_rt_correct_length <- function(r_in_weeks,
+                                     ot,
+                                     nt,
+                                     forecast_horizon,
+                                     call = rlang::caller_env()) {
+  if (length(r_in_weeks) < (ot + nt + forecast_horizon) / 7) {
+    cli::cli_abort(
+      c(
+        "The weekly R(t) specifed isn't long enough to produce",
+        "infections for the specified observed/calibration time (`ot`)",
+        "nowcast period (`nt`), and forecast horizon (`forecast_horizon`)",
+        "Got a length {length(r_in_weeks)} weekly R(t) for a total time ",
+        " period of {(ot + nt + forecast_horizon) / 7} weeks"
+      ),
+      call = call,
+      class = "wwinference_fwd_sim_specification_error"
+    )
+  }
+  invisible()
+}
+
+#' Assert that the sum of the wastewater site populations don't exceed
+#' the total population
+#'
+#' @param pop_size integer indicating the population size in the hypothetical
+#' state
+#' @param ww_pop_sites vector indicating the population size in the
+#' catchment area in each of those sites
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#'  traceback.
+#'
+#' @return NULL, invisibly
+assert_ww_site_pops_lt_total <- function(pop_size,
+                                         ww_pop_sites,
+                                         call = rlang::caller_env()) {
+  if (sum(ww_pop_sites) > pop_size) {
+    cli::cli_abort(
+      c(
+        "The sum of the specified wastewater site populations is greater than",
+        "the total population. Check to make sure population sizes",
+        "are specified correctly",
+        call = call,
+        class = "wwinference_input_data_error"
+      )
+    )
+  }
+  invisible()
+}
+
+#' Assert that the specified site and lab indices line up
+#'
+#' @param site vector of integers indicating which site (WWTP) each separate
+#' lab-site observation comes frm
+#' @param lab ector of integers indicating which lab the lab-site observations
+#' come from
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#'
+#' @return NULL, invisibly
+assert_site_lab_indices_align <- function(site,
+                                          lab,
+                                          call = rlang::caller_env()) {
+  if (length(site) != length(lab)) {
+    cli::cli_abort(
+      c(
+        "The specified site and lab indices don't align. The two",
+        "indices should uniquely define the site-lab combinations"
+      ),
+      call = call,
+      class = "wwinference_fwd_sim_specification_error"
+    )
+  }
+  invisible()
+}
+
+
+
 #' Assert that all elements of a vector are non-negative
 #'
 #' @param x vector of arguments to check for negativity
