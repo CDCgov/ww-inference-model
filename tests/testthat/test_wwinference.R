@@ -71,7 +71,8 @@ test_that("Function to get model specs produces expected outputs", {
   model_spec <- get_model_spec()
   expected_names <- c(
     "generation_interval", "inf_to_count_delay",
-    "infection_feedback_pmf", "include_ww", "params"
+    "infection_feedback_pmf", "include_ww",
+    "compute_likelihood", "params"
   )
   # Checkmade doesn't work here for a list, says it must be a character vector
   expect_true(all(names(model_spec) %in% expected_names))
