@@ -5,9 +5,9 @@
 \title{Get model specifications}
 \usage{
 get_model_spec(
-  generation_interval = wwinference::generation_interval,
-  inf_to_count_delay = wwinference::inf_to_hosp,
-  infection_feedback_pmf = wwinference::generation_interval,
+  generation_interval = wwinference::default_covid_gi,
+  inf_to_count_delay = wwinference::default_covid_inf_to_hosp,
+  infection_feedback_pmf = wwinference::default_covid_generation_interval,
   include_ww = TRUE,
   params = get_params(system.file("extdata", "example_params.toml", package =
     "wwinference"))
