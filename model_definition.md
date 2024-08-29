@@ -204,7 +204,13 @@ Genome concentration measurements can vary between sites, and even within a site
 
 $$\log[c_{ijt}] \sim \mathrm{Normal}(\log[M_{ij} C_i(t)], \sigma_{cij})$$
 
-Both $M_{ij}$ and $\sigma_{cij}$ are modeled as site-level random effects.
+Both $M_{ij}$ and $\sigma_{cij}$ are estimated hierarchically such that:
+
+$$\log(M_{ij}) \sim \mathrm{Normal}(0, \sigma_m)$$
+
+and
+
+$$\log(\sigma_{\sigma_{cij}}) \sim \mathrm{Normal}(\log(mode_{\sigma}), \sigma_{ c, \log})$$ 
 
 In the rare cases when a site submits multiple concentrations for a single date and lab method, we treat each record as an independent observation.
 
