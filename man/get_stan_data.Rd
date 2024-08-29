@@ -144,6 +144,6 @@ stan_args <- get_stan_data(
   params,
   include_ww,
   dist_matrix = NULL,
-  corr_func
+  corr_func = "iid"
 )
 }

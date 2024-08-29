@@ -207,7 +207,7 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #'   params,
 #'   include_ww,
 #'   dist_matrix = NULL,
-#'   corr_func
+#'   corr_func = "iid"
 #' )
 get_stan_data <- function(input_count_data,
                           input_ww_data,
@@ -377,23 +377,23 @@ get_stan_data <- function(input_count_data,
   # We can add an extra step here for when spatial desired and dist_matrix
   #   not given.
   if (corr_func == "iid") {
-    ind_corr_func <- 1L
+    if_ind_corr_func <- 1L
     # This dist_matrix will not be used, only needed for stan data specs.
     dist_matrix <- matrix(
       0,
       nrow = subpop_data$n_subpops - 1,
       ncol = subpop_data$n_subpops - 1
     )
-    exp_corr_func <- 0L
-    lkj_corr_func <- 0L
+    if_exp_corr_func <- 0L
+    if_lkj_corr_func <- 0L
   } else if (corr_func == "exponential") {
-    ind_corr_func <- 0L
-    exp_corr_func <- 1L
-    lkj_corr_func <- 0L
+    if_ind_corr_func <- 0L
+    if_exp_corr_func <- 1L
+    if_lkj_corr_func <- 0L
   } else if (corr_func == "lkj") {
-    ind_corr_func <- 0L
-    exp_corr_func <- 0L
-    lkj_corr_func <- 1L
+    if_ind_corr_func <- 0L
+    if_exp_corr_func <- 0L
+    if_lkj_corr_func <- 1L
   } else {
     stop("Correlation function desired currently not implemented\n
          * must be either iid, exponential, lkj*")
@@ -484,9 +484,9 @@ get_stan_data <- function(input_count_data,
     log_scaling_factor_mu_prior = params$log_scaling_factor_mu_prior,
     log_scaling_factor_sd_prior = params$log_scaling_factor_sd_prior,
     dist_matrix = dist_matrix,
-    ind_corr_func = ind_corr_func,
-    exp_corr_func = exp_corr_func,
-    lkj_corr_func = lkj_corr_func
+    if_ind_corr_func = if_ind_corr_func,
+    if_exp_corr_func = if_exp_corr_func,
+    if_lkj_corr_func = if_lkj_corr_func
   )
 
 
