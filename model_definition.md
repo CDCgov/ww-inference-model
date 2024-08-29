@@ -212,7 +212,7 @@ such that $M_{ij}$ is centered around 1 and
 
 $$\log(\sigma_{cij}) \sim \mathrm{Normal}(\log(mode_{\sigma}), \sigma_{ c, \log})$$
 
-See [Prior Distributions](#prior-distributions) for prior valies on $\sigma_m$, $\log(mode_{\sigma})$ and $\sigma_{ c, \log}$. 
+See [Prior Distributions](#prior-distributions) for prior valies on $\sigma_m$, $\log(mode_{\sigma})$ and $\sigma_{ c, \log}$.
 
 In the rare cases when a site submits multiple concentrations for a single date and lab method, we treat each record as an independent observation.
 
@@ -259,7 +259,7 @@ We use informative priors for parameters that have been well characterized in th
 | Day of the week effects | $\frac{\vec{\omega}}{7} \sim \mathrm{Dirichlet}(5, 5, 5, 5, 5, 5, 5)$ | Weakly informative prior with a mode at even daily reporting (no effects) |
 | Standard deviation in  the log of the site-lab level multiplier $M_{ij}$ | $\sigma_m \sim \mathrm{Normal}(0, 0.25) $| Weakly informative prior chosen to allow average magnitude of  concentrations to deviate |
 | Standard deviation in the log of the mode of the standard deviation between site-lab level standard deviations| $\log(mode_{\sigma}) \sim \mathrm{Normal}(1,1)$ | Weakly informative prior chosen to allow site-lab level standard deviations to vary |
-| Standard deviation in the log of the standard deviation of site-lab level standard deviations| $\sigma_{c,\log} \sim \mathrm{Normal}(0, log(2))$ | Weakly informative prior which allows observed concentrations to vary between 1/4 and 4x the mean concentration | 
+| Standard deviation in the log of the standard deviation of site-lab level standard deviations| $\sigma_{c,\log} \sim \mathrm{Normal}(0, log(2))$ | Weakly informative prior which allows observed concentrations to vary between 1/4 and 4x the mean concentration |
 
 ### Scalar parameters
 
