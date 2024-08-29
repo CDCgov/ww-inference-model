@@ -145,7 +145,7 @@ test_that(paste0(
     params,
     include_ww,
     dist_matrix = NULL,
-    bool_spatial_comp = FALSE
+    corr_func = 0
   ))
 
   # Make wastewater data outside of scope of admissions data
@@ -188,7 +188,7 @@ test_that(paste0(
     params,
     include_ww,
     dist_matrix = NULL,
-    bool_spatial_comp = FALSE
+    corr_func = 0
   ))
 })
 
@@ -205,7 +205,7 @@ test_that("Test that pmf check works as expected", {
     params,
     include_ww,
     dist_matrix = NULL,
-    bool_spatial_comp = FALSE
+    corr_func = 0
   ))
 
   expect_warning(get_stan_data(
@@ -220,7 +220,7 @@ test_that("Test that pmf check works as expected", {
     params,
     include_ww,
     dist_matrix = NULL,
-    bool_spatial_comp = FALSE
+    corr_func = 0
   ))
 
   expect_warning(get_stan_data(
@@ -235,7 +235,7 @@ test_that("Test that pmf check works as expected", {
     params,
     include_ww,
     dist_matrix = NULL,
-    bool_spatial_comp = FALSE
+    corr_func = 0
   ))
 
   expect_error(get_stan_data(
@@ -250,6 +250,6 @@ test_that("Test that pmf check works as expected", {
     params,
     include_ww,
     dist_matrix = NULL,
-    bool_spatial_comp = FALSE
+    corr_func = 0
   ))
 })
