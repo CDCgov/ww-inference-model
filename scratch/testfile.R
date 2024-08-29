@@ -145,8 +145,8 @@ calibration_time <- 90
 forecast_horizon <- 28
 
 
-generation_interval <- wwinference::generation_interval
-inf_to_hosp <- wwinference::inf_to_hosp
+generation_interval <- wwinference::default_covid_gi
+inf_to_hosp <- wwinference::default_covid_inf_to_hosp
 
 # Assign infection feedback equal to the generation interval
 infection_feedback_pmf <- generation_interval
@@ -173,8 +173,7 @@ fit <- wwinference::wwinference(
   mcmc_options = get_mcmc_options(),
   compiled_model = model,
   dist_matrix = as.matrix(dist_matrix),
-  bool_spatial_comp = TRUE,
-  bool_spatial_corr_struct_exp = FALSE
+  corr_func = "ljk"
   # // dist_matrix = NULL,
   # // bool_spatial_comp = TRUE
 )

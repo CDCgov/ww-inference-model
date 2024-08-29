@@ -101,6 +101,7 @@ data {
   matrix[n_subpops-1, n_subpops-1] dist_matrix;
   int<lower=0, upper=1> ind_corr_func;
   int<lower=0, upper=1> exp_corr_func;
+  int<lower=0, upper=1> lkj_corr_func;
 }
 
 // The transformed data
@@ -168,7 +169,7 @@ parameters {
   real log_scaling_factor;
   matrix[n_subpops-1,n_weeks] non_cent_spatial_dev_ns_mat;
   vector[n_weeks] norm_vec_aux_site;
-  cholesky_factor_corr[ind_corr_func == 0 && exp_corr_func == 0 ? n_subpops-1 : 0] L_Omega;
+  cholesky_factor_corr[lkj_corr_func == 1 ? n_subpops-1 : 0] L_Omega;
   //----------------------------------------------------------------------------
 }
 //
@@ -230,18 +231,21 @@ transformed parameters {
   growth_site = initial_growth + eta_growth * sigma_growth; // site level growth rate
 
   // Site level spatial Rt------------------------------------------------------
-  if (ind_corr_func){
+  if (ind_corr_func == 1){
     // If no dist matrix given, use n_sites + 1 = n_subpops were all ind.
     non_norm_omega = independence_corr_func(n_subpops - 1);
     norm_omega = non_norm_omega;
   }
-  else if (exp_corr_func){
+  else if (exp_corr_func == 1){
     non_norm_omega = exponential_decay_corr_func(norm_dist_matrix, phi, l);
     norm_omega = matrix_normalization(non_norm_omega);
   }
-  else {
+  else if (lkj_corr_func == 1) {
     non_norm_omega = multiply_lower_tri_self_transpose(L_Omega);
     norm_omega = matrix_normalization(non_norm_omega);
+  }
+  else {
+    print("Model will not get to there, get_stan_data.R provides protections");
   }
   sigma_mat = pow(sigma_generalized, 1.0 / (n_subpops - 1)) * norm_omega;
   for (i in 1:n_weeks) {
@@ -352,7 +356,7 @@ model {
     log_sigma_generalized ~ normal(log_sigma_generalized_mu_prior, log_sigma_generalized_sd_prior);
     log_phi ~ normal(log_phi_mu_prior, log_phi_sd_prior);
     log_scaling_factor ~ normal(log_scaling_factor_mu_prior, log_scaling_factor_sd_prior);
-    if (ind_corr_func == 0 && exp_corr_func == 0){
+    if (lkj_corr_func == 1){
       L_Omega ~ lkj_corr_cholesky(2.0);
     }
     //--------------------------------------------------------------------------

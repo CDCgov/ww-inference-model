@@ -125,13 +125,8 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #' distance-based correlation function for epsilon. If NULL, use an independence
 #' correlation function, for current implementation (i.e. all sites' epsilon
 #' values are independent and identically distributed) .
-#' @param bool_spatial_comp Switch for whether or not infer
-#' site-to-site/"spatial" correlation matrix, currently correlation matrix
-#' follows exponential correlation structure.
-#' @param bool_spatial_corr_struct_exp Switch for whether or not inferred
-#' correlation matrix is structured with an exponential correlation
-#' function based off distance matrix.  Does nothing if `bool_spatial_comp`
-#' is set to false.
+#' @param corr_func String variable to define the type of correlation
+#' function used : iid, exponential, lkj.
 #'
 #' @return `stan_args`: named variables to pass to stan
 #' @export
@@ -212,8 +207,7 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #'   params,
 #'   include_ww,
 #'   dist_matrix = NULL,
-#'   bool_spatial_comp = FALSE,
-#'   bool_spatial_corr_struct_exp = FALSE
+#'   corr_func
 #' )
 get_stan_data <- function(input_count_data,
                           input_ww_data,
@@ -227,8 +221,7 @@ get_stan_data <- function(input_count_data,
                           include_ww,
                           compute_likelihood = 1,
                           dist_matrix,
-                          bool_spatial_comp,
-                          bool_spatial_corr_struct_exp) {
+                          corr_func) {
   # Assign parameter names
   par_names <- colnames(params)
   for (i in seq_along(par_names)) {
@@ -383,14 +376,7 @@ get_stan_data <- function(input_count_data,
   # If user does / doesn't want spatial comps.
   # We can add an extra step here for when spatial desired and dist_matrix
   #   not given.
-  if (bool_spatial_comp) {
-    ind_corr_func <- 0L
-    if (bool_spatial_corr_struct_exp) {
-      exp_corr_func <- 1
-    } else {
-      exp_corr_func <- 0
-    }
-  } else {
+  if (corr_func == "iid") {
     ind_corr_func <- 1L
     # This dist_matrix will not be used, only needed for stan data specs.
     dist_matrix <- matrix(
@@ -398,7 +384,19 @@ get_stan_data <- function(input_count_data,
       nrow = subpop_data$n_subpops - 1,
       ncol = subpop_data$n_subpops - 1
     )
-    exp_corr_func <- 0
+    exp_corr_func <- 0L
+    lkj_corr_func <- 0L
+  } else if (corr_func == "exponential") {
+    ind_corr_func <- 0L
+    exp_corr_func <- 1L
+    lkj_corr_func <- 0L
+  } else if (corr_func == "lkj") {
+    ind_corr_func <- 0L
+    exp_corr_func <- 0L
+    lkj_corr_func <- 1L
+  } else {
+    stop("Correlation function desired currently not implemented\n
+         * must be either iid, exponential, lkj*")
   }
 
   stan_args <- list(
@@ -487,7 +485,8 @@ get_stan_data <- function(input_count_data,
     log_scaling_factor_sd_prior = params$log_scaling_factor_sd_prior,
     dist_matrix = dist_matrix,
     ind_corr_func = ind_corr_func,
-    exp_corr_func = exp_corr_func
+    exp_corr_func = exp_corr_func,
+    lkj_corr_func = lkj_corr_func
   )
 
 
