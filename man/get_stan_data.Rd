@@ -59,8 +59,8 @@ distance-based correlation function for epsilon. If NULL, use an independence
 correlation function, for current implementation (i.e. all sites' epsilon
 values are independent and identically distributed) .}
 
-\item{corr_func}{String variable to define the type of correlation
-function used : iid, exponential, lkj.}
+\item{corr_func}{Integer variable to define the type of correlation
+function used : 0-iid, 1-exponential, 2-lkj.}
 }
 \value{
 \code{stan_args}: named variables to pass to stan
@@ -144,6 +144,6 @@ stan_args <- get_stan_data(
   params,
   include_ww,
   dist_matrix = NULL,
-  corr_func = "iid"
+  corr_func = 0
 )
 }

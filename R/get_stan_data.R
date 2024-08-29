@@ -125,8 +125,8 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #' distance-based correlation function for epsilon. If NULL, use an independence
 #' correlation function, for current implementation (i.e. all sites' epsilon
 #' values are independent and identically distributed) .
-#' @param corr_func String variable to define the type of correlation
-#' function used : iid, exponential, lkj.
+#' @param corr_func Integer variable to define the type of correlation
+#' function used : 0-iid, 1-exponential, 2-lkj.
 #'
 #' @return `stan_args`: named variables to pass to stan
 #' @export
@@ -207,7 +207,7 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #'   params,
 #'   include_ww,
 #'   dist_matrix = NULL,
-#'   corr_func = "iid"
+#'   corr_func = 0
 #' )
 get_stan_data <- function(input_count_data,
                           input_ww_data,
@@ -376,27 +376,17 @@ get_stan_data <- function(input_count_data,
   # If user does / doesn't want spatial comps.
   # We can add an extra step here for when spatial desired and dist_matrix
   #   not given.
-  if (corr_func == "iid") {
-    if_ind_corr_func <- 1L
+  if (corr_func == 0) {
     # This dist_matrix will not be used, only needed for stan data specs.
     dist_matrix <- matrix(
       0,
       nrow = subpop_data$n_subpops - 1,
       ncol = subpop_data$n_subpops - 1
     )
-    if_exp_corr_func <- 0L
-    if_lkj_corr_func <- 0L
-  } else if (corr_func == "exponential") {
-    if_ind_corr_func <- 0L
-    if_exp_corr_func <- 1L
-    if_lkj_corr_func <- 0L
-  } else if (corr_func == "lkj") {
-    if_ind_corr_func <- 0L
-    if_exp_corr_func <- 0L
-    if_lkj_corr_func <- 1L
-  } else {
+  }
+  if (!(corr_func %in% c(0, 1, 2))) {
     stop("Correlation function desired currently not implemented\n
-         * must be either iid, exponential, lkj*")
+         * must be either 0-iid, 1-exponential, 2-lkj*")
   }
 
   stan_args <- list(
@@ -484,9 +474,7 @@ get_stan_data <- function(input_count_data,
     log_scaling_factor_mu_prior = params$log_scaling_factor_mu_prior,
     log_scaling_factor_sd_prior = params$log_scaling_factor_sd_prior,
     dist_matrix = dist_matrix,
-    if_ind_corr_func = if_ind_corr_func,
-    if_exp_corr_func = if_exp_corr_func,
-    if_lkj_corr_func = if_lkj_corr_func
+    corr_func = corr_func
   )
 
 
