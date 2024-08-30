@@ -13,13 +13,15 @@ A tibble with 102 rows and 6 columns
 YYYY-MM-DD}
 \item{site}{The wastewater treatment plant where the sample was collected}
 \item{lab}{The lab where the sample was processed}
-\item{genome_copies_per_ml}{The wastewater concentration measured on the
-date specified, collected in the site specified, and processed in the lab
-specified. The default parameters assume that this quantity is reported
-as the genome copies per mL, on a natural scale.}
-\item{lod}{The limit of detection in the site and lab on a particular day
-of the quantification device (e.g. PCR). This is also by default reported
-in terms of the genome copies per mL.}
+\item{log_genome_copies_per_ml}{The natural log of the wastewater
+concentration measured on the date specified, collected in the site
+specified, and processed in the lab specified. The package expects that
+that this quantity is reported as the genome copies per mL,
+in log scale.}
+\item{log_lod}{The log of the limit of detection in the site and lab on a
+particular day of the quantification device (e.g. PCR). This is also
+expecyed to be reported in terms of the genome copies per mL, in log
+scale.}
 \item{site_pop}{The population size of the wastewater catchment area
 represented by the site variable}
 }
@@ -33,12 +35,13 @@ ww_data
 }
 \description{
 A dataset containing the simulated wastewater concentrations
-(labeled here as \code{genome_copies_per_ml}) by sample collection date (\code{date}),
-the site where the sample was collected (\code{site}) and the lab where the
-samples were processed (\code{lab}). Additional columns that are required
-attributes needed for the model are the limit of detection for that lab on
-each day (labeled here as \code{lod}) and the population size of the wastewater
-catchment area represented by the wastewater concentrations in each \code{site}.
+(labeled here as \code{log_genome_copies_per_ml}) by sample collection date
+(\code{date}), the site where the sample was collected (\code{site}) and the lab
+where the samples were processed (\code{lab}). Additional columns that are
+required attributes needed for the model are the limit of detection for
+that lab on each day (labeled here as \code{log_lod}) and the population size of
+the wastewater catchment area represented by the wastewater concentrations
+in each \code{site}.
 }
 \details{
 This data is generated via the default values in the
