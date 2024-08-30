@@ -9,3 +9,4 @@ This will serve as our change-log
 - 2024-08-22: Update `generate_simulated_data()` function to modularize the model components, adding additional
 forward simulation functions.
 - 2024-08-23: Added new `wwinference_fit` class with corresponding print and summary methods.
+- 2024-08-30: Switch from asking users to pass in natural scale wastewater concentration data to asking them to pass in log scale data
