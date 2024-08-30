@@ -115,7 +115,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                     sd_reporting_freq = 1 / 20,
                                     mean_reporting_latency = 7,
                                     sd_reporting_latency = 3,
-                                    mean_log_lod = 3.8,
+                                    mean_log_lod = 5,
                                     sd_log_lod = 0.2,
                                     global_rt_sd = 0.03,
                                     sigma_eps = 0.05,
@@ -415,7 +415,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
       "log_genome_copies_per_ml" =
         dplyr::case_when(
           .data$log_genome_copies_per_ml ==
-            !!min_ww_val ~ 0.5 * .data$log_lod_sewage,
+            !!min_ww_val ~ 0.5 * .data$log_lod,
           TRUE ~ .data$log_genome_copies_per_ml
         )
     )
