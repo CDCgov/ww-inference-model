@@ -239,7 +239,7 @@ get_stan_data <- function(input_count_data,
   # Get the total pop, coming from the larger population generating the
   # count data
   pop <- input_count_data |>
-    dplyr::distinct("total_pop") |>
+    dplyr::distinct(.data$total_pop) |>
     dplyr::pull()
 
   assert_single_value(pop,
