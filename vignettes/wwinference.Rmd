@@ -80,7 +80,7 @@ that the sample was collected from
 measured genome copies per mL from the sample collected. This column should not
 contain NAs, even if the observation for that sample is below the limit of
 detection. We will
-- a limit of detection (column `log_lod_sewage`): the natural log of the limit
+- a limit of detection (column `log_lod`): the natural log of the limit
 of detection of the assay used to process the sample. Units should be the same
 units as the concentration column.
 - a site population size (column `site_pop`): the population size covered by the
@@ -144,12 +144,14 @@ pass to the downstream model fitting functions.
 ww_data_preprocessed <- wwinference::preprocess_ww_data(
   ww_data,
   conc_col_name = "log_genome_copies_per_ml",
-  lod_col_name = "log_lod_sewage"
+  lod_col_name = "log_lod"
 )
 ```
 Note that this function assumes that there are no missing values in the
 concentration column. The package expects observations below the LOD will
-be replaced with a numeric value below the LOD.
+be replaced with a numeric value below the LOD. If there are NAs in your dataset
+when observations are below the LOD, we suggest replacing them with a value
+below the LOD in upstream pre-processing.
 
 ## Hospital admissions data pre-processing
 
@@ -175,17 +177,19 @@ We'll make some plots of the data just to make sure it looks like what we'd expe
 ggplot(ww_data_preprocessed) +
   geom_point(
     aes(
-      x = date, y = genome_copies_per_ml,
+      x = date, y = log_genome_copies_per_ml,
       color = as.factor(lab_site_name)
     ),
     show.legend = FALSE
   ) +
   geom_point(
-    data = ww_data_preprocessed |> filter(genome_copies_per_ml <= lod),
-    aes(x = date, y = genome_copies_per_ml, color = "red"),
+    data = ww_data_preprocessed |> filter(
+      log_genome_copies_per_ml <= log_lod
+    ),
+    aes(x = date, y = log_genome_copies_per_ml, color = "red"),
     show.legend = FALSE
   ) +
-  geom_hline(aes(yintercept = lod), linetype = "dashed") +
+  geom_hline(aes(yintercept = log_lod), linetype = "dashed") +
   facet_wrap(~lab_site_name, scales = "free") +
   xlab("") +
   ylab("Genome copies/mL") +
@@ -363,7 +367,21 @@ state-level R(t) estimate.
 We can generate this directly on the output of `wwinference()` using:
 ```{r extracting-draws}
 draws_df <- get_draws_df(ww_fit)
+
+# Print the names of the variables included in the output dataframe
+cat(
+  "Variables in dataframe: ",
+  sprintf("%s", paste(unique(draws_df$name), collapse = ", "))
+)
 ```
+Note that by default the `get_draws_df()` function will return  a tidy long
+dataframe with all of the posterior draws joined to applicable data for each of
+the included variables. If only interested in the hospital admissions estimates
+(`"predicted counts"`) or the wastewater estimates (`"predicted wastewater"`),
+we suggest immediately filtering to `name %in% c(your_desired_outputs)`
+so as not to carry around extra data.
+This is particularly important if there are a large
+number of wastewater sites, as this dataframe can get quite large.
 
 ### Using explicit passed arguments rather than S3 methods
 
@@ -384,7 +402,9 @@ draws_df_explicit <- get_draws_df(
 ## Plotting the outputs
 
 We can create plots of the outputs using `draws_df` and
-the fitting wrapper functions.
+the fitting wrapper functions. Note that by default, these plots will not
+include the data that was below the LOD (even though the fit incorporated
+them via censoring)
 
 ```{r generating-figures,  out.width='100%'}
 draws_df <- get_draws_df(ww_fit)
