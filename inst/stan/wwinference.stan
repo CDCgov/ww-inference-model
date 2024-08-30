@@ -265,7 +265,8 @@ transformed parameters {
   exp_obs_log_v = exp_obs_log_v_true + ww_site_mod[ww_sampled_lab_sites];
   // Option to add a population offset here at some point  log(model_V) + site_level_multiplier+ pop_ww[ww_sampled_sites]
 
-  // Get the transformed lab-site level error (NCP for sigma_site ~ n(mean_sigma_site, sigma_sigma_ww_site))
+  // Get the transformed lab-site level error
+  //log(sigma_site) ~ Noormal(log(mode_sigma_site), sd_log_sigma_site)
   sigma_ww_site = exp(
   log(mode_sigma_ww_site) + sd_log_sigma_ww_site * eta_log_sigma_ww_site);
 
