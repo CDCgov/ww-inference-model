@@ -69,8 +69,8 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
   ww_data <- preprocessed_ww_data |>
     dplyr::filter(
       .data$exclude != 1,
-      .data$date > last_count_data_date -
-        lubridate::days(calibration_time)
+      .data$date > !!last_count_data_date -
+        lubridate::days(!!calibration_time)
     ) |>
     dplyr::arrange(.data$date, .data$lab_site_index)
 
@@ -239,9 +239,8 @@ get_stan_data <- function(input_count_data,
   # Get the total pop, coming from the larger population generating the
   # count data
   pop <- input_count_data |>
-    dplyr::select("total_pop") |>
-    unique() |>
-    dplyr::pull(.data$total_pop)
+    dplyr::distinct("total_pop") |>
+    dplyr::pull()
 
   assert_single_value(pop,
     arg = "global population",
