@@ -338,7 +338,7 @@ downsample_ww_obs <- function(log_conc_lab_site,
 #' @param lod_lab_site vector of numerics indicating the LOD in each lab and
 #' site combination
 #'
-#' @return a tidy dataframe containing the observed wastewater concentrations
+#' @return a tidy dataframe containing the log scale wastewater concentrations
 #' in each site and lab at each time point
 format_ww_data <- function(log_obs_conc_lab_site,
                            ot,
@@ -367,22 +367,19 @@ format_ww_data <- function(log_obs_conc_lab_site,
         lod_sewage = lod_lab_site
       ),
       by = c("lab_site")
-    ) |> # Remove below LOD values
-    dplyr::mutate(
-      lod_sewage =
-        dplyr::case_when(
-          is.na(log_conc) ~ NA,
-          !is.na(log_conc) ~ lod_sewage
-        )
     ) |>
-    dplyr::mutate(
-      genome_copies_per_ml = exp(log_conc),
-      lod = exp(lod_sewage)
+    dplyr::rename(
+      log_lod_sewage = lod_sewage,
+      log_genome_copies_per_ml = log_conc
     ) |>
-    dplyr::filter(!is.na(genome_copies_per_ml)) |>
+    # Remove missing values
+    dplyr::filter(!is.na(log_genome_copies_per_ml)) |>
     dplyr::rename(site_pop = ww_pop) |>
     dplyr::arrange(site, lab, date) |>
-    dplyr::select(date, site, lab, genome_copies_per_ml, lod, site_pop)
+    dplyr::select(
+      date, site, lab, log_genome_copies_per_ml,
+      log_lod_sewage, site_pop
+    )
 
   return(ww_data)
 }

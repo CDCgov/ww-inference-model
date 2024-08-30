@@ -44,16 +44,16 @@ library(tidybayes)
 
 The model expects two types of data: daily counts of hospital admissions data
 from the larger "global" population, and wastewater concentration
-data from wastewater treatment plants whose catchment areas are contained within
-the larger "global" population. For this quick start, we will use
-simulated data, modeled after a hypothetical US state with 4 wastewater
-treatmentplants (also referred to as sites) reporting data on viral
-concentrations of SARS-COV-2, processed in 3 different labs, covering about 70%
-of the state's population. This simulated data contains daily counts of the
+data from wastewater treatment plants whose catchment areas
+are contained withinthe larger "global" population. For this quick start,
+we will usesimulated data, modeled after a hypothetical US state with 4
+wastewater treatment plants (also referred to as sites) reporting data on log scale
+viral concentrations of SARS-COV-2, processed in 3 different labs, covering about
+25% of the state's population. This simulated data contains daily counts of the
 total hospital admissions in a hypothetical US state from September 1, 2023 to
-November 29, 2023. It contains wastewater concentration data spanning from
-September 1, 2023 to December 1, 2023, with varying sampling frequencies. We
-will be using this data to produce a forecast of COVID-19 hospital admissions
+November 29, 2023. It contains log scale wastewater concentration data spanning
+from September 1, 2023 to December 1, 2023, with varying sampling frequencies.
+We will be using this data to produce a forecast of COVID-19 hospital admissions
 as of December 6, 2023. These data are provided as part of the package data.
 
 These data are already in a format that can be used for `wwinference`. For the
@@ -74,10 +74,11 @@ For the wastewater data, it contains:
 - a site indicator (column `site`): the unique identifier for the wastewater treatment plant
 that the sample was collected from
 - a lab indicator (column `lab`): the unique identifier for the lab where the sample was processed
-- a concentration (column `genome_copies_mL`): the measured genome copies per mL from
-the sample collected, in natural scale
-- a limit of detection (column `lod`): the limit of detection of the assay used to
-process the sample, in natural scale
+- a concentration (column `log_genome_copies_ml`): the natural log of the
+measured genome copies per mL from the sample collected
+- a limit of detection (column `log_lod_sewage`): the natural log of the limit
+of detection of the assay used to process the sample. Units should be the same
+units as the concentration column.
 - a site population size (column `site_pop`): the population size covered by the
 wastewater catchment area of that site
 
