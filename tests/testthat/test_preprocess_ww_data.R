@@ -28,7 +28,7 @@ test_that("Function returns dataframe with correct columns", {
 test_that("Concentration column is renamed correctly", {
   processed <- preprocess_ww_data(ww_data,
     conc_col_name = "conc",
-    lod_col_name = "log_lod"
+    lod_col_name = "lod"
   )
   checkmate::expect_names(
     names(processed),
