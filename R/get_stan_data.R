@@ -125,8 +125,10 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #' distance-based correlation function for epsilon. If NULL, use an independence
 #' correlation function, for current implementation (i.e. all sites' epsilon
 #' values are independent and identically distributed) .
-#' @param corr_func Integer variable to define the type of correlation
-#' function used : 0-iid, 1-exponential, 2-lkj.
+#' @param corr_structure_switch Integer variable to define the type of
+#' correlation matrix structure used.  Input 0 for an iid correlation structure,
+#' 1 for an exponential correlation structure based off distance matrix, and 3
+#' to use an unstructured, lkj, correlation matrix.
 #'
 #' @return `stan_args`: named variables to pass to stan
 #' @export
@@ -207,7 +209,7 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #'   params,
 #'   include_ww,
 #'   dist_matrix = NULL,
-#'   corr_func = 0
+#'   corr_structure_switch = 0
 #' )
 get_stan_data <- function(input_count_data,
                           input_ww_data,
@@ -221,7 +223,7 @@ get_stan_data <- function(input_count_data,
                           include_ww,
                           compute_likelihood = 1,
                           dist_matrix,
-                          corr_func) {
+                          corr_structure_switch) {
   # Assign parameter names
   par_names <- colnames(params)
   for (i in seq_along(par_names)) {
@@ -376,7 +378,7 @@ get_stan_data <- function(input_count_data,
   # If user does / doesn't want spatial comps.
   # We can add an extra step here for when spatial desired and dist_matrix
   #   not given.
-  if (corr_func == 0) {
+  if (corr_structure_switch == 0) {
     # This dist_matrix will not be used, only needed for stan data specs.
     dist_matrix <- matrix(
       0,
@@ -384,8 +386,8 @@ get_stan_data <- function(input_count_data,
       ncol = subpop_data$n_subpops - 1
     )
   }
-  if (!(corr_func %in% c(0, 1, 2))) {
-    stop("Correlation function desired currently not implemented\n
+  if (!(corr_structure_switch %in% c(0, 1, 2))) {
+    stop("Correlation structure desired currently not implemented\n
          * must be either 0-iid, 1-exponential, 2-lkj*")
   }
 
@@ -474,7 +476,7 @@ get_stan_data <- function(input_count_data,
     log_scaling_factor_mu_prior = params$log_scaling_factor_mu_prior,
     log_scaling_factor_sd_prior = params$log_scaling_factor_sd_prior,
     dist_matrix = dist_matrix,
-    corr_func = corr_func
+    corr_structure_switch = corr_structure_switch
   )
 
 

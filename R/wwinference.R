@@ -44,8 +44,10 @@
 #' distance-based correlation function for epsilon. If NULL, use an independence
 #' correlation function, for current implementation (i.e. all sites' epsilon
 #' values are independent and identically distributed) .
-#' @param corr_func Integer variable to define the type of correlation
-#' function used : 0-iid, 1-exponential, 2-lkj.
+#' @param corr_structure_switch Integer variable to define the type of
+#' correlation matrix structure used.  Input 0 for an iid correlation structure,
+#' 1 for an exponential correlation structure based off distance matrix, and 3
+#' to use an unstructured, lkj, correlation matrix.
 #'
 #' @return A nested list of the following items, intended to allow the user to
 #' quickly and easily plot results from their inference, while also being able
@@ -82,7 +84,7 @@ wwinference <- function(ww_data,
                         generate_initial_values = TRUE,
                         compiled_model = compile_model(),
                         dist_matrix = NULL,
-                        corr_func = 0) {
+                        corr_structure_switch = 0) {
   if (is.null(forecast_date)) {
     cli::cli_abort(
       "The user must specify a forecast date"
@@ -110,7 +112,7 @@ wwinference <- function(ww_data,
     input_ww_data = input_ww_data
   )
 
-  if (corr_func == 1 && is.null(dist_matrix)) {
+  if (corr_structure_switch == 1 && is.null(dist_matrix)) {
     stop(
       "Spatial Components Desired, but Distance Matrix Not Supplied!!!\n
           *distance matrix required for current implementation*"
@@ -132,7 +134,7 @@ wwinference <- function(ww_data,
     include_ww = as.numeric(model_spec$include_ww),
     compute_likelihood = as.integer(model_spec$compute_likelihood),
     dist_matrix = dist_matrix,
-    corr_func = corr_func
+    corr_structure_switch = corr_structure_switch
   )
 
   init_lists <- NULL
