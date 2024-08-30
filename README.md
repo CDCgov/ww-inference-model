@@ -61,10 +61,8 @@ If you run into trouble, consult the official [`cmdstanr`](https://mc-stan.org/c
 
 ## Install `wwinference`
 
-Once `cmdstanr` and `CmdStan` are installed, the next step is to download this repository and install the package, `wwinference`. The package provides tools for specifying and running the model, and installs other needed dependencies.
-
-### User install
-
+Once `cmdstanr` and `CmdStan` are installed, the next step is to install the package, `wwinference`. 
+The package provides tools for specifying and running the model, and installs other needed dependencies.
 The package can be installed directly from github by running the following within an R session:
 ```R
 install.packages("remotes")
