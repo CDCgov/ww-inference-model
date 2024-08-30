@@ -48,7 +48,8 @@ get_plot_forecasted_counts <- function(draws,
       shape = 21, color = "black", fill = "white"
     ) +
     geom_point(aes(x = .data$date, y = .data$observed_value)) +
-    geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
+    geom_vline(
+      xintercept = lubridate::ymd(forecast_date),
       linetype = "dashed"
     ) +
     xlab("") +
@@ -117,7 +118,8 @@ get_plot_ww_conc <- function(draws,
       color = "black", show.legend = FALSE
     ) +
     facet_wrap(~site_lab_name, scales = "free") +
-    geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
+    geom_vline(
+      xintercept = lubridate::ymd(forecast_date),
       linetype = "dashed"
     ) +
     xlab("") +
@@ -174,7 +176,8 @@ get_plot_global_rt <- function(draws,
       aes(x = .data$date, y = .data$pred_value, group = .data$draw),
       color = "blue4", alpha = 0.1, linewidth = 0.2
     ) +
-    geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
+    geom_vline(
+      xintercept = lubridate::ymd(forecast_date),
       linetype = "dashed"
     ) +
     geom_hline(aes(yintercept = 1), linetype = "dashed") +
@@ -235,7 +238,8 @@ get_plot_subpop_rt <- function(draws,
       alpha = 0.1, linewidth = 0.2,
       show.legend = FALSE
     ) +
-    geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
+    geom_vline(
+      xintercept = lubridate::ymd(forecast_date),
       linetype = "dashed",
       show.legend = FALSE
     ) +
