@@ -189,7 +189,7 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #'   last_count_data_date,
 #'   calibration_time
 #' )
-#' stan_args <- get_stan_data(
+#' stan_data_list <- get_stan_data(
 #'   input_count_data_for_stan,
 #'   input_ww_data_for_stan,
 #'   forecast_date,
@@ -354,8 +354,8 @@ get_stan_data <- function(input_count_data,
 
   inf_to_count_delay_max <- length(inf_to_count_delay)
 
-  stan_args <- list(
-    gt_max = params$gt_max,
+  stan_data_list <- list(
+    gt_max = min(length(generation_interval), params$gt_max),
     hosp_delay_max = inf_to_count_delay_max,
     inf_to_hosp = inf_to_count_delay,
     mwpd = params$ml_of_ww_per_person_day,
@@ -411,10 +411,12 @@ get_stan_data <- function(input_count_data,
     hosp_wday_effect_prior_alpha = params$hosp_wday_effect_prior_alpha,
     initial_growth_prior_mean = params$initial_growth_prior_mean,
     initial_growth_prior_sd = params$initial_growth_prior_sd,
-    sigma_ww_site_prior_mean_mean = params$sigma_ww_site_prior_mean_mean,
-    sigma_ww_site_prior_mean_sd = params$sigma_ww_site_prior_mean_sd,
-    sigma_ww_site_prior_sd_mean = params$sigma_ww_site_prior_sd_mean,
-    sigma_ww_site_prior_sd_sd = params$sigma_ww_site_prior_sd_sd,
+    mode_sigma_ww_site_prior_mode = params$mode_sigma_ww_site_prior_mode,
+    mode_sigma_ww_site_prior_sd = params$mode_sigma_ww_site_prior_sd,
+    sd_log_sigma_ww_site_prior_mode =
+      params$sd_log_sigma_ww_site_prior_mode,
+    sd_log_sigma_ww_site_prior_sd =
+      params$sd_log_sigma_ww_site_prior_sd,
     eta_sd_sd = params$eta_sd_sd,
     sigma_i0_prior_mode = params$sigma_i0_prior_mode,
     sigma_i0_prior_sd = params$sigma_i0_prior_sd,
@@ -432,7 +434,7 @@ get_stan_data <- function(input_count_data,
   )
 
 
-  return(stan_args)
+  return(stan_data_list)
 }
 
 #' Get the integer sizes of the wastewater input data

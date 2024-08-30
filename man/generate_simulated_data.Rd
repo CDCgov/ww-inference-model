@@ -134,6 +134,7 @@ wastewater data directly from the generative model, specifying the conditions
 and parameters to generate from.
 }
 \examples{
+\dontrun{
 # Generate a simulated dataset from a hypothetical state with 6 sites and 2
 # different labs
 sim_data <- generate_simulated_data(
@@ -145,4 +146,5 @@ sim_data <- generate_simulated_data(
 )
 hosp_data <- sim_data$hosp_data
 ww_data <- sim_data$ww_data
+}
 }
