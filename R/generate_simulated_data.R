@@ -417,8 +417,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     date_df = date_df
   ) |>
     dplyr::rename(
-      daily_hosp_admits_for_eval =
-        .data$daily_hosp_admits
+      "daily_hosp_admits_for_eval" = "daily_hosp_admits"
     )
 
   # Global R(t)

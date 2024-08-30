@@ -65,8 +65,8 @@ preprocess_ww_data <- function(ww_data,
       by = "site"
     ) |>
     dplyr::rename(
-      lod = {{ lod_col_name }},
-      genome_copies_per_ml = {{ conc_col_name }}
+      "lod" = {{ lod_col_name }},
+      "genome_copies_per_ml" = {{ conc_col_name }}
     ) |>
     dplyr::mutate(
       lab_site_name = glue::glue("Site: {site}, Lab: {lab}"),
@@ -125,8 +125,8 @@ preprocess_count_data <- function(count_data,
 
   count_data_preprocessed <- count_data |>
     dplyr::rename(
-      count = {{ count_col_name }},
-      total_pop = {{ pop_size_col_name }}
+      "count" = {{ count_col_name }},
+      "total_pop" = {{ pop_size_col_name }}
     )
 
   return(count_data_preprocessed)
