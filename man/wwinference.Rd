@@ -17,7 +17,7 @@ wwinference(
   model_spec = get_model_spec(),
   fit_opts = get_mcmc_options(),
   generate_initial_values = TRUE,
-  inital_values_seed = NULL,
+  initial_values_seed = NULL,
   compiled_model = compile_model()
 )
 
@@ -63,15 +63,15 @@ initialization lists will be generated and passed as the \code{init} argument
 to the model object \code{\link[cmdstanr:model-method-sample]{$sample()}} call.
 function}
 
+\item{initial_values_seed}{set of integers indicating the random seed of
+the R sampler of the initial values, default is \code{NULL}}
+
 \item{compiled_model}{The pre-compiled model as defined using
 \code{compile_model()}}
 
 \item{x, object}{Object of class \code{wwinference_fit}}
 
 \item{...}{Additional parameters passed to the corresponding method}
-
-\item{initial_values_seed}{set of integers indicating the random seed of
-the R sampler of the initial values, default is \code{NULL}}
 }
 \value{
 An object of the \code{ww_inference_fit} class containing the following

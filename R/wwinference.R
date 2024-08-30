@@ -151,7 +151,7 @@ wwinference <- function(ww_data,
                         model_spec = get_model_spec(),
                         fit_opts = get_mcmc_options(),
                         generate_initial_values = TRUE,
-                        inital_values_seed = NULL,
+                        initial_values_seed = NULL,
                         compiled_model = compile_model()) {
   if (is.null(forecast_date)) {
     cli::cli_abort(
