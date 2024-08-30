@@ -1,3 +1,5 @@
+seed <- 123
+
 ww_data <- tibble::tibble(
   date = rep(seq(
     from = lubridate::ymd("2023-08-01"),
