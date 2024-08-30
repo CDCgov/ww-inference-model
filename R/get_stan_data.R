@@ -127,7 +127,7 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #' values are independent and identically distributed) .
 #' @param corr_structure_switch Integer variable to define the type of
 #' correlation matrix structure used.  Input 0 for an iid correlation structure,
-#' 1 for an exponential correlation structure based off distance matrix, and 3
+#' 1 for an exponential correlation structure based off distance matrix, and 2
 #' to use an unstructured, lkj, correlation matrix.
 #'
 #' @return `stan_args`: named variables to pass to stan
@@ -387,8 +387,13 @@ get_stan_data <- function(input_count_data,
     )
   }
   if (!(corr_structure_switch %in% c(0, 1, 2))) {
-    stop("Correlation structure desired currently not implemented\n
-         * must be either 0-iid, 1-exponential, 2-lkj*")
+    cli::cli_abort(
+      c(
+        "Correlation structure requested currently not implemented.",
+        "Must be one of 0 (iid), 1 (exponential), and (2) lkj.
+        Got {corr_structure_switch}"
+      )
+    )
   }
 
   stan_args <- list(

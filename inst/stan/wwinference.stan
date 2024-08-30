@@ -243,7 +243,7 @@ transformed parameters {
     norm_omega = matrix_normalization(non_norm_omega);
   }
   else {
-    print("Model will not get to there, get_stan_data.R provides protections");
+    reject("Model should not reach this point. Invalid corr_structure_switch value. Check model code");
   }
   sigma_mat = pow(sigma_generalized, 1.0 / (n_subpops - 1)) * norm_omega;
   for (i in 1:n_weeks) {
