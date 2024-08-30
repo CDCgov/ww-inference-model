@@ -12,3 +12,7 @@
 
 # Hidden files/folders
 ^\..+
+
+# Because R doesn't like having a copy of this
+# type of license in the package.
+LICENSE

@@ -50,7 +50,7 @@ Description: An implementation of a hierarchical semi-mechanistic renewal
     hospital admissions, estimated and forecasted wastewater concentrations,
     global R(t) estimates, local R(t) estimates for the subpopulations
     represented by each wastewater catchment area.
-License: Apache License (>= 2) + file LICENSE
+License: Apache License (>= 2)
 URL: https://github.com/cdcgov/ww-inference-model/, https://cdcgov.github.io/ww-inference-model/
 BugReports: https://github.com/cdcgov/ww-inference-model/issues/
 Depends:
