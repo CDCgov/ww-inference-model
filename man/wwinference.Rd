@@ -16,7 +16,7 @@ wwinference(
   generate_initial_values = TRUE,
   compiled_model = compile_model(),
   dist_matrix = NULL,
-  bool_spatial_comp = FALSE
+  corr_structure_switch = 0
 )
 }
 \arguments{
@@ -61,9 +61,10 @@ distance-based correlation function for epsilon. If NULL, use an independence
 correlation function, for current implementation (i.e. all sites' epsilon
 values are independent and identically distributed) .}
 
-\item{bool_spatial_comp}{Switch for whether or not infer
-site-to-site/"spatial" correlation matrix, currently correlation matrix
-follows exponential correlation structure.}
+\item{corr_structure_switch}{Integer variable to define the type of
+correlation matrix structure used.  Input 0 for an iid correlation structure,
+1 for an exponential correlation structure based off distance matrix, and 2
+to use an unstructured, lkj, correlation matrix.}
 }
 \value{
 A nested list of the following items, intended to allow the user to

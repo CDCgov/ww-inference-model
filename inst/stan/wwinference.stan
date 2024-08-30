@@ -99,7 +99,7 @@ data {
   real log_scaling_factor_mu_prior;
   real log_scaling_factor_sd_prior;
   matrix[n_subpops-1, n_subpops-1] dist_matrix;
-  int<lower=0, upper=1> ind_corr_func;
+  int<lower=0, upper=2> corr_structure_switch;
 }
 
 // The transformed data
@@ -167,6 +167,7 @@ parameters {
   real log_scaling_factor;
   matrix[n_subpops-1,n_weeks] non_cent_spatial_dev_ns_mat;
   vector[n_weeks] norm_vec_aux_site;
+  cholesky_factor_corr[corr_structure_switch == 2 ? n_subpops-1 : 0] L_Omega;
   //----------------------------------------------------------------------------
 }
 //
@@ -228,14 +229,21 @@ transformed parameters {
   growth_site = initial_growth + eta_growth * sigma_growth; // site level growth rate
 
   // Site level spatial Rt------------------------------------------------------
-  if (ind_corr_func){
+  if (corr_structure_switch == 0){
     // If no dist matrix given, use n_sites + 1 = n_subpops were all ind.
     non_norm_omega = independence_corr_func(n_subpops - 1);
     norm_omega = non_norm_omega;
   }
-  else {
+  else if (corr_structure_switch == 1){
     non_norm_omega = exponential_decay_corr_func(norm_dist_matrix, phi, l);
     norm_omega = matrix_normalization(non_norm_omega);
+  }
+  else if (corr_structure_switch == 2) {
+    non_norm_omega = multiply_lower_tri_self_transpose(L_Omega);
+    norm_omega = matrix_normalization(non_norm_omega);
+  }
+  else {
+    reject("Model should not reach this point. Invalid corr_structure_switch value. Check model code");
   }
   sigma_mat = pow(sigma_generalized, 1.0 / (n_subpops - 1)) * norm_omega;
   for (i in 1:n_weeks) {
@@ -346,6 +354,9 @@ model {
     log_sigma_generalized ~ normal(log_sigma_generalized_mu_prior, log_sigma_generalized_sd_prior);
     log_phi ~ normal(log_phi_mu_prior, log_phi_sd_prior);
     log_scaling_factor ~ normal(log_scaling_factor_mu_prior, log_scaling_factor_sd_prior);
+    if (corr_structure_switch == 2){
+      L_Omega ~ lkj_corr_cholesky(2.0);
+    }
     //--------------------------------------------------------------------------
 
   w ~ std_normal();

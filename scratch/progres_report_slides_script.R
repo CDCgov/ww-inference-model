@@ -64,7 +64,7 @@ ggplot(ww_data_preprocessed) +
     show.legend = FALSE
   ) +
   geom_hline(aes(yintercept = lod), linetype = "dashed") +
-  facet_grid(~site, scales = "free") +
+  facet_wrap(~site, scales = "free", nrow = 1) +
   xlab("") +
   ylab("Genome copies/mL") +
   ggtitle("Lab-site level wastewater concentration") +
@@ -140,8 +140,8 @@ calibration_time <- 90
 forecast_horizon <- 28
 
 
-generation_interval <- wwinference::generation_interval
-inf_to_hosp <- wwinference::inf_to_hosp
+generation_interval <- wwinference::default_covid_gi
+inf_to_hosp <- wwinference::default_covid_inf_to_hosp
 
 # Assign infection feedback equal to the generation interval
 infection_feedback_pmf <- generation_interval
@@ -279,6 +279,9 @@ ggplot(draws_df |> dplyr::filter(
   xlab("") +
   ylab("Subpopulation R(t)") +
   ggtitle("Site R(t) estimate (Red line is actual)") +
+  guides(
+    color = "none",
+  ) +
   theme_bw()
 
 
@@ -298,9 +301,7 @@ summary_spatial_params
 
 temp_draws <- fit$raw_fit_obj$draws(variables = c(
   "autoreg_rt_site",
-  "phi",
-  "sigma_generalized",
-  "scaling_factor"
+  "sigma_generalized"
 ))
 temp_draws_df <- as.data.frame(as.table(temp_draws))
 names(temp_draws_df) <- c("iteration", "chain", "variable", "value")
@@ -308,17 +309,13 @@ temp_draws_df <- temp_draws_df %>%
   mutate(
     variable = case_when(
       variable == "autoreg_rt_site" ~ "AR Coefficient on Delta Terms",
-      variable == "phi" ~ "Phi for Exp. Corr. Func.",
-      variable == "sigma_generalized" ~ "Generalized Variance",
-      variable == "scaling_factor" ~ "ScalingFactor"
+      variable == "sigma_generalized" ~ "Generalized Variance"
     ),
     variable = factor(variable),
   )
 actual_values <- c(
   "AR Coefficient on Delta Terms" = 0.6,
-  "Phi for Exp. Corr. Func." = 0.2,
-  "Generalized Variance" = 0.00000625,
-  "ScalingFactor" = 1.1
+  "Generalized Variance" = 0.00000625
 )
 actual_values_df <- data.frame(
   variable = names(actual_values),
