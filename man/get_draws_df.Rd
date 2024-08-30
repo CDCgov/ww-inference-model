@@ -13,7 +13,15 @@ get_draws_df(x, ...)
 
 \method{get_draws_df}{default}(x, ...)
 
-\method{get_draws_df}{data.frame}(x, count_data, stan_data_list, fit_obj, ...)
+\method{get_draws_df}{data.frame}(
+  x,
+  count_data,
+  stan_data_list,
+  fit_obj,
+  included_variables = c("predicted counts", "predicted wastewater", "global R(t)",
+    "subpopulation R(t)"),
+  ...
+)
 }
 \arguments{
 \item{x}{Either a dataframe of wastewater observations, or an object of
@@ -29,6 +37,11 @@ fitting the model}
 
 \item{fit_obj}{a CmdStan object that is the output of fitting the model to
 \code{x} and \code{count_data}}
+
+\item{included_variables}{A vector of strings indicating which output
+variables to include in the \code{draws_df}. Defaults to returning
+\code{"predicted counts"}, \code{"predicted wastewater"},\code{"global R(t)"},
+and \code{"subpopulation R(t)"}, indicated by the column \code{name}}
 }
 \value{
 A tibble containing the full set of posterior draws of the
