@@ -4,16 +4,16 @@
 #' date, site_pop, a column for concentration, and  a column for the
 #' limit of detection
 #' @param conc_col_name string indicating the name of the column containing
-#' the concentration measurements in the wastewater data, default is
-#'  `genome_copies_per_ml`
+#' the log scale concentration measurements in the wastewater data, default is
+#'  `log_genome_copies_per_ml`
 #' @param lod_col_name string indicating the name of the column containing
 #' the concentration measurements in the wastewater data, default is
-#'  `genome_copies_per_ml`. Note that any values in the `conc_col_name`
+#'  `log_lod_sewage`. Note that any values in the `conc_col_name`
 #'  equal to the limit of detection will be treated as below the limit of
 #'  detection.
 #' @return a dataframe containing the same columns as ww_data except
-#' the `conc_col_name` will be replaced with `genome_copies_per_ml` and
-#' the `lod_col_name` will be replaced with `lod` plus the following
+#' the `conc_col_name` will be replaced with `log_genome_copies_per_ml` and
+#' the `lod_col_name` will be replaced with `log_lod_sewage` plus the following
 #' additional columns needed for the stan model:
 #' lab_site_index, site_index, flag_as_ww_outlier, below_lod, lab_site_name,
 #' exclude
@@ -24,17 +24,17 @@
 #'   date = lubridate::ymd(rep(c("2023-11-01", "2023-11-02"), 2)),
 #'   site = c(rep(1, 2), rep(2, 2)),
 #'   lab = c(1, 1, 1, 1),
-#'   conc = c(345.2, 784.1, 401.5, 681.8),
-#'   lod = c(20, 20, 15, 15),
+#'   log_conc = log(c(345.2, 784.1, 401.5, 681.8)),
+#'   log_lod = log(c(20, 20, 15, 15)),
 #'   site_pop = c(rep(2e5, 2), rep(4e5, 2))
 #' )
 #' ww_data_preprocessed <- preprocess_ww_data(ww_data,
-#'   conc_col_name = "conc",
-#'   lod_col_name = "lod"
+#'   conc_col_name = "log_conc",
+#'   lod_col_name = "log_lod"
 #' )
 preprocess_ww_data <- function(ww_data,
-                               conc_col_name = "genome_copies_per_ml",
-                               lod_col_name = "lod") {
+                               conc_col_name = "log_genome_copies_per_ml",
+                               lod_col_name = "log_lod_sewage") {
   check_req_ww_cols_present(
     ww_data,
     conc_col_name,
@@ -65,22 +65,23 @@ preprocess_ww_data <- function(ww_data,
       by = "site"
     ) |>
     dplyr::rename(
-      lod = {{ lod_col_name }},
-      genome_copies_per_ml = {{ conc_col_name }}
+      log_lod_sewage = {{ lod_col_name }},
+      log_genome_copies_per_ml = {{ conc_col_name }}
     ) |>
     dplyr::mutate(
       lab_site_name = glue::glue("Site: {site}, Lab: {lab}"),
-      below_lod = ifelse(genome_copies_per_ml <= lod, 1, 0)
+      below_lod = ifelse(log_genome_copies_per_ml <= log_lod_sewage, 1, 0)
     )
 
   # Get an extra column that identifies the wastewater outliers using the
   # default parameters
   ww_preprocessed <- flag_ww_outliers(ww_data_add_cols,
-    conc_col_name = "genome_copies_per_ml"
+    conc_col_name = "log_genome_copies_per_ml"
   )
 
   return(ww_preprocessed)
 }
+
 
 
 #' Pre-process hospital admissions data, converting column names to those

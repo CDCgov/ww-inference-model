@@ -414,7 +414,8 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     dplyr::mutate(
       "log_genome_copies_per_ml" =
         dplyr::case_when(
-          .data$log_genome_copies_per_ml == !!min_ww_val ~ NA,
+          .data$log_genome_copies_per_ml ==
+            !!min_ww_val ~ 0.5 * .data$log_lod_sewage,
           TRUE ~ .data$log_genome_copies_per_ml
         )
     )
