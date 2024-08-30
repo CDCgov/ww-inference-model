@@ -162,7 +162,7 @@ preprocess_count_data <- function(count_data,
 #' ww_data_preprocessed <- wwinference::preprocess_ww_data(ww_data)
 #' ww_data_outliers_flagged <- flag_ww_outliers(ww_data_preprocessed)
 flag_ww_outliers <- function(ww_data,
-                             conc_col_name = "genome_copies_per_ml",
+                             conc_col_name = "log_genome_copies_per_ml",
                              rho_threshold = 2,
                              log_conc_threshold = 3,
                              threshold_n_dps = 1) {
