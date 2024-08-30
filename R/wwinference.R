@@ -43,8 +43,7 @@
 #' to the model object [`$sample()`][cmdstanr::model-method-sample] call.
 #' function
 #' @param initial_values_seed set of integers indicating the random seed of
-#' the R sampler of the initial values, default is `NULL`, indicating
-#' initialization will be stochastic
+#' the R sampler of the initial values, default is `NULL`
 #' @param compiled_model The pre-compiled model as defined using
 #' `compile_model()`
 #'

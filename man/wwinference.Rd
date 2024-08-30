@@ -71,8 +71,7 @@ function}
 \item{...}{Additional parameters passed to the corresponding method}
 
 \item{initial_values_seed}{set of integers indicating the random seed of
-the R sampler of the initial values, default is \code{NULL}, indicating
-initialization will be stochastic}
+the R sampler of the initial values, default is \code{NULL}}
 }
 \value{
 An object of the \code{ww_inference_fit} class containing the following
