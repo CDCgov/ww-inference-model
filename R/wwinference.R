@@ -191,9 +191,9 @@ wwinference <- function(ww_data,
   init_lists <- NULL
   if (generate_initial_values) {
     init_lists <- c()
-    for (i in 1:mcmc_options$n_chains) {
+    for (i in 1:fit_opts$n_chains) {
       init_lists[[i]] <- get_inits_for_one_chain(
-        stan_data = stan_args,
+        stan_data = stan_data_list,
         params = model_spec$params
       )
     }

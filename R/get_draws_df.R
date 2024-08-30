@@ -98,11 +98,11 @@ get_draws_df.data.frame <- function(x,
     dplyr::mutate(t = row_number())
   # Lab-site index to corresponding lab, site, and site population size
   lab_site_spine <- x |>
-    dplyr::distinct(site, lab, lab_site_index, site_pop)
+    dplyr::distinct(.data$site, .data$lab, .data$lab_site_index, .data$site_pop)
   # Site index to corresponding site and subpopulation size
   subpop_spine <- x |>
-    dplyr::distinct(site, site_index, site_pop) |>
-    dplyr::mutate(site = as.factor(site)) |>
+    dplyr::distinct(.data$site, .data$site_index, .data$site_pop) |>
+    dplyr::mutate(site = as.factor(.data$site)) |>
     dplyr::bind_rows(tibble::tibble(
       site = "remainder of pop",
       site_index = max(x$site_index) + 1,
@@ -123,7 +123,7 @@ get_draws_df.data.frame <- function(x,
     dplyr::left_join(date_time_spine, by = "t") |>
     dplyr::left_join(
       count_data |>
-        dplyr::select(-t),
+        dplyr::select(-"t"),
       by = "date"
     ) |>
     dplyr::ungroup() |>
@@ -155,7 +155,7 @@ get_draws_df.data.frame <- function(x,
     dplyr::left_join(lab_site_spine, by = "lab_site_index") |>
     dplyr::left_join(
       x |>
-        dplyr::select(-t),
+        dplyr::select(-"t"),
       by = c(
         "lab_site_index", "date",
         "lab", "site", "site_pop"
@@ -182,7 +182,7 @@ get_draws_df.data.frame <- function(x,
     dplyr::left_join(date_time_spine, by = "t") |>
     dplyr::left_join(
       count_data |>
-        dplyr::select(-t),
+        dplyr::select(-"t"),
       by = "date"
     ) |>
     dplyr::ungroup() |>
