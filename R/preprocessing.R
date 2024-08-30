@@ -34,7 +34,7 @@
 #' )
 preprocess_ww_data <- function(ww_data,
                                conc_col_name = "log_genome_copies_per_ml",
-                               lod_col_name = "log_lod_sewage") {
+                               lod_col_name = "log_lod") {
   check_req_ww_cols_present(
     ww_data,
     conc_col_name,
@@ -65,12 +65,12 @@ preprocess_ww_data <- function(ww_data,
       by = "site"
     ) |>
     dplyr::rename(
-      log_lod_sewage = {{ lod_col_name }},
+      log_lod = {{ lod_col_name }},
       log_genome_copies_per_ml = {{ conc_col_name }}
     ) |>
     dplyr::mutate(
       lab_site_name = glue::glue("Site: {site}, Lab: {lab}"),
-      below_lod = ifelse(log_genome_copies_per_ml <= log_lod_sewage, 1, 0)
+      below_lod = ifelse(log_genome_copies_per_ml <= log_lod, 1, 0)
     )
 
   # Get an extra column that identifies the wastewater outliers using the

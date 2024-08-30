@@ -33,7 +33,7 @@ get_plot_forecasted_counts <- function(draws,
   sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
   draws_to_plot <- draws |> dplyr::filter(
-    name == "pred_counts",
+    name == "predicted counts",
     draw %in% !!sampled_draws
   )
 
@@ -95,7 +95,7 @@ get_plot_ww_conc <- function(draws,
 
   draws_to_plot <- draws |>
     dplyr::filter(
-      name == "pred_ww",
+      name == "predicted wastewater",
       draw %in% !!sampled_draws
     ) |>
     dplyr::mutate(
@@ -105,14 +105,14 @@ get_plot_ww_conc <- function(draws,
   p <- ggplot(draws_to_plot) +
     geom_line(
       aes(
-        x = date, y = log(pred_value),
+        x = date, y = pred_value,
         color = subpop,
         group = draw
       ),
       alpha = 0.1, linewidth = 0.2,
       show.legend = FALSE
     ) +
-    geom_point(aes(x = date, y = log(observed_value)),
+    geom_point(aes(x = date, y = observed_value),
       color = "black", show.legend = FALSE
     ) +
     facet_wrap(~site_lab_name, scales = "free") +
@@ -120,7 +120,7 @@ get_plot_ww_conc <- function(draws,
       linetype = "dashed"
     ) +
     xlab("") +
-    ylab("Log(Genome copies/mL)") +
+    ylab("Log(genome copies/mL)") +
     ggtitle("Lab-site level wastewater concentration") +
     scale_x_date(
       date_breaks = "2 weeks",
@@ -221,7 +221,7 @@ get_plot_subpop_rt <- function(draws,
   sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
   draws_to_plot <- draws |> dplyr::filter(
-    name == "subpop R(t)",
+    name == "subpopulation R(t)",
     draw %in% !!sampled_draws
   )
 

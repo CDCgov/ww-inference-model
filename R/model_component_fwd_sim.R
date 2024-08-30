@@ -369,7 +369,7 @@ format_ww_data <- function(log_obs_conc_lab_site,
       by = c("lab_site")
     ) |>
     dplyr::rename(
-      log_lod_sewage = lod_sewage,
+      log_lod = lod_sewage,
       log_genome_copies_per_ml = log_conc
     ) |>
     # Remove missing values
@@ -378,7 +378,7 @@ format_ww_data <- function(log_obs_conc_lab_site,
     dplyr::arrange(site, lab, date) |>
     dplyr::select(
       date, site, lab, log_genome_copies_per_ml,
-      log_lod_sewage, site_pop
+      log_lod, site_pop
     )
 
   return(ww_data)
