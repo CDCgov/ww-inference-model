@@ -17,6 +17,7 @@ wwinference(
   model_spec = get_model_spec(),
   fit_opts = get_mcmc_options(),
   generate_initial_values = TRUE,
+  inital_values_seed = NULL,
   compiled_model = compile_model()
 )
 
@@ -50,7 +51,11 @@ example data provided by the package, but this should be specified by the
 user based on the date they are producing a forecast}
 
 \item{fit_opts}{The fit options, which in this case default to the
-MCMC parameters as defined using \code{get_mcmc_options()}.}
+MCMC parameters as defined using \code{get_mcmc_options()}. This includes
+the arguments passed to \code{\link[cmdstanr:model-method-sample]{$sample()}}:
+the number of chains, the number of warmup and sampling iterations, the
+maximum tree depth, the average acceptance probability, and the stan PRNG
+seed}
 
 \item{generate_initial_values}{Boolean indicating whether or not to specify
 the initialization of the sampler, default is \code{TRUE}, meaning that
@@ -64,6 +69,10 @@ function}
 \item{x, object}{Object of class \code{wwinference_fit}}
 
 \item{...}{Additional parameters passed to the corresponding method}
+
+\item{initial_values_seed}{set of integers indicating the random seed of
+the R sampler of the initial values, default is \code{NULL}, indicating
+initialization will be stochastic}
 }
 \value{
 An object of the \code{ww_inference_fit} class containing the following

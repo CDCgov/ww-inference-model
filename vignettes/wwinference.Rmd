@@ -286,8 +286,12 @@ settings (see the documentation for `get_mcmc_options()`),
 however this vignette will use
 the default parameter settings which includes running 4 parallel chains with
 750 warm up iterations, 500 sampling iterations for each chain, a target average
-acceptance probability of 0.95 and a maximum tree depth of 12. The user may wish
-to adjust these as they are iterating to reduce model run-time or to achieve
+acceptance probability of 0.95 and a maximum tree depth of 12. The default is
+not to set a the seed for the random number generator for the MCMC model runs
+(which would produce stochastic results each time the model is run), but for
+reproducibility we will set the seed of the Stan PRNG to `123`in this vignette.
+The user may wish to to adjust these settings as they are iterating to reduce
+model run-time or to achieve
 better convergence on a real-world use case.
 
 We also pass our preprocessed datasets (`ww_data_to_fit` and
@@ -309,7 +313,7 @@ ww_fit <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(),
+  fit_opts = get_mcmc_options(seed = 123),
   compiled_model = model
 )
 ```
