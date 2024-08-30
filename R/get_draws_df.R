@@ -134,7 +134,7 @@ get_draws_df <- function(ww_data,
     dplyr::select(-"t")
 
   site_level_rt_draws <- draws |>
-    tidybayes::spread_draws(!str2lang("r_site_t[site_index, t]")) |>
+    tidybayes::spread_draws(!!str2lang("r_site_t[site_index, t]")) |>
     dplyr::rename("pred_value" = "r_site_t") |>
     dplyr::mutate(
       draw = .data$`.draw`,
