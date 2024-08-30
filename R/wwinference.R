@@ -196,7 +196,7 @@ wwinference <- function(ww_data,
   )
 
   init_lists <- NULL
-  set.seed(initial_value_seed)
+  set.seed(initial_values_seed)
   if (generate_initial_values) {
     init_lists <- c()
     for (i in 1:fit_opts$n_chains) {
