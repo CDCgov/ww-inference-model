@@ -182,10 +182,12 @@ flag_ww_outliers <- function(ww_data,
       below_lod == 0,
       n_data_points > threshold_n_dps
     ) |>
+    dplyr::mutate(
+      "log_conc" = !!sym(conc_col_name)
+    ) |>
     dplyr::group_by(lab_site_index) |>
     dplyr::arrange(date, "desc") |>
     dplyr::mutate(
-      log_conc = log(!!rlang::sym(conc_col_name)),
       prev_log_conc = dplyr::lag(log_conc, 1),
       prev_date = dplyr::lag(date, 1),
       diff_log_conc = log_conc - prev_log_conc,
