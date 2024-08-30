@@ -61,7 +61,7 @@ values are independent and identically distributed) .}
 
 \item{corr_structure_switch}{Integer variable to define the type of
 correlation matrix structure used.  Input 0 for an iid correlation structure,
-1 for an exponential correlation structure based off distance matrix, and 3
+1 for an exponential correlation structure based off distance matrix, and 2
 to use an unstructured, lkj, correlation matrix.}
 }
 \value{
