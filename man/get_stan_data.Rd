@@ -122,7 +122,7 @@ input_ww_data_for_stan <- get_input_ww_data_for_stan(
   last_count_data_date,
   calibration_time
 )
-stan_args <- get_stan_data(
+stan_data_list <- get_stan_data(
   input_count_data_for_stan,
   input_ww_data_for_stan,
   forecast_date,

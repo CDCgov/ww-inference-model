@@ -1,3 +1,5 @@
+seed <- 123
+
 ww_data <- tibble::tibble(
   date = rep(seq(
     from = lubridate::ymd("2023-08-01"),
@@ -74,7 +76,7 @@ test_that(paste0(
 })
 
 test_that(paste0(
-  "Test that things not flagged for removal don't get removed",
+  "Test that things not flagged for removal don't get removed ",
   "and things that are flagged for removal do get removed"
 ), {
   ww_data_no_exclusions <- ww_data_filtered

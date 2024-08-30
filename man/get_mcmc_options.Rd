@@ -10,8 +10,7 @@ get_mcmc_options(
   n_chains = 4,
   seed = 123,
   adapt_delta = 0.95,
-  max_treedepth = 12,
-  compute_likelihood = 1
+  max_treedepth = 12
 )
 }
 \arguments{
@@ -32,10 +31,6 @@ probability, default is \code{0.95}}
 
 \item{max_treedepth}{integer indicating the maximum tree depth of the
 sampler, default is 12}
-
-\item{compute_likelihood}{integer indicating whether or not to compute the
-likelihood using the data, default is \code{1} which will fit the model to the
-data. If set to 0, the model will sample from the prior only}
 }
 \value{
 a list of mcmc settings with the values given by the  function

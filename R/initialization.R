@@ -57,15 +57,15 @@ get_inits_for_one_chain <- function(stan_data, params, stdev = 0.01) {
     i0_over_n = stats::plogis(stats::rnorm(1, stats::qlogis(i0 / pop), 0.05)),
     initial_growth = stats::rnorm(1, 0, stdev),
     inv_sqrt_phi_h = 1 / sqrt(200) + stats::rnorm(1, 1 / 10000, 1 / 10000),
-    sigma_ww_site_mean = abs(stats::rnorm(
-      1, params$sigma_ww_site_prior_mean_mean,
-      stdev * params$sigma_ww_site_prior_mean_sd
+    mode_sigma_ww_site = abs(stats::rnorm(
+      1, params$mode_sigma_ww_site_prior_mode,
+      stdev * params$mode_sigma_ww_site_prior_sd
     )),
-    sigma_ww_site_sd = abs(stats::rnorm(
-      1, params$sigma_ww_site_prior_sd_mean,
-      stdev * params$sigma_ww_site_prior_sd_sd
+    sd_log_sigma_ww_site = abs(stats::rnorm(
+      1, params$sd_log_sigma_ww_site_prior_mode,
+      stdev * params$sd_log_sigma_ww_site_prior_sd
     )),
-    sigma_ww_site_raw = abs(stats::rnorm(n_ww_lab_sites, 0, stdev)),
+    eta_log_sigma_ww_site = abs(stats::rnorm(n_ww_lab_sites, 0, stdev)),
     p_hosp_mean = stats::rnorm(1, stats::qlogis(params$p_hosp_mean), stdev),
     p_hosp_w = stats::rnorm(tot_weeks, 0, stdev),
     p_hosp_w_sd = abs(stats::rnorm(1, 0.01, 0.001)),
