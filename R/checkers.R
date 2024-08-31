@@ -532,6 +532,7 @@ assert_daily_data <- function(dates,
 #' calibration time
 #'
 #' @param date_vector the vector of dates to check, must be of Date type
+#' @param arg The name of the vector or data type you are checking.
 #' @param calibration_time integer indicating the number of days that
 #' the dates must span
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
@@ -541,6 +542,7 @@ assert_daily_data <- function(dates,
 #'
 #' @return NULL invisible
 assert_sufficient_days_of_data <- function(date_vector,
+                                           arg,
                                            calibration_time,
                                            call = rlang::caller_env(),
                                            add_err_msg = "") {
@@ -552,7 +554,8 @@ assert_sufficient_days_of_data <- function(date_vector,
   if (!check_sufficient_data) {
     cli::cli_abort(
       c(
-        "Insufficient data for specified calibration time"
+        "Insufficient {.arg {arg}} for the specified calibration time.",
+        add_err_msg
       ),
       call = call,
       class = "wwinference_specification_error"
