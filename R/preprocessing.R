@@ -35,7 +35,7 @@
 preprocess_ww_data <- function(ww_data,
                                conc_col_name = "genome_copies_per_ml",
                                lod_col_name = "lod") {
-  check_req_ww_cols_present(
+  assert_req_ww_cols_present(
     ww_data,
     conc_col_name,
     lod_col_name

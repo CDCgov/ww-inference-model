@@ -292,14 +292,14 @@ throw_type_error <- function(object,
 #' traceback.
 #'
 #' @return NULL, invisibly
-check_req_ww_cols_present <- function(ww_data,
-                                      conc_col_name,
-                                      lod_col_name,
-                                      add_req_col_names = c(
-                                        "date", "site",
-                                        "lab", "site_pop"
-                                      ),
-                                      call = rlang::caller_env()) {
+assert_req_ww_cols_present <- function(ww_data,
+                                       conc_col_name,
+                                       lod_col_name,
+                                       add_req_col_names = c(
+                                         "date", "site",
+                                         "lab", "site_pop"
+                                       ),
+                                       call = rlang::caller_env()) {
   column_names <- colnames(ww_data)
   expected_col_names <- c(
     {
