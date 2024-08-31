@@ -31,6 +31,19 @@ validate_ww_conc_data <- function(ww_data,
   )
   checkmate::assert_vector(ww_conc)
 
+  # Check for repeated wastewater observations within a site and lab
+  assert_no_repeats_win_group(
+    df = ww_data,
+    groups = c("date", "site", "lab"),
+    arg = "input wastewater data",
+    add_err_msg =
+      c(
+        "Package expects that there are no repeated ",
+        "wastewater observations within a site, lab,
+        and sample collection date."
+      )
+  )
+
   ww_lod <- ww_data |> dplyr::pull({
     lod_col_name
   })

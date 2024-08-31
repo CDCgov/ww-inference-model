@@ -59,6 +59,33 @@ test_that("Function returns dataframe with correct site indices", {
   expect_equal(processed_int$site_index, processed_char$site_index)
 })
 
+ww_data_w_repeats <- tibble::tibble(
+  date = lubridate::ymd(
+    rep(c("2023-11-01", "2023-11-02"), 2),
+    "2023-11-02"
+  ),
+  site = c("1", "1", "2", "2", "2"),
+  lab = c(1, 1, 1, 1, 1),
+  conc = log(c(345.2, 784.1, 401.5, 681.8, 681.8)),
+  lod = log(c(20, 20, 15, 15, 15)),
+  site_pop = c(rep(1e6, 2), rep(3e5, 3)),
+  location = c(rep("MA", 5))
+)
+
+test_that("Function returns an error if there are repeated values", {
+  expect_error(
+    preprocess_ww_data(ww_data_w_repeats,
+      conc_col_name = "conc",
+      lod_col_name = "lod"
+    )
+  )
+
+  expect_no_error(preprocess_ww_data(ww_data,
+    conc_col_name = "conc",
+    lod_col_name = "lod"
+  ))
+})
+
 
 # Test that concentration column is renamed correctly
 test_that("Concentration column is renamed correctly", {

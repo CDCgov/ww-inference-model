@@ -211,6 +211,44 @@ assert_no_repeated_elements <- function(x, arg = "x",
   invisible()
 }
 
+#' Check that there are no repeated elements in groups within
+#' a dataframe
+#'
+#' @description
+#' This function  checks that the elements of groups within a dataframe
+#' dont have repeated elements
+#'
+#' @param df the dataframe to check
+#' @param groups a vector of strings indicating the groups of column
+#' names that are expected to have no repeated combinations
+#' @param arg the name of the dataframe to check
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#' @param add_err_msg string containing an additional error message,
+#' default is the empty string (`""`)
+#'
+#' @return NULL, invisibly
+assert_no_repeats_win_group <- function(df,
+                                        groups,
+                                        arg = "x",
+                                        call = rlang::caller_env(),
+                                        add_err_msg = "") {
+  duplicates <- df |> dplyr::filter(dplyr::n() > 1,
+    .by = {{ groups }}
+  )
+
+  if (nrow(duplicates) != 0) {
+    cli::cli_abort(
+      c("{.arg {arg}} has more than one element", add_err_msg,
+        "i" = "Multiple {.arg {arg}} are not currently supported."
+      ),
+      call = call,
+      class = "wwinference_input_data_error"
+    )
+  }
+  invisible()
+}
+
 
 
 #' Assert that a vector is either of a vector of integers or a vector of
