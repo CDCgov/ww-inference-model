@@ -40,7 +40,7 @@ test_that("Concentration column is renamed correctly", {
 # Test that LOD column is renamed correctly
 test_that("LOD column is renamed correctly", {
   ww_data_test <- ww_data |>
-    dplyr::rename(LOD = lod)
+    dplyr::rename("LOD" = "lod")
   processed <- preprocess_ww_data(ww_data_test,
     conc_col_name = "conc",
     lod_col_name = "LOD"
