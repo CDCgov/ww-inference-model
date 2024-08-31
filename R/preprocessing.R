@@ -70,7 +70,7 @@ preprocess_ww_data <- function(ww_data,
     ) |>
     dplyr::mutate(
       lab_site_name = glue::glue("Site: {site}, Lab: {lab}"),
-      below_lod = ifelse(.data$loggenome_copies_per_ml <= .data$log_lod, 1, 0)
+      below_lod = ifelse(.data$log_genome_copies_per_ml <= .data$log_lod, 1, 0)
     )
 
   # Get an extra column that identifies the wastewater outliers using the
