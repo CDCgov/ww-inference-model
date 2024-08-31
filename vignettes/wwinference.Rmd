@@ -71,7 +71,9 @@ used to evaluate the model.
 
 For the wastewater data, the expcted format is a table of observations with the
 followign columns. The wastewater data should not contain NAs for days with
-missing observations, instead these should be excluded:
+missing observations, instead these should be excluded. Additionally,
+there should be not be multiple observations within a site, lab, and sample
+collection day:
 - a date (column `date`): the date the sample was collected
 - a site indicator (column `site`): the unique identifier for the wastewater treatment plant
 that the sample was collected from
@@ -96,6 +98,7 @@ ww_data <- wwinference::ww_data
 head(ww_data)
 head(hosp_data)
 ```
+
 
 # Pre-processing
 

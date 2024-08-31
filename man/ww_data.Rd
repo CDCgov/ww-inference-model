@@ -24,6 +24,9 @@ expecyed to be reported in terms of the genome copies per mL, in log
 scale.}
 \item{site_pop}{The population size of the wastewater catchment area
 represented by the site variable}
+\item{location}{ A string indicating the location that all of the
+data is coming from. This is not a necessary column, but instead is
+included to more realistically mirror a typical workflow}
 }
 }
 }
