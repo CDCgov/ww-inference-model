@@ -59,7 +59,7 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
   }
 
   # Test for presence of needed column names
-  check_req_ww_cols_present(preprocessed_ww_data,
+  assert_req_ww_cols_present(preprocessed_ww_data,
     conc_col_name = "genome_copies_per_ml",
     lod_col_name = "lod"
   )
