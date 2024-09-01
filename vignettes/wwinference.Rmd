@@ -377,11 +377,18 @@ cat(
   sprintf("%s", paste(unique(draws_df$name), collapse = ", "))
 )
 ```
-Note that by default the `get_draws_df()` function will return  a tidy long
-dataframe with all of the posterior draws joined to applicable data for each of
-the included variables. If only interested in the hospital admissions estimates
+Note that the `get_draws_df()` function will return a tidy long
+dataframe with all of the posterior draws for the calibration, nowcast, and
+forecast period joined to applicable data for each of
+the included variables in the `name` column:
+  - counts(`"predicted counts"`)
+  - site-level wastewater concentrations (`"predicted wastewater"`)
+  - "global"(e.g. state) R(t) estimate (`"global R(t)"`)
+  - "local" (site + the one auxiliary subpopulation) R(t) estimates (`"subpopulation R(t)"`)
+
+If only interested in the hospital admissions estimates
 (`"predicted counts"`) or the wastewater estimates (`"predicted wastewater"`),
-we suggest immediately filtering to `name %in% c(your_desired_outputs)`
+we suggest immediately filtering to `name %in% c({your_desired_outputs})`
 so as not to carry around extra data.
 This is particularly important if there are a large
 number of wastewater sites, as this dataframe can get quite large.
