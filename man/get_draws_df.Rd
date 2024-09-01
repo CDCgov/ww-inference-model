@@ -13,15 +13,7 @@ get_draws_df(x, ...)
 
 \method{get_draws_df}{default}(x, ...)
 
-\method{get_draws_df}{data.frame}(
-  x,
-  count_data,
-  stan_data_list,
-  fit_obj,
-  included_variables = c("predicted counts", "predicted wastewater", "global R(t)",
-    "subpopulation R(t)"),
-  ...
-)
+\method{get_draws_df}{data.frame}(x, count_data, stan_data_list, fit_obj, ...)
 }
 \arguments{
 \item{x}{Either a dataframe of wastewater observations, or an object of
@@ -37,19 +29,23 @@ fitting the model}
 
 \item{fit_obj}{a CmdStan object that is the output of fitting the model to
 \code{x} and \code{count_data}}
-
-\item{included_variables}{A vector of strings indicating which output
-variables to include in the \code{draws_df}. Defaults to returning
-\code{"predicted counts"}, \code{"predicted wastewater"},\code{"global R(t)"},
-and \code{"subpopulation R(t)"}, indicated by the column \code{name}}
 }
 \value{
-A tibble containing the full set of posterior draws of the
-estimated, nowcasted, and forecasted: counts, site-level wastewater
-concentrations, "global"(e.g. state) R(t) estimate, and the  "local" (site +
-the one auxiliary subpopulation) R(t) estimates. In the instance where there
-are observations, the data will be joined to each draw of the predicted
-observation to facilitate plotting.
+A long tidy formatted tibble returning by default the full
+set of posterior draws of the estimated, nowcasted, and forecasted:
+counts(\code{"predicted counts"}), site-level wastewater concentrations
+(\code{"predicted wastewater"}), "global"(e.g. state) R(t)
+estimate (\code{"global R(t)"}), and the  "local" (site + the one auxiliary
+subpopulation) R(t) estimates (\code{"subpopulation R(t)"}), indicated by the
+column \code{name}.
+In the instance where there are corresponding observations,
+the data will be joined to each draw of the predicted
+observation to facilitate plotting. Resulting tibble will contain the
+following columns: \code{name}, \code{pred_value}, \code{draw}, \code{date}, \code{observed_value},
+\code{total_pop}, \code{observation_type}, \code{type_of_quantity}, \code{lab_site_index},
+\code{subpop}, \code{lab}, \code{site_pop}, \code{below_lod}, \code{log_lod}, \code{flag_as_ww_outlier},
+\code{exclude}. Additional columns in the original input datasets will not
+be returned.
 }
 \description{
 This function takes in the two input data sources, the CmdStan fit object,

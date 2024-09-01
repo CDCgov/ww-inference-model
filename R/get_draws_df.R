@@ -37,17 +37,22 @@
 #' fitting the model
 #' @param fit_obj a CmdStan object that is the output of fitting the model to
 #' `x` and `count_data`
-#' @param included_variables A vector of strings indicating which output
-#' variables to include in the `draws_df`. Defaults to returning
-#' `"predicted counts"`, `"predicted wastewater"`,`"global R(t)"`,
-#' and `"subpopulation R(t)"`, indicated by the column `name`
 #' @param ... additional arguments
-#' @return  A tibble containing the full set of posterior draws of the
-#' estimated, nowcasted, and forecasted: counts, site-level wastewater
-#' concentrations, "global"(e.g. state) R(t) estimate, and the  "local" (site +
-#' the one auxiliary subpopulation) R(t) estimates. In the instance where there
-#' are observations, the data will be joined to each draw of the predicted
-#' observation to facilitate plotting.
+#' @return  A long tidy formatted tibble returning by default the full
+#' set of posterior draws of the estimated, nowcasted, and forecasted:
+#' counts(`"predicted counts"`), site-level wastewater concentrations
+#' (`"predicted wastewater"`), "global"(e.g. state) R(t)
+#' estimate (`"global R(t)"`), and the  "local" (site + the one auxiliary
+#' subpopulation) R(t) estimates (`"subpopulation R(t)"`), indicated by the
+#' column `name`.
+#' In the instance where there are corresponding observations,
+#' the data will be joined to each draw of the predicted
+#' observation to facilitate plotting. Resulting tibble will contain the
+#' following columns: `name`, `pred_value`, `draw`, `date`, `observed_value`,
+#' `total_pop`, `observation_type`, `type_of_quantity`, `lab_site_index`,
+#' `subpop`, `lab`, `site_pop`, `below_lod`, `log_lod`, `flag_as_ww_outlier`,
+#' `exclude`. Additional columns in the original input datasets will not
+#' be returned.
 #' @export
 get_draws_df <- function(x, ...) {
   UseMethod("get_draws_df")
@@ -66,14 +71,7 @@ get_draws_df.wwinference_fit <- function(x, ...) {
     x = x$raw_input_data$input_ww_data,
     count_data = x$raw_input_data$input_count_data,
     stan_data_list = x$stan_data_list,
-    fit_obj = x$fit,
-    included_variables =
-      c(
-        "predicted counts",
-        "predicted wastewater",
-        "global R(t)",
-        "subpopulation R(t)"
-      )
+    fit_obj = x$fit
   )
 }
 
@@ -95,17 +93,7 @@ get_draws_df.data.frame <- function(x,
                                     count_data,
                                     stan_data_list,
                                     fit_obj,
-                                    included_variables =
-                                      c(
-                                        "predicted counts",
-                                        "predicted wastewater",
-                                        "global R(t)",
-                                        "subpopulation R(t)"
-                                      ),
                                     ...) {
-  # Make sure that the specified variables match what is expected
-  included_variables <- rlang::arg_match(included_variables)
-
   draws <- fit_obj$result$draws()
 
   # Get the necessary mappings needed to join draws to data
@@ -144,7 +132,8 @@ get_draws_df.data.frame <- function(x,
     dplyr::left_join(date_time_spine, by = "t") |>
     dplyr::left_join(
       count_data |>
-        dplyr::select(-"t"),
+        # Specify the necessary columns of the count data
+        dplyr::select("date", "count", "total_pop"),
       by = "date"
     ) |>
     dplyr::ungroup() |>
@@ -257,11 +246,6 @@ get_draws_df.data.frame <- function(x,
     global_rt_draws,
     site_level_rt_draws
   )
-
-  # draws_df <- all_draws_df |>
-  #   dplyr::filter(
-  #    .data$name %in% {{included_variables}})
-
 
   return(all_draws_df)
 }
