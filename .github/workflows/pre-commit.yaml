@@ -18,4 +18,13 @@ jobs:
         path: |
           ~/.cache/R/renv
         key: r-precommit-cache|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
-    - uses: pre-commit/action@v3.0.1
+    - uses: pre-commit/cache@v4
+    - name: Commit files
+        if: failure() && startsWith(github.ref, 'refs/heads')
+        run: |
+          if [[ `git status --porcelain --untracked-files=no` ]]; then
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git checkout -- .github/workflows
+            git commit -m "pre-commit" -a
+          fi
