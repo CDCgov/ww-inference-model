@@ -11,7 +11,7 @@ indicate_ww_exclusions(
 )
 }
 \arguments{
-\item{data}{A dataframe of containing a column indicating outliers, called
+\item{data}{A dataframe containing a column indicating outliers, called
 \code{outlier_col_name}.}
 
 \item{outlier_col_name}{A character string indicating the name of the column
