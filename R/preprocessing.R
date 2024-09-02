@@ -257,7 +257,8 @@ flag_ww_outliers <- function(ww_data,
 #' @description This function takes in a dataframe which contains an outlier
 #' column name specified by the `outlier_col_name`.
 #'
-#' @param data A dataframe of preprocessed data to be used to fit the o
+#' @param data A dataframe of containing a column indicating outliers, called
+#' `outlier_col_name`.
 #' @param outlier_col_name A character string indicating the name of the column
 #' containing the outlier indicator, must contain only 0 or 1
 #' @param remove_outliers A boolean indicating whether or not to exclude the

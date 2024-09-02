@@ -11,7 +11,8 @@ indicate_ww_exclusions(
 )
 }
 \arguments{
-\item{data}{A dataframe of preprocessed data to be used to fit the o}
+\item{data}{A dataframe of containing a column indicating outliers, called
+\code{outlier_col_name}.}
 
 \item{outlier_col_name}{A character string indicating the name of the column
 containing the outlier indicator, must contain only 0 or 1}
