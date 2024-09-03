@@ -206,8 +206,8 @@ flag_ww_outliers <- function(ww_data,
         dplyr::summarise(
           mean_rho = mean(.data$rho, na.rm = TRUE),
           std_rho = sd(.data$rho, na.rm = TRUE),
-          mean_conc = mean(!!rlang::sym(conc_col_name), na.rm = TRUE),
-          std_conc = sd(!!rlang::sym(conc_col_name), na.rm = TRUE)
+          mean_conc = mean(.data[[conc_col_name]], na.rm = TRUE),
+          std_conc = sd(.data[[conc_col_name]], na.rm = TRUE)
         ),
       by = "lab_site_index"
     ) |>
