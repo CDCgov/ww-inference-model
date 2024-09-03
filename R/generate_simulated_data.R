@@ -180,7 +180,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                       l = 1
                                     ),
                                     phi_rt = 0.6,
-                                    sigma_generalized = 0.05^4,
+                                    sigma_generalized = 0.01^4,
                                     scaling_factor = 1.1,
                                     aux_site_bool = TRUE,
                                     init_stat = TRUE) {
@@ -366,8 +366,9 @@ generate_simulated_data <- function(r_in_weeks = # nolint
       corr_fun_params$dist_matrix
     )
   }
+  corr_matrix <- corr_function(corr_fun_params)
   sigma_matrix <- (sigma_generalized^(1 / n_sites)) * matrix_normalization(
-    corr_function(corr_fun_params)
+    corr_matrix
   )
   spatial_deviation_noise_matrix <- spatial_deviation_noise_matrix_rng(
     sigma_matrix,
@@ -582,7 +583,8 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     hosp_data = hosp_data,
     hosp_data_eval = hosp_data_eval,
     rt_site_data = r_site,
-    rt_global_data = rt
+    rt_global_data = rt,
+    corr_matrix = corr_matrix
   )
 
   return(example_data)

@@ -37,7 +37,7 @@ generate_simulated_data(
   corr_fun_params = list(dist_matrix = as.matrix(dist(data.frame(x = c(85, 37, 36, 7), y
     = c(12, 75, 75, 96)), diag = TRUE, upper = TRUE)), phi = 0.2, l = 1),
   phi_rt = 0.6,
-  sigma_generalized = 0.05^4,
+  sigma_generalized = 0.01^4,
   scaling_factor = 1.1,
   aux_site_bool = TRUE,
   init_stat = TRUE

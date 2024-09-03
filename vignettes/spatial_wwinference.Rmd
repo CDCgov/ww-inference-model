@@ -1,0 +1,433 @@
+---
+title: "Title"
+description: "des"
+author: "Christian O. Bernal Zelaya"
+date: "2024-09-03"
+output:
+  bookdown::html_vignette2:
+    fig_caption: yes
+    code_folding: show
+pkgdown:
+  as_is: true
+vignette: >
+  %\VignetteIndexEntry{Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+```{r echo=FALSE}
+knitr::opts_chunk$set(dev = "svg")
+```
+
+# Start
+
+Here we present the way simulating and fitting with 3 separate models using the
+`wwinference` package.  We also compare the results a number of ways to see
+the value of using spatial components within the model.
+```{r}
+library(wwinference)
+library(tidyverse)
+library(patchwork)
+```
+
+
+# Generating Data
+
+We start by generating the data that our models require, using the
+`generate_simulation_data` function.  The presets that are required to use the
+spatial components are `use_spatial_corr = TRUE` and `aux_site_bool = TRUE`.
+We also require that if `use_spatial_corr = TRUE`, the user must specify a
+correlation function in the `corr_function` and the necessary parameters of the
+function in `corr_fun_params`.  Currently we have 3 built in functions for
+correlation types : `independence_corr_func_r`, `exponential_decay_corr_func_r`,
+and `rand_corr_matrix_func`.  The default used is `exponential_decay_corr_func_r`
+correlation function based of the following fake locations.
+
+## Fake Locations
+```{r}
+fake_locs <- data.frame(
+  x = c(85, 37, 36, 7),
+  y = c(12, 75, 75, 96),
+  ID = c(
+    "Site 1",
+    "Site 2",
+    "Site 3",
+    "Site 4"
+  )
+) %>%
+  mutate(
+    for_text_x = ifelse(ID == "Site 3", -10, 5),
+    for_text_y = ifelse(ID == "Site 3", 5, 5)
+  )
+ggplot(
+  data = fake_locs
+) +
+  geom_point(
+    aes(x = x, y = y),
+    color = "blue",
+    size = 3
+  ) +
+  geom_text(
+    aes(label = ID, x = x + for_text_x, y = y + for_text_y),
+    vjust = -0.5
+  ) +
+  geom_segment(
+    aes(x = x, y = y, xend = x + for_text_x, yend = y + for_text_y),
+    color = "black"
+  ) +
+  labs(
+    title = "Fake Locations",
+    x = "X Coordinate",
+    y = "Y Coordinate"
+  ) +
+  theme_bw()
+```
+
+
+## Simulating Data
+```{r}
+simulated_data_iid <- wwinference::generate_simulated_data(
+  use_spatial_corr = TRUE,
+  corr_function = wwinference::independence_corr_func_r,
+  corr_fun_params = list(num_sites = 4),
+  aux_site_bool = TRUE
+)
+
+simulated_data_exp <- wwinference::generate_simulated_data(
+  use_spatial_corr = TRUE,
+  corr_function = exponential_decay_corr_func_r,
+  corr_fun_params = list(
+    dist_matrix = as.matrix(
+      dist(
+        data.frame(
+          x = c(85, 37, 36, 7),
+          y = c(12, 75, 75, 96)
+        ),
+        diag = TRUE,
+        upper = TRUE
+      )
+    ),
+    phi = 0.2,
+    l = 1
+  ),
+  aux_site_bool = TRUE
+)
+
+simulated_data_rng_corr_mat <- wwinference::generate_simulated_data(
+  use_spatial_corr = TRUE,
+  corr_function = wwinference::rand_corr_matrix_func,
+  corr_fun_params = list(n_sites = 4, seed = 2024),
+  aux_site_bool = TRUE
+)
+```
+
+## Preparing Data
+```{r}
+# iid case
+hosp_data_preprocessed_iid <- wwinference::preprocess_count_data(
+  simulated_data_iid$hosp_data,
+  count_col_name = "daily_hosp_admits",
+  pop_size_col_name = "state_pop"
+)
+ww_data_preprocessed_iid <- wwinference::preprocess_ww_data(
+  simulated_data_iid$ww_data,
+  conc_col_name = "genome_copies_per_ml",
+  lod_col_name = "lod"
+)
+ww_data_to_fit_iid <- wwinference::indicate_ww_exclusions(
+  ww_data_preprocessed_iid,
+  outlier_col_name = "flag_as_ww_outlier",
+  remove_outliers = TRUE
+)
+
+# exponential case
+hosp_data_preprocessed_exp <- wwinference::preprocess_count_data(
+  simulated_data_exp$hosp_data,
+  count_col_name = "daily_hosp_admits",
+  pop_size_col_name = "state_pop"
+)
+ww_data_preprocessed_exp <- wwinference::preprocess_ww_data(
+  simulated_data_exp$ww_data,
+  conc_col_name = "genome_copies_per_ml",
+  lod_col_name = "lod"
+)
+ww_data_to_fit_exp <- wwinference::indicate_ww_exclusions(
+  ww_data_preprocessed_exp,
+  outlier_col_name = "flag_as_ww_outlier",
+  remove_outliers = TRUE
+)
+
+# rand corr mat case
+hosp_data_proc_rng_corr_mat <- wwinference::preprocess_count_data(
+  simulated_data_rng_corr_mat$hosp_data,
+  count_col_name = "daily_hosp_admits",
+  pop_size_col_name = "state_pop"
+)
+ww_data_proc_rng_corr_mat <- wwinference::preprocess_ww_data(
+  simulated_data_rng_corr_mat$ww_data,
+  conc_col_name = "genome_copies_per_ml",
+  lod_col_name = "lod"
+)
+ww_data_to_fit_rng_corr_mat <- wwinference::indicate_ww_exclusions(
+  ww_data_proc_rng_corr_mat,
+  outlier_col_name = "flag_as_ww_outlier",
+  remove_outliers = TRUE
+)
+```
+
+## Visualizing Data
+```{r}
+# hosp plots--------------------------------------------------------------------
+hosp_data_full <- rbind(
+  hosp_data_preprocessed_iid %>%
+    mutate(model_type = "IID"),
+  hosp_data_preprocessed_exp %>%
+    mutate(model_type = "Exponential"),
+  hosp_data_proc_rng_corr_mat %>%
+    mutate(model_type = "Rand. Corr. Matrix")
+) %>%
+  mutate(
+    model_type = factor(
+      model_type,
+      levels = c(
+        "IID",
+        "Exponential",
+        "Rand. Corr. Matrix"
+      )
+    )
+  )
+hosp_data_eval_full <- rbind(
+  simulated_data_iid$hosp_data_eval %>%
+    mutate(model_type = "IID"),
+  simulated_data_exp$hosp_data_eval %>%
+    mutate(model_type = "Exponential"),
+  simulated_data_rng_corr_mat$hosp_data_eval %>%
+    mutate(model_type = "Rand. Corr. Matrix")
+) %>%
+  mutate(
+    model_type = factor(
+      model_type,
+      levels = c(
+        "IID",
+        "Exponential",
+        "Rand. Corr. Matrix"
+      )
+    )
+  )
+hosp_data_plot <- ggplot(hosp_data_full) +
+  geom_point(
+    data = hosp_data_eval_full, aes(
+      x = date,
+      y = daily_hosp_admits_for_eval
+    ),
+    shape = 21, color = "black", fill = "white"
+  ) +
+  # Plot the data we will calibrate to
+  geom_point(aes(x = date, y = count)) +
+  xlab("") +
+  ylab("Daily hospital admissions") +
+  facet_grid(~model_type, scales = "free") +
+  # ggtitle("Global level hospital admissions") +
+  theme_bw()
+# ------------------------------------------------------------------------------
+
+# ww plots----------------------------------------------------------------------
+ww_data_full <- rbind(
+  ww_data_preprocessed_iid %>%
+    mutate(model_type = "IID"),
+  ww_data_preprocessed_exp %>%
+    mutate(model_type = "Exponential"),
+  ww_data_proc_rng_corr_mat %>%
+    mutate(model_type = "Rand. Corr. Matrix")
+) %>%
+  mutate(
+    model_type = factor(
+      model_type,
+      levels = c(
+        "IID",
+        "Exponential",
+        "Rand. Corr. Matrix"
+      )
+    )
+  )
+ww_data_plot <- ggplot(ww_data_full) +
+  geom_point(
+    aes(
+      x = date, y = log(genome_copies_per_ml),
+      color = as.factor(lab_site_name)
+    ),
+    show.legend = FALSE
+  ) +
+  geom_point(
+    data = ww_data_full |> filter(genome_copies_per_ml <= lod),
+    aes(x = date, y = log(genome_copies_per_ml), color = "red"),
+    show.legend = FALSE
+  ) +
+  geom_hline(aes(yintercept = log(lod)), linetype = "dashed") +
+  # facet_wrap(~site, scales = "free", nrow = 1,
+  #           labeller = labeller(site = function(x) paste("Site", x))) +
+  facet_grid(site ~ model_type,
+    scales = "free",
+    labeller = labeller(site = function(x) paste("Site", x))
+  ) +
+  xlab("") +
+  ylab("Genome copies/mL on Log Scale") +
+  # ggtitle("Lab-site level wastewater concentration") +
+  theme_bw()
+# ------------------------------------------------------------------------------
+
+hosp_data_plot / ww_data_plot
+```
+
+## Visualizing Actual Rt Curves
+```{r}
+# Global Rt --------------------------------------------------------------------
+rt_global_data_full <- rbind(
+  simulated_data_iid$rt_global_data %>%
+    as.data.frame() %>%
+    `colnames<-`(c("global_rt")) %>%
+    mutate(
+      model_type = "IID",
+      date = simulated_data_iid$hosp_data_eval$date
+    ),
+  simulated_data_exp$rt_global_data %>%
+    as.data.frame() %>%
+    `colnames<-`(c("global_rt")) %>%
+    mutate(
+      model_type = "Exponential",
+      date = simulated_data_exp$hosp_data_eval$date
+    ),
+  simulated_data_rng_corr_mat$rt_global_data %>%
+    as.data.frame() %>%
+    `colnames<-`(c("global_rt")) %>%
+    mutate(
+      model_type = "Rand. Corr. Matrix",
+      date = simulated_data_rng_corr_mat$hosp_data_eval$date
+    )
+) %>%
+  mutate(
+    model_type = factor(
+      model_type,
+      levels = c(
+        "IID",
+        "Exponential",
+        "Rand. Corr. Matrix"
+      )
+    )
+  )
+global_rt_data_plot <- ggplot(rt_global_data_full) +
+  geom_hline(
+    yintercept = 1,
+    color = "blue",
+    linetype = "dashed",
+    alpha = .7
+  ) +
+  geom_line(aes(
+    x = date,
+    y = global_rt,
+  )) +
+  xlab("") +
+  ylab("Global R(t)") +
+  facet_grid(~model_type) +
+  theme_bw()
+# ------------------------------------------------------------------------------
+
+# Site Rt ----------------------------------------------------------------------
+site_rt_data_full <- rbind(
+  simulated_data_iid$rt_site_data %>%
+    t() %>%
+    as.data.frame() %>%
+    mutate(date = simulated_data_iid$hosp_data_eval$date) %>%
+    `colnames<-`(c(
+      "Site 1",
+      "Site 2",
+      "Site 3",
+      "Site 4",
+      "Aux",
+      "date"
+    )) %>%
+    pivot_longer(cols = -date) %>%
+    `colnames<-`(c(
+      "date",
+      "subpop",
+      "value"
+    )) %>%
+    mutate(
+      model_type = "IID"
+    ),
+  simulated_data_exp$rt_site_data %>%
+    t() %>%
+    as.data.frame() %>%
+    mutate(date = simulated_data_exp$hosp_data_eval$date) %>%
+    `colnames<-`(c(
+      "Site 1",
+      "Site 2",
+      "Site 3",
+      "Site 4",
+      "Aux",
+      "date"
+    )) %>%
+    pivot_longer(cols = -date) %>%
+    `colnames<-`(c(
+      "date",
+      "subpop",
+      "value"
+    )) %>%
+    mutate(
+      model_type = "Exponential"
+    ),
+  simulated_data_rng_corr_mat$rt_site_data %>%
+    t() %>%
+    as.data.frame() %>%
+    mutate(date = simulated_data_rng_corr_mat$hosp_data_eval$date) %>%
+    `colnames<-`(c(
+      "Site 1",
+      "Site 2",
+      "Site 3",
+      "Site 4",
+      "Aux",
+      "date"
+    )) %>%
+    pivot_longer(cols = -date) %>%
+    `colnames<-`(c(
+      "date",
+      "subpop",
+      "value"
+    )) %>%
+    mutate(
+      model_type = "Rand. Corr. Matrix"
+    )
+) %>%
+  mutate(
+    model_type = factor(
+      model_type,
+      levels = c(
+        "IID",
+        "Exponential",
+        "Rand. Corr. Matrix"
+      )
+    )
+  )
+site_rt_data_plot <- ggplot(site_rt_data_full) +
+  geom_hline(
+    yintercept = 1,
+    color = "blue",
+    linetype = "dashed",
+    alpha = .7
+  ) +
+  geom_line(aes(
+    x = date,
+    y = value
+  )) +
+  facet_grid(subpop ~ model_type) +
+  xlab("") +
+  ylab("Subpopulation R(t)") +
+  theme_bw()
+
+# ------------------------------------------------------------------------------
+
+global_rt_data_plot / site_rt_data_plot
+```
+
+## Visual of Correlation Matrix
+```{r}
+```
