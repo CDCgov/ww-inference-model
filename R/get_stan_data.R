@@ -189,7 +189,7 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #'   last_count_data_date,
 #'   calibration_time
 #' )
-#' stan_args <- get_stan_data(
+#' stan_data_list <- get_stan_data(
 #'   input_count_data_for_stan,
 #'   input_ww_data_for_stan,
 #'   forecast_date,
@@ -357,8 +357,8 @@ get_stan_data <- function(input_count_data,
 
   inf_to_count_delay_max <- length(inf_to_count_delay)
 
-  stan_args <- list(
-    gt_max = params$gt_max,
+  stan_data_list <- list(
+    gt_max = min(length(generation_interval), params$gt_max),
     hosp_delay_max = inf_to_count_delay_max,
     inf_to_hosp = inf_to_count_delay,
     mwpd = params$ml_of_ww_per_person_day,
@@ -447,7 +447,8 @@ get_stan_data <- function(input_count_data,
     lab_site_to_site_map = ww_indices$lab_site_to_site_map
   )
 
-  return(stan_args)
+
+  return(stan_data_list)
 }
 
 #' Get the integer sizes of the wastewater input data
