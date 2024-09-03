@@ -213,7 +213,7 @@ flag_ww_outliers <- function(ww_data,
     ) |>
     dplyr::group_by(.data$lab_site_index) |>
     dplyr::mutate(
-      z_score_conc = (!!rlang::sym(conc_col_name) - .data$mean_conc) /
+      z_score_conc = (.data[[conc_col_name]] - .data$mean_conc) /
         .data$std_conc,
       z_score_rho = (.data$rho - .data$mean_rho) / .data$std_rho
     ) |>
