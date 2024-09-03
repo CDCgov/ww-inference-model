@@ -210,9 +210,9 @@ $$\log(M_{ij}) \sim \mathrm{Normal}(0, \sigma_m)$$
 
 such that $M_{ij}$ is centered around 1 and
 
-$$\log(\sigma_{cij}) \sim \mathrm{Normal}(\log(mode_{\sigma}), \sigma_{ c, \log})$$
+$$\log(\sigma_{cij}) \sim \mathrm{Normal}(\hat{\sigma}\_c, \sigma\_{\log \sigma\_c})$$
 
-See [Prior Distributions](#prior-distributions) for prior valies on $\sigma_m$, $\log(mode_{\sigma})$ and $\sigma_{ c, \log}$.
+See [Prior Distributions](#prior-distributions) for prior valies on $\sigma_m$, $\hat{\sigma}\_c$ and $\sigma\_{\log \sigma\_c}$.
 
 In the rare cases when a site submits multiple concentrations for a single date and lab method, we treat each record as an independent observation.
 
@@ -258,8 +258,8 @@ We use informative priors for parameters that have been well characterized in th
 | Infection feedback term | $\gamma \sim \mathrm{logNormal}(6.37, 0.4)$ | Weakly informative prior chosen to have a mode of 500 in natural scale, based on posterior estimates of peaks from prior seasons in a few jurisdictions |
 | Day of the week effects | $\frac{\vec{\omega}}{7} \sim \mathrm{Dirichlet}(5, 5, 5, 5, 5, 5, 5)$ | Weakly informative prior with a mode at even daily reporting (no effects) |
 | Standard deviation of the log of the site-lab level multiplier $M_{ij}$ | $\sigma_m \sim \mathrm{Normal}(0, 0.25) $ | Weakly informative prior chosen to allow average magnitude of concentrations to be either similar or different among individual sites, depending on data |
-| Mode of the site-level observation standard deviation | $mode_{\sigma} \sim \mathrm{Normal}(1,1)$ | Weakly informative prior chosen to allow site-lab level standard deviations to vary |
-| Standard deviation for the Normal distribution of individual log site-lab observation standard deviations about the modal observation s.d. | $\sigma_{c,\log} \sim \mathrm{Normal}(0, log(2))$ | Weakly informative prior which allows for individual s.d.s to be either clustered around the mode or highly dispersed |
+| Mode of the site-level observation standard deviation | $\hat{\sigma}\_c \sim \mathrm{Normal}(1,1)$ | Weakly informative prior chosen to allow site-lab level standard deviations to vary |
+| Standard deviation for the Normal distribution of individual log site-lab observation standard deviations about the modal observation s.d. | $\sigma\_{\log \sigma\_c} \sim \mathrm{Normal}(0, log(2))$ | Weakly informative prior which allows for individual s.d.s to be either clustered around the mode or highly dispersed |
 
 ### Scalar parameters
 
