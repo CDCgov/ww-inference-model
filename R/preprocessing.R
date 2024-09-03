@@ -179,7 +179,7 @@ flag_ww_outliers <- function(ww_data,
     # few data points
     dplyr::filter(
       .data$below_lod == 0,
-      .data$n_data_points > threshold_n_dps
+      .data$n_data_points > !!threshold_n_dps
     ) |>
     dplyr::group_by(.data$lab_site_index) |>
     dplyr::arrange(.data$date, "desc") |>
