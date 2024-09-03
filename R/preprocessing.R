@@ -61,7 +61,7 @@ preprocess_ww_data <- function(ww_data,
     dplyr::left_join(
       ww_data |>
         dplyr::distinct(.data$site) |>
-        dplyr::mutate(site_index = dplyr::row_number()),
+        dplyr::mutate("site_index" = dplyr::row_number()),
       by = "site"
     ) |>
     dplyr::rename(
