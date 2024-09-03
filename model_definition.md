@@ -259,7 +259,7 @@ We use informative priors for parameters that have been well characterized in th
 | Day of the week effects | $\frac{\vec{\omega}}{7} \sim \mathrm{Dirichlet}(5, 5, 5, 5, 5, 5, 5)$ | Weakly informative prior with a mode at even daily reporting (no effects) |
 | Standard deviation of the log of the site-lab level multiplier $M_{ij}$ | $\sigma_m \sim \mathrm{Normal}(0, 0.25) $ | Weakly informative prior chosen to allow average magnitude of concentrations to be either similar or different among individual sites, depending on data |
 | Mode of the site-level observation standard deviation | $mode_{\sigma} \sim \mathrm{Normal}(1,1)$ | Weakly informative prior chosen to allow site-lab level standard deviations to vary |
-| Standard deviation in the log of the standard deviation of site-lab level standard deviations| $\sigma_{c,\log} \sim \mathrm{Normal}(0, log(2))$ | Weakly informative prior which allows observed concentrations to vary between 1/4 and 4x the mean concentration |
+| Standard deviation for the Normal distribution of individual log site-lab observation standard deviations about the modal observation s.d. | $\sigma_{c,\log} \sim \mathrm{Normal}(0, log(2))$ | Weakly informative prior which allows for individual s.d.s to be either clustered around the mode or highly dispersed |
 
 ### Scalar parameters
 
