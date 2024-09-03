@@ -210,7 +210,7 @@ $$\log(M_{ij}) \sim \mathrm{Normal}(0, \sigma_m)$$
 
 such that $M_{ij}$ is centered around 1 and
 
-$$\log(\sigma_{cij}) \sim \mathrm{Normal}(\hat{\sigma}\_c, \sigma\_{\log \sigma\_c})$$
+$$\log(\sigma_{cij}) \sim \mathrm{Normal}(\log(\hat{\sigma}\_c), \sigma\_{\log \sigma\_c})$$
 
 See [Prior Distributions](#prior-distributions) for prior valies on $\sigma_m$, $\hat{\sigma}\_c$ and $\sigma\_{\log \sigma\_c}$.
 
