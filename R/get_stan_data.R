@@ -14,7 +14,7 @@ get_input_count_data_for_stan <- function(preprocessed_count_data,
 
   input_count_data_filtered <- preprocessed_count_data |>
     dplyr::filter(
-      date > last_count_data_date - lubridate::days(calibration_time)
+      .data$date > last_count_data_date - lubridate::days(!!calibration_time)
     )
 
   count_data <- add_time_indexing(input_count_data_filtered)
@@ -68,11 +68,11 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
   # data. Arrange data for indexing. This is what will be returned.
   ww_data <- preprocessed_ww_data |>
     dplyr::filter(
-      exclude != 1,
-      date > last_count_data_date -
-        lubridate::days(calibration_time)
+      .data$exclude != 1,
+      .data$date > !!last_count_data_date -
+        lubridate::days(!!calibration_time)
     ) |>
-    dplyr::arrange(date, lab_site_index)
+    dplyr::arrange(.data$date, .data$lab_site_index)
 
   ww_data_sizes <- get_ww_data_sizes(
     ww_data,
@@ -239,9 +239,8 @@ get_stan_data <- function(input_count_data,
   # Get the total pop, coming from the larger population generating the
   # count data
   pop <- input_count_data |>
-    dplyr::select(total_pop) |>
-    unique() |>
-    dplyr::pull(total_pop)
+    dplyr::distinct(.data$total_pop) |>
+    dplyr::pull()
 
   assert_single_value(pop,
     arg = "global population",
@@ -270,7 +269,7 @@ get_stan_data <- function(input_count_data,
   # Returns the vectors of indices you need to map latent variables to
   # observations
   ww_indices <- get_ww_data_indices(
-    input_ww_data |> dplyr::select(-t),
+    input_ww_data |> dplyr::select(-"t"),
     first_count_data_date,
     owt = ww_data_sizes$owt,
     lod_col_name = "below_lod"
@@ -551,10 +550,10 @@ get_ww_data_indices <- function(ww_data,
       dplyr::mutate(ind_rel_to_sampled_times = dplyr::row_number())
     ww_censored <- ww_data_with_index |>
       dplyr::filter(.data[[lod_col_name]] == 1) |>
-      dplyr::pull(ind_rel_to_sampled_times)
+      dplyr::pull(.data$ind_rel_to_sampled_times)
     ww_uncensored <- ww_data_with_index |>
       dplyr::filter(.data[[lod_col_name]] == 0) |>
-      dplyr::pull(ind_rel_to_sampled_times)
+      dplyr::pull(.data$ind_rel_to_sampled_times)
     stopifnot(
       "Length of censored vectors incorrect" =
         length(ww_censored) + length(ww_uncensored) == owt
@@ -590,10 +589,10 @@ get_ww_data_indices <- function(ww_data,
 
     # Need a vector of indices indicating the site for each lab-site
     lab_site_to_site_map <- ww_data |>
-      dplyr::select(lab_site_index, site_index) |>
-      dplyr::arrange(lab_site_index, "desc") |>
+      dplyr::select("lab_site_index", "site_index") |>
+      dplyr::arrange(.data$lab_site_index, "desc") |>
       dplyr::distinct() |>
-      dplyr::pull(site_index)
+      dplyr::pull(.data$site_index)
 
     ww_data_indices <- list(
       ww_censored = ww_censored,
@@ -665,11 +664,11 @@ get_ww_values <- function(ww_data,
       # so just take the average across the populations reported for each
       # observation
       pop_ww <- ww_data |>
-        dplyr::select(site_index, {{ ww_site_pop_col_name }}) |>
-        dplyr::group_by(site_index) |>
+        dplyr::select("site_index", {{ ww_site_pop_col_name }}) |>
+        dplyr::group_by(.data$site_index) |>
         dplyr::summarise(pop_avg = mean(.data[[ww_site_pop_col_name]])) |>
-        dplyr::arrange(site_index, "desc") |>
-        dplyr::pull(pop_avg)
+        dplyr::arrange(.data$site_index, "desc") |>
+        dplyr::pull(.data$pop_avg)
     } else {
       # Want a vector of length of the number of observations, corresponding to
       # the population at that time
@@ -684,7 +683,7 @@ get_ww_values <- function(ww_data,
         log_conc =
           (log(.data[[ww_measurement_col_name]] + padding_value))
       ) |>
-      dplyr::pull(log_conc)
+      dplyr::pull(.data$log_conc)
 
     ww_values <- list(
       ww_lod = ww_lod,
@@ -729,7 +728,7 @@ add_time_indexing <- function(input_count_data) {
 
   count_data <- input_count_data |>
     dplyr::left_join(date_df, by = "date") |>
-    dplyr::arrange(date)
+    arrange(.data$date)
 
   return(count_data)
 }

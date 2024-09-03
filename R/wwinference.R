@@ -192,7 +192,10 @@ wwinference <- function(ww_data,
   if (generate_initial_values) {
     init_lists <- c()
     for (i in 1:fit_opts$n_chains) {
-      init_lists[[i]] <- get_inits_for_one_chain(stan_data_list, params)
+      init_lists[[i]] <- get_inits_for_one_chain(
+        stan_data = stan_data_list,
+        params = model_spec$params
+      )
     }
   }
 
@@ -208,7 +211,6 @@ wwinference <- function(ww_data,
   )
 
   if (!is.null(fit$error)) { # If the model errors, return the error message
-
     return(fit$error)
   } else {
     convergence_flag_df <- get_model_diagnostic_flags(fit$result)

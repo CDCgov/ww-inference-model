@@ -582,10 +582,10 @@ assert_equivalent_indexing <- function(first_data,
                                        call = rlang::caller_env(),
                                        add_err_msg = "") {
   first_index <- first_data |>
-    dplyr::distinct(date, t)
+    dplyr::distinct(.data$date, .data$t)
   second_index <- second_data |>
-    dplyr::distinct(date, t) |>
-    dplyr::rename(second_t = t)
+    dplyr::distinct(.data$date, .data$t) |>
+    dplyr::rename("second_t" = "t")
 
 
   test_df <- first_index |>

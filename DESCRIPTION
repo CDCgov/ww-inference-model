@@ -63,6 +63,7 @@ Suggests:
     testthat (>= 3.0.0),
     bookdown,
     knitr,
+    withr,
     rcmdcheck
 Config/testthat/edition: 3
 LazyData: true
@@ -77,7 +78,6 @@ Imports:
     tidybayes,
     tidyr,
     purrr,
-    withr,
     cmdstanr (>= 0.8.0),
     rlang,
     scales,
