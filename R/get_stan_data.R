@@ -14,7 +14,7 @@ get_input_count_data_for_stan <- function(preprocessed_count_data,
 
   input_count_data_filtered <- preprocessed_count_data |>
     dplyr::filter(
-      .data$date > last_count_data_date - lubridate::days(calibration_time)
+      .data$date > last_count_data_date - lubridate::days(!!calibration_time)
     )
 
   count_data <- add_time_indexing(input_count_data_filtered)
