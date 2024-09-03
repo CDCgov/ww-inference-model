@@ -25,7 +25,8 @@ Here we present the way simulating and fitting with 3 separate models using the
 the value of using spatial components within the model.
 ```{r}
 library(wwinference)
-library(tidyverse)
+library(dplyr)
+library(ggplot2)
 library(patchwork)
 ```
 
