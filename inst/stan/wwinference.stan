@@ -266,7 +266,7 @@ transformed parameters {
   // Option to add a population offset here at some point  log(model_V) + site_level_multiplier+ pop_ww[ww_sampled_sites]
 
   // Get the transformed lab-site level error
-  //log(sigma_site) ~ Noormal(log(mode_sigma_site), sd_log_sigma_site)
+  // log(sigma_site) ~ Normal(log(mode_sigma_site), sd_log_sigma_site)
   sigma_ww_site = exp(
   log(mode_sigma_ww_site) + sd_log_sigma_ww_site * eta_log_sigma_ww_site);
 
