@@ -212,7 +212,7 @@ such that $M_{ij}$ is centered around 1 and
 
 $$\log(\sigma_{cij}) \sim \mathrm{Normal}(\log(\hat{\sigma}\_c), \sigma\_{\log \sigma\_c})$$
 
-See [Prior Distributions](#prior-distributions) for prior valies on $\sigma_m$, $\hat{\sigma}\_c$ and $\sigma\_{\log \sigma\_c}$.
+See [Prior Distributions](#prior-distributions) for priors on $\sigma_m$, $\hat{\sigma}\_c$ and $\sigma\_{\log \sigma\_c}$.
 
 In the rare cases when a site submits multiple concentrations for a single date and lab method, we treat each record as an independent observation.
 
