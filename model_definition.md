@@ -258,7 +258,7 @@ We use informative priors for parameters that have been well characterized in th
 | Infection feedback term | $\gamma \sim \mathrm{logNormal}(6.37, 0.4)$ | Weakly informative prior chosen to have a mode of 500 in natural scale, based on posterior estimates of peaks from prior seasons in a few jurisdictions |
 | Day of the week effects | $\frac{\vec{\omega}}{7} \sim \mathrm{Dirichlet}(5, 5, 5, 5, 5, 5, 5)$ | Weakly informative prior with a mode at even daily reporting (no effects) |
 | Standard deviation of the log of the site-lab level multiplier $M_{ij}$ | $\sigma_m \sim \mathrm{Normal}(0, 0.25) $ | Weakly informative prior chosen to allow average magnitude of concentrations to be either similar or different among individual sites, depending on data |
-| Standard deviation in the log of the mode of the standard deviation between site-lab level standard deviations| $\log(mode_{\sigma}) \sim \mathrm{Normal}(1,1)$ | Weakly informative prior chosen to allow site-lab level standard deviations to vary |
+| Mode of the site-level observation standard deviation | $mode_{\sigma} \sim \mathrm{Normal}(1,1)$ | Weakly informative prior chosen to allow site-lab level standard deviations to vary |
 | Standard deviation in the log of the standard deviation of site-lab level standard deviations| $\sigma_{c,\log} \sim \mathrm{Normal}(0, log(2))$ | Weakly informative prior which allows observed concentrations to vary between 1/4 and 4x the mean concentration |
 
 ### Scalar parameters
