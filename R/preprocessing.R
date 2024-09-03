@@ -220,7 +220,7 @@ flag_ww_outliers <- function(ww_data,
     dplyr::mutate(
       z_score_rho_t_plus_1 = dplyr::lead(.data$z_score_rho, 1),
       flagged_for_removal_conc = dplyr::case_when(
-        abs(.data$z_score_conc) >= log_conc_threshold ~ 1,
+        abs(.data$z_score_conc) >= !!log_conc_threshold ~ 1,
         is.na(.data$z_score_conc) ~ 0,
         TRUE ~ 0
       ),
