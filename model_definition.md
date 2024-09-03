@@ -204,7 +204,15 @@ Genome concentration measurements can vary between sites, and even within a site
 
 $$\log[c_{ijt}] \sim \mathrm{Normal}(\log[M_{ij} C_i(t)], \sigma_{cij})$$
 
-Both $M_{ij}$ and $\sigma_{cij}$ are modeled as site-level random effects.
+Both $M_{ij}$ and $\sigma_{cij}$ are estimated hierarchically such that:
+
+$$\log(M_{ij}) \sim \mathrm{Normal}(0, \sigma_m)$$
+
+such that $M_{ij}$ is centered around 1 and
+
+$$\log(\sigma_{cij}) \sim \mathrm{Normal}(\log(\hat{\sigma}\_c), \sigma\_{\log \sigma\_c})$$
+
+See [Prior Distributions](#prior-distributions) for priors on $\sigma_m$, $\hat{\sigma}\_c$ and $\sigma\_{\log \sigma\_c}$.
 
 In the rare cases when a site submits multiple concentrations for a single date and lab method, we treat each record as an independent observation.
 
@@ -249,6 +257,9 @@ We use informative priors for parameters that have been well characterized in th
 | Initial exponential growth rate | $r \sim \mathrm{Normal}(0, 0.01)$ | Chosen to assume flat dynamics prior to observations |
 | Infection feedback term | $\gamma \sim \mathrm{logNormal}(6.37, 0.4)$ | Weakly informative prior chosen to have a mode of 500 in natural scale, based on posterior estimates of peaks from prior seasons in a few jurisdictions |
 | Day of the week effects | $\frac{\vec{\omega}}{7} \sim \mathrm{Dirichlet}(5, 5, 5, 5, 5, 5, 5)$ | Weakly informative prior with a mode at even daily reporting (no effects) |
+| Standard deviation of the log of the site-lab level multiplier $M_{ij}$ | $\sigma_m \sim \mathrm{Normal}(0, 0.25) $ | Weakly informative prior chosen to allow average magnitude of concentrations to be either similar or different among individual sites, depending on data |
+| Modal site-level observation standard deviation | $\hat{\sigma}\_c \sim \mathrm{Normal}(1,1)$ | Weakly informative prior chosen to allow the mode to be either small or large |
+| Standard deviation of the Normal distribution of individual log observation standard deviations $\log(\sigma\_{cij})$ (site-lab combination specific, with an inferred modal s.d. $\hat{\sigma}\_c$) | $\sigma\_{\log \sigma\_c} \sim \mathrm{Normal}(0, \log(2))$ | Weakly informative prior which allows for individual s.d.s to be either clustered around the mode or more dispersed |
 
 ### Scalar parameters
 
