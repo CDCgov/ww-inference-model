@@ -10,7 +10,7 @@ test_that("Test the wastewater inference model on simulated data.", {
   })
 
   params <- model_test_data$model_spec$params
-  obs_last_draw <- posterior::subset_draws(fit$raw_fit_obj$draws(),
+  obs_last_draw <- posterior::subset_draws(fit$fit$result$draws(),
     draw = 25
   )
 

@@ -48,8 +48,9 @@ model_spec <- wwinference::get_model_spec(
 
 mcmc_options <- wwinference::get_mcmc_options(
   seed = 55,
-  iter_warmup = 500,
-  iter_sampling = 250
+  iter_warmup = 25,
+  iter_sampling = 25,
+  n_chains = 1
 )
 
 generate_initial_values <- TRUE
@@ -61,7 +62,7 @@ model_test_data <- list(
   calibration_time = calibration_time,
   forecast_horizon = forecast_horizon,
   model_spec = model_spec,
-  mcmc_options = mcmc_options,
+  fit_opts = mcmc_options,
   generate_initial_values = generate_initial_values
 )
 
@@ -74,7 +75,8 @@ withr::with_seed(5, {
 
 
 # Generate the last draw of a very short run for testing
-test_fit_last_draw <- posterior::subset_draws(fit$raw_fit_obj$draws(),
+test_fit_last_draw <- posterior::subset_draws(
+  fit$fit$result$draws(),
   draw = 25
 )
 # Save the data as internal data. Every time the model changes, will need
