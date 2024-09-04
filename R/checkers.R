@@ -314,8 +314,10 @@ assert_req_ww_cols_present <- function(ww_data,
   if (!isTRUE(name_check_result)) {
     cli::cli_abort(
       message =
-        "Required columns are missing from the wastewater data. ",
-      # autoescape_brackets(name_check_result) #nolint
+        c(
+          "Required columns are missing from the wastewater data. ",
+          autoescape_brackets(name_check_result)
+        ),
       class = "wwinference_input_data_error",
       call = call
     )
