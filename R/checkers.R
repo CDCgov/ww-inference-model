@@ -302,12 +302,8 @@ assert_req_ww_cols_present <- function(ww_data,
                                        call = rlang::caller_env()) {
   column_names <- colnames(ww_data)
   expected_col_names <- c(
-    {
-      conc_col_name
-    },
-    {
-      lod_col_name
-    },
+    {{ conc_col_name }},
+    {{ lod_col_name }},
     add_req_col_names
   )
 
@@ -317,10 +313,9 @@ assert_req_ww_cols_present <- function(ww_data,
   )
   if (!isTRUE(name_check_result)) {
     cli::cli_abort(
-      message = c(
+      message =
         "Required columns are missing from the wastewater data. ",
-        autoescape_brackets(name_check_result)
-      ),
+      # autoescape_brackets(name_check_result) #nolint
       class = "wwinference_input_data_error",
       call = call
     )
