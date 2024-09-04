@@ -180,12 +180,12 @@ flag_ww_outliers <- function(ww_data,
     # few data points
     dplyr::filter(
       .data$below_lod == 0,
-      .data$n_data_points > threshold_n_dps
+      .data$n_data_points > !!threshold_n_dps
     ) |>
     dplyr::group_by(.data$lab_site_index) |>
     dplyr::arrange(.data$date, "desc") |>
     dplyr::mutate(
-      log_conc = !!rlang::sym(conc_col_name),
+      log_conc = .data[[conc_col_name]],
       prev_log_conc = dplyr::lag(.data$log_conc, 1),
       prev_date = dplyr::lag(.data$date, 1),
       diff_log_conc = .data$log_conc - .data$prev_log_conc,
@@ -207,14 +207,15 @@ flag_ww_outliers <- function(ww_data,
         dplyr::summarise(
           mean_rho = mean(.data$rho, na.rm = TRUE),
           std_rho = sd(.data$rho, na.rm = TRUE),
-          mean_conc = mean(!!rlang::sym(conc_col_name), na.rm = TRUE),
-          std_conc = sd(!!rlang::sym(conc_col_name), na.rm = TRUE)
+          mean_conc = mean(.data[[conc_col_name]], na.rm = TRUE),
+          std_conc = sd(.data[[conc_col_name]], na.rm = TRUE)
+
         ),
       by = "lab_site_index"
     ) |>
     dplyr::group_by(.data$lab_site_index) |>
     dplyr::mutate(
-      z_score_conc = (!!rlang::sym(conc_col_name) - .data$mean_conc) /
+      z_score_conc = (.data[[conc_col_name]] - .data$mean_conc) /
         .data$std_conc,
       z_score_rho = (.data$rho - .data$mean_rho) / .data$std_rho
     ) |>
@@ -222,12 +223,14 @@ flag_ww_outliers <- function(ww_data,
       z_score_rho_t_plus_1 = dplyr::lead(.data$z_score_rho, 1),
       flagged_for_removal_conc = dplyr::case_when(
         abs(.data$z_score_conc) >= log_conc_threshold ~ 1,
+        abs(.data$z_score_conc) >= !!log_conc_threshold ~ 1,
         is.na(.data$z_score_conc) ~ 0,
         TRUE ~ 0
       ),
       flagged_for_removal_rho = dplyr::case_when(
         (
           abs(.data$z_score_rho) >= rho_threshold &
+          abs(.data$z_score_rho) >= !!rho_threshold &
             (abs(.data$z_score_rho_t_plus_1) >= !!rho_threshold) &
             sign(.data$z_score_rho != sign(.data$z_score_rho_t_plus_1))
         ) ~ 1,

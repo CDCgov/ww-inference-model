@@ -157,7 +157,7 @@ get_draws_df.data.frame <- function(x,
     dplyr::rename("pred_value" = "pred_ww") |>
     dplyr::mutate(
       draw = .data$`.draw`,
-      name = "predicted wastewater",
+      name = "predicted wastewater"
     ) |>
     dplyr::select("name", "lab_site_index", "t", "pred_value", "draw") |>
     dplyr::left_join(date_time_spine, by = "t") |>

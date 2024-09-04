@@ -10,3 +10,5 @@ This will serve as our change-log
 forward simulation functions.
 - 2024-08-23: Added new `wwinference_fit` class with corresponding print and summary methods.
 - 2024-08-30: Switch from asking users to pass in natural scale wastewater concentration data to asking them to pass in log scale data
+- 2024-08-30: Fix bug in how hierarchical standard deviation in the wastewater observation model was being estimated. Update model definition.
+
