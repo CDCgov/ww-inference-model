@@ -19,10 +19,6 @@
 #' fitting the model
 #' @param fit_obj a CmdStan object that is the output of fitting the model to
 #' `x` and `count_data`
-#' @param included_variables A vector of strings indicating which output
-#' variables to include in the `draws_df`. Defaults to returning
-#' `"predicted counts"`, `"predicted wastewater"`,`"global R(t)"`,
-#' and `"subpopulation R(t)"`, indicated by the column `name`
 #' @param ... additional arguments
 #' @return  A tibble containing the full set of posterior draws of the
 #' estimated, nowcasted, and forecasted: counts, site-level wastewater
@@ -48,14 +44,7 @@ get_draws_df.wwinference_fit <- function(x, ...) {
     x = x$raw_input_data$input_ww_data,
     count_data = x$raw_input_data$input_count_data,
     stan_data_list = x$stan_data_list,
-    fit_obj = x$fit,
-    included_variables =
-      c(
-        "predicted counts",
-        "predicted wastewater",
-        "global R(t)",
-        "subpopulation R(t)"
-      )
+    fit_obj = x$fit
   )
 }
 
@@ -77,17 +66,7 @@ get_draws_df.data.frame <- function(x,
                                     count_data,
                                     stan_data_list,
                                     fit_obj,
-                                    included_variables =
-                                      c(
-                                        "predicted counts",
-                                        "predicted wastewater",
-                                        "global R(t)",
-                                        "subpopulation R(t)"
-                                      ),
                                     ...) {
-  # Make sure that the specified variables match what is expected
-  included_variables <- rlang::arg_match(included_variables)
-
   draws <- fit_obj$result$draws()
 
   # Get the necessary mappings needed to join draws to data
@@ -239,10 +218,6 @@ get_draws_df.data.frame <- function(x,
     global_rt_draws,
     site_level_rt_draws
   )
-
-  # draws_df <- all_draws_df |>
-  #   dplyr::filter(
-  #    .data$name %in% {{included_variables}})
 
 
   return(all_draws_df)
