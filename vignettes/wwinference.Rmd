@@ -404,7 +404,7 @@ draws_df_explicit <- get_draws_df(
 We can create plots of the outputs using `draws_df` and
 the fitting wrapper functions. Note that by default, these plots will not
 visualize data that was below the LOD (even though the fit incorporated
-them via censoring)
+them via the censored observation process.)
 
 ```{r generating-figures,  out.width='100%'}
 draws_df <- get_draws_df(ww_fit)
