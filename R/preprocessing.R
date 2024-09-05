@@ -7,7 +7,7 @@
 #' virus genome concentration measurements in log genome copies per mL, default is
 #'  `log_genome_copies_per_ml`
 #' @param lod_col_name string indicating the name of the column containing
-#' the concentration measurements in the wastewater data, default is
+#' the limits of detection for each wastewater measurement, default is
 #'  `log_lod_sewage`. Note that any values in the `conc_col_name`
 #'  equal to the limit of detection will be treated as below the limit of
 #'  detection.
