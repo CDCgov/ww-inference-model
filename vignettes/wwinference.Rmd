@@ -76,10 +76,10 @@ missing observations, instead these should be excluded:
 - a site indicator (column `site`): the unique identifier for the wastewater treatment plant
 that the sample was collected from
 - a lab indicator (column `lab`): the unique identifier for the lab where the sample was processed
-- a concentration (column `log_genome_copies_ml`): the natural log of the
-measured genome copies per mL from the sample collected. This column should not
-contain NAs, even if the observation for that sample is below the limit of
-detection. We will
+- a concentration (column `log_genome_copies_ml`): the measured 
+log genome copies per mL for the given sample. This column should not
+contain `NA` values, even if the observation for that sample is below the limit of
+detection.
 - a limit of detection (column `log_lod`): the natural log of the limit
 of detection of the assay used to process the sample. Units should be the same
 units as the concentration column.
