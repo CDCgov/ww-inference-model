@@ -382,7 +382,7 @@ cat(
 ```
 Note that by default the `get_draws_df()` function will return  a tidy long
 dataframe with all of the posterior draws joined to applicable data for each of
-the included variables. To examine a particular variable (e.g. `"predicted counts"` for posterior 
+the included variables. To examine a particular variable (e.g. `"predicted counts"` for posterior
 predicted hospital admissions), filter the data frame based on the `name` column.
 
 ### Using explicit passed arguments rather than S3 methods
