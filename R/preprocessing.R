@@ -4,16 +4,16 @@
 #' date, site_pop, a column for concentration, and  a column for the
 #' limit of detection
 #' @param conc_col_name string indicating the name of the column containing
-#' the concentration measurements in the wastewater data, default is
-#'  `genome_copies_per_ml`
+#' virus genome concentration measurements in log genome copies per mL,
+#' default is `log_genome_copies_per_ml`
 #' @param lod_col_name string indicating the name of the column containing
-#' the concentration measurements in the wastewater data, default is
-#'  `genome_copies_per_ml`. Note that any values in the `conc_col_name`
+#' the limits of detection for each wastewater measurement, default is
+#'  `log_lod_sewage`. Note that any values in the `conc_col_name`
 #'  equal to the limit of detection will be treated as below the limit of
 #'  detection.
 #' @return a dataframe containing the same columns as ww_data except
-#' the `conc_col_name` will be replaced with `genome_copies_per_ml` and
-#' the `lod_col_name` will be replaced with `lod` plus the following
+#' the `conc_col_name` will be replaced with `log_genome_copies_per_ml` and
+#' the `lod_col_name` will be replaced with `log_lod_sewage` plus the following
 #' additional columns needed for the stan model:
 #' lab_site_index, site_index, flag_as_ww_outlier, below_lod, lab_site_name,
 #' exclude
@@ -24,17 +24,17 @@
 #'   date = lubridate::ymd(rep(c("2023-11-01", "2023-11-02"), 2)),
 #'   site = c(rep(1, 2), rep(2, 2)),
 #'   lab = c(1, 1, 1, 1),
-#'   conc = c(345.2, 784.1, 401.5, 681.8),
-#'   lod = c(20, 20, 15, 15),
+#'   log_conc = log(c(345.2, 784.1, 401.5, 681.8)),
+#'   log_lod = log(c(20, 20, 15, 15)),
 #'   site_pop = c(rep(2e5, 2), rep(4e5, 2))
 #' )
 #' ww_data_preprocessed <- preprocess_ww_data(ww_data,
-#'   conc_col_name = "conc",
-#'   lod_col_name = "lod"
+#'   conc_col_name = "log_conc",
+#'   lod_col_name = "log_lod"
 #' )
 preprocess_ww_data <- function(ww_data,
-                               conc_col_name = "genome_copies_per_ml",
-                               lod_col_name = "lod") {
+                               conc_col_name = "log_genome_copies_per_ml",
+                               lod_col_name = "log_lod") {
   check_req_ww_cols_present(
     ww_data,
     conc_col_name,
@@ -61,26 +61,27 @@ preprocess_ww_data <- function(ww_data,
     dplyr::left_join(
       ww_data |>
         dplyr::distinct(.data$site) |>
-        dplyr::mutate("site_index" = dplyr::row_number()),
+        dplyr::mutate(site_index = dplyr::row_number()),
       by = "site"
     ) |>
     dplyr::rename(
-      "lod" = {{ lod_col_name }},
-      "genome_copies_per_ml" = {{ conc_col_name }}
+      "log_lod" = {{ lod_col_name }},
+      "log_genome_copies_per_ml" = {{ conc_col_name }}
     ) |>
     dplyr::mutate(
       lab_site_name = glue::glue("Site: {site}, Lab: {lab}"),
-      below_lod = ifelse(.data$genome_copies_per_ml <= .data$lod, 1, 0)
+      below_lod = ifelse(.data$log_genome_copies_per_ml <= .data$log_lod, 1, 0)
     )
 
   # Get an extra column that identifies the wastewater outliers using the
   # default parameters
   ww_preprocessed <- flag_ww_outliers(ww_data_add_cols,
-    conc_col_name = "genome_copies_per_ml"
+    conc_col_name = "log_genome_copies_per_ml"
   )
 
   return(ww_preprocessed)
 }
+
 
 
 #' Pre-process hospital admissions data, converting column names to those
@@ -161,7 +162,7 @@ preprocess_count_data <- function(count_data,
 #' ww_data_preprocessed <- wwinference::preprocess_ww_data(ww_data)
 #' ww_data_outliers_flagged <- flag_ww_outliers(ww_data_preprocessed)
 flag_ww_outliers <- function(ww_data,
-                             conc_col_name = "genome_copies_per_ml",
+                             conc_col_name = "log_genome_copies_per_ml",
                              rho_threshold = 2,
                              log_conc_threshold = 3,
                              threshold_n_dps = 1) {
@@ -184,7 +185,7 @@ flag_ww_outliers <- function(ww_data,
     dplyr::group_by(.data$lab_site_index) |>
     dplyr::arrange(.data$date, "desc") |>
     dplyr::mutate(
-      log_conc = log(.data[[conc_col_name]]),
+      log_conc = .data[[conc_col_name]],
       prev_log_conc = dplyr::lag(.data$log_conc, 1),
       prev_date = dplyr::lag(.data$date, 1),
       diff_log_conc = .data$log_conc - .data$prev_log_conc,

@@ -7,8 +7,8 @@ potential outliers}
 \usage{
 preprocess_ww_data(
   ww_data,
-  conc_col_name = "genome_copies_per_ml",
-  lod_col_name = "lod"
+  conc_col_name = "log_genome_copies_per_ml",
+  lod_col_name = "log_lod"
 )
 }
 \arguments{
@@ -17,19 +17,19 @@ date, site_pop, a column for concentration, and  a column for the
 limit of detection}
 
 \item{conc_col_name}{string indicating the name of the column containing
-the concentration measurements in the wastewater data, default is
-\code{genome_copies_per_ml}}
+virus genome concentration measurements in log genome copies per mL,
+default is \code{log_genome_copies_per_ml}}
 
 \item{lod_col_name}{string indicating the name of the column containing
-the concentration measurements in the wastewater data, default is
-\code{genome_copies_per_ml}. Note that any values in the \code{conc_col_name}
+the limits of detection for each wastewater measurement, default is
+\code{log_lod_sewage}. Note that any values in the \code{conc_col_name}
 equal to the limit of detection will be treated as below the limit of
 detection.}
 }
 \value{
 a dataframe containing the same columns as ww_data except
-the \code{conc_col_name} will be replaced with \code{genome_copies_per_ml} and
-the \code{lod_col_name} will be replaced with \code{lod} plus the following
+the \code{conc_col_name} will be replaced with \code{log_genome_copies_per_ml} and
+the \code{lod_col_name} will be replaced with \code{log_lod_sewage} plus the following
 additional columns needed for the stan model:
 lab_site_index, site_index, flag_as_ww_outlier, below_lod, lab_site_name,
 exclude
@@ -43,12 +43,12 @@ ww_data <- tibble::tibble(
   date = lubridate::ymd(rep(c("2023-11-01", "2023-11-02"), 2)),
   site = c(rep(1, 2), rep(2, 2)),
   lab = c(1, 1, 1, 1),
-  conc = c(345.2, 784.1, 401.5, 681.8),
-  lod = c(20, 20, 15, 15),
+  log_conc = log(c(345.2, 784.1, 401.5, 681.8)),
+  log_lod = log(c(20, 20, 15, 15)),
   site_pop = c(rep(2e5, 2), rep(4e5, 2))
 )
 ww_data_preprocessed <- preprocess_ww_data(ww_data,
-  conc_col_name = "conc",
-  lod_col_name = "lod"
+  conc_col_name = "log_conc",
+  lod_col_name = "log_lod"
 )
 }
