@@ -17,8 +17,8 @@ date, site_pop, a column for concentration, and  a column for the
 limit of detection}
 
 \item{conc_col_name}{string indicating the name of the column containing
-virus genome concentration measurements in log genome copies per mL, default is
-\code{log_genome_copies_per_ml}}
+virus genome concentration measurements in log genome copies per mL,
+default is \code{log_genome_copies_per_ml}}
 
 \item{lod_col_name}{string indicating the name of the column containing
 the limits of detection for each wastewater measurement, default is

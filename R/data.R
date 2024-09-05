@@ -26,10 +26,10 @@
 #'   \item{log_genome_copies_per_ml}{The natural log of the wastewater
 #'   concentration measured on the date specified, collected in the site
 #'   specified, and processed in the lab specified. The package expects
-#'   this quantity in units of log genome copies per mL.}
+#'   this quantity in units of log estimated genome copies per mL.}
 #'   \item{log_lod}{The log of the limit of detection in the site and lab on a
 #'   particular day of the quantification device (e.g. PCR).  This should be in
-#'    units of log genome copies per mL.}
+#'    units of log estimated genome copies per mL.}
 #'   \item{site_pop}{The population size of the wastewater catchment area
 #'   represented by the site variable}
 #'   }
