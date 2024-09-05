@@ -123,7 +123,7 @@ get_plot_ww_conc <- function(draws,
       linetype = "dashed"
     ) +
     xlab("") +
-    ylab("Log(genome copies/mL)") +
+    ylab("Log genome copies/mL") +
     ggtitle("Lab-site level wastewater concentration") +
     scale_x_date(
       date_breaks = "2 weeks",
