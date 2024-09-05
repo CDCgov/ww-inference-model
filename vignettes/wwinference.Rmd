@@ -149,7 +149,7 @@ ww_data_preprocessed <- wwinference::preprocess_ww_data(
 ```
 Note that this function assumes that there are no missing values in the
 concentration column. The package expects observations below the LOD will
-be replaced with a numeric value below the LOD. If there are NAs in your dataset
+be replaced with a numeric value below the LOD. If there are `NA` values in your dataset
 when observations are below the LOD, we suggest replacing them with a value
 below the LOD in upstream pre-processing.
 
