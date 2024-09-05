@@ -34,8 +34,8 @@ population size of the site}
 site combination}
 }
 \value{
-a tidy dataframe containing the log scale wastewater concentrations
-in each site and lab at each time point
+a tidy dataframe containing observed wastewater concentrations
+in log genome copies per mL for each site and lab at each time point
 }
 \description{
 Format the wastewater data as a tidy data frame

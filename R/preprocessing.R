@@ -4,8 +4,8 @@
 #' date, site_pop, a column for concentration, and  a column for the
 #' limit of detection
 #' @param conc_col_name string indicating the name of the column containing
-#' virus genome concentration measurements in log genome copies per mL, default is
-#'  `log_genome_copies_per_ml`
+#' virus genome concentration measurements in log genome copies per mL,
+#' default is `log_genome_copies_per_ml`
 #' @param lod_col_name string indicating the name of the column containing
 #' the limits of detection for each wastewater measurement, default is
 #'  `log_lod_sewage`. Note that any values in the `conc_col_name`
@@ -207,8 +207,8 @@ flag_ww_outliers <- function(ww_data,
         dplyr::summarise(
           mean_rho = mean(.data$rho, na.rm = TRUE),
           std_rho = sd(.data$rho, na.rm = TRUE),
-          mean_conc = mean(!!rlang::sym(conc_col_name), na.rm = TRUE),
-          std_conc = sd(!!rlang::sym(conc_col_name), na.rm = TRUE)
+          mean_conc = mean(.data[[conc_col_name]], na.rm = TRUE),
+          std_conc = sd(.data[[conc_col_name]], na.rm = TRUE)
         ),
       by = "lab_site_index"
     ) |>
