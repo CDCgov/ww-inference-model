@@ -378,7 +378,7 @@ get_stan_data <- function(input_count_data,
   # If user does / doesn't want spatial comps.
   # We can add an extra step here for when spatial desired and dist_matrix
   #   not given.
-  if (corr_structure_switch == 0) {
+  if (corr_structure_switch == 0 || is.null(dist_matrix)) {
     # This dist_matrix will not be used, only needed for stan data specs.
     dist_matrix <- matrix(
       0,
