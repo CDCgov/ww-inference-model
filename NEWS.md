@@ -1,7 +1,9 @@
 # wwinference 0.0.1
+
 This is the first major release, focused on providing an initial version of the package.
 Note the package is still flagged as in development, though the authors plan on using it for production work in the coming weeks.
 As it's written, the package is intended to allow users to do the following:
+
 - Provide basic functionality to fit the wastewater-informed model to an example fitting COVID-19 hospital admissions and wastewater from a few sites (#5)
 - Performs basic post-processing and plotting of data and modeled outputs, including calibrated, nowcasted, and forecasted count data (in the example, hospital admissions), wastewater concentrations, global R(t) estimates and subpopulation-level R(t) estimates
 - Provide an example in the vignette to fit the model to only the hospital admissions (#24)

@@ -5,7 +5,7 @@
 #' This function reads in and optionally compiles a Stan model.
 #' It is written to search the installed package `stan` directory
 #' for additional source files to include. Within each stan file,
-#' use #include {path to your file with the `stan` directory}.stan
+#' use `#include {path to your file with the stan directory}.stan`
 #'
 #'
 #' @details The code for this function has been adapted

@@ -91,7 +91,7 @@ test_that("Population size column is renamed correctly", {
 })
 
 test_that("Function handles missing columns with an error", {
-  incomplete_hosp_data <- hosp_data |> dplyr::select(-daily_admits)
+  incomplete_hosp_data <- hosp_data |> dplyr::select(-"daily_admits")
 
 
   expect_error(preprocess_count_data(incomplete_hosp_data,
