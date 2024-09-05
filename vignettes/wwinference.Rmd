@@ -375,7 +375,6 @@ We can generate this directly on the output of `wwinference()` using:
 ```{r extracting-draws}
 draws_df <- get_draws_df(ww_fit)
 
-# Print the names of the variables included in the output dataframe
 cat(
   "Variables in dataframe: ",
   sprintf("%s", paste(unique(draws_df$name), collapse = ", "))
