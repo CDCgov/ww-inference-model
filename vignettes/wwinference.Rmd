@@ -382,12 +382,8 @@ cat(
 ```
 Note that by default the `get_draws_df()` function will return  a tidy long
 dataframe with all of the posterior draws joined to applicable data for each of
-the included variables. If only interested in the hospital admissions estimates
-(`"predicted counts"`) or the wastewater estimates (`"predicted wastewater"`),
-we suggest immediately filtering to `name %in% c(your_desired_outputs)`
-so as not to carry around extra data.
-This is particularly important if there are a large
-number of wastewater sites, as this dataframe can get quite large.
+the included variables. To examine a particular variable (e.g. `"predicted counts"` for posterior 
+predicted hospital admissions), filter the data frame based on the `name` column.
 
 ### Using explicit passed arguments rather than S3 methods
 
