@@ -659,7 +659,7 @@ get_ww_values <- function(ww_data,
 
     # Get the vector of log wastewater concentrations
     log_conc <- ww_data |>
-      dplyr::pull(.data[[ww_measurement_col_name]])
+      dplyr::pull({{ww_measurement_col_name}})
     ww_values <- list(
       ww_lod = ww_lod,
       pop_ww = pop_ww,
