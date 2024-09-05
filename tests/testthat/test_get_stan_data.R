@@ -1,4 +1,4 @@
-seed <- 123
+set.seed(123)
 
 ww_data <- tibble::tibble(
   date = rep(seq(
