@@ -70,7 +70,7 @@ simulated hospital admissions 28 days ahead of the forecast date, which can be
 used to evaluate the model.
 
 For the wastewater data, the expcted format is a table of observations with the
-followign columns. The wastewater data should not contain NAs for days with
+following columns. The wastewater data should not contain `NA` values for days with
 missing observations, instead these should be excluded:
 - a date (column `date`): the date the sample was collected
 - a site indicator (column `site`): the unique identifier for the wastewater treatment plant
