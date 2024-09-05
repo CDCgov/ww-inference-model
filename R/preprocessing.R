@@ -4,7 +4,7 @@
 #' date, site_pop, a column for concentration, and  a column for the
 #' limit of detection
 #' @param conc_col_name string indicating the name of the column containing
-#' the log scale concentration measurements in the wastewater data, default is
+#' virus genome concentration measurements in log genome copies per mL, default is
 #'  `log_genome_copies_per_ml`
 #' @param lod_col_name string indicating the name of the column containing
 #' the concentration measurements in the wastewater data, default is
