@@ -181,7 +181,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                     ),
                                     phi_rt = 0.6,
                                     sigma_generalized = 0.01^4,
-                                    scaling_factor = 1.1,
+                                    scaling_factor = 1,
                                     aux_site_bool = TRUE,
                                     init_stat = TRUE) {
   # Some quick checks to make sure the inputs work as expected-----------------

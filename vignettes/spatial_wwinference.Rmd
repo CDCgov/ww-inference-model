@@ -47,21 +47,18 @@ correlation function based of the following fake locations.
 
 ## Fake locations
 ```{r}
+set.seed(2024)
+n_sites <- 6
 fake_locs <- data.frame(
-  x = c(85, 37, 36, 7),
-  y = c(12, 75, 75, 96),
-  ID = c(
-    "Site 1",
-    "Site 2",
-    "Site 3",
-    "Site 4"
-  )
+  x = runif(n_sites, 0, 100),
+  y = runif(n_sites, 0, 100),
+  ID = paste0("Site ", 1:n_sites)
 ) %>%
   mutate(
-    for_text_x = ifelse(ID == "Site 3", -10, 5),
-    for_text_y = ifelse(ID == "Site 3", 5, 5)
+    for_text_x = 0,
+    for_text_y = 0
   )
-ggplot(
+fake_locs_plot <- ggplot(
   data = fake_locs
 ) +
   geom_point(
@@ -71,7 +68,7 @@ ggplot(
   ) +
   geom_text(
     aes(label = ID, x = x + for_text_x, y = y + for_text_y),
-    vjust = -0.5
+    vjust = -0.6
   ) +
   geom_segment(
     aes(x = x, y = y, xend = x + for_text_x, yend = y + for_text_y),
@@ -83,24 +80,26 @@ ggplot(
     y = "Y Coordinate"
   ) +
   theme_bw()
+
+fake_locs_plot
 ```
 
 
 ## Simulating data
-```{r}
+```{r warning=FALSE, message=FALSE}
+# Presets ----------------------------------------------------------------------
 set.seed(2024)
-simulated_data_iid <- wwinference::generate_simulated_data(
-  use_spatial_corr = TRUE,
-  corr_function = wwinference::independence_corr_func_r,
-  corr_fun_params = list(num_sites = 4),
-  aux_site_bool = TRUE
-)
+site <- c(1, 2, 3, 4, 5, 6)
+lab <- c(1, 2, 3, 4, 5, 6)
+ww_pop_sites <- c(5e5, 7.5e5, 3.8e5, 4.5e5, 5.5e5, 3.7e5)
+pop_size <- 5e6
+global_rt_sd <- 0
 exp_corr_param <- list(
   dist_matrix = as.matrix(
     dist(
       data.frame(
-        x = c(85, 37, 36, 7),
-        y = c(12, 75, 75, 96)
+        x = fake_locs$x,
+        y = fake_locs$y
       ),
       diag = TRUE,
       upper = TRUE
@@ -109,19 +108,53 @@ exp_corr_param <- list(
   phi = 0.2,
   l = 1
 )
+sigma_generalized <- 0.01^n_sites
+# ------------------------------------------------------------------------------
+# IID Simulated Data -----------------------------------------------------------
+simulated_data_iid <- wwinference::generate_simulated_data(
+  n_sites = n_sites,
+  site = site,
+  lab = lab,
+  ww_pop_sites = ww_pop_sites,
+  pop_size = pop_size,
+  global_rt_sd = global_rt_sd,
+  use_spatial_corr = TRUE,
+  corr_function = wwinference::independence_corr_func_r,
+  corr_fun_params = list(num_sites = n_sites),
+  sigma_generalized = sigma_generalized,
+  aux_site_bool = TRUE
+)
+# ------------------------------------------------------------------------------
+# Exponential Simulated Data ---------------------------------------------------
 simulated_data_exp <- wwinference::generate_simulated_data(
+  n_sites = n_sites,
+  site = site,
+  lab = lab,
+  ww_pop_sites = ww_pop_sites,
+  pop_size = pop_size,
+  global_rt_sd = global_rt_sd,
   use_spatial_corr = TRUE,
   corr_function = exponential_decay_corr_func_r,
   corr_fun_params = exp_corr_param,
+  sigma_generalized = sigma_generalized,
   aux_site_bool = TRUE
 )
-
+# ------------------------------------------------------------------------------
+# Rand. Corr. Matrix Simulated Data --------------------------------------------
 simulated_data_rng_corr_mat <- wwinference::generate_simulated_data(
+  n_sites = n_sites,
+  site = site,
+  lab = lab,
+  ww_pop_sites = ww_pop_sites,
+  pop_size = pop_size,
+  global_rt_sd = global_rt_sd,
   use_spatial_corr = TRUE,
   corr_function = wwinference::rand_corr_matrix_func,
-  corr_fun_params = list(n_sites = 4, seed = 2024),
+  corr_fun_params = list(n_sites = n_sites, seed = 2024),
+  sigma_generalized = sigma_generalized,
   aux_site_bool = TRUE
 )
+# ------------------------------------------------------------------------------
 ```
 
 ## Preparing data
@@ -233,7 +266,7 @@ hosp_data_plot <- ggplot(hosp_data_full) +
   geom_point(aes(x = date, y = count)) +
   xlab("") +
   ylab("Daily hospital admissions") +
-  facet_grid(~model_type, scales = "free_y") +
+  facet_wrap(~model_type, scales = "free_y") +
   theme_bw()
 # ------------------------------------------------------------------------------
 
@@ -259,26 +292,22 @@ ww_data_full <- rbind(
 ww_data_plot <- ggplot(ww_data_full) +
   geom_point(
     aes(
-      x = date, y = log(genome_copies_per_ml),
-      color = as.factor(site)
+      x = date, y = log(genome_copies_per_ml)
     ),
     show.legend = FALSE
   ) +
   geom_hline(aes(yintercept = log(lod)), linetype = "dashed") +
   facet_grid(site ~ model_type,
-    scales = "free",
+    scales = "fixed",
     labeller = labeller(site = function(x) paste("Site", x))
   ) +
   xlab("") +
   ylab("Genome copies/mL on Log Scale") +
-  scale_color_manual(
-    breaks = c("1", "2", "3", "4"),
-    values = c("darkred", "gold", "darkgreen", "darkblue")
-  ) +
   theme_bw()
 # ------------------------------------------------------------------------------
 
-hosp_data_plot / ww_data_plot
+hosp_data_plot / ww_data_plot +
+  plot_layout(heights = c(1, 2))
 ```
 
 ### Visualizing actual Rt curves
@@ -319,14 +348,14 @@ rt_global_data_full <- rbind(
   )
 global_rt_data_plot <- ggplot(rt_global_data_full) +
   geom_hline(
-    yintercept = 1,
+    yintercept = 0,
     color = "blue",
     linetype = "dashed",
     alpha = .7
   ) +
   geom_line(aes(
     x = date,
-    y = global_rt,
+    y = log(global_rt),
   )) +
   xlab("") +
   ylab("Global R(t)") +
@@ -341,10 +370,7 @@ site_rt_data_full <- rbind(
     as.data.frame() %>%
     mutate(date = simulated_data_iid$hosp_data_eval$date) %>%
     `colnames<-`(c(
-      "Site 1",
-      "Site 2",
-      "Site 3",
-      "Site 4",
+      paste0("Site ", 1:n_sites),
       "Aux",
       "date"
     )) %>%
@@ -362,10 +388,7 @@ site_rt_data_full <- rbind(
     as.data.frame() %>%
     mutate(date = simulated_data_exp$hosp_data_eval$date) %>%
     `colnames<-`(c(
-      "Site 1",
-      "Site 2",
-      "Site 3",
-      "Site 4",
+      paste0("Site ", 1:n_sites),
       "Aux",
       "date"
     )) %>%
@@ -383,10 +406,7 @@ site_rt_data_full <- rbind(
     as.data.frame() %>%
     mutate(date = simulated_data_rng_corr_mat$hosp_data_eval$date) %>%
     `colnames<-`(c(
-      "Site 1",
-      "Site 2",
-      "Site 3",
-      "Site 4",
+      paste0("Site ", 1:n_sites),
       "Aux",
       "date"
     )) %>%
@@ -412,28 +432,24 @@ site_rt_data_full <- rbind(
   )
 site_rt_data_plot <- ggplot(site_rt_data_full) +
   geom_hline(
-    yintercept = 1,
+    yintercept = 0,
     color = "blue",
     linetype = "dashed",
     alpha = .7
   ) +
   geom_line(aes(
     x = date,
-    y = value,
-    colour = subpop
+    y = log(value)
   )) +
   facet_grid(subpop ~ model_type) +
   xlab("") +
   ylab("Subpopulation R(t)") +
-  scale_color_manual(
-    breaks = c("Site 1", "Site 2", "Site 3", "Site 4", "Aux"),
-    values = c("darkred", "gold", "darkgreen", "darkblue", "darkorange")
-  ) +
   theme_bw()
 
 # ------------------------------------------------------------------------------
 
-global_rt_data_plot / site_rt_data_plot
+global_rt_data_plot / site_rt_data_plot +
+  plot_layout(heights = c(1, 2))
 ```
 
 ### Visual of correlation matrix
@@ -443,16 +459,10 @@ corr_matrix_df <- rbind(
   simulated_data_iid$corr_matrix %>%
     as.data.frame() %>%
     `colnames<-`(c(
-      "Site 1",
-      "Site 2",
-      "Site 3",
-      "Site 4"
+      paste0("Site ", 1:n_sites)
     )) %>%
     `rownames<-`(c(
-      "Site 1",
-      "Site 2",
-      "Site 3",
-      "Site 4"
+      paste0("Site ", 1:n_sites)
     )) %>%
     rownames_to_column(var = "Var1") %>%
     pivot_longer(
@@ -466,16 +476,10 @@ corr_matrix_df <- rbind(
   simulated_data_exp$corr_matrix %>%
     as.data.frame() %>%
     `colnames<-`(c(
-      "Site 1",
-      "Site 2",
-      "Site 3",
-      "Site 4"
+      paste0("Site ", 1:n_sites)
     )) %>%
     `rownames<-`(c(
-      "Site 1",
-      "Site 2",
-      "Site 3",
-      "Site 4"
+      paste0("Site ", 1:n_sites)
     )) %>%
     rownames_to_column(var = "Var1") %>%
     pivot_longer(
@@ -489,16 +493,10 @@ corr_matrix_df <- rbind(
   simulated_data_rng_corr_mat$corr_matrix %>%
     as.data.frame() %>%
     `colnames<-`(c(
-      "Site 1",
-      "Site 2",
-      "Site 3",
-      "Site 4"
+      paste0("Site ", 1:n_sites)
     )) %>%
     `rownames<-`(c(
-      "Site 1",
-      "Site 2",
-      "Site 3",
-      "Site 4"
+      paste0("Site ", 1:n_sites)
     )) %>%
     rownames_to_column(var = "Var1") %>%
     pivot_longer(
@@ -1128,18 +1126,6 @@ all_corr_matrix_draws_df <- rbind(
         "Rand. Corr. Matrix"
       )
     )
-  ) %>%
-  mutate(
-    Column = factor(Column),
-    Row = factor(
-      Row,
-      levels = c(
-        "Site 4",
-        "Site 3",
-        "Site 2",
-        "Site 1"
-      )
-    )
   )
 ```
 
@@ -1400,13 +1386,11 @@ site_rt_ribbon_data <- all_pred_draws_df %>%
     .groups = "drop"
   ) %>%
   mutate(
-    subpop = case_when(
-      subpop == "Site: 1" ~ "Site 1",
-      subpop == "Site: 2" ~ "Site 2",
-      subpop == "Site: 3" ~ "Site 3",
-      subpop == "Site: 4" ~ "Site 4",
-      subpop == "remainder of pop" ~ "Aux",
-      .default = subpop
+    subpop = sub(
+      pattern = "Site: (\\d+)",
+      replacement = "Site \\1",
+      x = subpop,
+      ignore.case = "remainder of pop"
     )
   )
 site_rt_result_plot <- ggplot() +
@@ -1493,18 +1477,6 @@ iid_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
       mutate(
         Row = Var1,
         Column = Var2
-      ) %>%
-      mutate(
-        Column = factor(Column),
-        Row = factor(
-          Row,
-          levels = c(
-            "Site 4",
-            "Site 3",
-            "Site 2",
-            "Site 1"
-          )
-        )
       ),
     aes(xintercept = value),
     color = "red",
@@ -1547,18 +1519,6 @@ exp_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
       mutate(
         Row = Var1,
         Column = Var2
-      ) %>%
-      mutate(
-        Column = factor(Column),
-        Row = factor(
-          Row,
-          levels = c(
-            "Site 4",
-            "Site 3",
-            "Site 2",
-            "Site 1"
-          )
-        )
       ),
     aes(xintercept = value),
     color = "red",
@@ -1601,25 +1561,13 @@ rand_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
       mutate(
         Row = Var1,
         Column = Var2
-      ) %>%
-      mutate(
-        Column = factor(Column),
-        Row = factor(
-          Row,
-          levels = c(
-            "Site 4",
-            "Site 3",
-            "Site 2",
-            "Site 1"
-          )
-        )
       ),
     aes(xintercept = value),
     color = "red",
     linetype = "dashed",
     size = 1
   ) +
-  facet_grid(Row ~ Column) +
+  facet_grid(Row ~ Column, switch = "y") +
   scale_fill_manual(
     breaks = c("Exponential", "Unstructured", "IID"),
     values = c("darkviolet", "deeppink3", "darksalmon")
