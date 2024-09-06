@@ -311,9 +311,9 @@ acceptance probability of 0.95 and a maximum tree depth of 12. The default is
 not to set a the seed for the random number generator for the MCMC model runs
 (which would produce stochastic results each time the model is run), but for
 reproducibility we will set the seed of the Stan PRNG to `123` in this vignette.
-The user may wish to to adjust these settings as they are iterating to reduce
-model run-time or to achieve
-better convergence on a real-world use case.
+
+When applying the model to real data, experimenting with these MCMC settings may make it possible
+to achieve improved model convergence and/or faster model fitting times. See the [Stan User's Guide](https://mc-stan.org/docs/cmdstan-guide/diagnose_utility.html#building-the-diagnose-command) for an introduction to No-U-Turn sampler convergence diagnostics and configuration parameters.   
 
 We also pass our preprocessed datasets (`ww_data_to_fit` and
 `hosp_data_preprocessed`), specify our model using `get_model_spec()`,
