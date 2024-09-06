@@ -205,7 +205,7 @@ wwinference <- function(ww_data,
       init_lists <- lapply(
         1:fit_opts$n_chains,
         \(x) {
-          get_inits_for_one_chain(stan_data_list, params)
+          get_inits_for_one_chain(stan_data_list)
         }
       )
     })
