@@ -62,7 +62,6 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
   assert_req_ww_cols_present(preprocessed_ww_data,
     conc_col_name = "log_genome_copies_per_ml",
     lod_col_name = "log_lod"
-
   )
 
   # Filter out wastewater outliers, and remove extra wastewater
