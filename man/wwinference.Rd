@@ -52,8 +52,9 @@ user based on the date they are producing a forecast}
 
 \item{fit_opts}{The fit options, which in this case default to the
 MCMC parameters as defined using \code{get_mcmc_options()}. This includes
-the following arguments, which are passed to \code{\link[=$sample]{$sample()}}
-\link[cmdstanr:model-method-sample]{cmdstanr::model-method-sample}:the number of chains, the number of warmup
+the following arguments, which are passed to
+\code{\link[cmdstanr:model-method-sample]{$sample()}}:
+the number of chains, the number of warmup
 and sampling iterations, the maximum tree depth, the average acceptance
 probability, and the stan PRNG seed}
 
