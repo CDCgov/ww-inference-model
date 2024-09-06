@@ -38,68 +38,52 @@ inf_to_hosp <- wwinference::default_covid_inf_to_hosp
 
 # Assign infection feedback equal to the generation interval
 infection_feedback_pmf <- generation_interval
-model <- wwinference::compile_model()
 
 model_spec <- wwinference::get_model_spec(
   generation_interval = generation_interval,
   inf_to_count_delay = inf_to_hosp,
-  infection_feedback_pmf = infection_feedback_pmf
+  infection_feedback_pmf = infection_feedback_pmf,
+  params = params
 )
 
-fit <- wwinference::wwinference(
-  ww_data_to_fit,
-  hosp_data_preprocessed,
+mcmc_options <- wwinference::get_mcmc_options(
+  seed = 55,
+  iter_warmup = 25,
+  iter_sampling = 25,
+  n_chains = 1
+)
+
+generate_initial_values <- TRUE
+
+model_test_data <- list(
+  ww_data = ww_data_to_fit,
+  count_data = hosp_data_preprocessed,
+  forecast_date = forecast_date,
+  calibration_time = calibration_time,
+  forecast_horizon = forecast_horizon,
   model_spec = model_spec,
-  forecast_date = forecast_date,
-  calibration_time = calibration_time,
-  forecast_horizon = forecast_horizon,
-  mcmc_options = wwinference::get_mcmc_options(
-    n_chains = 1,
-    iter_sampling = 25,
-    iter_warmup = 25
-  ),
-  generate_initial_values = FALSE,
-  compiled_model = model
+  fit_opts = mcmc_options,
+  generate_initial_values = generate_initial_values
 )
 
-input_count_data_toy <- wwinference::get_input_count_data_for_stan(
-  hosp_data_preprocessed,
-  calibration_time
-)
-last_count_data_date <- max(input_count_data_toy$date, na.rm = TRUE)
-first_count_data_date <- min(input_count_data_toy$date, na.rm = TRUE)
-input_ww_data_toy <- wwinference::get_input_ww_data_for_stan(
-  ww_data_to_fit,
-  first_count_data_date,
-  last_count_data_date,
-  calibration_time
-)
-
-# Create the toy stan data object for testing
-toy_stan_data <- wwinference::get_stan_data(
-  input_count_data = input_count_data_toy,
-  input_ww_data = input_ww_data_toy,
-  forecast_date = forecast_date,
-  calibration_time = calibration_time,
-  forecast_horizon = forecast_horizon,
-  generation_interval = model_spec$generation_interval,
-  inf_to_count_delay = model_spec$inf_to_count_delay,
-  infection_feedback_pmf = model_spec$infection_feedback_pmf,
-  params = model_spec$params,
-  compute_likelihood = 1,
-  include_ww = 1
-)
+withr::with_seed(5, {
+  fit <- do.call(
+    wwinference::wwinference,
+    model_test_data
+  )
+})
 
 
 # Generate the last draw of a very short run for testing
-toy_stan_fit_last_draw <- posterior::subset_draws(fit$raw_fit_obj$draws(),
+test_fit_last_draw <- posterior::subset_draws(
+  fit$fit$result$draws(),
   draw = 25
 )
 # Save the data as internal data. Every time the model changes, will need
 # to regenerate this testing data.
 usethis::use_data(
-  toy_stan_data,
-  toy_stan_fit_last_draw,
+  model_test_data,
+  test_fit_last_draw,
   internal = TRUE,
   overwrite = TRUE
 )

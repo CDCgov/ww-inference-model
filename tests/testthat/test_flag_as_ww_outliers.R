@@ -4,7 +4,10 @@ dummy_data <- tibble::tibble(
   lab = rep("Lab1", 10),
   lab_site_index = rep(1, 10),
   date = as.Date("2021-01-01") + 0:9,
-  genome_copies_per_ml = c(100, 150, 100, 200, 270, 200, NA, 400, 20, 600),
+  log_genome_copies_per_ml = log(c(
+    100, 150, 100, 200, 270, 200,
+    NA, 400, 20, 600
+  )),
   below_lod = c(0, 0, 0, 0, 0, 0, 0, 0, 1, 0)
 )
 
@@ -23,14 +26,16 @@ test_that("function flags outliers correctly", {
     lab = rep("Lab1", 12),
     lab_site_index = rep(1, 12),
     date = as.Date("2021-01-01") + 0:11,
-    genome_copies_per_ml = c(
+    log_genome_copies_per_ml = log(c(
       100, 120, 100, 110, 115, 130, 110, 200, NA,
       100, 20, 500000
-    ),
+    )),
     below_lod = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0)
   )
 
-  result <- flag_ww_outliers(dummy_data)
+  result <- flag_ww_outliers(dummy_data,
+    log_conc_threshold = 1
+  )
 
   # Check if the known outlier is flagged correctly
   testthat::expect_true(sum(result$flag_as_ww_outlier) > 0)
@@ -45,16 +50,16 @@ test_that("function does not flag non-outliers", {
     lab = rep("Lab1", 12),
     lab_site_index = rep(1, 12),
     date = as.Date("2021-01-01") + 0:11,
-    genome_copies_per_ml = c(
+    log_genome_copies_per_ml = log(c(
       100, 120, 100, 110, 115, 130, 110, 200, NA,
       100, 20, 150
-    ),
+    )),
     below_lod = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0)
   )
 
   result <- flag_ww_outliers(dummy_data)
 
-  # Check if their is no outlier to be flagged
+  # Check that there is no outlier to be flagged
   testthat::expect_true(sum(result$flag_as_ww_outlier) == 0)
   # Check that this hasn't yet been labeled for exclusion
   testthat::expect_true(sum(result$exclude) == 0)
@@ -67,7 +72,7 @@ test_that("function handles NA values appropriately", {
     lab = rep("Lab1", 12),
     lab_site_index = rep(1, 12),
     date = as.Date("2021-01-01") + 0:11,
-    genome_copies_per_ml = c(
+    log_genome_copies_per_ml = c(
       NA, 120, 100, 110, NA, 130, 110, 200, NA,
       100, 20, 150
     ),
@@ -88,7 +93,7 @@ test_that("rho_threshold and log_conc threshold parameters works as expected", {
     lab = rep("Lab1", 12),
     lab_site_index = rep(1, 12),
     date = as.Date("2021-01-01") + 0:11,
-    genome_copies_per_ml = c(
+    log_genome_copies_per_ml = c(
       100, 120, 100, 110, 115, 1000, 110, 100, NA,
       100, 20, 100
     ),

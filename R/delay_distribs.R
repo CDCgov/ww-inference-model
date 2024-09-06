@@ -1,4 +1,4 @@
-#' Simulate daily double censored PMF. From {epinowcast}:
+#' Simulate daily double censored PMF. From epinowcast:
 #' https://package.epinowcast.org/dev/reference/simulate_double_censored_pmf.html #nolint
 #'
 #' This function simulates the probability mass function of a  daily
