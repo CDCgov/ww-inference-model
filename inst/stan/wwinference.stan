@@ -169,11 +169,9 @@ transformed parameters {
   vector[ot + uot + ht] state_inf_per_capita = rep_vector(0, uot + ot + ht); // state level incident infections per capita
   matrix[n_subpops, ot + ht] model_log_v_ot; // expected observed viral genomes/mL at all observed and forecasted times
   real<lower=0> g = pow(log10_g, 10); // Estimated genomes shed per infected individual
-  vector<lower=0, upper=1>[n_subpops] i_first_obs_over_n_site = inv_logit(logit(i_first_obs_over_n) +
-      sigma_i_first_obs * eta_i_first_obs);
+  vector<lower=0, upper=1>[n_subpops] i_first_obs_over_n_site;
   // per capita infection incidence at the first observed time
-  vector[n_subpops] initial_exp_growth_rate_site = mean_initial_exp_growth_rate +
-     sigma_initial_exp_growth_rate * eta_initial_exp_growth_rate;
+  vector[n_subpops] initial_exp_growth_rate_site;
      // site level unobserved period growth rate
 
 
@@ -189,7 +187,12 @@ transformed parameters {
   // Shedding kinetics trajectory
   s = get_vl_trajectory(t_peak, viral_peak, dur_shed, gt_max);
 
-  // Site level disease dynamic estimates!
+  // Site level disease dynamics
+  i_first_obs_over_n_site = inv_logit(logit(i_first_obs_over_n) +
+      sigma_i_first_obs * eta_i_first_obs);
+  initial_exp_growth_rate_site = mean_initial_exp_growth_rate +
+     sigma_initial_exp_growth_rate * eta_initial_exp_growth_rate;
+
   for (i in 1:n_subpops) {
     vector[n_weeks] log_r_site_t_in_weeks;
     real log_i0_site = log(i_first_obs_over_n_site[i]) - uot * initial_exp_growth_rate_site[i];
