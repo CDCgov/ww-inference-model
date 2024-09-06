@@ -33,7 +33,7 @@
 #' user based on the date they are producing a forecast
 #' @param fit_opts The fit options, which in this case default to the
 #' MCMC parameters as defined using `get_mcmc_options()`. This includes
-#' the arguments passed to [`$sample()`][cmdstanr::model-method-sample]:
+#' the following arguments, which are passed to [`$sample()`][cmdstanr::model-method-sample]:
 #' the number of chains, the number of warmup and sampling iterations, the
 #' maximum tree depth, the average acceptance probability, and the stan PRNG
 #' seed
