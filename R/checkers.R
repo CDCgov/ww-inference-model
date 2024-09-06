@@ -292,22 +292,18 @@ throw_type_error <- function(object,
 #' traceback.
 #'
 #' @return NULL, invisibly
-check_req_ww_cols_present <- function(ww_data,
-                                      conc_col_name,
-                                      lod_col_name,
-                                      add_req_col_names = c(
-                                        "date", "site",
-                                        "lab", "site_pop"
-                                      ),
-                                      call = rlang::caller_env()) {
+assert_req_ww_cols_present <- function(ww_data,
+                                       conc_col_name,
+                                       lod_col_name,
+                                       add_req_col_names = c(
+                                         "date", "site",
+                                         "lab", "site_pop"
+                                       ),
+                                       call = rlang::caller_env()) {
   column_names <- colnames(ww_data)
   expected_col_names <- c(
-    {
-      conc_col_name
-    },
-    {
-      lod_col_name
-    },
+    {{ conc_col_name }},
+    {{ lod_col_name }},
     add_req_col_names
   )
 
@@ -317,10 +313,11 @@ check_req_ww_cols_present <- function(ww_data,
   )
   if (!isTRUE(name_check_result)) {
     cli::cli_abort(
-      message = c(
-        "Required columns are missing from the wastewater data. ",
-        autoescape_brackets(name_check_result)
-      ),
+      message =
+        c(
+          "Required columns are missing from the wastewater data. ",
+          autoescape_brackets(name_check_result)
+        ),
       class = "wwinference_input_data_error",
       call = call
     )

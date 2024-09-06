@@ -79,14 +79,14 @@ test_that(
       date = lubridate::ymd("2024-01-01"),
       site = 1,
       lab = 2,
-      genome_copies_per_ml = 4,
+      log_genome_copies_per_ml = 4,
       lod = 6,
       site_pop = 100,
       test_col = 4
     )
-    conc_col_name <- "genome_copies_per_ml"
+    conc_col_name <- "log_genome_copies_per_ml"
     lod_col_name <- "lod"
-    expect_no_error(check_req_ww_cols_present(
+    expect_no_error(assert_req_ww_cols_present(
       x,
       conc_col_name,
       lod_col_name
@@ -97,13 +97,13 @@ test_that(
       date = lubridate::ymd("2024-01-01"),
       site = 1,
       lab = 2,
-      genome_copies_per_ml = 4,
+      log_genome_copies_per_ml = 4,
       lod = 6,
       site_pop = 100
     )
-    conc_col_name <- "genome_copies_per_ml"
+    conc_col_name <- "log_genome_copies_per_ml"
     lod_col_name <- "LOD"
-    expect_error(assert_req_ww_columns_present(
+    expect_error(assert_req_ww_cols_present(
       x,
       conc_col_name,
       lod_col_name
@@ -114,13 +114,51 @@ test_that(
       date = lubridate::ymd("2024-01-01"),
       site = 1,
       lab = 2,
-      genome_copies_per_ml = 4,
+      log_genome_copies_per_ml = 4,
       lod = 6,
       site_pops = 100
     )
-    conc_col_name <- "genome_copies_per_ml"
+    conc_col_name <- "log_genome_copies_per_ml"
     lod_col_name <- "lod"
-    expect_error(assert_req_ww_columns_present(
+    expect_error(assert_req_ww_cols_present(
+      x,
+      conc_col_name,
+      lod_col_name
+    ))
+
+    # Site is missing, expect error
+    x <- tibble::tibble(
+      date = lubridate::ymd("2024-01-01"),
+      lab = 2,
+      log_genome_copies_per_ml = 4,
+      lod = 6,
+      site_pop = 100,
+      loc = "example"
+    )
+    conc_col_name <- "log_genome_copies_per_ml"
+    lod_col_name <- "lod"
+    expect_error(
+      assert_req_ww_cols_present(
+        x,
+        conc_col_name,
+        lod_col_name
+      )
+    )
+
+
+    # Expect no error
+    x <- tibble::tibble(
+      date = lubridate::ymd("2024-01-01"),
+      site = 1,
+      lab = 2,
+      log_genome_copies_per_ml = 4,
+      lod = 6,
+      site_pop = 100,
+      loc = "example"
+    )
+    conc_col_name <- "log_genome_copies_per_ml"
+    lod_col_name <- "lod"
+    expect_no_error(assert_req_ww_cols_present(
       x,
       conc_col_name,
       lod_col_name
