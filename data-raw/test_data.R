@@ -14,8 +14,8 @@ params <- wwinference::get_params(
 # Data pre-processing --------------------------------------------------------
 ww_data_preprocessed <- wwinference::preprocess_ww_data(
   ww_data,
-  conc_col_name = "genome_copies_per_ml",
-  lod_col_name = "lod"
+  conc_col_name = "log_genome_copies_per_ml",
+  lod_col_name = "log_lod"
 )
 
 hosp_data_preprocessed <- wwinference::preprocess_count_data(
