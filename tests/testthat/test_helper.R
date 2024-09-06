@@ -1,10 +1,10 @@
 test_that("Make sure we can find and load files we need for other tests.", {
   testthat::expect_true(
-    exists("toy_stan_data")
+    exists("model_test_data")
   )
 
   testthat::expect_true(
-    exists("toy_stan_fit_last_draw")
+    exists("test_fit_last_draw")
   )
 
 

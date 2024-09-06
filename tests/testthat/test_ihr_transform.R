@@ -1,9 +1,12 @@
 test_that("Test logit-scale random walk on IHR in stan works", {
   model <- compiled_site_inf_model
 
-  days_weeks <- dim(toy_stan_data$p_hosp_m)
-  ndays <- days_weeks[1]
-  nweeks <- days_weeks[2]
+  weeks_to_days <- get_ind_m(
+    168,
+    24
+  )
+  ndays <- dim(weeks_to_days)[1]
+  nweeks <- dim(weeks_to_days)[2]
 
   # Make sure we cover a wide range
   sigma <- 0.5
@@ -20,7 +23,7 @@ test_that("Test logit-scale random walk on IHR in stan works", {
 
   # Get vector from stan and compare
   p_hosp_stan <- model$functions$assemble_p_hosp(
-    toy_stan_data$p_hosp_m, # matrix to expand from weekly to daily
+    weeks_to_days, # matrix to expand from weekly to daily
     mu[1], # intercept to regress back to
     sigma, # SD
     ac, # autocorrelation factor
