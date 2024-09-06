@@ -310,7 +310,7 @@ the default parameter settings which includes running 4 parallel chains with
 acceptance probability of 0.95 and a maximum tree depth of 12. The default is
 not to set a the seed for the random number generator for the MCMC model runs
 (which would produce stochastic results each time the model is run), but for
-reproducibility we will set the seed of the Stan PRNG to `123`in this vignette.
+reproducibility we will set the seed of the Stan PRNG to `123` in this vignette.
 The user may wish to to adjust these settings as they are iterating to reduce
 model run-time or to achieve
 better convergence on a real-world use case.
