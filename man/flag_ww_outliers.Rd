@@ -6,7 +6,7 @@
 \usage{
 flag_ww_outliers(
   ww_data,
-  conc_col_name = "genome_copies_per_ml",
+  conc_col_name = "log_genome_copies_per_ml",
   rho_threshold = 2,
   log_conc_threshold = 3,
   threshold_n_dps = 1

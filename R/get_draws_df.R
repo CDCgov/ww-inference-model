@@ -80,11 +80,11 @@ get_draws_df.data.frame <- function(x,
     dplyr::mutate(t = row_number())
   # Lab-site index to corresponding lab, site, and site population size
   lab_site_spine <- x |>
-    dplyr::distinct(site, lab, lab_site_index, site_pop)
+    dplyr::distinct(.data$site, .data$lab, .data$lab_site_index, .data$site_pop)
   # Site index to corresponding site and subpopulation size
   subpop_spine <- x |>
-    dplyr::distinct(site, site_index, site_pop) |>
-    dplyr::mutate(site = as.factor(site)) |>
+    dplyr::distinct(.data$site, .data$site_index, .data$site_pop) |>
+    dplyr::mutate(site = as.factor(.data$site)) |>
     dplyr::bind_rows(tibble::tibble(
       site = "remainder of pop",
       site_index = max(x$site_index) + 1,
@@ -95,21 +95,21 @@ get_draws_df.data.frame <- function(x,
 
 
   count_draws <- draws |>
-    tidybayes::spread_draws(pred_hosp[t]) |>
-    dplyr::rename(pred_value = pred_hosp) |>
+    tidybayes::spread_draws(!!str2lang("pred_hosp[t]")) |>
+    dplyr::rename("pred_value" = "pred_hosp") |>
     dplyr::mutate(
-      draw = `.draw`,
-      name = "pred_counts"
+      draw = .data$`.draw`,
+      name = "predicted counts"
     ) |>
-    dplyr::select(name, t, pred_value, draw) |>
+    dplyr::select("name", "t", "pred_value", "draw") |>
     dplyr::left_join(date_time_spine, by = "t") |>
     dplyr::left_join(
       count_data |>
-        dplyr::select(-t),
+        dplyr::select(-"t"),
       by = "date"
     ) |>
     dplyr::ungroup() |>
-    dplyr::rename(observed_value = count) |>
+    dplyr::rename("observed_value" = "count") |>
     dplyr::mutate(
       observation_type = "count",
       type_of_quantity = "global",
@@ -118,57 +118,56 @@ get_draws_df.data.frame <- function(x,
       lab = NA,
       site_pop = NA,
       below_lod = NA,
-      lod = NA,
+      log_lod = NA,
       flag_as_ww_outlier = NA,
       exclude = NA
     ) |>
-    dplyr::select(-t)
+    dplyr::select(-"t")
 
   ww_draws <- draws |>
-    tidybayes::spread_draws(pred_ww[lab_site_index, t]) |>
-    dplyr::rename(pred_value = pred_ww) |>
+    tidybayes::spread_draws(!!str2lang("pred_ww[lab_site_index, t]")) |>
+    dplyr::rename("pred_value" = "pred_ww") |>
     dplyr::mutate(
-      draw = `.draw`,
-      name = "pred_ww",
-      pred_value = exp(pred_value)
+      draw = .data$`.draw`,
+      name = "predicted wastewater",
     ) |>
-    dplyr::select(name, lab_site_index, t, pred_value, draw) |>
+    dplyr::select("name", "lab_site_index", "t", "pred_value", "draw") |>
     dplyr::left_join(date_time_spine, by = "t") |>
     dplyr::left_join(lab_site_spine, by = "lab_site_index") |>
     dplyr::left_join(
       x |>
-        dplyr::select(-t),
+        dplyr::select(-"t"),
       by = c(
         "lab_site_index", "date",
         "lab", "site", "site_pop"
       )
     ) |>
     dplyr::ungroup() |>
-    dplyr::mutate(observed_value = genome_copies_per_ml) |>
+    dplyr::mutate(observed_value = .data$log_genome_copies_per_ml) |>
     dplyr::mutate(
-      observation_type = "genome copies per mL",
+      observation_type = "log genome copies per mL",
       type_of_quantity = "local",
       total_pop = NA,
       subpop = glue::glue("Site: {site}")
     ) |>
-    dplyr::select(colnames(count_draws), -t)
+    dplyr::select(colnames(count_draws), -"t")
 
   global_rt_draws <- draws |>
-    tidybayes::spread_draws(rt[t]) |>
-    dplyr::rename(pred_value = rt) |>
+    tidybayes::spread_draws(!!str2lang("rt[t]")) |>
+    dplyr::rename("pred_value" = "rt") |>
     dplyr::mutate(
-      draw = `.draw`,
+      draw = .data$`.draw`,
       name = "global R(t)"
     ) |>
-    dplyr::select(name, t, pred_value, draw) |>
+    dplyr::select("name", "t", "pred_value", "draw") |>
     dplyr::left_join(date_time_spine, by = "t") |>
     dplyr::left_join(
       count_data |>
-        dplyr::select(-t),
+        dplyr::select(-"t"),
       by = "date"
     ) |>
     dplyr::ungroup() |>
-    dplyr::rename(observed_value = count) |>
+    dplyr::rename("observed_value" = "count") |>
     dplyr::mutate(
       observed_value = NA,
       observation_type = "latent variable",
@@ -178,21 +177,21 @@ get_draws_df.data.frame <- function(x,
       lab = NA,
       site_pop = NA,
       below_lod = NA,
-      lod = NA,
+      log_lod = NA,
       flag_as_ww_outlier = NA,
       exclude = NA
     ) |>
-    dplyr::select(-t)
+    dplyr::select(-"t")
 
   site_level_rt_draws <- draws |>
-    tidybayes::spread_draws(r_site_t[site_index, t]) |>
-    dplyr::rename(pred_value = r_site_t) |>
+    tidybayes::spread_draws(!!str2lang("r_site_t[site_index, t]")) |>
+    dplyr::rename("pred_value" = "r_site_t") |>
     dplyr::mutate(
-      draw = `.draw`,
-      name = "subpop R(t)",
-      pred_value = pred_value
+      draw = .data$`.draw`,
+      name = "subpopulation R(t)",
+      pred_value = .data$pred_value
     ) |>
-    dplyr::select(name, site_index, t, pred_value, draw) |>
+    dplyr::select("name", "site_index", "t", "pred_value", "draw") |>
     dplyr::left_join(date_time_spine, by = "t") |>
     dplyr::left_join(subpop_spine, by = "site_index") |>
     dplyr::ungroup() |>
@@ -201,24 +200,25 @@ get_draws_df.data.frame <- function(x,
       lab_site_index = NA,
       lab = NA,
       below_lod = NA,
-      lod = NA,
+      log_lod = NA,
       flag_as_ww_outlier = NA,
       exclude = NA,
       observation_type = "latent variable",
       type_of_quantity = "local",
       total_pop = NA,
-      subpop = ifelse(site != "remainder of pop",
+      subpop = ifelse(.data$site != "remainder of pop",
         glue::glue("Site: {site}"), "remainder of pop"
       )
     ) |>
-    dplyr::select(colnames(count_draws), -t)
+    dplyr::select(colnames(count_draws), -"t")
 
-  draws_df <- dplyr::bind_rows(
+  all_draws_df <- dplyr::bind_rows(
     count_draws,
     ww_draws,
     global_rt_draws,
     site_level_rt_draws
   )
 
-  return(draws_df)
+
+  return(all_draws_df)
 }

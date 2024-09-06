@@ -24,7 +24,7 @@ generate_simulated_data(
   sd_reporting_freq = 1/20,
   mean_reporting_latency = 7,
   sd_reporting_latency = 3,
-  mean_log_lod = 3.8,
+  mean_log_lod = 5,
   sd_log_lod = 0.2,
   global_rt_sd = 0.03,
   sigma_eps = 0.05,
