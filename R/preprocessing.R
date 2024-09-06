@@ -4,10 +4,10 @@
 #' date, site_pop, a column for concentration, and  a column for the
 #' limit of detection
 #' @param conc_col_name string indicating the name of the column containing
-#' the log scale concentration measurements in the wastewater data, default is
-#'  `log_genome_copies_per_ml`
+#' virus genome concentration measurements in log genome copies per mL,
+#' default is `log_genome_copies_per_ml`
 #' @param lod_col_name string indicating the name of the column containing
-#' the concentration measurements in the wastewater data, default is
+#' the limits of detection for each wastewater measurement, default is
 #'  `log_lod_sewage`. Note that any values in the `conc_col_name`
 #'  equal to the limit of detection will be treated as below the limit of
 #'  detection.
@@ -261,7 +261,8 @@ flag_ww_outliers <- function(ww_data,
 #' @description This function takes in a dataframe which contains an outlier
 #' column name specified by the `outlier_col_name`.
 #'
-#' @param data A dataframe of preprocessed data to be used to fit the o
+#' @param data A dataframe containing a column indicating outliers, called
+#' `outlier_col_name`.
 #' @param outlier_col_name A character string indicating the name of the column
 #' containing the outlier indicator, must contain only 0 or 1
 #' @param remove_outliers A boolean indicating whether or not to exclude the
