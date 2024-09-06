@@ -22,7 +22,9 @@ See the [notation](#appendix-notation) section for an overview of the mathematic
 #### Renewal process for incident infections
 
 This component assumes that latent (unobserved) _expected_ incident infections per capita $I(t)$ are generated from a renewal [^Cori][^EpiNow2][^Epidemia] process described by:
+
 $$I(t) = \mathcal{R}(t) \sum_{\tau = 1}^{T_g} I(t-\tau) g(\tau)$$
+
 Where $g(\tau)$ is the discrete generation interval, which describes the distribution of times from incident infection to secondary infection (i.e. infectiousness profile) and $\mathcal{R}(t)$ is the instantaneous reproduction number, representing the expected number of secondary infections occurring at time $t$, divided by the number of currently infected individuals, each scaled by their relative infectiousness at time $t$ [^Gostic2020]. $T_g$ is the maximum generation interval, which is the maximum time from infection to secondary infection that we consider, and is set to 15 days.
 
 This process is initialized by estimating an initial exponential growth[^EpiNow2] of infections for 50 days prior to the calibration start time $t_0$:
@@ -46,7 +48,7 @@ We bound $\beta$ to be between 0 and 1 so that any changes in trend in $\mathcal
 
 The damping term we use is based on Asher et al. 2018[^Asher2018] but extended to be applicable to a renewal process. It assumes that the instantaneous reproduction number is damped by recent infections weighted by the generation interval. This is a simple way to account for the fact that the instantaneous reproduction number is likely to decrease when there are many infections in the population, due to factors such as immunity, behavioral changes, and public health interventions. The damping term is defined as:
 
-$$ \mathcal{R}(t) = \mathcal{R}^\mathrm{u}(t) \exp \left( -\gamma \sum_{\tau = 1}^{T_f}I(t-\tau)g(\tau) \right) $$
+$$ \mathcal{R}(t) = \mathcal{R}^\mathrm{u}(t) \exp \left( -\gamma \sum_{\tau = 1}^{T_g}I(t-\tau)g(\tau) \right) $$
 
 where $\gamma$ is the _infection feedback term_ controlling the strength of the damping on $\mathcal{R}(t)$, and the summation is analogous to the "force of infection." See [Prior Distributions](#prior-distributions) below for description of prior choice on $\gamma$.
 
@@ -66,8 +68,7 @@ The total number of subpopulations is then $K_\mathrm{total} = K_\mathrm{sites} 
 
 This amounts to modeling the wastewater catchments populations as approximately non-overlapping; every infected individual either does not contribute to measured wastewater or contributes principally to one wastewater catchment.
 This approximation is reasonable if we restrict our analyses to primary wastewaster treatment plants, which avoids the possibility that an individual might be sampled once in a sample taken upstream and then sampled again in a more aggregated sample taken further downstream.
-
-If the sum of the wastewater site catchment populations meets or exceeds the reported jurisdiction population ($\sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k \ge n$) we do not use a final subpopulation without sampled wastewater. In that case, the total number of subpopulations $K_\mathrm{total} = K_\mathrm{sites}$.
+If the sum of the wastewater site catchment populations meets or exceeds the reported jurisdiction population ($\sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k \ge n$) the model does not use a final subpopulation without sampled wastewater. In that case, the total number of subpopulations $K_\mathrm{total} = K_\mathrm{sites}$.
 
 When converting from predicted per capita incident hospital admissions $H(t)$ to predicted hospitalization counts, we use the jurisdiction population size $n$, even in the case where $\sum n_k > n$.
 

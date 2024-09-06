@@ -60,8 +60,8 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 
   # Test for presence of needed column names
   check_req_ww_cols_present(preprocessed_ww_data,
-    conc_col_name = "genome_copies_per_ml",
-    lod_col_name = "lod"
+    conc_col_name = "log_genome_copies_per_ml",
+    lod_col_name = "log_lod"
   )
 
   # Filter out wastewater outliers, and remove extra wastewater
@@ -256,23 +256,18 @@ get_stan_data <- function(input_count_data,
   # order of the site index, a vector of observations of the log of
   # the genome copies per ml
   ww_values <- get_ww_values(
-    input_ww_data,
-    ww_measurement_col_name = "genome_copies_per_ml",
-    ww_lod_value_col_name = "lod",
-    ww_site_pop_col_name = "site_pop"
+    input_ww_data
   )
   # Returns a list with the numbers of elements needed for the stan model
   ww_data_sizes <- get_ww_data_sizes(
-    input_ww_data,
-    lod_col_name = "below_lod"
+    input_ww_data
   )
   # Returns the vectors of indices you need to map latent variables to
   # observations
   ww_indices <- get_ww_data_indices(
     input_ww_data |> dplyr::select(-"t"),
     first_count_data_date,
-    owt = ww_data_sizes$owt,
-    lod_col_name = "below_lod"
+    owt = ww_data_sizes$owt
   )
   # Ensure that both datasets have overlap with one another, are sufficient
   # in length for the specified calibration time, and have proper time indexing
@@ -623,10 +618,10 @@ get_ww_data_indices <- function(ww_data,
 #' per observation, with outliers already removed
 #' @param ww_measurement_col_name A string representing the name of the column
 #' in the input_ww_data that indicates the wastewater measurement value in
-#' natural scale, default is `genome_copies_per_ml`
+#' log scale, default is `log_genome_copies_per_ml`
 #' @param ww_lod_value_col_name A string representing the name of the column
-#' in the ww_data that indicates the value of the LOD in natural scale,
-#' default is `lod`
+#' in the ww_data that indicates the value of the LOD in log scale,
+#' default is `log_lod`
 #' @param ww_site_pop_col_name A string representing the name of the column in
 #' the ww_data that indicates the number of people represented by that
 #' wastewater catchment, default is `site_pop`
@@ -645,8 +640,8 @@ get_ww_data_indices <- function(ww_data,
 #' log_conc: a vector of the log of the wastewater concentration observation
 #' @export
 get_ww_values <- function(ww_data,
-                          ww_measurement_col_name = "genome_copies_per_ml",
-                          ww_lod_value_col_name = "lod",
+                          ww_measurement_col_name = "log_genome_copies_per_ml",
+                          ww_lod_value_col_name = "log_lod",
                           ww_site_pop_col_name = "site_pop",
                           one_pop_per_site = TRUE,
                           padding_value = 1e-8) {
@@ -655,8 +650,7 @@ get_ww_values <- function(ww_data,
   if (isTRUE(ww_data_present)) {
     # Get the vector of log LOD values corresponding to each observation
     ww_lod <- ww_data |>
-      dplyr::pull({{ ww_lod_value_col_name }}) |>
-      log()
+      dplyr::pull({{ ww_lod_value_col_name }})
 
     # Get a vector of population sizes
     if (isTRUE(one_pop_per_site)) {
@@ -679,12 +673,7 @@ get_ww_values <- function(ww_data,
 
     # Get the vector of log wastewater concentrations
     log_conc <- ww_data |>
-      dplyr::mutate(
-        log_conc =
-          (log(.data[[ww_measurement_col_name]] + padding_value))
-      ) |>
-      dplyr::pull(.data$log_conc)
-
+      dplyr::pull({{ ww_measurement_col_name }})
     ww_values <- list(
       ww_lod = ww_lod,
       pop_ww = pop_ww,
