@@ -33,10 +33,10 @@
 #' user based on the date they are producing a forecast
 #' @param fit_opts The fit options, which in this case default to the
 #' MCMC parameters as defined using `get_mcmc_options()`. This includes
-#' the following arguments, which are passed to [`$sample()`][cmdstanr::model-method-sample]:
-#' the number of chains, the number of warmup and sampling iterations, the
-#' maximum tree depth, the average acceptance probability, and the stan PRNG
-#' seed
+#' the following arguments, which are passed to [`$sample()`]
+#' [cmdstanr::model-method-sample]:the number of chains, the number of warmup
+#' and sampling iterations, the maximum tree depth, the average acceptance
+#' probability, and the stan PRNG seed
 #' @param generate_initial_values Boolean indicating whether or not to specify
 #' the initialization of the sampler, default is `TRUE`, meaning that
 #' initialization lists will be generated and passed as the `init` argument
@@ -195,14 +195,18 @@ wwinference <- function(ww_data,
     compute_likelihood = as.integer(model_spec$compute_likelihood)
   )
 
-  init_lists <- NULL
-  set.seed(initial_values_seed)
-  if (generate_initial_values) {
-    init_lists <- c()
-    for (i in 1:fit_opts$n_chains) {
-      init_lists[[i]] <- get_inits_for_one_chain(stan_data_list, params)
-    }
+  init_lists <- c()
+  if (is.null(initial_values_seed)) {
+    initial_values_seed <- sample.int(.Machine$integer.max, 1L)
   }
+  withr::with_seed(initial_values_seed, {
+    init_lists <- lapply(
+      1:fit_opts$n_chains,
+      \(x) {
+        get_inits_for_one_chain(stan_data_list, params)
+      }
+    )
+  })
 
   # This returns the cmdstan object if the model runs, and result = NULL if
   # the model errors

@@ -52,10 +52,10 @@ user based on the date they are producing a forecast}
 
 \item{fit_opts}{The fit options, which in this case default to the
 MCMC parameters as defined using \code{get_mcmc_options()}. This includes
-the arguments passed to \code{\link[cmdstanr:model-method-sample]{$sample()}}:
-the number of chains, the number of warmup and sampling iterations, the
-maximum tree depth, the average acceptance probability, and the stan PRNG
-seed}
+the following arguments, which are passed to \code{\link[=$sample]{$sample()}}
+\link[cmdstanr:model-method-sample]{cmdstanr::model-method-sample}:the number of chains, the number of warmup
+and sampling iterations, the maximum tree depth, the average acceptance
+probability, and the stan PRNG seed}
 
 \item{generate_initial_values}{Boolean indicating whether or not to specify
 the initialization of the sampler, default is \code{TRUE}, meaning that
