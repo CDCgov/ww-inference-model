@@ -17,6 +17,7 @@ wwinference(
   model_spec = get_model_spec(),
   fit_opts = get_mcmc_options(),
   generate_initial_values = TRUE,
+  initial_values_seed = NULL,
   compiled_model = compile_model()
 )
 
@@ -27,8 +28,8 @@ wwinference(
 \arguments{
 \item{ww_data}{A dataframe containing the pre-processed, site-level
 wastewater concentration data for a model run. The dataframe must contain
-the following columns: \code{date}, \code{site}, \code{lab}, \code{genome_copies_per_ml},
-\code{lab_site_index}, \code{lod}, \code{below_lod}, \code{site_pop} \code{exclude}}
+the following columns: \code{date}, \code{site}, \code{lab}, \code{log_genome_copies_per_ml},
+\code{lab_site_index}, \code{log_lod}, \code{below_lod}, \code{site_pop} \code{exclude}}
 
 \item{count_data}{A dataframe containing the pre-procssed, "global" (e.g.
 state) daily count data, pertaining to the number of events that are being
@@ -50,13 +51,21 @@ example data provided by the package, but this should be specified by the
 user based on the date they are producing a forecast}
 
 \item{fit_opts}{The fit options, which in this case default to the
-MCMC parameters as defined using \code{get_mcmc_options()}.}
+MCMC parameters as defined using \code{get_mcmc_options()}. This includes
+the following arguments, which are passed to
+\code{\link[cmdstanr:model-method-sample]{$sample()}}:
+the number of chains, the number of warmup
+and sampling iterations, the maximum tree depth, the average acceptance
+probability, and the stan PRNG seed}
 
 \item{generate_initial_values}{Boolean indicating whether or not to specify
 the initialization of the sampler, default is \code{TRUE}, meaning that
 initialization lists will be generated and passed as the \code{init} argument
 to the model object \code{\link[cmdstanr:model-method-sample]{$sample()}} call.
 function}
+
+\item{initial_values_seed}{set of integers indicating the random seed of
+the R sampler of the initial values, default is \code{NULL}}
 
 \item{compiled_model}{The pre-compiled model as defined using
 \code{compile_model()}}
@@ -100,9 +109,9 @@ returns the object invisibly.
 Provides a user friendly interface around package functionality
 to produce estimates, nowcasts, and forecasts pertaining to user-specified
 delay distributions, set parameters, and priors that can be modified to
-handledifferent types of "global" count data and "local" wastewater
-concentrationdata using a Bayesian hierarchical framework applied to the two
-distinctdata sources. By default the model assumes a fixed generation
+handle different types of "global" count data and "local" wastewater
+concentration data using a Bayesian hierarchical framework applied to the two
+distinct data sources. By default the model assumes a fixed generation
 interval and delay from infection to the event that is counted. See the
 getting started vignette for an example model specifications fitting
 COVID-19 hospital admissions from a hypothetical state and wasteawter
@@ -118,8 +127,8 @@ ww_data <- tibble::tibble(
   ), 2),
   site = c(rep(1, 14), rep(2, 14)),
   lab = c(rep(1, 28)),
-  conc = abs(rnorm(28, mean = 500, sd = 50)),
-  lod = c(rep(20, 14), rep(15, 14)),
+  conc = log(abs(rnorm(28, mean = 500, sd = 50))),
+  lod = log(c(rep(20, 14), rep(15, 14))),
   site_pop = c(rep(2e5, 14), rep(4e5, 14))
 )
 

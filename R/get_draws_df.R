@@ -99,7 +99,7 @@ get_draws_df.data.frame <- function(x,
     dplyr::rename("pred_value" = "pred_hosp") |>
     dplyr::mutate(
       draw = .data$`.draw`,
-      name = "pred_counts"
+      name = "predicted counts"
     ) |>
     dplyr::select("name", "t", "pred_value", "draw") |>
     dplyr::left_join(date_time_spine, by = "t") |>
@@ -118,7 +118,7 @@ get_draws_df.data.frame <- function(x,
       lab = NA,
       site_pop = NA,
       below_lod = NA,
-      lod = NA,
+      log_lod = NA,
       flag_as_ww_outlier = NA,
       exclude = NA
     ) |>
@@ -129,8 +129,7 @@ get_draws_df.data.frame <- function(x,
     dplyr::rename("pred_value" = "pred_ww") |>
     dplyr::mutate(
       draw = .data$`.draw`,
-      name = "pred_ww",
-      pred_value = exp(.data$pred_value)
+      name = "predicted wastewater",
     ) |>
     dplyr::select("name", "lab_site_index", "t", "pred_value", "draw") |>
     dplyr::left_join(date_time_spine, by = "t") |>
@@ -144,9 +143,9 @@ get_draws_df.data.frame <- function(x,
       )
     ) |>
     dplyr::ungroup() |>
-    dplyr::mutate(observed_value = .data$genome_copies_per_ml) |>
+    dplyr::mutate(observed_value = .data$log_genome_copies_per_ml) |>
     dplyr::mutate(
-      observation_type = "genome copies per mL",
+      observation_type = "log genome copies per mL",
       type_of_quantity = "local",
       total_pop = NA,
       subpop = glue::glue("Site: {site}")
@@ -178,7 +177,7 @@ get_draws_df.data.frame <- function(x,
       lab = NA,
       site_pop = NA,
       below_lod = NA,
-      lod = NA,
+      log_lod = NA,
       flag_as_ww_outlier = NA,
       exclude = NA
     ) |>
@@ -189,7 +188,7 @@ get_draws_df.data.frame <- function(x,
     dplyr::rename("pred_value" = "r_site_t") |>
     dplyr::mutate(
       draw = .data$`.draw`,
-      name = "subpop R(t)",
+      name = "subpopulation R(t)",
       pred_value = .data$pred_value
     ) |>
     dplyr::select("name", "site_index", "t", "pred_value", "draw") |>
@@ -201,7 +200,7 @@ get_draws_df.data.frame <- function(x,
       lab_site_index = NA,
       lab = NA,
       below_lod = NA,
-      lod = NA,
+      log_lod = NA,
       flag_as_ww_outlier = NA,
       exclude = NA,
       observation_type = "latent variable",
@@ -213,12 +212,13 @@ get_draws_df.data.frame <- function(x,
     ) |>
     dplyr::select(colnames(count_draws), -"t")
 
-  draws_df <- dplyr::bind_rows(
+  all_draws_df <- dplyr::bind_rows(
     count_draws,
     ww_draws,
     global_rt_draws,
     site_level_rt_draws
   )
 
-  return(draws_df)
+
+  return(all_draws_df)
 }

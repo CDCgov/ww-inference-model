@@ -1,4 +1,4 @@
-test_that("PMFs sum to 1", {
+test_that("Test that bundled PMFs in the package data sum to 1", {
   model <- compiled_site_inf_model
 
   shedding_pdf <- model$functions$get_vl_trajectory(
@@ -11,13 +11,15 @@ test_that("PMFs sum to 1", {
   testthat::expect_equal(sum(shedding_pdf), 1.0)
 
 
-  generation_interval <- toy_stan_data$generation_interval
+  default_spec <- wwinference::get_model_spec()
+
+  generation_interval <- default_spec$generation_interval
   testthat::expect_equal(sum(generation_interval), 1.0)
 
 
-  inf_to_count_delay <- toy_stan_data$inf_to_hosp
+  inf_to_count_delay <- default_spec$inf_to_count_delay
   testthat::expect_equal(sum(inf_to_count_delay), 1.0)
 
-  inf_feedback <- toy_stan_data$infection_feedback_pmf
+  inf_feedback <- default_spec$infection_feedback_pmf
   testthat::expect_equal(sum(inf_feedback), 1.0)
 })

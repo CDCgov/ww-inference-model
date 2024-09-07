@@ -5,9 +5,9 @@
 #' Provides a user friendly interface around package functionality
 #' to produce estimates, nowcasts, and forecasts pertaining to user-specified
 #' delay distributions, set parameters, and priors that can be modified to
-#' handledifferent types of "global" count data and "local" wastewater
-#' concentrationdata using a Bayesian hierarchical framework applied to the two
-#' distinctdata sources. By default the model assumes a fixed generation
+#' handle different types of "global" count data and "local" wastewater
+#' concentration data using a Bayesian hierarchical framework applied to the two
+#' distinct data sources. By default the model assumes a fixed generation
 #' interval and delay from infection to the event that is counted. See the
 #' getting started vignette for an example model specifications fitting
 #' COVID-19 hospital admissions from a hypothetical state and wasteawter
@@ -15,8 +15,8 @@
 #'
 #' @param ww_data A dataframe containing the pre-processed, site-level
 #' wastewater concentration data for a model run. The dataframe must contain
-#' the following columns: `date`, `site`, `lab`, `genome_copies_per_ml`,
-#' `lab_site_index`, `lod`, `below_lod`, `site_pop` `exclude`
+#' the following columns: `date`, `site`, `lab`, `log_genome_copies_per_ml`,
+#' `lab_site_index`, `log_lod`, `below_lod`, `site_pop` `exclude`
 #' @param count_data A dataframe containing the pre-procssed, "global" (e.g.
 #' state) daily count data, pertaining to the number of events that are being
 #' counted on that day, e.g. number of daily cases or daily hospital admissions.
@@ -32,12 +32,19 @@
 #' example data provided by the package, but this should be specified by the
 #' user based on the date they are producing a forecast
 #' @param fit_opts The fit options, which in this case default to the
-#' MCMC parameters as defined using `get_mcmc_options()`.
+#' MCMC parameters as defined using `get_mcmc_options()`. This includes
+#' the following arguments, which are passed to
+#' [`$sample()`][cmdstanr::model-method-sample]:
+#' the number of chains, the number of warmup
+#' and sampling iterations, the maximum tree depth, the average acceptance
+#' probability, and the stan PRNG seed
 #' @param generate_initial_values Boolean indicating whether or not to specify
 #' the initialization of the sampler, default is `TRUE`, meaning that
 #' initialization lists will be generated and passed as the `init` argument
 #' to the model object [`$sample()`][cmdstanr::model-method-sample] call.
 #' function
+#' @param initial_values_seed set of integers indicating the random seed of
+#' the R sampler of the initial values, default is `NULL`
 #' @param compiled_model The pre-compiled model as defined using
 #' `compile_model()`
 #'
@@ -74,8 +81,8 @@
 #'   ), 2),
 #'   site = c(rep(1, 14), rep(2, 14)),
 #'   lab = c(rep(1, 28)),
-#'   conc = abs(rnorm(28, mean = 500, sd = 50)),
-#'   lod = c(rep(20, 14), rep(15, 14)),
+#'   conc = log(abs(rnorm(28, mean = 500, sd = 50))),
+#'   lod = log(c(rep(20, 14), rep(15, 14))),
 #'   site_pop = c(rep(2e5, 14), rep(4e5, 14))
 #' )
 #'
@@ -145,6 +152,7 @@ wwinference <- function(ww_data,
                         model_spec = get_model_spec(),
                         fit_opts = get_mcmc_options(),
                         generate_initial_values = TRUE,
+                        initial_values_seed = NULL,
                         compiled_model = compile_model()) {
   if (is.null(forecast_date)) {
     cli::cli_abort(
@@ -189,15 +197,21 @@ wwinference <- function(ww_data,
   )
 
   init_lists <- NULL
-  if (generate_initial_values) {
-    init_lists <- c()
-    for (i in 1:fit_opts$n_chains) {
-      init_lists[[i]] <- get_inits_for_one_chain(
-        stan_data = stan_data_list,
-        params = model_spec$params
-      )
-    }
+  if (is.null(initial_values_seed)) {
+    initial_values_seed <- sample.int(.Machine$integer.max, 1L)
   }
+
+  if (generate_initial_values) {
+    withr::with_seed(initial_values_seed, {
+      init_lists <- lapply(
+        1:fit_opts$n_chains,
+        \(x) {
+          get_inits_for_one_chain(stan_data_list)
+        }
+      )
+    })
+  }
+
 
   # This returns the cmdstan object if the model runs, and result = NULL if
   # the model errors
@@ -346,7 +360,7 @@ fit_model <- function(compiled_model,
 #' @param n_chains integer indicating the number of MCMC chains to run, default
 #' is `4`
 #' @param seed set of integers indicating the random seed of the stan sampler,
-#' default is `123`
+#' default is NULL
 #' @param adapt_delta float between 0 and 1 indicating the average acceptance
 #' probability, default is `0.95`
 #' @param max_treedepth integer indicating the maximum tree depth of the
@@ -362,7 +376,7 @@ get_mcmc_options <- function(
     iter_warmup = 750,
     iter_sampling = 500,
     n_chains = 4,
-    seed = 123,
+    seed = NULL,
     adapt_delta = 0.95,
     max_treedepth = 12) {
   mcmc_settings <- list(

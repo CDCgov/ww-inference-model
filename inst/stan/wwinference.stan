@@ -65,13 +65,15 @@ data {
   real<lower=0> r_prior_sd;
   real log10_g_prior_mean;
   real<lower=0> log10_g_prior_sd;
-  real<lower=0> i0_over_n_prior_a;
-  real<lower=0> i0_over_n_prior_b;
-  real sigma_i0_prior_mode;
-  real<lower=0> sigma_i0_prior_sd;
+  real<lower=0> i_first_obs_over_n_prior_a;
+  real<lower=0> i_first_obs_over_n_prior_b;
+  real sigma_i_first_obs_prior_mode;
+  real<lower=0> sigma_i_first_obs_prior_sd;
   vector<lower=0>[7] hosp_wday_effect_prior_alpha;
-  real initial_growth_prior_mean;
-  real<lower=0> initial_growth_prior_sd;
+  real mean_initial_exp_growth_rate_prior_mean;
+  real<lower=0> mean_initial_exp_growth_rate_prior_sd;
+  real sigma_initial_exp_growth_rate_prior_mode;
+  real<lower=0> sigma_initial_exp_growth_rate_prior_sd;
   real mode_sigma_ww_site_prior_mode;
   real<lower=0> mode_sigma_ww_site_prior_sd;
   real sd_log_sigma_ww_site_prior_mode;
@@ -112,20 +114,20 @@ parameters {
   vector[n_weeks-1] w; // weekly random walk of state-level mean baseline R(t) (log scale)
   real<lower=0> eta_sd;
   real<lower=0, upper=1> autoreg_rt;// coefficient on AR process in R(t)
-  real<upper=log(10)> log_r_mu_intercept; // state-level mean baseline reproduction number estimate (log) at t=0
+  real log_r_mu_intercept; // state-level mean baseline reproduction number estimate (log) at t=0
   real<lower=0> sigma_rt; // magnitude of site level variation from state level
   real<lower=0, upper=1> autoreg_rt_site;
   real<lower=0, upper=1> autoreg_p_hosp;
   matrix[n_subpops, n_weeks] error_site; // matrix of subpopulations
-  real<lower=0,upper=1> i0_over_n; // initial per capita
-  // infection incidence
-  vector[n_subpops] eta_i0; // z-score on logit scale of state
+  real<lower=0,upper=1> i_first_obs_over_n; // per capita
+  // infection incidence on the day of the first observed infection
+  vector[n_subpops] eta_i_first_obs; // z-score on logit scale of site
   // initial per capita infection incidence relative to state value
-  real<lower=0> sigma_i0; // stdev between logit state and site initial
+  real<lower=0> sigma_i_first_obs; // stdev between logit state and site initial
   // per capita infection incidence
-  vector[n_subpops] eta_growth;
-  real<lower=0> sigma_growth;
-  real<lower=-1, upper=1> initial_growth; // initial growth from I0 to first observed time
+  vector[n_subpops] eta_initial_exp_growth_rate; // z scores of individual site level initial exponential growth rates
+  real<lower=0> sigma_initial_exp_growth_rate; // sd of distribution of site level initial exp growth rates
+  real mean_initial_exp_growth_rate; // mean of distribution of site level initial exp growth rates
   real<lower=1/sqrt(5000)> inv_sqrt_phi_h;
   real mode_sigma_ww_site; //mode of site level stdev
   real<lower=0> sd_log_sigma_ww_site; // stdev of the log site level stdev
@@ -159,7 +161,6 @@ transformed parameters {
   real<lower=0> phi_h = inv_square(inv_sqrt_phi_h);
   vector<lower=0>[n_ww_lab_sites] sigma_ww_site;
   vector[n_weeks] log_r_mu_t_in_weeks; // log of state level mean R(t) in weeks
-  vector[n_weeks] log_r_site_t_in_weeks; // log of site level mean R(t) in weeks, used as a placeholder in loop
   vector<lower=0>[ot + ht] unadj_r; // state level R(t) before damping
   matrix[n_subpops, ot+ht] r_site_t; // site_level R(t)
   row_vector[ot + ht] unadj_r_site_t; // site_level R(t) before damping
@@ -168,10 +169,10 @@ transformed parameters {
   vector[ot + uot + ht] state_inf_per_capita = rep_vector(0, uot + ot + ht); // state level incident infections per capita
   matrix[n_subpops, ot + ht] model_log_v_ot; // expected observed viral genomes/mL at all observed and forecasted times
   real<lower=0> g = pow(log10_g, 10); // Estimated genomes shed per infected individual
-  real<lower=0> i0 = i0_over_n * state_pop; // Initial absolute infection incidence
-  vector[n_subpops] i0_site_over_n; // site-level initial
-  // per capita infection incidence
-  vector[n_subpops] growth_site;
+  vector<lower=0, upper=1>[n_subpops] i_first_obs_over_n_site;
+  // per capita infection incidence at the first observed time
+  vector[n_subpops] initial_exp_growth_rate_site;
+     // site level unobserved period growth rate
 
 
   // State-leve R(t) AR + RW implementation:
@@ -186,10 +187,15 @@ transformed parameters {
   // Shedding kinetics trajectory
   s = get_vl_trajectory(t_peak, viral_peak, dur_shed, gt_max);
 
-  // Site level disease dynamic estimates!
-  i0_site_over_n = inv_logit(logit(i0_over_n) + eta_i0 * sigma_i0);
-  growth_site = initial_growth + eta_growth * sigma_growth; // site level growth rate
+  // Site level disease dynamics
+  i_first_obs_over_n_site = inv_logit(logit(i_first_obs_over_n) +
+      sigma_i_first_obs * eta_i_first_obs);
+  initial_exp_growth_rate_site = mean_initial_exp_growth_rate +
+     sigma_initial_exp_growth_rate * eta_initial_exp_growth_rate;
+
   for (i in 1:n_subpops) {
+    vector[n_weeks] log_r_site_t_in_weeks;
+    real log_i0_site = log(i_first_obs_over_n_site[i]) - uot * initial_exp_growth_rate_site[i];
     // Let site-level R(t) vary around the hierarchical mean R(t)
     // log(R(t)site) ~ log(R(t)state) + log(R(t)state-log(R(t)site)) + eta_site
     log_r_site_t_in_weeks = ar1(log_r_mu_t_in_weeks,
@@ -205,8 +211,8 @@ transformed parameters {
         to_vector(unadj_r_site_t),
 	      uot,
 	      gt_rev_pmf,
-	      log(i0_site_over_n[i]),
-	      growth_site[i],
+	      log_i0_site ,
+	      initial_exp_growth_rate_site[i],
 	      ht,
         infection_feedback,
 	      infection_feedback_rev_pmf
@@ -284,14 +290,15 @@ model {
   log_r_mu_intercept ~ normal(r_logmean, r_logsd);
   to_vector(error_site) ~ std_normal();
   sigma_rt ~ normal(0, sigma_rt_prior);
-  i0_over_n ~ beta(i0_over_n_prior_a,
-                   i0_over_n_prior_b);
-  sigma_i0 ~ normal(sigma_i0_prior_mode,
-		    sigma_i0_prior_sd);
-  eta_i0 ~ std_normal();
-  sigma_growth ~ normal(0, 0.05);
-  eta_growth ~ std_normal();
-  initial_growth ~ normal(initial_growth_prior_mean, initial_growth_prior_sd);
+  i_first_obs_over_n ~ beta(i_first_obs_over_n_prior_a,
+                             i_first_obs_over_n_prior_b);
+  sigma_i_first_obs ~ normal(sigma_i_first_obs_prior_mode,
+		             sigma_i_first_obs_prior_sd);
+  eta_i_first_obs ~ std_normal();
+  sigma_initial_exp_growth_rate ~ normal(sigma_initial_exp_growth_rate_prior_mode,
+                                         sigma_initial_exp_growth_rate_prior_sd);
+  eta_initial_exp_growth_rate ~ std_normal();
+  mean_initial_exp_growth_rate ~ normal(mean_initial_exp_growth_rate_prior_mean, mean_initial_exp_growth_rate_prior_sd);
   inv_sqrt_phi_h ~ normal(inv_sqrt_phi_prior_mean, inv_sqrt_phi_prior_sd);
   mode_sigma_ww_site ~ normal(mode_sigma_ww_site_prior_mode,
                               mode_sigma_ww_site_prior_sd);
@@ -336,13 +343,7 @@ generated quantities {
   vector[ot + ht] exp_state_ww_conc;
   vector[ot + ht] state_log_c;
   vector[uot + ot + ht] state_model_net_i;
-  vector [n_subpops] site_i0_over_n_start;
   vector<lower=0>[ot + ht] rt; // state level R(t)
-
-  for(i in 1:n_subpops) {
-    site_i0_over_n_start[i] = i0_site_over_n[i] *
-    exp(growth_site[i] * uot);
-  }
 
   pred_hosp = neg_binomial_2_rng(state_pop * day_of_week_effect(model_hosp_per_capita[uot + 1 :
                                                         uot + ot + ht],

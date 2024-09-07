@@ -115,7 +115,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                     sd_reporting_freq = 1 / 20,
                                     mean_reporting_latency = 7,
                                     sd_reporting_latency = 3,
-                                    mean_log_lod = 3.8,
+                                    mean_log_lod = 5,
                                     sd_log_lod = 0.2,
                                     global_rt_sd = 0.03,
                                     sigma_eps = 0.05,
@@ -294,7 +294,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     ht = ht,
     unadj_r_site = unadj_r_site,
     initial_growth = initial_growth,
-    initial_growth_prior_sd = params$initial_growth_prior_sd,
+    initial_growth_prior_sd = params$mean_initial_exp_growth_rate_prior_sd,
     i0_over_n = i0_over_n,
     sd_i0_over_n = sd_i0_over_n,
     generation_interval = generation_interval,
@@ -382,6 +382,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   )
 
 
+
   # Global adjusted R(t) --------------------------------------------------
   # I(t)/convolve(I(t), g(t)) #nolint
   # This is not used directly, but we want to have it for comparing to the
@@ -404,6 +405,20 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     site_lab_map = site_lab_map,
     lod_lab_site = lod_lab_site
   )
+
+  # Artificially add values below the LOD----------------------------------
+  # Replace it with an NA, will be used as an example of how to format data
+  # properly.
+  min_ww_val <- min(ww_data$log_genome_copies_per_ml)
+  ww_data <- ww_data |>
+    dplyr::mutate(
+      "log_genome_copies_per_ml" =
+        dplyr::case_when(
+          .data$log_genome_copies_per_ml ==
+            !!min_ww_val ~ 0.5 * .data$log_lod,
+          TRUE ~ .data$log_genome_copies_per_ml
+        )
+    )
 
 
   # Make a hospital admissions dataframe for model calibration
