@@ -2,8 +2,6 @@
 #' near the center of the prior distribution
 #'
 #' @param stan_data a list of data elements that will be passed to stan
-#' @param params a dataframe of parameter values that are passed to stan
-#' to specify the priors in the model
 #' @param stdev a numeric value indicating the standard deviation to sample
 #' from when initializing, particularly from a standard normal. Also acts as
 #' a multiplier on the prior standard deviation, to restrict the initial value
@@ -11,7 +9,7 @@
 #'
 #' @return a list of initial values for each of the parameters in the
 #' `wwinference` model
-get_inits_for_one_chain <- function(stan_data, params, stdev = 0.01) {
+get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
   # Define some variables
   pop <- stan_data$state_pop
   n_weeks <- as.numeric(stan_data$n_weeks)
@@ -21,7 +19,11 @@ get_inits_for_one_chain <- function(stan_data, params, stdev = 0.01) {
   n_subpops <- as.numeric(stan_data$n_subpops)
   n_ww_lab_sites <- as.numeric(stan_data$n_ww_lab_sites)
   # Estimate of number of initial infections
-  i0 <- mean(stan_data$hosp[1:7], na.rm = TRUE) / params$p_hosp_mean
+  i_first_obs_est <- (
+    mean(stan_data$hosp[1:7], na.rm = TRUE) / stan_data$p_hosp_prior_mean
+  )
+
+  logit_i_frac_est <- stats::qlogis(i_first_obs_est / pop)
 
   n_subpops <- as.numeric(stan_data$n_subpops)
   n_ww_lab_sites <- as.numeric(stan_data$n_ww_lab_sites)
@@ -29,13 +31,14 @@ get_inits_for_one_chain <- function(stan_data, params, stdev = 0.01) {
   init_list <- list(
     w = stats::rnorm(n_weeks - 1, 0, stdev),
     eta_sd = abs(stats::rnorm(1, 0, stdev)),
-    eta_i0 = abs(stats::rnorm(n_subpops, 0, stdev)),
-    sigma_i0 = abs(stats::rnorm(1, 0, stdev)),
-    eta_growth = abs(stats::rnorm(n_subpops, 0, stdev)),
-    sigma_growth = abs(stats::rnorm(1, 0, stdev)),
+    eta_i_first_obs = abs(stats::rnorm(n_subpops, 0, stdev)),
+    sigma_i_first_obs = abs(stats::rnorm(1, 0, stdev)),
+    eta_initial_exp_growth_rate = abs(stats::rnorm(n_subpops, 0, stdev)),
+    sigma_initial_exp_growth_rate = abs(stats::rnorm(1, 0, stdev)),
     autoreg_rt = abs(stats::rnorm(
       1,
-      params$autoreg_rt_a / (params$autoreg_rt_a + params$autoreg_rt_b),
+      stan_data$autoreg_rt_a /
+        (stan_data$autoreg_rt_a + stan_data$autoreg_rt_b),
       0.05
     )),
     log_r_mu_intercept = stats::rnorm(
@@ -54,31 +57,38 @@ get_inits_for_one_chain <- function(stan_data, params, stdev = 0.01) {
     autoreg_rt_site = abs(stats::rnorm(1, 0.5, 0.05)),
     autoreg_p_hosp = abs(stats::rnorm(1, 1 / 100, 0.001)),
     sigma_rt = abs(stats::rnorm(1, 0, stdev)),
-    i0_over_n = stats::plogis(stats::rnorm(1, stats::qlogis(i0 / pop), 0.05)),
-    initial_growth = stats::rnorm(1, 0, stdev),
+    i_first_obs_over_n =
+      stats::plogis(stats::rnorm(1, logit_i_frac_est), 0.05),
+    mean_initial_exp_growth_rate = stats::rnorm(1, 0, stdev),
     inv_sqrt_phi_h = 1 / sqrt(200) + stats::rnorm(1, 1 / 10000, 1 / 10000),
     mode_sigma_ww_site = abs(stats::rnorm(
-      1, params$mode_sigma_ww_site_prior_mode,
-      stdev * params$mode_sigma_ww_site_prior_sd
+      1, stan_data$mode_sigma_ww_site_prior_mode,
+      stdev * stan_data$mode_sigma_ww_site_prior_sd
     )),
     sd_log_sigma_ww_site = abs(stats::rnorm(
-      1, params$sd_log_sigma_ww_site_prior_mode,
-      stdev * params$sd_log_sigma_ww_site_prior_sd
+      1, stan_data$sd_log_sigma_ww_site_prior_mode,
+      stdev * stan_data$sd_log_sigma_ww_site_prior_sd
     )),
     eta_log_sigma_ww_site = abs(stats::rnorm(n_ww_lab_sites, 0, stdev)),
-    p_hosp_mean = stats::rnorm(1, stats::qlogis(params$p_hosp_mean), stdev),
+    p_hosp_mean = stats::rnorm(
+      1, stats::qlogis(stan_data$p_hosp_prior_mean),
+      stdev
+    ),
     p_hosp_w = stats::rnorm(tot_weeks, 0, stdev),
     p_hosp_w_sd = abs(stats::rnorm(1, 0.01, 0.001)),
-    t_peak = stats::rnorm(1, params$t_peak_mean, stdev * params$t_peak_sd),
+    t_peak = stats::rnorm(
+      1, stan_data$viral_shedding_pars[1],
+      stdev * stan_data$viral_shedding_pars[2]
+    ),
     viral_peak = stats::rnorm(
-      1, params$viral_peak_mean,
-      stdev * params$viral_peak_sd
+      1, stan_data$viral_shedding_pars[3],
+      stdev * stan_data$viral_shedding_pars[4]
     ),
     dur_shed = stats::rnorm(
-      1, params$duration_shedding_mean,
-      stdev * params$duration_shedding_sd
+      1, stan_data$viral_shedding_pars[5],
+      stdev * stan_data$viral_shedding_pars[6]
     ),
-    log10_g = stats::rnorm(1, params$log10_g_prior_mean, 0.5),
+    log10_g = stats::rnorm(1, stan_data$log10_g_prior_mean, 0.5),
     ww_site_mod_raw = abs(stats::rnorm(n_ww_lab_sites, 0, stdev)),
     ww_site_mod_sd = abs(stats::rnorm(1, 0, stdev)),
     hosp_wday_effect = to_simplex(abs(

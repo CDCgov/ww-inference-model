@@ -59,7 +59,7 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
   }
 
   # Test for presence of needed column names
-  check_req_ww_cols_present(preprocessed_ww_data,
+  assert_req_ww_cols_present(preprocessed_ww_data,
     conc_col_name = "log_genome_copies_per_ml",
     lod_col_name = "log_lod"
   )
@@ -337,7 +337,10 @@ get_stan_data <- function(input_count_data,
   )
 
   # Estimate of number of initial infections
-  i0 <- mean(count_values$count[1:7], na.rm = TRUE) / params$p_hosp_mean
+  i_first_obs_est <- (
+    mean(count_values$count[1:7], na.rm = TRUE) /
+      params$p_hosp_mean
+  )
 
   # package up parameters for stan data object
   viral_shedding_pars <- c(
@@ -400,11 +403,22 @@ get_stan_data <- function(input_count_data,
     r_prior_sd = params$r_prior_sd,
     log10_g_prior_mean = params$log10_g_prior_mean,
     log10_g_prior_sd = params$log10_g_prior_sd,
-    i0_over_n_prior_a = 1 + params$i0_certainty * (i0 / pop),
-    i0_over_n_prior_b = 1 + params$i0_certainty * (1 - (i0 / pop)),
-    hosp_wday_effect_prior_alpha = params$hosp_wday_effect_prior_alpha,
-    initial_growth_prior_mean = params$initial_growth_prior_mean,
-    initial_growth_prior_sd = params$initial_growth_prior_sd,
+    i_first_obs_over_n_prior_a = 1 +
+      params$i_first_obs_certainty *
+        (i_first_obs_est / pop),
+    i_first_obs_over_n_prior_b = 1 +
+      params$i_first_obs_certainty *
+        (1 - (i_first_obs_est / pop)),
+    hosp_wday_effect_prior_alpha =
+      params$hosp_wday_effect_prior_alpha,
+    mean_initial_exp_growth_rate_prior_mean =
+      params$mean_initial_exp_growth_rate_prior_mean,
+    mean_initial_exp_growth_rate_prior_sd =
+      params$mean_initial_exp_growth_rate_prior_sd,
+    sigma_initial_exp_growth_rate_prior_mode =
+      params$sigma_initial_exp_growth_rate_prior_mode,
+    sigma_initial_exp_growth_rate_prior_sd =
+      params$sigma_initial_exp_growth_rate_prior_sd,
     mode_sigma_ww_site_prior_mode = params$mode_sigma_ww_site_prior_mode,
     mode_sigma_ww_site_prior_sd = params$mode_sigma_ww_site_prior_sd,
     sd_log_sigma_ww_site_prior_mode =
@@ -412,8 +426,8 @@ get_stan_data <- function(input_count_data,
     sd_log_sigma_ww_site_prior_sd =
       params$sd_log_sigma_ww_site_prior_sd,
     eta_sd_sd = params$eta_sd_sd,
-    sigma_i0_prior_mode = params$sigma_i0_prior_mode,
-    sigma_i0_prior_sd = params$sigma_i0_prior_sd,
+    sigma_i_first_obs_prior_mode = params$sigma_i_first_obs_prior_mode,
+    sigma_i_first_obs_prior_sd = params$sigma_i_first_obs_prior_sd,
     p_hosp_prior_mean = params$p_hosp_mean,
     p_hosp_sd_logit = params$p_hosp_sd_logit,
     p_hosp_w_sd_sd = params$p_hosp_w_sd_sd,

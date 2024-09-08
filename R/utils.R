@@ -58,7 +58,6 @@ add_pmfs <- function(pmfs) {
 #' @param n_weeks number of weeks those days correspond to
 #'
 #' @return a n_day x n_week matrix for multiplying by weekly estimated
-
 #' value to broadcast it to daily
 #' @export
 #'
@@ -161,5 +160,5 @@ to_simplex <- function(vector) {
 #' @return A string vector where all single brackets are replaced with double
 #' brackets
 autoescape_brackets <- function(string) {
-  return(gsub("\\{(.*)\\}", "{{\\1}}", string))
+  return(gsub("\\{|\\}", "", string))
 }
