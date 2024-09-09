@@ -89,9 +89,9 @@ fake_locs_plot
 ```{r warning=FALSE, message=FALSE}
 # Presets ----------------------------------------------------------------------
 set.seed(2024)
-site <- c(1, 2, 3, 4, 5, 6)
-lab <- c(1, 2, 3, 4, 5, 6)
-ww_pop_sites <- c(5e5, 7.5e5, 3.8e5, 4.5e5, 5.5e5, 3.7e5)
+site <- 1:n_sites
+lab <- 1:n_sites
+ww_pop_sites <- c(5e5, 7.5e5, 3.8e5, 4.5e5, 5.5e5, 3.7e5) # , 6e5, 4e5)
 pop_size <- 5e6
 global_rt_sd <- 0
 exp_corr_param <- list(
@@ -105,10 +105,10 @@ exp_corr_param <- list(
       upper = TRUE
     )
   ),
-  phi = 0.2,
+  phi = 0.4,
   l = 1
 )
-sigma_generalized <- 0.01^n_sites
+sigma_generalized <- 0.001^n_sites
 # ------------------------------------------------------------------------------
 # IID Simulated Data -----------------------------------------------------------
 simulated_data_iid <- wwinference::generate_simulated_data(
@@ -310,6 +310,38 @@ hosp_data_plot / ww_data_plot +
   plot_layout(heights = c(1, 2))
 ```
 
+```{r}
+ww_total_plot <- ggplot(ww_data_full) +
+  geom_point(
+    aes(
+      x = date, y = log(genome_copies_per_ml),
+      colour = factor(site)
+    )
+  ) +
+  geom_hline(
+    aes(yintercept = log(lod), colour = factor(site)),
+    linetype = "dashed"
+  ) +
+  facet_grid(
+    ~model_type,
+    scales = "fixed"
+  ) +
+  scale_color_manual(
+    breaks = c("1", "2", "3", "4", "5", "6"),
+    values = c(
+      "darkviolet", "darkblue", "darkgreen",
+      "darkred", "gold", "darkorange"
+    )
+  ) +
+  xlab("") +
+  ylab("Genome copies/mL on log scale") +
+  labs(color = "Site") +
+  theme_bw()
+ww_total_plot
+```
+
+
+
 ### Visualizing actual Rt curves
 ```{r}
 # Global Rt --------------------------------------------------------------------
@@ -449,7 +481,40 @@ site_rt_data_plot <- ggplot(site_rt_data_full) +
 # ------------------------------------------------------------------------------
 
 global_rt_data_plot / site_rt_data_plot +
-  plot_layout(heights = c(1, 2))
+  plot_layout(heights = c(1, n_sites))
+```
+
+```{r}
+site_rt_total_plot <- ggplot(site_rt_data_full) +
+  geom_hline(
+    yintercept = 0,
+    color = "blue",
+    linetype = "dashed",
+    alpha = .7
+  ) +
+  geom_line(aes(
+    x = date, y = log(value),
+    colour = factor(subpop)
+  )) +
+  facet_grid(~model_type,
+    scales = "fixed"
+  ) +
+  scale_color_manual(
+    breaks = c(
+      "Site 1", "Site 2", "Site 3", "Site 4",
+      "Site 5", "Site 6", "Aux"
+    ),
+    values = c(
+      "darkviolet", "darkblue", "darkgreen",
+      "darkred", "gold", "darkorange", "grey"
+    )
+  ) +
+  xlab("") +
+  ylab("Subpopulation R(t)") +
+  labs(color = "Sites") +
+  theme_bw()
+
+site_rt_total_plot
 ```
 
 ### Visual of correlation matrix
@@ -584,7 +649,7 @@ infection_feedback_pmf <- generation_interval
 model <- wwinference::compile_model()
 
 iter_warmup <- 150
-iter_sampling <- 250
+iter_sampling <- 200
 ```
 
 ## Fitting iid data
@@ -1144,9 +1209,9 @@ hosp_ribbon_data <- all_pred_draws_df %>%
     gen_model_type
   ) %>%
   summarise(
-    lower = quantile(pred_value, 0.025),
+    lower = quantile(pred_value, 0.025, na.rm = TRUE),
     median = median(pred_value),
-    upper = quantile(pred_value, 0.975),
+    upper = quantile(pred_value, 0.975, na.rm = TRUE),
     .groups = "drop"
   )
 hosp_result_plot <- ggplot(
@@ -1158,22 +1223,22 @@ hosp_result_plot <- ggplot(
   geom_ribbon(
     data = hosp_ribbon_data,
     aes(x = date, ymin = lower, ymax = upper, fill = inf_model_type),
-    alpha = 0.4
+    alpha = 0.1
   ) +
   geom_line(
     data = hosp_ribbon_data,
     aes(x = date, y = median, color = inf_model_type),
-    size = 1.25,
+    size = 1,
   ) +
   geom_line(
     data = hosp_ribbon_data,
     aes(x = date, y = lower, color = inf_model_type),
-    size = 1.25,
+    size = 1,
   ) +
   geom_line(
     data = hosp_ribbon_data,
     aes(x = date, y = upper, color = inf_model_type),
-    size = 1.25,
+    size = 1,
   ) +
   geom_point(
     data = hosp_data_eval_full %>%
@@ -1223,9 +1288,9 @@ ww_ribbon_data <- all_pred_draws_df %>%
     gen_model_type
   ) %>%
   summarise(
-    lower = quantile(pred_value, 0.025),
+    lower = quantile(pred_value, 0.025, na.rm = TRUE),
     median = median(pred_value),
-    upper = quantile(pred_value, 0.975),
+    upper = quantile(pred_value, 0.975, na.rm = TRUE),
     .groups = "drop"
   )
 ww_result_plot <- ggplot(
@@ -1237,22 +1302,22 @@ ww_result_plot <- ggplot(
   geom_ribbon(
     data = ww_ribbon_data,
     aes(x = date, ymin = log(lower), ymax = log(upper), fill = inf_model_type),
-    alpha = 0.4
+    alpha = 0.1
   ) +
   geom_line(
     data = ww_ribbon_data,
     aes(x = date, y = log(median), color = inf_model_type),
-    size = 1.25,
+    size = 1,
   ) +
   geom_line(
     data = ww_ribbon_data,
     aes(x = date, y = log(lower), color = inf_model_type),
-    size = 1.25,
+    size = 1,
   ) +
   geom_line(
     data = ww_ribbon_data,
     aes(x = date, y = log(upper), color = inf_model_type),
-    size = 1.25,
+    size = 1,
   ) +
   geom_point(
     aes(x = date, y = log(observed_value))
@@ -1300,9 +1365,9 @@ global_rt_ribbon_data <- all_pred_draws_df %>%
     gen_model_type
   ) %>%
   summarise(
-    lower = quantile(pred_value, 0.025),
+    lower = quantile(pred_value, 0.025, na.rm = TRUE),
     median = median(pred_value),
-    upper = quantile(pred_value, 0.975),
+    upper = quantile(pred_value, 0.975, na.rm = TRUE),
     .groups = "drop"
   )
 global_rt_result_plot <- ggplot(
@@ -1314,22 +1379,22 @@ global_rt_result_plot <- ggplot(
   geom_ribbon(
     data = global_rt_ribbon_data,
     aes(x = date, ymin = lower, ymax = upper, fill = inf_model_type),
-    alpha = 0.4
+    alpha = 0.1
   ) +
   geom_line(
     data = global_rt_ribbon_data,
     aes(x = date, y = median, color = inf_model_type),
-    size = 1.25,
+    size = 1,
   ) +
   geom_line(
     data = global_rt_ribbon_data,
     aes(x = date, y = lower, color = inf_model_type),
-    size = 1.25,
+    size = 1,
   ) +
   geom_line(
     data = global_rt_ribbon_data,
     aes(x = date, y = upper, color = inf_model_type),
-    size = 1.25,
+    size = 1,
   ) +
   geom_hline(
     yintercept = 1,
@@ -1342,7 +1407,7 @@ global_rt_result_plot <- ggplot(
     data = rt_global_data_full %>%
       mutate(gen_model_type = model_type),
     aes(x = date, y = global_rt),
-    size = 1.25
+    size = 1
   ) +
   geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
     linetype = "dashed"
@@ -1380,9 +1445,9 @@ site_rt_ribbon_data <- all_pred_draws_df %>%
     gen_model_type
   ) %>%
   summarise(
-    lower = quantile(pred_value, 0.025),
+    lower = quantile(pred_value, 0.025, na.rm = TRUE),
     median = median(pred_value),
-    upper = quantile(pred_value, 0.975),
+    upper = quantile(pred_value, 0.975, na.rm = TRUE),
     .groups = "drop"
   ) %>%
   mutate(
@@ -1391,28 +1456,32 @@ site_rt_ribbon_data <- all_pred_draws_df %>%
       replacement = "Site \\1",
       x = subpop,
       ignore.case = "remainder of pop"
+    ),
+    subpop = case_when(
+      subpop == "remainder of pop" ~ "Aux",
+      .default = subpop
     )
   )
 site_rt_result_plot <- ggplot() +
   geom_ribbon(
     data = site_rt_ribbon_data,
     aes(x = date, ymin = lower, ymax = upper, fill = inf_model_type),
-    alpha = 0.4
+    alpha = 0.1
   ) +
   geom_line(
     data = site_rt_ribbon_data,
     aes(x = date, y = median, color = inf_model_type),
-    size = 1.25,
+    size = 1,
   ) +
   geom_line(
     data = site_rt_ribbon_data,
     aes(x = date, y = lower, color = inf_model_type),
-    size = 1.25,
+    size = 1,
   ) +
   geom_line(
     data = site_rt_ribbon_data,
     aes(x = date, y = upper, color = inf_model_type),
-    size = 1.25,
+    size = 1,
   ) +
   geom_hline(
     yintercept = 1,
@@ -1425,7 +1494,7 @@ site_rt_result_plot <- ggplot() +
     data = site_rt_data_full %>%
       mutate(gen_model_type = model_type),
     aes(x = date, y = value),
-    size = 1.25
+    size = 1
   ) +
   geom_vline(
     xintercept = lubridate::ymd(forecast_date),
@@ -1454,7 +1523,10 @@ site_rt_result_plot <- ggplot() +
 # ------------------------------------------------------------------------------
 
 global_rt_result_plot / site_rt_result_plot +
-  plot_layout(guides = "collect")
+  plot_layout(
+    guides = "collect",
+    heights = c(1, 4)
+  )
 ```
 
 ## Correlation matrix
@@ -1462,7 +1534,8 @@ global_rt_result_plot / site_rt_result_plot +
 # IID Correlation Matrix -------------------------------------------------------
 iid_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
   filter(
-    gen_model_type == "IID"
+    gen_model_type == "IID",
+    inf_model_type != "IID"
   )) +
   geom_density_ridges(
     aes(
@@ -1483,14 +1556,14 @@ iid_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
     linetype = "dashed",
     size = 1
   ) +
-  facet_grid(Row ~ Column) +
+  facet_grid(Row ~ Column, switch = "y") +
   scale_fill_manual(
-    breaks = c("Exponential", "Unstructured", "IID"),
-    values = c("darkviolet", "deeppink3", "darksalmon")
+    breaks = c("Exponential", "Unstructured"),
+    values = c("darkviolet", "deeppink3")
   ) +
   scale_colour_manual(
-    breaks = c("Exponential", "Unstructured", "IID"),
-    values = c("darkviolet", "deeppink3", "darksalmon")
+    breaks = c("Exponential", "Unstructured"),
+    values = c("darkviolet", "deeppink3")
   ) +
   ylab("Assumed Corr. Structure") +
   xlab("Correlation Drawed") +
@@ -1504,7 +1577,8 @@ iid_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
 # Exponential Correlation Matrix -----------------------------------------------
 exp_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
   filter(
-    gen_model_type == "Exponential"
+    gen_model_type == "Exponential",
+    inf_model_type != "IID"
   )) +
   geom_density_ridges(
     aes(
@@ -1525,14 +1599,14 @@ exp_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
     linetype = "dashed",
     size = 1
   ) +
-  facet_grid(Row ~ Column) +
+  facet_grid(Row ~ Column, switch = "y") +
   scale_fill_manual(
-    breaks = c("Exponential", "Unstructured", "IID"),
-    values = c("darkviolet", "deeppink3", "darksalmon")
+    breaks = c("Exponential", "Unstructured"),
+    values = c("darkviolet", "deeppink3")
   ) +
   scale_colour_manual(
-    breaks = c("Exponential", "Unstructured", "IID"),
-    values = c("darkviolet", "deeppink3", "darksalmon")
+    breaks = c("Exponential", "Unstructured"),
+    values = c("darkviolet", "deeppink3")
   ) +
   ylab("Assumed Corr. Structure") +
   xlab("Correlation Drawed") +
@@ -1546,7 +1620,8 @@ exp_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
 # Rand. Corr. Matrix Correlation Matrix ----------------------------------------
 rand_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
   filter(
-    gen_model_type == "Rand. Corr. Matrix"
+    gen_model_type == "Rand. Corr. Matrix",
+    inf_model_type != "IID"
   )) +
   geom_density_ridges(
     aes(
@@ -1569,12 +1644,12 @@ rand_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
   ) +
   facet_grid(Row ~ Column, switch = "y") +
   scale_fill_manual(
-    breaks = c("Exponential", "Unstructured", "IID"),
-    values = c("darkviolet", "deeppink3", "darksalmon")
+    breaks = c("Exponential", "Unstructured"),
+    values = c("darkviolet", "deeppink3")
   ) +
   scale_colour_manual(
-    breaks = c("Exponential", "Unstructured", "IID"),
-    values = c("darkviolet", "deeppink3", "darksalmon")
+    breaks = c("Exponential", "Unstructured"),
+    values = c("darkviolet", "deeppink3")
   ) +
   ylab("Assumed Corr. Structure") +
   xlab("Correlation Drawed") +

@@ -180,7 +180,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                       l = 1
                                     ),
                                     phi_rt = 0.6,
-                                    sigma_generalized = 0.01^4,
+                                    sigma_generalized = 0.005^4,
                                     scaling_factor = 1,
                                     aux_site_bool = TRUE,
                                     init_stat = TRUE) {
@@ -374,20 +374,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     sigma_matrix,
     n_weeks
   )
-  if (!use_spatial_corr) {
-    spatial_deviation_init <- mvrnorm(
-      n = 1,
-      mu = rep(0, n_sites + 1),
-      Sigma = sigma_matrix
-    )
-  } else {
-    spatial_deviation_init <- mvrnorm(
-      n = 1,
-      mu = rep(0, n_sites),
-      Sigma = sigma_matrix
-    )
-  }
-
   log_r_site <- construct_spatial_rt(
     log_state_rt = log_r_state_week,
     spatial_deviation_ar_coeff = phi_rt,
@@ -404,7 +390,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
       log_state_rt = log_r_state_week,
       state_deviation_ar_coeff = phi_rt,
       scaling_factor = scaling_factor,
-      sigma_eps = sigma_generalized^(1 / n_sites),
+      sigma_eps = sqrt(sigma_generalized^(1 / n_sites)),
       z = state_deviation_noise_vec,
       init_stat = init_stat
     )

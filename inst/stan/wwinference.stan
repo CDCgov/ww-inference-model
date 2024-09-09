@@ -260,7 +260,7 @@ transformed parameters {
     log_r_mu_t_in_weeks,
     autoreg_rt_site,
     scaling_factor,
-    sigma_generalized,
+    sqrt(sigma_generalized),
     norm_vec_aux_site,
     0
   );
