@@ -353,7 +353,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     # Generate deviations in the initial growth rate and initial incidence
     initial_growth_site[i] <- rnorm(
       n = 1, mean = initial_growth,
-      sd = params$initial_growth_prior_sd
+      sd = params$mean_initial_exp_growth_rate_prior_sd
     )
     # This is I0/N at the first unobserved time
     log_i0_over_n_site[i] <- rnorm(
