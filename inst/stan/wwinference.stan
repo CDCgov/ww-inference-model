@@ -226,9 +226,6 @@ transformed parameters {
   // Shedding kinetics trajectory
   s = get_vl_trajectory(t_peak, viral_peak, dur_shed, gt_max);
 
-  // Site level disease dynamic estimates!
-  i0_site_over_n = inv_logit(logit(i0_over_n) + eta_i0 * sigma_i0);
-  growth_site = initial_growth + eta_growth * sigma_growth; // site level growth rate
 
   // Site level spatial Rt------------------------------------------------------
   if (corr_structure_switch == 0){
