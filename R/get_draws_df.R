@@ -27,32 +27,39 @@
 #' are observations, the data will be joined to each draw of the predicted
 #' observation to facilitate plotting.
 #' @export
+get_draws <- function(x, ..., what = "all") {
+  UseMethod("get_draws")
+}
+
+#' @rdname get_draws
+#' @export
 get_draws_df <- function(x, ...) {
-  UseMethod("get_draws_df")
+  .Deprecated("get_draws")
 }
 
 #' S3 method for extracting posterior draws alongside data for a
 #' wwinference_fit object
 #'
-#' This method overloads the generic get_draws_df function specifically
+#' This method overloads the generic `get_draws` function specifically
 #' for objects of type 'wwinference_fit'.
 #'
-#' @rdname get_draws_df
+#' @rdname get_draws
 #' @export
-get_draws_df.wwinference_fit <- function(x, ...) {
-  get_draws_df.data.frame(
+get_draws.wwinference_fit <- function(x, ..., what = "all") {
+  get_draws.data.frame(
     x = x$raw_input_data$input_ww_data,
     count_data = x$raw_input_data$input_count_data,
     stan_data_list = x$stan_data_list,
-    fit_obj = x$fit
+    fit_obj = x$fit,
+    what = what
   )
 }
 
 #' @export
-#' @rdname get_draws_df
-get_draws_df.default <- function(x, ...) {
+#' @rdname get_draws
+get_draws.default <- function(x, ..., what = "all") {
   stop(
-    "No method defined for get_draws_df for object of class(es) ",
+    "No method defined for get_draws for object of class(es) ",
     paste(class(x), collapse = ", "),
     ". Use directly on a wwinference_fit object or a",
     "dataframe of wastewater observations.",
@@ -60,13 +67,36 @@ get_draws_df.default <- function(x, ...) {
   )
 }
 
-#' @rdname get_draws_df
+#' @rdname get_draws
 #' @export
-get_draws_df.data.frame <- function(x,
-                                    count_data,
-                                    stan_data_list,
-                                    fit_obj,
-                                    ...) {
+get_draws.data.frame <- function(x,
+                                 count_data,
+                                 stan_data_list,
+                                 fit_obj,
+                                 ...,
+                                 what = "all") {
+  # Checking we are getting all
+  what_ok <- c(
+    "all", "predicted_counts", "predicted_ww", "global_rt", "site_level_rt"
+  )
+
+  if (any(!what %in% what_ok)) {
+    idx <- which(!what %in% what_ok)
+    stop(
+      "The following invalid values were passed to `what`: ",
+      paste(what[idx], collapse = ", "), ". Valid values incllude: ",
+      paste(what_ok, collapse = ", "), "."
+    )
+  }
+
+  names(what_ok) <- what_ok
+  what_ok <- FALSE
+  if ("all" %in% what) {
+    what_ok[] <- TRUE
+  } else {
+    what_ok[what] <- TRUE
+  }
+
   draws <- fit_obj$result$draws()
 
   # Get the necessary mappings needed to join draws to data
@@ -78,9 +108,11 @@ get_draws_df.data.frame <- function(x,
     )
   ) |>
     dplyr::mutate(t = row_number())
+
   # Lab-site index to corresponding lab, site, and site population size
   lab_site_spine <- x |>
     dplyr::distinct(.data$site, .data$lab, .data$lab_site_index, .data$site_pop)
+
   # Site index to corresponding site and subpopulation size
   subpop_spine <- x |>
     dplyr::distinct(.data$site, .data$site_index, .data$site_pop) |>
@@ -93,132 +125,196 @@ get_draws_df.data.frame <- function(x,
       ]
     ))
 
+  count_draws <- if (what_ok["predicted_counts"]) {
+    draws |> # predicted_counts
+      tidybayes::spread_draws(!!str2lang("pred_hosp[t]")) |>
+      dplyr::rename("pred_value" = "pred_hosp") |>
+      dplyr::mutate(
+        draw = .data$`.draw`,
+      ) |>
+      dplyr::select("t", "pred_value", "draw") |>
+      dplyr::left_join(date_time_spine, by = "t") |>
+      dplyr::left_join(
+        count_data |>
+          dplyr::select(-"t"),
+        by = "date"
+      ) |>
+      dplyr::ungroup() |>
+      dplyr::rename("observed_value" = "count") |>
+      dplyr::select(-"t")
+  } else {
+    NULL
+  }
 
-  count_draws <- draws |>
-    tidybayes::spread_draws(!!str2lang("pred_hosp[t]")) |>
-    dplyr::rename("pred_value" = "pred_hosp") |>
-    dplyr::mutate(
-      draw = .data$`.draw`,
-      name = "predicted counts"
-    ) |>
-    dplyr::select("name", "t", "pred_value", "draw") |>
-    dplyr::left_join(date_time_spine, by = "t") |>
-    dplyr::left_join(
-      count_data |>
-        dplyr::select(-"t"),
-      by = "date"
-    ) |>
-    dplyr::ungroup() |>
-    dplyr::rename("observed_value" = "count") |>
-    dplyr::mutate(
-      observation_type = "count",
-      type_of_quantity = "global",
-      lab_site_index = NA,
-      subpop = NA,
-      lab = NA,
-      site_pop = NA,
-      below_lod = NA,
-      log_lod = NA,
-      flag_as_ww_outlier = NA,
-      exclude = NA
-    ) |>
-    dplyr::select(-"t")
 
-  ww_draws <- draws |>
-    tidybayes::spread_draws(!!str2lang("pred_ww[lab_site_index, t]")) |>
-    dplyr::rename("pred_value" = "pred_ww") |>
-    dplyr::mutate(
-      draw = .data$`.draw`,
-      name = "predicted wastewater",
-    ) |>
-    dplyr::select("name", "lab_site_index", "t", "pred_value", "draw") |>
-    dplyr::left_join(date_time_spine, by = "t") |>
-    dplyr::left_join(lab_site_spine, by = "lab_site_index") |>
-    dplyr::left_join(
-      x |>
-        dplyr::select(-"t"),
-      by = c(
-        "lab_site_index", "date",
-        "lab", "site", "site_pop"
-      )
-    ) |>
-    dplyr::ungroup() |>
-    dplyr::mutate(observed_value = .data$log_genome_copies_per_ml) |>
-    dplyr::mutate(
-      observation_type = "log genome copies per mL",
-      type_of_quantity = "local",
-      total_pop = NA,
-      subpop = glue::glue("Site: {site}")
-    ) |>
-    dplyr::select(colnames(count_draws), -"t")
+  ww_draws <- if (what_ok["predicted_ww"]) {
+    draws |>
+      tidybayes::spread_draws(!!str2lang("pred_ww[lab_site_index, t]")) |>
+      dplyr::rename("pred_value" = "pred_ww") |>
+      dplyr::mutate(
+        draw = .data$`.draw`
+      ) |>
+      dplyr::select("lab_site_index", "t", "pred_value", "draw") |>
+      dplyr::left_join(date_time_spine, by = "t") |>
+      dplyr::left_join(lab_site_spine, by = "lab_site_index") |>
+      dplyr::left_join(
+        x |>
+          dplyr::select(-"t"),
+        by = c(
+          "lab_site_index", "date",
+          "lab", "site", "site_pop"
+        )
+      ) |>
+      dplyr::ungroup() |>
+      dplyr::mutate(observed_value = .data$log_genome_copies_per_ml) |>
+      dplyr::select(-"t")
+  } else {
+    NULL
+  }
 
-  global_rt_draws <- draws |>
-    tidybayes::spread_draws(!!str2lang("rt[t]")) |>
-    dplyr::rename("pred_value" = "rt") |>
-    dplyr::mutate(
-      draw = .data$`.draw`,
-      name = "global R(t)"
-    ) |>
-    dplyr::select("name", "t", "pred_value", "draw") |>
-    dplyr::left_join(date_time_spine, by = "t") |>
-    dplyr::left_join(
-      count_data |>
-        dplyr::select(-"t"),
-      by = "date"
-    ) |>
-    dplyr::ungroup() |>
-    dplyr::rename("observed_value" = "count") |>
-    dplyr::mutate(
-      observed_value = NA,
-      observation_type = "latent variable",
-      type_of_quantity = "global",
-      lab_site_index = NA,
-      subpop = NA,
-      lab = NA,
-      site_pop = NA,
-      below_lod = NA,
-      log_lod = NA,
-      flag_as_ww_outlier = NA,
-      exclude = NA
-    ) |>
-    dplyr::select(-"t")
+  global_rt_draws <- if (what_ok["global_rt"]) {
+    draws |>
+      tidybayes::spread_draws(!!str2lang("rt[t]")) |>
+      dplyr::rename("pred_value" = "rt") |>
+      dplyr::mutate(
+        draw = .data$`.draw`
+      ) |>
+      dplyr::select("t", "pred_value", "draw") |>
+      dplyr::left_join(date_time_spine, by = "t") |>
+      dplyr::left_join(
+        count_data |>
+          dplyr::select(-"t"),
+        by = "date"
+      ) |>
+      dplyr::ungroup() |>
+      dplyr::rename("observed_value" = "count") |>
+      dplyr::select(-"t")
+  } else {
+    NULL
+  }
 
-  site_level_rt_draws <- draws |>
-    tidybayes::spread_draws(!!str2lang("r_site_t[site_index, t]")) |>
-    dplyr::rename("pred_value" = "r_site_t") |>
-    dplyr::mutate(
-      draw = .data$`.draw`,
-      name = "subpopulation R(t)",
-      pred_value = .data$pred_value
-    ) |>
-    dplyr::select("name", "site_index", "t", "pred_value", "draw") |>
-    dplyr::left_join(date_time_spine, by = "t") |>
-    dplyr::left_join(subpop_spine, by = "site_index") |>
-    dplyr::ungroup() |>
-    dplyr::mutate(
-      observed_value = NA,
-      lab_site_index = NA,
-      lab = NA,
-      below_lod = NA,
-      log_lod = NA,
-      flag_as_ww_outlier = NA,
-      exclude = NA,
-      observation_type = "latent variable",
-      type_of_quantity = "local",
-      total_pop = NA,
-      subpop = ifelse(.data$site != "remainder of pop",
-        glue::glue("Site: {site}"), "remainder of pop"
-      )
-    ) |>
-    dplyr::select(colnames(count_draws), -"t")
+  site_level_rt_draws <- if (what_ok["site_level_rt"]) {
+    draws |>
+      tidybayes::spread_draws(!!str2lang("r_site_t[site_index, t]")) |>
+      dplyr::rename("pred_value" = "r_site_t") |>
+      dplyr::mutate(
+        draw = .data$`.draw`,
+        pred_value = .data$pred_value
+      ) |>
+      dplyr::select("site_index", "t", "pred_value", "draw") |>
+      dplyr::left_join(date_time_spine, by = "t") |>
+      dplyr::left_join(subpop_spine, by = "site_index") |>
+      dplyr::ungroup() |>
+      dplyr::select(-"t")
+  } else {
+    NULL
+  }
 
-  all_draws_df <- dplyr::bind_rows(
-    count_draws,
-    ww_draws,
-    global_rt_draws,
-    site_level_rt_draws
+  return(
+    new_wwinference_fit_draws(
+      predicted_counts = count_draws,
+      predicted_ww = ww_draws,
+      global_rt = global_rt_draws,
+      site_level_rt = site_level_rt_draws
+    )
   )
+}
 
+#' @export
+print.wwinference_fit_draws <- function(x, ...) {
+  cat("Draws from the model featuring the following datasets:\n")
 
-  return(all_draws_df)
+  if (length(x$predicted_counts)) {
+    cat(
+      sprintf(
+        "- predicted_counts with %i observations.\n",
+        nrow(x$predicted_counts)
+      )
+    )
+  }
+  if (length(x$predicted_ww)) {
+    cat(
+      sprintf(
+        "- predicted_ww with %i observations.\n",
+        nrow(x$predicted_ww)
+      )
+    )
+  }
+  if (length(x$global_rt)) {
+    cat(
+      sprintf(
+        "- global_rt with %i observations.\n",
+        nrow(x$global_rt)
+      )
+    )
+  }
+  if (length(x$site_level_rt)) {
+    cat(
+      sprintf(
+        "- site_level_rt with %i observations.\n",
+        nrow(x$site_level_rt)
+      )
+    )
+  }
+
+  cat("You can use $ to access the datasets.")
+
+  invisible(x)
+}
+
+#' Constructor for the new_wwinference_fit_draws
+#'
+#' Constructor running some checks on the contents of the data.
+#'
+#' @param predicted_counts Predicted counts
+#' @param predicted_ww Predicted ww concentration
+#' @param global_rt Global Rt()
+#' @param site_level_r Site-level Rt()s
+#' @noRd
+new_wwinference_fit_draws <- function(
+    predicted_counts,
+    predicted_ww,
+    global_rt,
+    site_level_rt) {
+  # Checking colnames: Must match all exactly
+  predicted_counts_cnames <- c(
+    "date", "draw", "observed_value", "pred_value", "total_pop"
+  )
+  if (length(predicted_counts)) {
+    stopifnot(all(sort(colnames(predicted_counts)) == predicted_counts_cnames))
+  }
+
+  predicted_ww_cnames <- c(
+    "below_lod", "date", "draw", "exclude", "flag_as_ww_outlier",
+    "lab", "lab_site_index", "lab_site_name", "log_genome_copies_per_ml",
+    "log_lod", "observed_value", "pred_value", "site", "site_index",
+    "site_pop"
+  )
+  if (length(predicted_ww)) {
+    stopifnot(all(sort(colnames(predicted_ww)) == predicted_ww_cnames))
+  }
+
+  global_rt_cnames <- c(
+    "date", "draw", "observed_value", "pred_value", "total_pop"
+  )
+  if (length(global_rt)) {
+    stopifnot(all(sort(colnames(global_rt)) == global_rt_cnames))
+  }
+
+  site_level_rt_cnamss <- c(
+    "date", "draw", "pred_value", "site", "site_index", "site_pop"
+  )
+  if (length(site_level_rt)) {
+    stopifnot(all(sort(colnames(site_level_rt)) == site_level_rt_cnamss))
+  }
+
+  structure(
+    list(
+      predicted_counts = predicted_counts,
+      predicted_ww = predicted_ww,
+      global_rt = global_rt,
+      site_level_rt = site_level_rt
+    ),
+    class = "wwinference_fit_draws"
+  )
 }
