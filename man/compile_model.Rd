@@ -58,7 +58,7 @@ of \code{\link[cmdstanr:cmdstan_model]{cmdstanr::cmdstan_model()}}.
 This function reads in and optionally compiles a Stan model.
 It is written to search the installed package \code{stan} directory
 for additional source files to include. Within each stan file,
-use #include {path to your file with the \code{stan} directory}.stan
+use \verb{#include \{path to your file with the stan directory\}.stan}
 }
 \details{
 The code for this function has been adapted

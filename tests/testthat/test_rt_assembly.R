@@ -6,9 +6,12 @@ test_that(paste0(
 ), {
   model <- compiled_site_inf_model
 
-  days_weeks <- dim(toy_stan_data$ind_m)
-  ndays <- days_weeks[1]
-  nweeks <- days_weeks[2]
+  weeks_to_days <- get_ind_m(
+    168,
+    24
+  )
+  ndays <- dim(weeks_to_days)[1]
+  nweeks <- dim(weeks_to_days)[2]
 
   ## Make sure we cover a wide range
   sigma <- 5
@@ -48,7 +51,7 @@ test_that(paste0(
   )
 
   unadj_r_days_stan <- exp(
-    toy_stan_data$ind_m %*% unadj_log_r_weeks_stan
+    weeks_to_days %*% unadj_log_r_weeks_stan
   ) |>
     as.numeric()
 

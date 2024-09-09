@@ -5,9 +5,9 @@
 #' Provides a user friendly interface around package functionality
 #' to produce estimates, nowcasts, and forecasts pertaining to user-specified
 #' delay distributions, set parameters, and priors that can be modified to
-#' handledifferent types of "global" count data and "local" wastewater
-#' concentrationdata using a Bayesian hierarchical framework applied to the two
-#' distinctdata sources. By default the model assumes a fixed generation
+#' handle different types of "global" count data and "local" wastewater
+#' concentration data using a Bayesian hierarchical framework applied to the two
+#' distinct data sources. By default the model assumes a fixed generation
 #' interval and delay from infection to the event that is counted. See the
 #' getting started vignette for an example model specifications fitting
 #' COVID-19 hospital admissions from a hypothetical state and wasteawter
@@ -15,8 +15,8 @@
 #'
 #' @param ww_data A dataframe containing the pre-processed, site-level
 #' wastewater concentration data for a model run. The dataframe must contain
-#' the following columns: `date`, `site`, `lab`, `genome_copies_per_ml`,
-#' `lab_site_index`, `lod`, `below_lod`, `site_pop` `exclude`
+#' the following columns: `date`, `site`, `lab`, `log_genome_copies_per_ml`,
+#' `lab_site_index`, `log_lod`, `below_lod`, `site_pop` `exclude`
 #' @param count_data A dataframe containing the pre-procssed, "global" (e.g.
 #' state) daily count data, pertaining to the number of events that are being
 #' counted on that day, e.g. number of daily cases or daily hospital admissions.
@@ -31,13 +31,20 @@
 #' `get_model_spec()`. The default here pertains to the `forecast_date` in the
 #' example data provided by the package, but this should be specified by the
 #' user based on the date they are producing a forecast
-#' @param mcmc_options The MCMC parameters as defined using
-#' `get_mcmc_options()`.
+#' @param fit_opts The fit options, which in this case default to the
+#' MCMC parameters as defined using `get_mcmc_options()`. This includes
+#' the following arguments, which are passed to
+#' [`$sample()`][cmdstanr::model-method-sample]:
+#' the number of chains, the number of warmup
+#' and sampling iterations, the maximum tree depth, the average acceptance
+#' probability, and the stan PRNG seed
 #' @param generate_initial_values Boolean indicating whether or not to specify
 #' the initialization of the sampler, default is `TRUE`, meaning that
 #' initialization lists will be generated and passed as the `init` argument
 #' to the model object [`$sample()`][cmdstanr::model-method-sample] call.
 #' function
+#' @param initial_values_seed set of integers indicating the random seed of
+#' the R sampler of the initial values, default is `NULL`
 #' @param compiled_model The pre-compiled model as defined using
 #' `compile_model()`
 #' @param dist_matrix Distance matrix, n_sites x n_sites, passed to a
@@ -49,39 +56,111 @@
 #' 1 for an exponential correlation structure based off distance matrix, and 2
 #' to use an unstructured, lkj, correlation matrix.
 #'
-#' @return A nested list of the following items, intended to allow the user to
-#' quickly and easily plot results from their inference, while also being able
-#' to have the full user functionality of running the model themselves in stan
-#' by providing the raw model object and diagnostics. If the model runs, this
+#' @return An object of the `ww_inference_fit` class containing the following
+#' items that are intended to be passed to downstream functions to do things
+#' like extract posterior draws, get diangostic behavior, and plot results
+#' (for example). If the model runs, this
 #' function will return:
-#' `draws_df`: A tibble containing the full set of posterior draws of the
-#' estimated, nowcasted, and forecasted: counts, site-level wastewater
-#' concentrations, "global"(e.g. state) R(t) estimate, and the  "local" (site +
-#' the one auxiliary subpopulation) R(t) estimates. In the instance where there
-#' are observations, the data will be joined to each draw of the predicted
-#' observation to facilitate plotting.
-#' `raw_fit_obj`: The CmdStan object that is returned from the call to
+#' `fit`: The CmdStan object that is returned from the call to
 #' `cmdstanr::sample()`. Can be used to access draws, summary, diagnostics, etc.
-#' `date_time_spine`: Mapping from time in stan to dates
-#' `lab_site_spine`: Mapping from lab_site_index in stan to lab and site
-#' `subpop_spine`: Mapping from site index in stan to site
+#' `raw_input_data`: a list containing the input `ww_data` and the input
+#' `count_data` used in the model.
+#' `stan_data_list`: a list containing the inputs passed directly to the
+#' stan model
+#' `fit_opts`: a list of the MCMC specifications passed to stan
 #'
 #' If the model fails to run, a list containing the follow will be returned:
 #' `error`: the error message provided from stan, indicating why the model
 #' failed to run. Note, the model might still run and produce draws even if it
 #' has major model issues. We recommend the user always run the
-#' `check_diagnostics()` function on the `diagnostic_summary` as part of any
+#' `check_diagnostics()` function on the `parameter_diagnostics` as part of any
 #' pipeline to ensure model convergence.
-#' @export
+#' @name wwinference
+#' @family diagnostics
 #'
+#' @export
+#' @examples
+#' \dontrun{
+#' ww_data <- tibble::tibble(
+#'   date = rep(seq(
+#'     from = lubridate::ymd("2023-08-01"),
+#'     to = lubridate::ymd("2023-11-01"),
+#'     by = "weeks"
+#'   ), 2),
+#'   site = c(rep(1, 14), rep(2, 14)),
+#'   lab = c(rep(1, 28)),
+#'   conc = log(abs(rnorm(28, mean = 500, sd = 50))),
+#'   lod = log(c(rep(20, 14), rep(15, 14))),
+#'   site_pop = c(rep(2e5, 14), rep(4e5, 14))
+#' )
+#'
+#' ww_data_preprocessed <- preprocess_ww_data(ww_data,
+#'   conc_col_name = "conc",
+#'   lod_col_name = "lod"
+#' )
+#' input_ww_data <- indicate_ww_exclusions(ww_data_preprocessed)
+#'
+#' hosp_data <- tibble::tibble(
+#'   date = seq(
+#'     from = lubridate::ymd("2023-07-01"),
+#'     to = lubridate::ymd("2023-10-30"),
+#'     by = "days"
+#'   ),
+#'   daily_admits = sample(5:70, 122, replace = TRUE),
+#'   state_pop = rep(1e6, 122)
+#' )
+#'
+#' input_count_data <- preprocess_count_data(
+#'   hosp_data,
+#'   "daily_admits",
+#'   "state_pop"
+#' )
+#'
+#' generation_interval <- to_simplex(c(0.01, 0.2, 0.3, 0.2, 0.1, 0.1, 0.01))
+#' inf_to_count_delay <- to_simplex(c(
+#'   rep(0.01, 12), rep(0.2, 4),
+#'   rep(0.01, 10)
+#' ))
+#' infection_feedback_pmf <- generation_interval
+#'
+#' params <- get_params(
+#'   system.file("extdata", "example_params.toml",
+#'     package = "wwinference"
+#'   )
+#' )
+#' forecast_date <- "2023-11-06"
+#' calibration_time <- 90
+#' forecast_horizon <- 28
+#' include_ww <- 1
+#' ww_fit <- wwinference(input_ww_data,
+#'   input_count_data,
+#'   model_spec = get_model_spec(
+#'     forecast_date = forecast_date,
+#'     calibration_time = calibration_time,
+#'     forecast_horizon = forecast_horizon,
+#'     generation_interval = generation_interval,
+#'     inf_to_count_delay = inf_to_coutn_delay,
+#'     infection_feedback_pmf = infection_feedback_pmf,
+#'     params = params
+#'   ),
+#'   fit_opts = get_mcmc_options(
+#'     iter_warmup = 250,
+#'     iter_sampling = 250,
+#'     n_chains = 2
+#'   )
+#' )
+#' }
+#' @rdname wwinference
+#' @aliases wwinference_fit
 wwinference <- function(ww_data,
                         count_data,
                         forecast_date = NULL,
                         calibration_time = 90,
                         forecast_horizon = 28,
                         model_spec = get_model_spec(),
-                        mcmc_options = get_mcmc_options(),
+                        fit_opts = get_mcmc_options(),
                         generate_initial_values = TRUE,
+                        initial_values_seed = NULL,
                         compiled_model = compile_model(),
                         dist_matrix = NULL,
                         corr_structure_switch = 0) {
@@ -107,7 +186,7 @@ wwinference <- function(ww_data,
     last_count_data_date,
     calibration_time
   )
-  input_data <- list(
+  raw_input_data <- list(
     input_count_data = input_count_data,
     input_ww_data = input_ww_data
   )
@@ -121,7 +200,7 @@ wwinference <- function(ww_data,
 
 
   # If checks pass, create stan data object
-  stan_args <- get_stan_data(
+  stan_data_list <- get_stan_data(
     input_count_data = input_count_data,
     input_ww_data = input_ww_data,
     forecast_date = forecast_date,
@@ -138,96 +217,43 @@ wwinference <- function(ww_data,
   )
 
   init_lists <- NULL
+  if (is.null(initial_values_seed)) {
+    initial_values_seed <- sample.int(.Machine$integer.max, 1L)
+  }
+
   if (generate_initial_values) {
-    init_lists <- c()
-    for (i in 1:mcmc_options$n_chains) {
-      init_lists[[i]] <- get_inits_for_one_chain(stan_args, params)
-    }
+    withr::with_seed(initial_values_seed, {
+      init_lists <- lapply(
+        1:fit_opts$n_chains,
+        \(x) {
+          get_inits_for_one_chain(stan_data_list)
+        }
+      )
+    })
   }
 
-
-  fit_model <- function(compiled_model,
-                        stan_args,
-                        model_spec,
-                        init_lists) {
-    fit <- compiled_model$sample(
-      data = stan_args,
-      init = init_lists,
-      seed = mcmc_options$seed,
-      iter_sampling = mcmc_options$iter_sampling,
-      iter_warmup = mcmc_options$iter_warmup,
-      max_treedepth = mcmc_options$max_treedepth,
-      chains = mcmc_options$n_chains,
-      parallel_chains = mcmc_options$n_chains
-    )
-
-    return(fit)
-  }
 
   # This returns the cmdstan object if the model runs, and result = NULL if
   # the model errors
   safe_fit_model <- purrr::safely(fit_model)
 
   fit <- safe_fit_model(
-    compiled_model,
-    stan_args,
-    model_spec,
-    init_lists
+    compiled_model = compiled_model,
+    stan_data_list = stan_data_list,
+    fit_opts = fit_opts,
+    init_lists = init_lists
   )
 
-  if (!is.null(fit$error)) { # If the model errors, return a list with the
-    # error and everything else NULL
-    out <- list(
-      error = fit$error[[1]]
-    )
-    message(fit$error[[1]])
+  if (!is.null(fit$error)) { # If the model errors, return the error message
+    return(fit$error)
   } else {
-    # This is a bit messy, but get the spines needed to map stan data to
-    # the real data
-    # Time index to date
-    date_time_spine <- tibble::tibble(
-      date = seq(
-        from = min(count_data$date),
-        to = min(count_data$date) + stan_args$ot + stan_args$ht,
-        by = "days"
-      )
-    ) |>
-      dplyr::mutate(t = row_number())
-    # Lab-site index to corresponding lab, site, and site population size
-    lab_site_spine <- ww_data |>
-      dplyr::distinct(site, lab, lab_site_index, site_pop)
-    # Site index to corresponding site and subpopulation size
-    subpop_spine <- ww_data |>
-      dplyr::distinct(site, site_index, site_pop) |>
-      dplyr::mutate(site = as.factor(site)) |>
-      dplyr::bind_rows(tibble::tibble(
-        site = "remainder of pop",
-        site_index = max(ww_data$site_index) + 1,
-        site_pop = stan_args$subpop_size[
-          length(unique(stan_args$subpop_size))
-        ]
-      ))
-
-    draws <- get_draws_df(
-      ww_data = ww_data,
-      count_data = count_data,
-      fit_obj = fit,
-      date_time_spine = date_time_spine,
-      lab_site_spine = lab_site_spine,
-      subpop_spine = subpop_spine
-    )
-    summary_diagnostics <- fit$result$diagnostic_summary()
-    convergence_flag_df <- get_model_diagnostic_flags(
-      stan_fit_object =
-        fit$result
-    )
+    convergence_flag_df <- get_model_diagnostic_flags(fit$result)
 
     out <- list(
-      draws_df = draws,
-      raw_fit_obj = fit$result,
-      date_time_spine = date_time_spine,
-      lab_site_spine = lab_site_spine,
-      subpop_spine = subpop_spine
+      fit = fit,
+      raw_input_data = raw_input_data,
+      stan_data_list = stan_data_list,
+      fit_opts = fit_opts
     )
 
     # Message if a flag doesn't pass. Still return
@@ -238,8 +264,105 @@ wwinference <- function(ww_data,
     }
   }
 
-  return(out)
+  # Constructs the wwinference_fit class object
+  do.call(new_wwinference_fit, out)
 }
+
+#' Constructor for the `wwinference_fit` class
+#' @param fit The CmdStan object that is the output of fitting the model
+#' @param raw_input_data A list containing all the data passed to stan
+#' for fitting the model
+#' @param stan_data_list A list containing the inputs passed directly to the
+#' stan model
+#' @param fit_opts A list of the the fitting options, in this case the
+#' MCMC specifications passed to stan
+#' @return An object of the `wwinference_fit` class.
+#' @noRd
+#'
+new_wwinference_fit <- function(
+    fit,
+    raw_input_data,
+    stan_data_list,
+    fit_opts) {
+  # Checking
+  stopifnot(
+    inherits(fit$result, what = "CmdStanFit"),
+    inherits(raw_input_data, "list"),
+    inherits(stan_data_list, "list"),
+    inherits(fit_opts, "list")
+  )
+
+  structure(
+    list(
+      fit = fit,
+      raw_input_data = raw_input_data,
+      stan_data_list = stan_data_list,
+      fit_opts = fit_opts
+    ),
+    class = "wwinference_fit"
+  )
+}
+
+#' @param x,object Object of class `wwinference_fit`
+#' @param ... Additional parameters passed to the corresponding method
+#' @export
+#' @rdname wwinference
+#' @return
+#' - The print method prints out information about the model and
+#' returns the object invisibly.
+print.wwinference_fit <- function(x, ...) {
+  cat("wwinference_fit object\n")
+  cat("N of WW sites              :", x$stan_data_list$n_ww_sites, "\n")
+  cat("N of unique lab-site pairs :", x$stan_data_list$n_ww_lab_sites, "\n")
+  cat("State population           :", formatC(
+    x$stan_data_list$state_pop,
+    format = "d"
+  ), "\n")
+  cat("N of weeks                 :", x$stan_data_list$n_weeks, "\n")
+  cat("--------------------\n")
+  cat("For more details, you can access the following:\n")
+  cat(" - `$fit` for the CmdStan object\n")
+  cat(" - `$raw_input_data` for the input data\n")
+  cat(" - `$stan_data_list` for the stan data arguments\n")
+  cat(" - `$fit_opts` for the fitting options\n")
+  invisible(x)
+}
+
+#' @export
+#' @rdname wwinference
+#' @return
+#' - The summary method returns the outcome from the
+#' `$summary` ([cmdstanr::summary()]) function.
+summary.wwinference_fit <- function(object, ...) {
+  object$fit$result$summary(...)
+}
+
+
+#' Model fitting function
+#' @param compiled_model The compiled model object
+#' @param stan_data_list The list of data to pass to stan
+#' @param fit_opts The fitting specifications
+#' @param init_lists A list of initial values for the sampler
+#' @return The fit object from the model
+#' @noRd
+fit_model <- function(compiled_model,
+                      stan_data_list,
+                      fit_opts,
+                      init_lists) {
+  fit <- compiled_model$sample(
+    data = stan_data_list,
+    init = init_lists,
+    seed = fit_opts$seed,
+    iter_sampling = fit_opts$iter_sampling,
+    iter_warmup = fit_opts$iter_warmup,
+    max_treedepth = fit_opts$max_treedepth,
+    chains = fit_opts$n_chains,
+    parallel_chains = fit_opts$n_chains
+  )
+
+  return(fit)
+}
+
 
 #' Get MCMC options
 #'
@@ -257,7 +380,7 @@ wwinference <- function(ww_data,
 #' @param n_chains integer indicating the number of MCMC chains to run, default
 #' is `4`
 #' @param seed set of integers indicating the random seed of the stan sampler,
-#' default is `123`
+#' default is NULL
 #' @param adapt_delta float between 0 and 1 indicating the average acceptance
 #' probability, default is `0.95`
 #' @param max_treedepth integer indicating the maximum tree depth of the
@@ -273,7 +396,7 @@ get_mcmc_options <- function(
     iter_warmup = 750,
     iter_sampling = 500,
     n_chains = 4,
-    seed = 123,
+    seed = NULL,
     adapt_delta = 0.95,
     max_treedepth = 12) {
   mcmc_settings <- list(

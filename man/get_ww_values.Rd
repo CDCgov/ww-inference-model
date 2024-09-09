@@ -6,8 +6,8 @@
 \usage{
 get_ww_values(
   ww_data,
-  ww_measurement_col_name = "genome_copies_per_ml",
-  ww_lod_value_col_name = "lod",
+  ww_measurement_col_name = "log_genome_copies_per_ml",
+  ww_lod_value_col_name = "log_lod",
   ww_site_pop_col_name = "site_pop",
   one_pop_per_site = TRUE,
   padding_value = 1e-08
@@ -19,11 +19,11 @@ per observation, with outliers already removed}
 
 \item{ww_measurement_col_name}{A string representing the name of the column
 in the input_ww_data that indicates the wastewater measurement value in
-natural scale, default is \code{genome_copies_per_ml}}
+log scale, default is \code{log_genome_copies_per_ml}}
 
 \item{ww_lod_value_col_name}{A string representing the name of the column
-in the ww_data that indicates the value of the LOD in natural scale,
-default is \code{lod}}
+in the ww_data that indicates the value of the LOD in log scale,
+default is \code{log_lod}}
 
 \item{ww_site_pop_col_name}{A string representing the name of the column in
 the ww_data that indicates the number of people represented by that

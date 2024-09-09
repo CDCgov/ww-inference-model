@@ -16,8 +16,8 @@ test_that("Function returns dataframe with correct columns", {
   )
 
   expected_cols <- c(
-    "date", "site", "lab", "genome_copies_per_ml",
-    "lod", "site_pop", "lab_site_index", "site_index",
+    "date", "site", "lab", "log_genome_copies_per_ml",
+    "log_lod", "site_pop", "lab_site_index", "site_index",
     "flag_as_ww_outlier", "lab_site_name", "below_lod"
   )
 
@@ -32,7 +32,7 @@ test_that("Concentration column is renamed correctly", {
   )
   checkmate::expect_names(
     names(processed),
-    must.include = "genome_copies_per_ml",
+    must.include = "log_genome_copies_per_ml",
     disjunct.from = "conc"
   )
 })
@@ -40,14 +40,14 @@ test_that("Concentration column is renamed correctly", {
 # Test that LOD column is renamed correctly
 test_that("LOD column is renamed correctly", {
   ww_data_test <- ww_data |>
-    dplyr::rename(LOD = lod)
+    dplyr::rename("LOD" = "lod")
   processed <- preprocess_ww_data(ww_data_test,
     conc_col_name = "conc",
     lod_col_name = "LOD"
   )
 
-  checkmate::assert_names(names(processed),
-    must.include = "lod",
+  checkmate::expect_names(names(processed),
+    must.include = "log_lod",
     disjunct.from = "LOD"
   )
 })
