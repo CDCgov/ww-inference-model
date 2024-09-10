@@ -295,7 +295,15 @@ As `wwinference` uses `cmdstan` to fit its models, it is necessary to first
 compile the model. This can be done using the compile_model() function.
 
 ```{r compile-model}
-model <- wwinference::compile_model()
+model <- wwinference::compile_model(
+  model_filepath = file.path(
+    "inst", "stan",
+    "wwinference.stan"
+  ),
+  include_paths = file.path(
+    "inst", "stan"
+  )
+)
 ```
 
 # Fitting the model
