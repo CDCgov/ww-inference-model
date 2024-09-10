@@ -59,3 +59,6 @@ method for objects of class 'wwinference_fit'
 This method overloads the generic \code{get_draws} function specifically
 for objects of type 'wwinference_fit'.
 }
+\details{
+The function \code{get_draws_df()} has been deprecated in favor of \code{get_draws()}.
+}

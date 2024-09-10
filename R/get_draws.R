@@ -30,6 +30,9 @@ get_draws <- function(x, ..., what = "all") {
 }
 
 #' @rdname get_draws
+#' @details
+#' The function `get_draws_df()` has been deprecated in favor of `get_draws()`.
+#'
 #' @export
 get_draws_df <- function(x, ...) {
   .Deprecated("get_draws")
@@ -239,7 +242,7 @@ print.wwinference_fit_draws <- function(x, ...) {
   if (length(x$predicted_counts)) {
     cat(
       sprintf(
-        "- predicted_counts with %i observations.\n",
+        " - `$predicted_counts` with %i observations.\n",
         nrow(x$predicted_counts)
       )
     )
@@ -247,7 +250,7 @@ print.wwinference_fit_draws <- function(x, ...) {
   if (length(x$predicted_ww)) {
     cat(
       sprintf(
-        "- predicted_ww with %i observations.\n",
+        " - `$predicted_ww` with %i observations.\n",
         nrow(x$predicted_ww)
       )
     )
@@ -255,7 +258,7 @@ print.wwinference_fit_draws <- function(x, ...) {
   if (length(x$global_rt)) {
     cat(
       sprintf(
-        "- global_rt with %i observations.\n",
+        " - `$global_rt` with %i observations.\n",
         nrow(x$global_rt)
       )
     )
@@ -263,7 +266,7 @@ print.wwinference_fit_draws <- function(x, ...) {
   if (length(x$site_level_rt)) {
     cat(
       sprintf(
-        "- site_level_rt with %i observations.\n",
+        " - `$site_level_rt` with %i observations.\n",
         nrow(x$site_level_rt)
       )
     )

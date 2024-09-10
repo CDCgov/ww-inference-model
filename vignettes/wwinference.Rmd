@@ -334,9 +334,7 @@ ww_fit <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(
-    seed = 123, iter_sampling = 100, iter_warmup = 50
-  ),
+  fit_opts = get_mcmc_options(),
   compiled_model = model
 )
 ```
@@ -383,6 +381,7 @@ draws_df <- get_draws(ww_fit)
 
 print(draws_df)
 ```
+
 Note that by default the `get_draws()` function will return a list of class `wwinference_fit_draws` all of the posterior draws for predicted hospitalizations, wastewater concentration, global, and site Rt estimates. To examine a particular variable (e.g. `"predicted counts"` for posterior
 predicted hospital admissions), access the corresponding tibble using the `$` operator.
 
@@ -392,7 +391,7 @@ Rather than using S3 methods supplied for `wwinference()`, the elements in the
 `wwinference_fit` object can also be used directly to create this dataframe.
 This is demonstrated below:
 
-```{r extracting-draws-explicit}
+```{r extracting-draws-explicit, eval = FALSE}
 draws_df_explicit <- get_draws(
   x = ww_fit$raw_input_data$input_ww_data,
   count_data = ww_fit$raw_input_data$input_count_data,
@@ -410,8 +409,6 @@ visualize data that was below the LOD (even though the fit incorporated
 them via the censored observation process.)
 
 ```{r generating-figures,  out.width='100%'}
-draws_df <- get_draws(ww_fit)
-
 plot_hosp <- get_plot_forecasted_counts(
   draws = draws_df$predicted_counts,
   count_data_eval = hosp_data_eval,
@@ -423,10 +420,10 @@ plot_hosp
 plot_ww <- get_plot_ww_conc(draws_df$predicted_ww, forecast_date)
 plot_ww
 
-plot_state_rt <- get_plot_global_rt(draws_df, forecast_date)
+plot_state_rt <- get_plot_global_rt(draws_df$global_rt, forecast_date)
 plot_state_rt
 
-plot_subpop_rt <- get_plot_subpop_rt(draws_df, forecast_date)
+plot_subpop_rt <- get_plot_subpop_rt(draws_df$site_level_rt, forecast_date)
 plot_subpop_rt
 ```
 
@@ -513,9 +510,9 @@ fit_hosp_only <- wwinference::wwinference(
 ```
 
 ```{r plot-hosp-only, out.width='100%'}
-draws_df_hosp_only <- get_draws_df(fit_hosp_only)
+draws_df_hosp_only <- get_draws(fit_hosp_only)
 plot_hosp_hosp_only <- get_plot_forecasted_counts(
-  draws = draws_df_hosp_only,
+  draws = draws_df_hosp_only$predicted_counts,
   count_data_eval = hosp_data_eval,
   count_data_eval_col_name = "daily_hosp_admits_for_eval",
   forecast_date = forecast_date
