@@ -118,9 +118,7 @@ model, as indicated in the .toml file.
 
 ```{r get-params}
 params <- get_params(
-  system.file("extdata", "example_params.toml",
-    package = "wwinference"
-  )
+  param_file = here::here("inst", "extdata", "example_params.toml")
 )
 ```
 
@@ -296,11 +294,11 @@ compile the model. This can be done using the compile_model() function.
 
 ```{r compile-model}
 model <- wwinference::compile_model(
-  model_filepath = file.path(
+  model_filepath = here::here(
     "inst", "stan",
     "wwinference.stan"
   ),
-  include_paths = file.path(
+  include_paths = here::here(
     "inst", "stan"
   )
 )
