@@ -68,6 +68,10 @@ get_draws.default <- function(x, ..., what = "all") {
   )
 }
 
+get_draws_what_ok <- c(
+  "all", "predicted_counts", "predicted_ww", "global_rt", "site_level_rt"
+)
+
 #' @rdname get_draws
 #' @param count_data A dataframe of the preprocessed daily count data (e.g.
 #' hospital admissions) from the "global" population
@@ -83,9 +87,7 @@ get_draws.data.frame <- function(x,
                                  ...,
                                  what = "all") {
   # Checking we are getting all
-  what_ok <- c(
-    "all", "predicted_counts", "predicted_ww", "global_rt", "site_level_rt"
-  )
+  what_ok <- get_draws_what_ok
 
   if (any(!what %in% what_ok)) {
     idx <- which(!what %in% what_ok)
@@ -345,4 +347,53 @@ new_wwinference_fit_draws <- function(
     ),
     class = "wwinference_fit_draws"
   )
+}
+
+#' @export
+#' @rdname get_draws
+#' @param x An object of class `get_draws`.
+#' @param y Ignored in the the case of `plot`.
+#' @details
+#' The plot method for `wwinference_fit_draws` is a wrapper of
+#' `get_plot_forecasted_counts`, `get_plot_ww_conc`, `get_plot_global_rt`,
+#' and `get_plot_subpop_rt`. Depending on the value of `what`, the function
+#' will call the appropriate method.
+#'
+plot.wwinference_fit_draws <- function(x, y, what, ...) {
+  which_what_are_ok <- setdiff(get_draws_what_ok, "all")
+
+  if (!what %in% which_what_are_ok) {
+    stop(
+      sprintf(
+        paste0(
+          "The value provided to what (%s) is invalid. ",
+          "Valid values include \"%s\"."
+        ),
+        paste(what, collapse = ", "),
+        paste(which_what_are_ok, collapse = "\", \"")
+      )
+    )
+  }
+
+  if (what == "predicted_counts") {
+    get_plot_forecasted_counts(
+      draws = x$predicted_counts,
+      ...
+    )
+  } else if (what == "predicted_ww") {
+    get_plot_ww_conc(
+      x$predicted_ww,
+      ...
+    )
+  } else if (what == "global_rt") {
+    get_plot_global_rt(
+      x$global_rt,
+      ...
+    )
+  } else if (what == "site_level_rt") {
+    get_plot_subpop_rt(
+      x$site_level_rt,
+      ...
+    )
+  }
 }

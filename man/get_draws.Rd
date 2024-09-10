@@ -6,6 +6,7 @@
 \alias{get_draws.wwinference_fit}
 \alias{get_draws.default}
 \alias{get_draws.data.frame}
+\alias{plot.wwinference_fit_draws}
 \title{Postprocess to generate a draws dataframe}
 \usage{
 get_draws(x, ..., what = "all")
@@ -17,10 +18,11 @@ get_draws_df(x, ...)
 \method{get_draws}{default}(x, ..., what = "all")
 
 \method{get_draws}{data.frame}(x, count_data, stan_data_list, fit_obj, ..., what = "all")
+
+\method{plot}{wwinference_fit_draws}(x, y, what, ...)
 }
 \arguments{
-\item{x}{Either a dataframe of wastewater observations, or an object of
-class wwinference_fit}
+\item{x}{An object of class \code{get_draws}.}
 
 \item{...}{additional arguments}
 
@@ -37,6 +39,8 @@ fitting the model}
 
 \item{fit_obj}{a CmdStan object that is the output of fitting the model to
 \code{x} and \code{count_data}}
+
+\item{y}{Ignored in the the case of \code{plot}.}
 }
 \value{
 A tibble containing the full set of posterior draws of the
@@ -61,4 +65,9 @@ for objects of type 'wwinference_fit'.
 }
 \details{
 The function \code{get_draws_df()} has been deprecated in favor of \code{get_draws()}.
+
+The plot method for \code{wwinference_fit_draws} is a wrapper of
+\code{get_plot_forecasted_counts}, \code{get_plot_ww_conc}, \code{get_plot_global_rt},
+and \code{get_plot_subpop_rt}. Depending on the value of \code{what}, the function
+will call the appropriate method.
 }
