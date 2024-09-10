@@ -427,6 +427,14 @@ plot_subpop_rt <- get_plot_subpop_rt(draws_df$site_level_rt, forecast_date)
 plot_subpop_rt
 ```
 
+The previous three are equivalent to calling the `plot` method of `wwinference_fit_draws` using the `what` argument:
+
+```r
+plot(draws_df, what = "predicted_ww")
+plot(draws_df, what = "global_rt")
+plot(draws_df, what = "site_level_rt")
+```
+
 ## Diagnostics
 
 We strongly recommend running diagnostics as a post-processing step on the
