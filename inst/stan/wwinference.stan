@@ -38,8 +38,7 @@ data {
                                    // will be mapped to the corresponding sites (ww_sampled_sites)
   array[oht] int<lower=1, upper=ot> hosp_times; // the days on which hospital admissions are observed
   array[owt] int<lower=1,upper=n_subpops> ww_sampled_sites; // vector of unique sites in order of the sampled times
-  array[owt] int<lower=1,upper=n_ww_lab_sites> ww_sampled_lab_sites; // vector of unique lab-site combos i
-   	     // n order of the sampled times
+  array[owt] int<lower=1,upper=n_ww_lab_sites> ww_sampled_lab_sites; // vector mapping the
   array[n_censored] int<lower=1,upper=owt> ww_censored; // times that the WW data is below the LOD
   array[n_uncensored] int<lower=1,upper=owt> ww_uncensored; // time that WW data is above LOD
   vector[owt] ww_log_lod; // The limit of detection in that site at that time point
@@ -162,7 +161,7 @@ transformed parameters {
   vector<lower=0>[n_ww_lab_sites] sigma_ww_site;
   vector[n_weeks] log_r_0_t_in_weeks; // log of state level mean R(t) in weeks
   vector<lower=0>[ot + ht] unadj_r; // state level R(t) before damping
-  matrix[n_subpops-1, ot+ht] r_subpop_t; // matrix of subpopulation level R(t)
+  matrix[n_subpops, ot+ht] r_subpop_t; // matrix of subpopulation level R(t)
   row_vector[ot + ht] unadj_r_subpop_t; // subpopulation level R(t) before damping -- temp vector
   vector[n_weeks] log_r_subpop_t_in_weeks; // subpop level R(t) in weeks-- temp vector
   real log_i0_subpop; // subpop level log i0/n -- temp var
@@ -194,7 +193,7 @@ transformed parameters {
 
   // Loop over n_subpops - 1 to estimate deviations from reference subpop and
   // generate infections and expected wastewater concentrations
-  for (i in 1:n_subpops-1) {
+  for (i in 1:(n_subpops-1)) {
 
     log_i0_subpop = log(i_first_obs_over_n_subpop[i]) - uot * initial_exp_growth_rate_subpop[i];
     // Let site-level R(t) vary around the reference subpopulation R(t)

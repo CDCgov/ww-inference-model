@@ -50,6 +50,10 @@ preprocess_ww_data <- function(ww_data,
 
   # Add some columns
   ww_data_add_cols <- ww_data |>
+    # Order by site population so the first site index corresponds largest pop
+    dplyr::group_by(.data$site) |>
+    dplyr::arrange(desc(.data$site_pop), .by_group = TRUE) |>
+    dplyr::ungroup() |>
     dplyr::left_join(
       ww_data |>
         dplyr::distinct(.data$lab, .data$site) |>

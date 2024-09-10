@@ -46,7 +46,7 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
       convert_to_logmean(1, stdev),
       convert_to_logsd(1, stdev)
     ),
-    error_site = matrix(
+    error_subpop = matrix(
       stats::rnorm(n_subpops * n_weeks,
         mean = 0,
         sd = stdev
@@ -54,7 +54,7 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
       n_subpops,
       n_weeks
     ),
-    autoreg_rt_site = abs(stats::rnorm(1, 0.5, 0.05)),
+    autoreg_rt_subpop = abs(stats::rnorm(1, 0.5, 0.05)),
     autoreg_p_hosp = abs(stats::rnorm(1, 1 / 100, 0.001)),
     sigma_rt = abs(stats::rnorm(1, 0, stdev)),
     i_first_obs_over_n =

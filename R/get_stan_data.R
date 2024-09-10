@@ -294,12 +294,14 @@ get_stan_data <- function(input_count_data,
   # Logic to determine the number of subpopulations to estimate R(t) for:
   # First determine if we need to add an additional subpopulation
   add_auxiliary_site <- ifelse(pop >= sum(ww_values$pop_ww), TRUE, FALSE)
+  # If fitting the model without wastewater data, there are no sites
+  n_ww_sites <- ifelse(include_ww == 1, ww_data_sizes$n_ww_sites, 0)
   # Then get the number of subpopulations, the population to normalize by
   # (sum of the subpopulations), and the vector of sizes of each subpopulation
   subpop_data <- get_subpop_data(add_auxiliary_site,
     state_pop = pop,
     pop_ww = ww_values$pop_ww,
-    n_ww_sites = ww_data_sizes$n_ww_sites
+    n_ww_sites = n_ww_sites
   )
 
   # Get the sizes of all the elements
@@ -351,6 +353,14 @@ get_stan_data <- function(input_count_data,
 
   inf_to_count_delay_max <- length(inf_to_count_delay)
 
+  # if adding auxiliary site, then we need to adjust site and lab indices
+  # such that first subpopulation is the auxiliary site.
+  if (add_auxiliary_site) {
+    subpop_to_site_map <- ww_indices$ww_sampled_sites + 1
+  } else {
+    subpop_to_site_map <- ww_indices$ww_sampled_sites
+  }
+
   stan_data_list <- list(
     gt_max = min(length(generation_interval), params$gt_max),
     hosp_delay_max = inf_to_count_delay_max,
@@ -377,6 +387,8 @@ get_stan_data <- function(input_count_data,
     norm_pop = subpop_data$norm_pop,
     ww_sampled_times = ww_indices$ww_sampled_times,
     hosp_times = count_indices$count_times,
+    ww_sampled_sites = subpop_to_site_map,
+    lab_site_to_site_map = ww_indices$lab_site_to_site_map,
     ww_sampled_lab_sites = ww_indices$ww_sampled_lab_sites,
     ww_log_lod = ww_values$ww_lod,
     ww_censored = ww_indices$ww_censored,
@@ -393,8 +405,8 @@ get_stan_data <- function(input_count_data,
     viral_shedding_pars = viral_shedding_pars, # tpeak, viral peak, dur_shed
     autoreg_rt_a = params$autoreg_rt_a,
     autoreg_rt_b = params$autoreg_rt_b,
-    autoreg_rt_site_a = params$autoreg_rt_site_a,
-    autoreg_rt_site_b = params$autoreg_rt_site_b,
+    autoreg_rt_subpop_a = params$autoreg_rt_subpop_a,
+    autoreg_rt_subpop_b = params$autoreg_rt_subpop_b,
     autoreg_p_hosp_a = params$autoreg_p_hosp_a,
     autoreg_p_hosp_b = params$autoreg_p_hosp_b,
     inv_sqrt_phi_prior_mean = params$inv_sqrt_phi_prior_mean,
@@ -436,9 +448,7 @@ get_stan_data <- function(input_count_data,
     inf_feedback_prior_logsd = params$infection_feedback_prior_logsd,
     sigma_rt_prior = params$sigma_rt_prior,
     log_phi_g_prior_mean = params$log_phi_g_prior_mean,
-    log_phi_g_prior_sd = params$log_phi_g_prior_sd,
-    ww_sampled_sites = ww_indices$ww_sampled_sites,
-    lab_site_to_site_map = ww_indices$lab_site_to_site_map
+    log_phi_g_prior_sd = params$log_phi_g_prior_sd
   )
 
 
@@ -742,10 +752,10 @@ get_subpop_data <- function(add_auxiliary_site,
   if (add_auxiliary_site) {
     # In most cases, wastewater catchment coverage < entire state.
     # So here we add a subpopulation that represents the population not
-    # covered by wastewater surveillance
+    # covered by wastewater surveillance. This is the ref pop. It will go first.
     norm_pop <- state_pop
     n_subpops <- n_ww_sites + 1
-    subpop_size <- c(pop_ww, state_pop - sum(pop_ww))
+    subpop_size <- c(state_pop - sum(pop_ww), pop_ww)
   } else {
     message("Sum of wastewater catchment areas is greater than state pop")
     norm_pop <- sum(pop_ww)

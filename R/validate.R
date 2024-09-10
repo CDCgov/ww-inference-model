@@ -200,10 +200,10 @@ validate_both_datasets <- function(input_count_data,
   # The package can handle this, but warn users that they may have an input
   # data error.
   sum_site_pops <- input_ww_data |>
-    dplyr::distinct(ww_data$site_pop) |>
+    dplyr::distinct(.data$site_pop) |>
     sum()
   total_pop <- input_count_data |>
-    dplyr::distinct(input_count_data$total_pop)
+    dplyr::distinct(.data$total_pop)
   if (sum_site_pops > total_pop) {
     cli::cli_warn(c(
       "The sum of the populations in the wastewater catchment areas is",
