@@ -118,7 +118,7 @@ parameters {
   real<lower=0> sigma_rt; // magnitude of site level variation from state level
   real<lower=0, upper=1> autoreg_rt_subpop;
   real<lower=0, upper=1> autoreg_p_hosp;
-  matrix[n_subpops-1, n_weeks] error_site; // matrix of subpopulation deviations from ref R(t)
+  matrix[n_subpops-1, n_weeks] error_subpop; // matrix of subpopulation deviations from ref R(t)
   real<lower=0,upper=1> i_first_obs_over_n; // per capita
   // infection incidence on the day of the first observed infection of reference subpop
   vector[n_subpops-1] eta_i_first_obs; // z-score on logit scale of site
@@ -261,10 +261,6 @@ transformed parameters {
     model_log_v_ot[1] = log(10) * log10_g +
       log(model_net_i[(uot+1):(uot + ot + ht) ] + 1e-8) -
       log(mwpd);
-  }
-
-
-
 
 
   // Set up p_hosp as an AR(1) process that regresses back towards the initial value of p_hosp
