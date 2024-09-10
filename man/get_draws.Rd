@@ -19,7 +19,7 @@ get_draws_df(x, ...)
 
 \method{get_draws}{data.frame}(x, count_data, stan_data_list, fit_obj, ..., what = "all")
 
-\method{plot}{wwinference_fit_draws}(x, y, what, ...)
+\method{plot}{wwinference_fit_draws}(x, y = NULL, what, ...)
 }
 \arguments{
 \item{x}{An object of class \code{get_draws}.}

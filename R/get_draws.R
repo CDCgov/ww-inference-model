@@ -359,7 +359,7 @@ new_wwinference_fit_draws <- function(
 #' and `get_plot_subpop_rt`. Depending on the value of `what`, the function
 #' will call the appropriate method.
 #'
-plot.wwinference_fit_draws <- function(x, y, what, ...) {
+plot.wwinference_fit_draws <- function(x, y = NULL, what, ...) {
   which_what_are_ok <- setdiff(get_draws_what_ok, "all")
 
   if (!what %in% which_what_are_ok) {

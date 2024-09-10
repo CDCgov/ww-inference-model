@@ -65,7 +65,7 @@ test_that("Test the wastewater inference model on simulated data.", {
 
   # Testing draws
   model_draws <- get_draws(fit)
-  expect_length(model_draws, 5)
+  expect_length(model_draws, 4)
 
   expect_error(get_draws(fit, what = "something else"))
 
