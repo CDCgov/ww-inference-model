@@ -62,4 +62,17 @@ test_that("Test the wastewater inference model on simulated data.", {
       tolerance = 0.0001
     )
   }
+
+  # Testing draws
+  model_draws <- get_draws(fit)
+  expect_length(model_draws, 5)
+
+  expect_error(get_draws(fit, what = "something else"))
+
+  expect_true(inherits(plot(model_draws, what = "predicted_counts"), "ggplot"))
+  expect_true(inherits(plot(model_draws, what = "predicted_ww"), "ggplot"))
+  expect_true(inherits(plot(model_draws, what = "global_rt"), "ggplot"))
+  expect_true(inherits(plot(model_draws, what = "site_level_rt"), "ggplot"))
+
+  expect_error(plot(model_draws, what = "something else"))
 })
