@@ -40,7 +40,7 @@ generate_simulated_data(
   sigma_generalized = 0.005^4,
   scaling_factor = 1,
   aux_site_bool = TRUE,
-  init_stat = FALSE
+  init_stat = TRUE
 )
 }
 \arguments{
