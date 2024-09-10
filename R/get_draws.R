@@ -13,13 +13,11 @@
 #'
 #' @param x Either a dataframe of wastewater observations, or an object of
 #' class wwinference_fit
-#' @param count_data A dataframe of the preprocessed daily count data (e.g.
-#' hospital admissions) from the "global" population
-#' @param stan_data_list A list containing all the data passed to stan for
-#' fitting the model
-#' @param fit_obj a CmdStan object that is the output of fitting the model to
-#' `x` and `count_data`
 #' @param ... additional arguments
+#' @param what Character vector. Specifies the variables to extract from the
+#' draws. It could be any from `"all"` `"predicted_counts"`, `"predicted_ww"`,
+#' `"global_rt"`, or `"site_level_rt"`. When `what = "all"` (the default),
+#' the function will extract all four variables.
 #' @return  A tibble containing the full set of posterior draws of the
 #' estimated, nowcasted, and forecasted: counts, site-level wastewater
 #' concentrations, "global"(e.g. state) R(t) estimate, and the  "local" (site +
@@ -68,6 +66,12 @@ get_draws.default <- function(x, ..., what = "all") {
 }
 
 #' @rdname get_draws
+#' @param count_data A dataframe of the preprocessed daily count data (e.g.
+#' hospital admissions) from the "global" population
+#' @param stan_data_list A list containing all the data passed to stan for
+#' fitting the model
+#' @param fit_obj a CmdStan object that is the output of fitting the model to
+#' `x` and `count_data`
 #' @export
 get_draws.data.frame <- function(x,
                                  count_data,
