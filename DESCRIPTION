@@ -23,7 +23,7 @@ Authors@R: c(
            email = "xuk0@cdc.gov"),
     person(given = "George",
            family = "Vega Yon",
-           role = c("ctb"),
+           role = c("aut"),
            email = "g.vegayon@gmail.com",
            comment = c(ORCID = "0000-0002-3171-0844")),
     person(given = "Damon",
