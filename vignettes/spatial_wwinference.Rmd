@@ -30,6 +30,7 @@ library(tibble)
 library(ggplot2)
 library(patchwork)
 library(ggridges)
+library(scico)
 ```
 
 
@@ -50,8 +51,10 @@ correlation function based of the following fake locations.
 set.seed(2024)
 n_sites <- 4
 fake_locs <- data.frame(
-  x = runif(n_sites, 0, 1000),
-  y = runif(n_sites, 0, 1000),
+  x = c(85, 37, 36, 7),
+  y = c(12, 75, 75, 96),
+  # // x = runif(n_sites, 0, 100),
+  # // y = runif(n_sites, 0, 100),
   ID = paste0("Site ", 1:n_sites)
 ) %>%
   mutate(
@@ -83,16 +86,51 @@ fake_locs_plot <- ggplot(
 
 fake_locs_plot
 ```
-
+## Central Rt Curve
+```{r}
+# // r_in_weeks = c(
+# //  rep(1.1, 5), rep(0.9, 5),
+# //  0.9 + 0.0005 * (1:16)^2
+# // )
+r_in_weeks <- c(
+  rep(1.1, 5), rep(0.9, 5),
+  1 + 0.007 * 1:16
+)
+lng <- length(r_in_weeks)
+ggplot() +
+  geom_line(
+    aes(
+      x = 1:lng,
+      y = r_in_weeks
+    )
+  ) +
+  geom_point(
+    aes(
+      x = 1:lng,
+      y = r_in_weeks
+    )
+  ) +
+  geom_hline(
+    yintercept = 1,
+    color = "blue",
+    linetype = "dashed",
+    alpha = .7
+  ) +
+  scale_y_continuous(transform = "log10") +
+  xlab("Week") +
+  ylab("Rt Value") +
+  ggtitle("Central Rt curve") +
+  theme_bw()
+```
 
 ## Simulating data
 ```{r warning=FALSE, message=FALSE}
 # Presets ----------------------------------------------------------------------
-set.seed(2024)
+set.seed(1)
 site <- 1:n_sites
 lab <- 1:n_sites
-ww_pop_sites <- c(5e5, 7.5e5, 3.8e5, 4.5e5) # , 5.5e5, 3.7e5, 6e5, 4e5)
-pop_size <- 8e6
+# // ww_pop_sites <- c(5e5, 7.5e5, 3.8e5, 4.5e5, 5.5e5, 3.7e5)#, 6e5, 4e5)
+# // pop_size <- 5e6
 global_rt_sd <- 0
 exp_corr_param <- list(
   dist_matrix = as.matrix(
@@ -106,17 +144,19 @@ exp_corr_param <- list(
     )
   ),
   phi = 0.2,
+  # // phi = 0.4
   l = 1
 )
-sigma_generalized <- 0.001^n_sites
+sigma_generalized <- 0.01^n_sites
 # ------------------------------------------------------------------------------
 # IID Simulated Data -----------------------------------------------------------
 simulated_data_iid <- wwinference::generate_simulated_data(
+  r_in_weeks = r_in_weeks,
   n_sites = n_sites,
-  site = site,
-  lab = lab,
-  ww_pop_sites = ww_pop_sites,
-  pop_size = pop_size,
+  # // site = site,
+  # // lab = lab,
+  # // ww_pop_sites = ww_pop_sites,
+  # // pop_size = pop_size,
   global_rt_sd = global_rt_sd,
   use_spatial_corr = TRUE,
   corr_function = wwinference::independence_corr_func_r,
@@ -127,11 +167,12 @@ simulated_data_iid <- wwinference::generate_simulated_data(
 # ------------------------------------------------------------------------------
 # Exponential Simulated Data ---------------------------------------------------
 simulated_data_exp <- wwinference::generate_simulated_data(
+  r_in_weeks = r_in_weeks,
   n_sites = n_sites,
-  site = site,
-  lab = lab,
-  ww_pop_sites = ww_pop_sites,
-  pop_size = pop_size,
+  # // site = site,
+  # // lab = lab,
+  # // ww_pop_sites = ww_pop_sites,
+  # // pop_size = pop_size,
   global_rt_sd = global_rt_sd,
   use_spatial_corr = TRUE,
   corr_function = exponential_decay_corr_func_r,
@@ -142,11 +183,12 @@ simulated_data_exp <- wwinference::generate_simulated_data(
 # ------------------------------------------------------------------------------
 # Rand. Corr. Matrix Simulated Data --------------------------------------------
 simulated_data_rng_corr_mat <- wwinference::generate_simulated_data(
+  r_in_weeks = r_in_weeks,
   n_sites = n_sites,
-  site = site,
-  lab = lab,
-  ww_pop_sites = ww_pop_sites,
-  pop_size = pop_size,
+  # // site = site,
+  # // lab = lab,
+  # // ww_pop_sites = ww_pop_sites,
+  # // pop_size = pop_size,
   global_rt_sd = global_rt_sd,
   use_spatial_corr = TRUE,
   corr_function = wwinference::rand_corr_matrix_func,
@@ -166,9 +208,7 @@ hosp_data_preprocessed_iid <- wwinference::preprocess_count_data(
   pop_size_col_name = "state_pop"
 )
 ww_data_preprocessed_iid <- wwinference::preprocess_ww_data(
-  simulated_data_iid$ww_data,
-  conc_col_name = "genome_copies_per_ml",
-  lod_col_name = "lod"
+  simulated_data_iid$ww_data
 )
 ww_data_to_fit_iid <- wwinference::indicate_ww_exclusions(
   ww_data_preprocessed_iid,
@@ -183,9 +223,7 @@ hosp_data_preprocessed_exp <- wwinference::preprocess_count_data(
   pop_size_col_name = "state_pop"
 )
 ww_data_preprocessed_exp <- wwinference::preprocess_ww_data(
-  simulated_data_exp$ww_data,
-  conc_col_name = "genome_copies_per_ml",
-  lod_col_name = "lod"
+  simulated_data_exp$ww_data
 )
 ww_data_to_fit_exp <- wwinference::indicate_ww_exclusions(
   ww_data_preprocessed_exp,
@@ -200,9 +238,7 @@ hosp_data_proc_rng_corr_mat <- wwinference::preprocess_count_data(
   pop_size_col_name = "state_pop"
 )
 ww_data_proc_rng_corr_mat <- wwinference::preprocess_ww_data(
-  simulated_data_rng_corr_mat$ww_data,
-  conc_col_name = "genome_copies_per_ml",
-  lod_col_name = "lod"
+  simulated_data_rng_corr_mat$ww_data
 )
 ww_data_to_fit_rng_corr_mat <- wwinference::indicate_ww_exclusions(
   ww_data_proc_rng_corr_mat,
@@ -292,11 +328,11 @@ ww_data_full <- rbind(
 ww_data_plot <- ggplot(ww_data_full) +
   geom_point(
     aes(
-      x = date, y = log(genome_copies_per_ml)
+      x = date, y = log_genome_copies_per_ml
     ),
     show.legend = FALSE
   ) +
-  geom_hline(aes(yintercept = log(lod)), linetype = "dashed") +
+  geom_hline(aes(yintercept = log_lod), linetype = "dashed") +
   facet_grid(site ~ model_type,
     scales = "fixed",
     labeller = labeller(site = function(x) paste("Site", x))
@@ -309,6 +345,44 @@ ww_data_plot <- ggplot(ww_data_full) +
 hosp_data_plot / ww_data_plot +
   plot_layout(heights = c(1, 2))
 ```
+
+
+```{r}
+ww_total_plot <- ggplot(ww_data_full) +
+  geom_line(
+    aes(
+      x = date, y = log_genome_copies_per_ml,
+      colour = factor(site)
+    )
+  ) +
+  geom_point(
+    aes(
+      x = date, y = log_genome_copies_per_ml,
+      colour = factor(site)
+    )
+  ) +
+  geom_hline(
+    aes(yintercept = log_lod, colour = factor(site)),
+    linetype = "dashed"
+  ) +
+  facet_grid(
+    ~model_type,
+    scales = "fixed"
+  ) +
+  scale_color_manual(
+    breaks = c("1", "2", "3", "4", "5", "6"),
+    values = c(
+      "darkviolet", "darkblue", "darkgreen",
+      "darkred", "gold", "darkorange"
+    )
+  ) +
+  xlab("") +
+  ylab("Genome copies/mL on log scale") +
+  labs(color = "Site") +
+  theme_bw()
+ww_total_plot
+```
+
 
 ### Visualizing actual Rt curves
 ```{r}
@@ -357,6 +431,7 @@ global_rt_data_plot <- ggplot(rt_global_data_full) +
     x = date,
     y = (global_rt),
   )) +
+  scale_y_continuous(transform = "log10") +
   xlab("") +
   ylab("Global R(t)") +
   facet_grid(~model_type) +
@@ -442,6 +517,7 @@ site_rt_data_plot <- ggplot(site_rt_data_full) +
     y = (value)
   )) +
   facet_grid(subpop ~ model_type) +
+  scale_y_continuous(transform = "log10") +
   xlab("") +
   ylab("Subpopulation R(t)") +
   theme_bw()
@@ -451,6 +527,41 @@ site_rt_data_plot <- ggplot(site_rt_data_full) +
 global_rt_data_plot / site_rt_data_plot +
   plot_layout(heights = c(1, 4))
 ```
+
+```{r}
+site_rt_total_plot <- ggplot(site_rt_data_full) +
+  geom_hline(
+    yintercept = 1,
+    color = "blue",
+    linetype = "dashed",
+    alpha = .7
+  ) +
+  geom_line(aes(
+    x = date, y = value,
+    colour = factor(subpop)
+  )) +
+  facet_grid(~model_type,
+    scales = "fixed"
+  ) +
+  scale_color_manual(
+    breaks = c(
+      "Site 1", "Site 2", "Site 3", "Site 4",
+      "Site 5", "Site 6", "Aux"
+    ),
+    values = c(
+      "darkviolet", "darkblue", "darkgreen",
+      "darkred", "gold", "darkorange", "grey"
+    )
+  ) +
+  scale_y_continuous(transform = "log10") +
+  xlab("") +
+  ylab("Subpopulation R(t)") +
+  labs(color = "Sites") +
+  theme_bw()
+
+site_rt_total_plot
+```
+
 
 ### Visual of correlation matrix
 ```{r}
@@ -517,6 +628,12 @@ corr_matrix_df <- rbind(
         "Rand. Corr. Matrix"
       )
     )
+  ) %>%
+  mutate(
+    Var2 = factor(
+      Var2,
+      levels = paste0("Site ", n_sites:1)
+    )
   )
 corr_matrix_plot <- ggplot(corr_matrix_df, aes(Var1, Var2)) +
   geom_point(
@@ -524,23 +641,30 @@ corr_matrix_plot <- ggplot(corr_matrix_df, aes(Var1, Var2)) +
     shape = 21,
     color = "black"
   ) +
-  scale_fill_gradient2(
-    low = "blue",
-    high = "red",
-    mid = "white",
-    midpoint = 0,
-    limit = c(-1, 1),
-    space = "Lab",
+  # // scale_fill_gradient2(
+  # //  low = "blue",
+  # //  high = "red",
+  # //  mid = "white",
+  # //  midpoint = 0,
+  # //  limit = c(-1, 1),
+  # //  space = "Lab",
+  # //  name = "Correlation"
+  # // ) +
+  scale_fill_scico(
+    palette = "vik",
+    direction = 1,
+    limits = c(-1, 1),
     name = "Correlation"
   ) +
-  scale_size_continuous(
+  scale_size(
     range = c(1, 10),
     guide = "none"
   ) +
+  scale_x_discrete(position = "top") +
   coord_fixed() +
   ylab("") +
   xlab("") +
-  facet_grid(~model_type) +
+  facet_grid(~model_type, switch = "x") +
   ggtitle("Correlation Matrix Visuals") +
   theme_bw()
 # ------------------------------------------------------------------------------
@@ -583,7 +707,7 @@ infection_feedback_pmf <- generation_interval
 
 model <- wwinference::compile_model()
 
-iter_warmup <- 250
+iter_warmup <- 150
 iter_sampling <- 500
 ```
 
@@ -602,7 +726,7 @@ fit_iid_to_iid <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  mcmc_options = get_mcmc_options(
+  fit_opts = get_mcmc_options(
     iter_warmup = iter_warmup,
     iter_sampling = iter_sampling
   ),
@@ -624,7 +748,7 @@ fit_iid_to_exp <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  mcmc_options = get_mcmc_options(
+  fit_opts = get_mcmc_options(
     iter_warmup = iter_warmup,
     iter_sampling = iter_sampling
   ),
@@ -646,7 +770,7 @@ fit_iid_to_unstruct <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  mcmc_options = get_mcmc_options(
+  fit_opts = get_mcmc_options(
     iter_warmup = iter_warmup,
     iter_sampling = iter_sampling
   ),
@@ -672,7 +796,7 @@ fit_exp_to_iid <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  mcmc_options = get_mcmc_options(
+  fit_opts = get_mcmc_options(
     iter_warmup = iter_warmup,
     iter_sampling = iter_sampling
   ),
@@ -694,7 +818,7 @@ fit_exp_to_exp <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  mcmc_options = get_mcmc_options(
+  fit_opts = get_mcmc_options(
     iter_warmup = iter_warmup,
     iter_sampling = iter_sampling
   ),
@@ -716,7 +840,7 @@ fit_exp_to_unstruct <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  mcmc_options = get_mcmc_options(
+  fit_opts = get_mcmc_options(
     iter_warmup = iter_warmup,
     iter_sampling = iter_sampling
   ),
@@ -742,7 +866,7 @@ fit_rand_to_iid <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  mcmc_options = get_mcmc_options(
+  fit_opts = get_mcmc_options(
     iter_warmup = iter_warmup,
     iter_sampling = iter_sampling
   ),
@@ -764,7 +888,7 @@ fit_rand_to_exp <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  mcmc_options = get_mcmc_options(
+  fit_opts = get_mcmc_options(
     iter_warmup = iter_warmup,
     iter_sampling = iter_sampling
   ),
@@ -786,7 +910,7 @@ fit_rand_to_unstruct <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  mcmc_options = get_mcmc_options(
+  fit_opts = get_mcmc_options(
     iter_warmup = iter_warmup,
     iter_sampling = iter_sampling
   ),
@@ -800,17 +924,21 @@ fit_rand_to_unstruct <- wwinference::wwinference(
 ## Preparing sampled draws
 ```{r}
 set.seed(2024)
+draws_to_keep <- sample(1:max(get_draws_df(fit_iid_to_iid)$draw), 100)
 # IID data ---------------------------------------------------------------------
 iid_pred_draws_df <- rbind(
-  fit_iid_to_iid$draws_df %>%
+  get_draws_df(fit_iid_to_iid) %>%
+    filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "IID"
     ),
-  fit_iid_to_exp$draws_df %>%
+  get_draws_df(fit_iid_to_exp) %>%
+    filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "Exponential"
     ),
-  fit_iid_to_unstruct$draws_df %>%
+  get_draws_df(fit_iid_to_unstruct) %>%
+    filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "Unstructured"
     )
@@ -821,15 +949,18 @@ iid_pred_draws_df <- rbind(
 # ------------------------------------------------------------------------------
 # Exponential data -------------------------------------------------------------
 exp_pred_draws_df <- rbind(
-  fit_exp_to_iid$draws_df %>%
+  get_draws_df(fit_exp_to_iid) %>%
+    filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "IID"
     ),
-  fit_exp_to_exp$draws_df %>%
+  get_draws_df(fit_exp_to_exp) %>%
+    filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "Exponential"
     ),
-  fit_exp_to_unstruct$draws_df %>%
+  get_draws_df(fit_exp_to_unstruct) %>%
+    filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "Unstructured"
     )
@@ -840,15 +971,18 @@ exp_pred_draws_df <- rbind(
 # ------------------------------------------------------------------------------
 # Rand. Corr. Matrix data ------------------------------------------------------
 rand_pred_draws_df <- rbind(
-  fit_rand_to_iid$draws_df %>%
+  get_draws_df(fit_rand_to_iid) %>%
+    filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "IID"
     ),
-  fit_rand_to_exp$draws_df %>%
+  get_draws_df(fit_rand_to_exp) %>%
+    filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "Exponential"
     ),
-  fit_rand_to_unstruct$draws_df %>%
+  get_draws_df(fit_rand_to_unstruct) %>%
+    filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "Unstructured"
     )
@@ -883,11 +1017,10 @@ all_pred_draws_df <- rbind(
 ```
 
 ## Preparing sampled draws for correlation matrix
-
 ```{r}
 # IID data ---------------------------------------------------------------------
 iid_corr_matrix_draws_df <- rbind(
-  fit_iid_to_iid$raw_fit_obj$draws(
+  fit_iid_to_iid$fit$result$draws(
     variables = "non_norm_omega",
     format = "draws_array"
   ) %>%
@@ -909,7 +1042,7 @@ iid_corr_matrix_draws_df <- rbind(
     select(
       -variable
     ),
-  fit_iid_to_exp$raw_fit_obj$draws(
+  fit_iid_to_exp$fit$result$draws(
     variables = "non_norm_omega",
     format = "draws_array"
   ) %>%
@@ -931,7 +1064,7 @@ iid_corr_matrix_draws_df <- rbind(
     select(
       -variable
     ),
-  fit_iid_to_unstruct$raw_fit_obj$draws(
+  fit_iid_to_unstruct$fit$result$draws(
     variables = "non_norm_omega",
     format = "draws_array"
   ) %>%
@@ -960,7 +1093,7 @@ iid_corr_matrix_draws_df <- rbind(
 # ------------------------------------------------------------------------------
 # Exponential data -------------------------------------------------------------
 exp_corr_matrix_draws_df <- rbind(
-  fit_exp_to_iid$raw_fit_obj$draws(
+  fit_exp_to_iid$fit$result$draws(
     variables = "non_norm_omega",
     format = "draws_array"
   ) %>%
@@ -982,7 +1115,7 @@ exp_corr_matrix_draws_df <- rbind(
     select(
       -variable
     ),
-  fit_exp_to_exp$raw_fit_obj$draws(
+  fit_exp_to_exp$fit$result$draws(
     variables = "non_norm_omega",
     format = "draws_array"
   ) %>%
@@ -1004,7 +1137,7 @@ exp_corr_matrix_draws_df <- rbind(
     select(
       -variable
     ),
-  fit_exp_to_unstruct$raw_fit_obj$draws(
+  fit_exp_to_unstruct$fit$result$draws(
     variables = "non_norm_omega",
     format = "draws_array"
   ) %>%
@@ -1033,7 +1166,7 @@ exp_corr_matrix_draws_df <- rbind(
 # ------------------------------------------------------------------------------
 # Rand. Corr. Matrix data ------------------------------------------------------
 rand_corr_matrix_draws_df <- rbind(
-  fit_rand_to_iid$raw_fit_obj$draws(
+  fit_rand_to_iid$fit$result$draws(
     variables = "non_norm_omega",
     format = "draws_array"
   ) %>%
@@ -1055,7 +1188,7 @@ rand_corr_matrix_draws_df <- rbind(
     select(
       -variable
     ),
-  fit_rand_to_exp$raw_fit_obj$draws(
+  fit_rand_to_exp$fit$result$draws(
     variables = "non_norm_omega",
     format = "draws_array"
   ) %>%
@@ -1077,7 +1210,7 @@ rand_corr_matrix_draws_df <- rbind(
     select(
       -variable
     ),
-  fit_iid_to_unstruct$raw_fit_obj$draws(
+  fit_iid_to_unstruct$fit$result$draws(
     variables = "non_norm_omega",
     format = "draws_array"
   ) %>%
@@ -1136,7 +1269,7 @@ all_corr_matrix_draws_df <- rbind(
 # Hospital admissions results --------------------------------------------------
 hosp_ribbon_data <- all_pred_draws_df %>%
   filter(
-    name == "pred_counts"
+    name == "predicted counts"
   ) %>%
   group_by(
     date,
@@ -1152,28 +1285,28 @@ hosp_ribbon_data <- all_pred_draws_df %>%
 hosp_result_plot <- ggplot(
   all_pred_draws_df %>%
     filter(
-      name == "pred_counts"
+      name == "predicted counts"
     )
 ) +
   geom_ribbon(
     data = hosp_ribbon_data,
     aes(x = date, ymin = lower, ymax = upper, fill = inf_model_type),
-    alpha = 0.4
+    alpha = 0.2
   ) +
   geom_line(
     data = hosp_ribbon_data,
     aes(x = date, y = median, color = inf_model_type),
-    size = 1.25,
+    size = 1,
   ) +
   geom_line(
     data = hosp_ribbon_data,
     aes(x = date, y = lower, color = inf_model_type),
-    size = 1.25,
+    size = 1,
   ) +
   geom_line(
     data = hosp_ribbon_data,
     aes(x = date, y = upper, color = inf_model_type),
-    size = 1.25,
+    size = 1,
   ) +
   geom_point(
     data = hosp_data_eval_full %>%
@@ -1211,7 +1344,7 @@ hosp_result_plot <- ggplot(
 # Wastewater results -----------------------------------------------------------
 ww_ribbon_data <- all_pred_draws_df %>%
   filter(
-    name == "pred_ww"
+    name == "predicted wastewater"
   ) %>%
   mutate(
     site_lab_name = glue::glue("{subpop}, Lab: {lab}")
@@ -1231,31 +1364,31 @@ ww_ribbon_data <- all_pred_draws_df %>%
 ww_result_plot <- ggplot(
   all_pred_draws_df %>%
     filter(
-      name == "pred_ww"
+      name == "predicted wastewater"
     )
 ) +
   geom_ribbon(
     data = ww_ribbon_data,
-    aes(x = date, ymin = log(lower), ymax = log(upper), fill = inf_model_type),
-    alpha = 0.4
+    aes(x = date, ymin = lower, ymax = upper, fill = inf_model_type),
+    alpha = 0.2
   ) +
   geom_line(
     data = ww_ribbon_data,
-    aes(x = date, y = log(median), color = inf_model_type),
-    size = 1.25,
+    aes(x = date, y = median, color = inf_model_type),
+    size = 1,
   ) +
   geom_line(
     data = ww_ribbon_data,
-    aes(x = date, y = log(lower), color = inf_model_type),
-    size = 1.25,
+    aes(x = date, y = lower, color = inf_model_type),
+    size = 1,
   ) +
   geom_line(
     data = ww_ribbon_data,
-    aes(x = date, y = log(upper), color = inf_model_type),
-    size = 1.25,
+    aes(x = date, y = upper, color = inf_model_type),
+    size = 1,
   ) +
   geom_point(
-    aes(x = date, y = log(observed_value))
+    aes(x = date, y = observed_value)
   ) +
   geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
     linetype = "dashed"
@@ -1371,7 +1504,7 @@ global_rt_result_plot <- ggplot(
 # Site Rt results --------------------------------------------------------------
 site_rt_ribbon_data <- all_pred_draws_df %>%
   filter(
-    name == "subpop R(t)"
+    name == "subpopulation R(t)"
   ) %>%
   group_by(
     date,
