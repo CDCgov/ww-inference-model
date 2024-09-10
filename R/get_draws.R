@@ -90,7 +90,7 @@ get_draws.data.frame <- function(x,
   }
 
   names(what_ok) <- what_ok
-  what_ok <- FALSE
+  what_ok[] <- FALSE
   if ("all" %in% what) {
     what_ok[] <- TRUE
   } else {
@@ -166,7 +166,10 @@ get_draws.data.frame <- function(x,
         )
       ) |>
       dplyr::ungroup() |>
-      dplyr::mutate(observed_value = .data$log_genome_copies_per_ml) |>
+      dplyr::mutate(
+        observed_value = .data$log_genome_copies_per_ml,
+        subpop = glue::glue("Site: {site}")
+      ) |>
       dplyr::select(-"t")
   } else {
     NULL
@@ -205,6 +208,11 @@ get_draws.data.frame <- function(x,
       dplyr::left_join(date_time_spine, by = "t") |>
       dplyr::left_join(subpop_spine, by = "site_index") |>
       dplyr::ungroup() |>
+      dplyr::mutate(
+        subpop = ifelse(.data$site != "remainder of pop",
+          glue::glue("Site: {site}"), "remainder of pop"
+        )
+      ) |>
       dplyr::select(-"t")
   } else {
     NULL
@@ -281,31 +289,44 @@ new_wwinference_fit_draws <- function(
     "date", "draw", "observed_value", "pred_value", "total_pop"
   )
   if (length(predicted_counts)) {
-    stopifnot(all(sort(colnames(predicted_counts)) == predicted_counts_cnames))
+    checkmate::assert_names(
+      colnames(predicted_counts),
+      permutation.of = predicted_counts_cnames
+    )
   }
 
   predicted_ww_cnames <- c(
     "below_lod", "date", "draw", "exclude", "flag_as_ww_outlier",
     "lab", "lab_site_index", "lab_site_name", "log_genome_copies_per_ml",
     "log_lod", "observed_value", "pred_value", "site", "site_index",
-    "site_pop"
+    "site_pop", "subpop"
   )
   if (length(predicted_ww)) {
-    stopifnot(all(sort(colnames(predicted_ww)) == predicted_ww_cnames))
+    checkmate::assert_names(
+      colnames(predicted_ww),
+      permutation.of = predicted_ww_cnames
+    )
   }
 
   global_rt_cnames <- c(
     "date", "draw", "observed_value", "pred_value", "total_pop"
   )
   if (length(global_rt)) {
-    stopifnot(all(sort(colnames(global_rt)) == global_rt_cnames))
+    checkmate::assert_names(
+      colnames(global_rt),
+      permutation.of = global_rt_cnames
+    )
   }
 
-  site_level_rt_cnamss <- c(
-    "date", "draw", "pred_value", "site", "site_index", "site_pop"
+  site_level_rt_cnames <- c(
+    "date", "draw", "pred_value", "site", "site_index", "site_pop",
+    "subpop"
   )
   if (length(site_level_rt)) {
-    stopifnot(all(sort(colnames(site_level_rt)) == site_level_rt_cnamss))
+    checkmate::assert_names(
+      colnames(site_level_rt),
+      permutation.of = site_level_rt_cnames
+    )
   }
 
   structure(

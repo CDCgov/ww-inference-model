@@ -334,7 +334,9 @@ ww_fit <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(seed = 123),
+  fit_opts = get_mcmc_options(
+    seed = 123, iter_sampling = 100, iter_warmup = 50
+  ),
   compiled_model = model
 )
 ```
@@ -377,17 +379,12 @@ state-level R(t) estimate.
 
 We can generate this directly on the output of `wwinference()` using:
 ```{r extracting-draws}
-draws_df <- get_draws_df(ww_fit)
+draws_df <- get_draws(ww_fit)
 
-cat(
-  "Variables in dataframe: ",
-  sprintf("%s", paste(unique(draws_df$name), collapse = ", "))
-)
+print(draws_df)
 ```
-Note that by default the `get_draws_df()` function will return  a tidy long
-dataframe with all of the posterior draws joined to applicable data for each of
-the included variables. To examine a particular variable (e.g. `"predicted counts"` for posterior
-predicted hospital admissions), filter the data frame based on the `name` column.
+Note that by default the `get_draws()` function will return a list of class `wwinference_fit_draws` all of the posterior draws for predicted hospitalizations, wastewater concentration, global, and site Rt estimates. To examine a particular variable (e.g. `"predicted counts"` for posterior
+predicted hospital admissions), access the corresponding tibble using the `$` operator.
 
 ### Using explicit passed arguments rather than S3 methods
 
@@ -396,7 +393,7 @@ Rather than using S3 methods supplied for `wwinference()`, the elements in the
 This is demonstrated below:
 
 ```{r extracting-draws-explicit}
-draws_df_explicit <- get_draws_df(
+draws_df_explicit <- get_draws(
   x = ww_fit$raw_input_data$input_ww_data,
   count_data = ww_fit$raw_input_data$input_count_data,
   stan_data_list = ww_fit$stan_data_list,
@@ -413,17 +410,17 @@ visualize data that was below the LOD (even though the fit incorporated
 them via the censored observation process.)
 
 ```{r generating-figures,  out.width='100%'}
-draws_df <- get_draws_df(ww_fit)
+draws_df <- get_draws(ww_fit)
 
 plot_hosp <- get_plot_forecasted_counts(
-  draws = draws_df,
+  draws = draws_df$predicted_counts,
   count_data_eval = hosp_data_eval,
   count_data_eval_col_name = "daily_hosp_admits_for_eval",
   forecast_date = forecast_date
 )
 plot_hosp
 
-plot_ww <- get_plot_ww_conc(draws_df, forecast_date)
+plot_ww <- get_plot_ww_conc(draws_df$predicted_ww, forecast_date)
 plot_ww
 
 plot_state_rt <- get_plot_global_rt(draws_df, forecast_date)
