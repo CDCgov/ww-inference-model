@@ -338,8 +338,8 @@ downsample_ww_obs <- function(log_conc_lab_site,
 #' @param lod_lab_site vector of numerics indicating the LOD in each lab and
 #' site combination
 #'
-#' @return a tidy dataframe containing the observed wastewater concentrations
-#' in each site and lab at each time point
+#' @return a tidy dataframe containing observed wastewater concentrations
+#' in log genome copies per mL for each site and lab at each time point
 format_ww_data <- function(log_obs_conc_lab_site,
                            ot,
                            ht,
@@ -355,7 +355,7 @@ format_ww_data <- function(log_obs_conc_lab_site,
       values_to = "log_conc"
     ) |>
     dplyr::mutate(
-      lab_site = as.integer(lab_site)
+      lab_site = as.integer(.data$lab_site)
     ) |>
     dplyr::left_join(date_df, by = "t") |>
     dplyr::left_join(site_lab_map,
@@ -367,22 +367,19 @@ format_ww_data <- function(log_obs_conc_lab_site,
         lod_sewage = lod_lab_site
       ),
       by = c("lab_site")
-    ) |> # Remove below LOD values
-    dplyr::mutate(
-      lod_sewage =
-        dplyr::case_when(
-          is.na(log_conc) ~ NA,
-          !is.na(log_conc) ~ lod_sewage
-        )
     ) |>
-    dplyr::mutate(
-      genome_copies_per_ml = exp(log_conc),
-      lod = exp(lod_sewage)
+    dplyr::rename(
+      "log_lod" = "lod_sewage",
+      "log_genome_copies_per_ml" = "log_conc",
+      "site_pop" = "ww_pop"
     ) |>
-    dplyr::filter(!is.na(genome_copies_per_ml)) |>
-    dplyr::rename(site_pop = ww_pop) |>
-    dplyr::arrange(site, lab, date) |>
-    dplyr::select(date, site, lab, genome_copies_per_ml, lod, site_pop)
+    # Remove missing values
+    dplyr::filter(!is.na(.data$log_genome_copies_per_ml)) |>
+    dplyr::arrange(.data$site, .data$lab, .data$date) |>
+    dplyr::select(
+      "date", "site", "lab", "log_genome_copies_per_ml",
+      "log_lod", "site_pop"
+    )
 
   return(ww_data)
 }
@@ -417,9 +414,9 @@ format_hosp_data <- function(pred_obs_hosp,
       by = "t"
     ) |>
     dplyr::select(
-      date,
-      daily_hosp_admits,
-      state_pop
+      "date",
+      "daily_hosp_admits",
+      "state_pop"
     )
   return(hosp_data)
 }

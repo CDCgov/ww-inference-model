@@ -1,15 +1,17 @@
-ww_data <- tibble::tibble(
-  date = rep(seq(
-    from = lubridate::ymd("2023-08-01"),
-    to = lubridate::ymd("2023-11-01"),
-    by = "weeks"
-  ), 2),
-  site = c(rep(1, 14), rep(2, 14)),
-  lab = c(rep(1, 28)),
-  conc = abs(rnorm(28, mean = 500, sd = 50)),
-  lod = c(rep(20, 14), rep(15, 14)),
-  site_pop = c(rep(2e5, 14), rep(4e5, 14))
-)
+withr::with_seed(123, {
+  ww_data <- tibble::tibble(
+    date = rep(seq(
+      from = lubridate::ymd("2023-08-01"),
+      to = lubridate::ymd("2023-11-01"),
+      by = "weeks"
+    ), 2),
+    site = c(rep(1, 14), rep(2, 14)),
+    lab = c(rep(1, 28)),
+    conc = abs(rnorm(28, mean = 500, sd = 50)),
+    lod = c(rep(20, 14), rep(15, 14)),
+    site_pop = c(rep(2e5, 14), rep(4e5, 14))
+  )
+})
 
 ww_data_preprocessed <- preprocess_ww_data(ww_data,
   conc_col_name = "conc",
@@ -17,16 +19,17 @@ ww_data_preprocessed <- preprocess_ww_data(ww_data,
 )
 ww_data_filtered <- indicate_ww_exclusions(ww_data_preprocessed)
 
-
-hosp_data <- tibble::tibble(
-  date = seq(
-    from = lubridate::ymd("2023-07-01"),
-    to = lubridate::ymd("2023-10-30"),
-    by = "days"
-  ),
-  daily_admits = sample(5:70, 122, replace = TRUE),
-  state_pop = rep(1e6, 122)
-)
+withr::with_seed(123, {
+  hosp_data <- tibble::tibble(
+    date = seq(
+      from = lubridate::ymd("2023-07-01"),
+      to = lubridate::ymd("2023-10-30"),
+      by = "days"
+    ),
+    daily_admits = sample(5:70, 122, replace = TRUE),
+    state_pop = rep(1e6, 122)
+  )
+})
 
 count_data <- preprocess_count_data(
   hosp_data,
@@ -107,18 +110,20 @@ test_that(paste0(
   "expected"
 ), {
   # Make wastewater data outside of scope of admissions data
-  recent_ww_data <- tibble::tibble(
-    date = rep(seq(
-      from = lubridate::ymd("2024-08-01"),
-      to = lubridate::ymd("2024-11-01"),
-      by = "weeks"
-    ), 2),
-    site = c(rep(1, 14), rep(2, 14)),
-    lab = c(rep(1, 28)),
-    conc = abs(rnorm(28, mean = 500, sd = 50)),
-    lod = c(rep(20, 14), rep(15, 14)),
-    site_pop = c(rep(2e5, 14), rep(4e5, 14))
-  )
+  withr::with_seed(123, {
+    recent_ww_data <- tibble::tibble(
+      date = rep(seq(
+        from = lubridate::ymd("2024-08-01"),
+        to = lubridate::ymd("2024-11-01"),
+        by = "weeks"
+      ), 2),
+      site = c(rep(1, 14), rep(2, 14)),
+      lab = c(rep(1, 28)),
+      conc = abs(rnorm(28, mean = 500, sd = 50)),
+      lod = c(rep(20, 14), rep(15, 14)),
+      site_pop = c(rep(2e5, 14), rep(4e5, 14))
+    )
+  })
 
   recent_ww_data_preprocessed <- preprocess_ww_data(recent_ww_data,
     conc_col_name = "conc",
@@ -149,18 +154,20 @@ test_that(paste0(
   ))
 
   # Make wastewater data outside of scope of admissions data
-  old_ww_data <- tibble::tibble(
-    date = rep(seq(
-      from = lubridate::ymd("2022-08-01"),
-      to = lubridate::ymd("2022-11-01"),
-      by = "weeks"
-    ), 2),
-    site = c(rep(1, 14), rep(2, 14)),
-    lab = c(rep(1, 28)),
-    conc = abs(rnorm(28, mean = 500, sd = 50)),
-    lod = c(rep(20, 14), rep(15, 14)),
-    site_pop = c(rep(2e5, 14), rep(4e5, 14))
-  )
+  withr::with_seed(123, {
+    old_ww_data <- tibble::tibble(
+      date = rep(seq(
+        from = lubridate::ymd("2022-08-01"),
+        to = lubridate::ymd("2022-11-01"),
+        by = "weeks"
+      ), 2),
+      site = c(rep(1, 14), rep(2, 14)),
+      lab = c(rep(1, 28)),
+      conc = abs(rnorm(28, mean = 500, sd = 50)),
+      lod = c(rep(20, 14), rep(15, 14)),
+      site_pop = c(rep(2e5, 14), rep(4e5, 14))
+    )
+  })
 
   old_ww_data_preprocessed <- preprocess_ww_data(old_ww_data,
     conc_col_name = "conc",

@@ -24,7 +24,7 @@ generate_simulated_data(
   sd_reporting_freq = 1/20,
   mean_reporting_latency = 7,
   sd_reporting_latency = 3,
-  mean_log_lod = 3.8,
+  mean_log_lod = 5,
   sd_log_lod = 0.2,
   global_rt_sd = 0.03,
   sigma_eps = 0.05,
@@ -168,6 +168,7 @@ wastewater data directly from the generative model, specifying the conditions
 and parameters to generate from.
 }
 \examples{
+\dontrun{
 # Generate a simulated dataset from a hypothetical state with 6 sites and 2
 # different labs
 sim_data <- generate_simulated_data(
@@ -200,4 +201,5 @@ sim_data <- generate_simulated_data(
 )
 hosp_data <- sim_data$hosp_data
 ww_data <- sim_data$ww_data
+}
 }

@@ -14,15 +14,20 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-```{r echo=FALSE}
+
+```{r setup, echo=FALSE}
 knitr::opts_chunk$set(dev = "svg")
 ```
+
 # Quick start
 
 In this quick start, we demonstrate using `wwinference` to specify and fit a
 minimal model using daily COVID-19 hospital admissions from a "global" population and
 viral concentrations in wastewater from a few "local" wastewater treatment plants,
 which come from subsets of the larger population.
+In this context, when we say "global", we are referring to a larger
+population e.g. a state, and when we say "local" we are referring to a smaller
+subset of that population, e.g. a municipality within that state.
 This is intended to be used as a reference for those
 interested in fitting the `wwinference` model to their own data.
 
@@ -31,7 +36,7 @@ interested in fitting the `wwinference` model to their own data.
 In this quick start, we also use `dplyr` `tidybayes` and `ggplot2` packages.
 These are installed as dependencies when `wwinference` is installed.
 
-```{r warning=FALSE, message=FALSE}
+```{r load-pkgs, warning=FALSE, message=FALSE}
 library(wwinference)
 library(dplyr)
 library(ggplot2)
@@ -45,13 +50,13 @@ from the larger "global" population, and wastewater concentration
 data from wastewater treatment plants whose catchment areas are contained within
 the larger "global" population. For this quick start, we will use
 simulated data, modeled after a hypothetical US state with 4 wastewater
-treatmentplants (also referred to as sites) reporting data on viral
-concentrations of SARS-COV-2, processed in 3 different labs, covering about 70%
+treatment plants (also referred to as sites) reporting data on log scale viral
+concentrations of SARS-COV-2, processed in 3 different labs, covering about 25%
 of the state's population. This simulated data contains daily counts of the
 total hospital admissions in a hypothetical US state from September 1, 2023 to
-November 29, 2023. It contains wastewater concentration data spanning from
-September 1, 2023 to December 1, 2023, with varying sampling frequencies. We
-will be using this data to produce a forecast of COVID-19 hospital admissions
+November 29, 2023. It contains wastewater log genome concentration data
+from September 1, 2023 to December 1, 2023, with varying sampling frequencies.
+We will be using this data to produce a forecast of COVID-19 hospital admissions
 as of December 6, 2023. These data are provided as part of the package data.
 
 These data are already in a format that can be used for `wwinference`. For the
@@ -67,21 +72,26 @@ Additionally, we provide the `hosp_data_eval` dataset which contains the
 simulated hospital admissions 28 days ahead of the forecast date, which can be
 used to evaluate the model.
 
-For the wastewater data, it contains:
+For the wastewater data, the expcted format is a table of observations with the
+following columns. The wastewater data should not contain `NA` values for days with
+missing observations, instead these should be excluded:
 - a date (column `date`): the date the sample was collected
 - a site indicator (column `site`): the unique identifier for the wastewater treatment plant
 that the sample was collected from
 - a lab indicator (column `lab`): the unique identifier for the lab where the sample was processed
-- a concentration (column `genome_copies_mL`): the measured genome copies per mL from
-the sample collected, in natural scale
-- a limit of detection (column `lod`): the limit of detection of the assay used to
-process the sample, in natural scale
+- a concentration (column `log_genome_copies_ml`): the measured
+log genome copies per mL for the given sample. This column should not
+contain `NA` values, even if the observation for that sample is below the limit of
+detection.
+- a limit of detection (column `log_lod`): the natural log of the limit
+of detection of the assay used to process the sample. Units should be the same
+units as the concentration column.
 - a site population size (column `site_pop`): the population size covered by the
 wastewater catchment area of that site
 
 
 
-```{r}
+```{r load-data}
 hosp_data <- wwinference::hosp_data
 hosp_data_eval <- wwinference::hosp_data_eval
 ww_data <- wwinference::ww_data
@@ -91,6 +101,7 @@ head(hosp_data)
 ```
 
 # Pre-processing
+
 The user will need to provide data that is in a similar format to the package
 data, as described above. This represents the bare minimum required data for a
 single location and a single forecast date. We will need to do some
@@ -98,11 +109,14 @@ pre-processing to add some additional variables that the model will need to be
 able apply features such as outlier exclusion and censoring of values below the
 limit of detection.
 
+
 ## Parameters
-Get the default parameters from the package. Note that some of these are COVID
-specific, others are more general to the model. This is indicated in the
-.toml file.
-```{r}
+
+Get the example parameters from the package, which we will use here.
+Note that some of these are COVID specific, others are more general to the
+model, as indicated in the .toml file.
+
+```{r get-params}
 params <- get_params(
   system.file("extdata", "example_params.toml",
     package = "wwinference"
@@ -118,7 +132,7 @@ the unique combinations of labs and sites, since this is the unit we will
 use for estimating the observation error in the reported measurements.
 Second it adds a column `below_lod` which is an indicator of whether the
 reported concentration is above or below the limit of detection (LOD). If the
-point is below the LOD, the model will treat this observation as censored.
+observation is below the LOD, the model will treat this observation as censored.
 Third,  it adds a column `flag_as_ww_outlier` that indicates whether the
 measurement is identified as an outlier by our algorithm and the default
 thresholds. While the default choice will be to exclude the measurements flagged
@@ -129,16 +143,22 @@ name of the column containing the limit of detection for each measurement. The
 function assumes that the original data contains the columns `date`, `site`,
 and `lab`, and will return a dataframe with the column names needed to
 pass to the downstream model fitting functions.
-```{r}
+
+```{r preprocess-ww-data}
 ww_data_preprocessed <- wwinference::preprocess_ww_data(
   ww_data,
-  conc_col_name = "genome_copies_per_ml",
-  lod_col_name = "lod"
+  conc_col_name = "log_genome_copies_per_ml",
+  lod_col_name = "log_lod"
 )
 ```
-
+Note that this function assumes that there are no missing values in the
+concentration column. The package expects observations below the LOD will
+be replaced with a numeric value below the LOD. If there are `NA` values in your dataset
+when observations are below the LOD, we suggest replacing them with a value
+below the LOD in upstream pre-processing.
 
 ## Hospital admissions data pre-processing
+
 The `preprocess_hosp_data`  function standardizes the column names of the
 resulting datafame. The user must specify the name of the column containing
 the daily hospital admissions counts and the population size that the hospital
@@ -146,7 +166,8 @@ admissions are coming from (from in this case, a hypothetical US state). The
 function assumes that the original data contains the column `date`, and will
 return a dataframe with the column names needed to pass to the downstream model
 fitting functions.
-```{r}
+
+```{r preprocess-hosp-data}
 hosp_data_preprocessed <- wwinference::preprocess_count_data(
   hosp_data,
   count_col_name = "daily_hosp_admits",
@@ -154,24 +175,25 @@ hosp_data_preprocessed <- wwinference::preprocess_count_data(
 )
 ```
 
-
 We'll make some plots of the data just to make sure it looks like what we'd expect:
 
-```{r,  out.width='100%'}
+```{r time-series-fig,  out.width='100%'}
 ggplot(ww_data_preprocessed) +
   geom_point(
     aes(
-      x = date, y = genome_copies_per_ml,
+      x = date, y = log_genome_copies_per_ml,
       color = as.factor(lab_site_name)
     ),
     show.legend = FALSE
   ) +
   geom_point(
-    data = ww_data_preprocessed |> filter(genome_copies_per_ml <= lod),
-    aes(x = date, y = genome_copies_per_ml, color = "red"),
+    data = ww_data_preprocessed |> filter(
+      log_genome_copies_per_ml <= log_lod
+    ),
+    aes(x = date, y = log_genome_copies_per_ml, color = "red"),
     show.legend = FALSE
   ) +
-  geom_hline(aes(yintercept = lod), linetype = "dashed") +
+  geom_hline(aes(yintercept = log_lod), linetype = "dashed") +
   facet_wrap(~lab_site_name, scales = "free") +
   xlab("") +
   ylab("Genome copies/mL") +
@@ -195,13 +217,18 @@ ggplot(hosp_data_preprocessed) +
   theme_bw()
 ```
 
+The closed circles indicate the data the model will be calibrated to, while
+the open circles indicate data we later observe after the forecast date.
+
 ## Data exclusion
+
 As an optional additional pre-processing step, the user can decide to exclude
-certain data points from being included in the model fit procedure. For example,
+certain data points in the model fit procedure. For example,
 we recommend excluding the flagged wastewater concentration outliers. To do so
 we will use the `indicate_ww_exclusions()` function, which will add the
 flagged outliers to the exclude column where indicated.
-```{r}
+
+```{r indicate-ww-exclusions}
 ww_data_to_fit <- wwinference::indicate_ww_exclusions(
   ww_data_preprocessed,
   outlier_col_name = "flag_as_ww_outlier",
@@ -209,18 +236,18 @@ ww_data_to_fit <- wwinference::indicate_ww_exclusions(
 )
 ```
 
-
 # Model specification:
+
 We will need to set some metadata to facilitate model specification. This includes:
 - forecast date (the date we are making a forecast)
 - number of days to calibrate the model for
-- number of days to forecast
+- number of days to forecast beyond the forecast date
 - specification of the generation interval, in this case for COVID-19
 - specification of the delay from infection to the count data, in this case
  from infection to COVID-19 hospital admission
 
-
 ## Calibration time and forecast time
+
 The calibration time represents the number of days to calibrate the count data
 to. This must be less than or equal to the number of rows in `hosp_data`. The
 forecast horizon represents the number of days from the forecast date to
@@ -229,43 +256,50 @@ data will not be complete up until the forecast date, and we will refer to the
 time between the last hospital admissions data point and the forecast date as
 the nowcast time. The model will "forecast" this period, in addition to the
 specified forecast horizon.
-```{r}
+
+```{r set-forecast-params}
 forecast_date <- "2023-12-06"
 calibration_time <- 90
 forecast_horizon <- 28
 ```
 
 ## Delay distributions
-We will pass in some probabiltiy mass functions (pmfs) that are specific to
+
+We will pass in probability mass functions (PMFs) that are specific to
 COVID, and to the delay from infections to hospital admissions, the count
-data we are using to fit th emodel. If using a different pathogen or a
-different count dataset, these pmfs need to be replaced. We provide them as
-package data here. These are both vectors of simplexes (they must sum to 1).
+data we are using to fit the model. If using a different pathogen or a
+different count dataset, these PMFs need to be replaced. We provide them as
+package data here. The model expects that these are discrete daily PMFs.
 
 Additionally, the model requires specifying a delay distribution for the
 infection feedback term, which essentially describes the delay at which
 high incident infections results in  negative feedback on future infections
 (due to susceptibility, behavior changes, policies to reduce transmission,
 etc.). We by default set this as the generation interval, but this can be
-modified as long as the values sum to 1.
-```{r}
+modified with any discrete daily PMF.
+
+```{r set-delay-distributions}
 generation_interval <- wwinference::default_covid_gi
 inf_to_hosp <- wwinference::default_covid_inf_to_hosp
 
 # Assign infection feedback equal to the generation interval
 infection_feedback_pmf <- generation_interval
 ```
+
 We will pass these to the `model_spec()` function of the `wwinference()` model,
 along with the other specified parameters above.
 
-
 # Precompiling the model
+
 As `wwinference` uses `cmdstan` to fit its models, it is necessary to first
 compile the model. This can be done using the compile_model() function.
-```{r}
+
+```{r compile-model}
 model <- wwinference::compile_model()
 ```
+
 # Fitting the model
+
 We're now ready to fit the model using the “No-U-Turn Sampler Markov chain
 Monte Carlo” method. This is a type of Hamiltonian Monte Carlo (HMC) algorithm
 and is the core fitting method used by `cmdstan`. The user can adjust the MCMC
@@ -273,9 +307,13 @@ settings (see the documentation for `get_mcmc_options()`),
 however this vignette will use
 the default parameter settings which includes running 4 parallel chains with
 750 warm up iterations, 500 sampling iterations for each chain, a target average
-acceptance probability of 0.95 and a maximum tree depth of 12. The user may wish
-to adjust these as they are iterating to reduce model run-time or to achieve
-better convergence on a real-world use case.
+acceptance probability of 0.95 and a maximum tree depth of 12. The default is
+not to set a the seed for the random number generator for the MCMC model runs
+(which would produce stochastic results each time the model is run), but for
+reproducibility we will set the seed of the Stan PRNG to `123` in this vignette.
+
+When applying the model to real data, experimenting with these MCMC settings may make it possible
+to achieve improved model convergence and/or faster model fitting times. See the [Stan User's Guide](https://mc-stan.org/docs/cmdstan-guide/diagnose_utility.html#building-the-diagnose-command) for an introduction to No-U-Turn sampler convergence diagnostics and configuration parameters.
 
 We also pass our preprocessed datasets (`ww_data_to_fit` and
 `hosp_data_preprocessed`), specify our model using `get_model_spec()`,
@@ -283,9 +321,8 @@ set the MCMC settings using `get_mcmc_options()`, and pass in our
 pre-compiled model(`model`) to `wwinference()` where they are combined and
 used to fit the model.
 
-
-```{r warning=FALSE, message=FALSE}
-fit <- wwinference::wwinference(
+```{r fitting-model, warning=FALSE, message=FALSE}
+ww_fit <- wwinference::wwinference(
   ww_data = ww_data_to_fit,
   count_data = hosp_data_preprocessed,
   forecast_date = forecast_date,
@@ -297,33 +334,86 @@ fit <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  mcmc_options = get_mcmc_options(),
+  fit_opts = get_mcmc_options(seed = 123),
   compiled_model = model
 )
 ```
 
-# The `wwinference` object
-The `wwinference()` function returns a `wwinference` object which includes
-a `draws_df`, the underlying `CmdStan` object (`raw_fit_obj`), and three
-"spines" that map the stan indices to the data which include:a
-`date_time_spine`, `lab_site_spine`, and `subpop_spine`. The `draws_df` is
-intended to provide an easy to work with tibble of posterior draws of
-the estimated, nowcasted, and forecasted expected observed hospital admissions
-and wastewater concentrations, as well as the latent variables of interest
-including the site-level R(t) estimates and the state-level R(t) estimate.
-```{r}
-head(fit)
+# The `wwinference_fit` object
+
+The `wwinference()` function returns a `wwinference_fit` object which includes
+the underlying and the underlying
+[`CmdStanModel` object](https://mc-stan.org/cmdstanr/reference/CmdStanModel.html)
+ (`fit`), a list of the two sources of input
+data (`raw_input_data`), the list of the arguments passed to stan
+(`stan_data_list`), and the list of the MCMC options (`fit_opts`) passed to
+stan. We show how to generate downstream elements from a `wwinference_fit`
+object.
+
+`wwinference_fit` objects currently have the following methods available:
+
+```{r show-methods}
+methods(class = "wwinference_fit")
 ```
-# Summarizing and plotting the model fit
-The `draws_df` object is intended to be used to easily plot relevant model
-outputs against data. This can be useful to get a sense of if your model is
-fitting the data well, and if the nowcasted/forecast quantities look reasonable.
 
-We can create the plots using the fitting wrapper functions (figures can
-also created directly using the `draws_df`)
+The `print` and `summary` methods can provide some information about the model. In particular, the `summary` method is a wrapper for `cmdstanr::summary()`:
 
-```{r,  out.width='100%'}
-draws_df <- fit$draws_df
+```{r print-and-summary}
+print(ww_fit)
+summary(ww_fit)
+```
+
+## Extracting the posterior predictions
+
+Working with the posterior predictions alongside the input data can be useful
+to check that your model is fitting the data well and that the
+nowcasted/forecast quantities look reasonable.
+
+We will generate a dataframe that we'll call `draws_df`, that contains
+the posterior draws of the estimated, nowcasted, and forecasted expected
+observed hospital admissions and wastewater concentrations, as well as the
+latent variables of interest including the site-level R(t) estimates and the
+state-level R(t) estimate.
+
+We can generate this directly on the output of `wwinference()` using:
+```{r extracting-draws}
+draws_df <- get_draws_df(ww_fit)
+
+cat(
+  "Variables in dataframe: ",
+  sprintf("%s", paste(unique(draws_df$name), collapse = ", "))
+)
+```
+Note that by default the `get_draws_df()` function will return  a tidy long
+dataframe with all of the posterior draws joined to applicable data for each of
+the included variables. To examine a particular variable (e.g. `"predicted counts"` for posterior
+predicted hospital admissions), filter the data frame based on the `name` column.
+
+### Using explicit passed arguments rather than S3 methods
+
+Rather than using S3 methods supplied for `wwinference()`, the elements in the
+`wwinference_fit` object can also be used directly to create this dataframe.
+This is demonstrated below:
+
+```{r extracting-draws-explicit}
+draws_df_explicit <- get_draws_df(
+  x = ww_fit$raw_input_data$input_ww_data,
+  count_data = ww_fit$raw_input_data$input_count_data,
+  stan_data_list = ww_fit$stan_data_list,
+  fit_obj = ww_fit$fit
+)
+```
+
+
+## Plotting the outputs
+
+We can create plots of the outputs using `draws_df` and
+the fitting wrapper functions. Note that by default, these plots will not
+visualize data that was below the LOD (even though the fit incorporated
+them via the censored observation process.)
+
+```{r generating-figures,  out.width='100%'}
+draws_df <- get_draws_df(ww_fit)
 
 plot_hosp <- get_plot_forecasted_counts(
   draws = draws_df,
@@ -344,34 +434,69 @@ plot_subpop_rt
 ```
 
 ## Diagnostics
-While the `wwinference()` function will print out messaging if any of the
-diagnostics flags fail, we recommend running diagnostics as a separate
-post-processing step on the `CmdStan` fit object. Start by running function
-`get_model_diagnostic_flags()` on the stan fit object. Then, we recommend
-looking at the `raw_fit_obj$summary()` which will show the diagnostic
-metrics for each parameter in the model and can help identify which parameters
-are likely to be driving any convergence issues. We have set default thresholds
-on the model diagnostics for production-level runs, we recommend adjusting
-as needed. For further information on troubleshooting the model diagnostics,
+
+We strongly recommend running diagnostics as a post-processing step on the
+model outputs.
+
+This can be done by passing the output of
+`wwinference()` into the `get_model_diagnostic_flags()`, `parameter_diagnostics()`,
+and `parameter_diagnostics()` functions.
+
+`get_model_diagnostic_flags()` will print out a table of any flags, if any of
+these are TRUE, it will print out a warning.
+We have set default thresholds on the model diagnostics for production-level
+runs, we recommend adjusting as needed (see below)
+
+To further troubleshoot, you can look at
+the diagnostic summary and the diagnostics of the individual parameters using
+the `parameter_diagnostics()` function.
+
+```{r diagnostics-using-S3-methods}
+convergence_flag_df <- get_model_diagnostic_flags(ww_fit)
+print(convergence_flag_df)
+parameter_diagnostics(ww_fit)
+```
+
+This can also be done explicitly by parsing the elements of the
+`wwinference_fit` object into the custom functions we built / directly calling
+`CmdStan`'s built in functions.
+
+Start by passing the stan fit object(`ww_fit$fit$result`) into the
+`get_model_diagnostic_flags()` and adjusting the thresholds if desired.
+
+Then, we recommend looking at the diagnostics summary provided by `CmdStan`,
+which we had wrapped into the `parameter_diagnostics()` call above. Lastly,
+we recommend looking at the individual model parameters provided by `CmdStan`
+to identify which components of the model might be driving the convergence
+issues.
+
+For further information on troubleshooting the model diagnostics,
 we recommend the (bayesplot tutorial)[https://mc-stan.org/bayesplot/articles/visual-mcmc-diagnostics.html].
-```{r}
-convergence_flag_df <- wwinference::get_model_diagnostic_flags(
-  stan_fit_obj =
-    fit$raw_fit_obj
+
+```{r diagnostics-explicit}
+convergence_flag_df <- get_model_diagnostic_flags(
+  x = ww_fit$fit$result,
+  ebmfi_tolerance = 0.2,
+  divergences_tolerance = 0.01,
+  frac_high_rhat_tolerance = 0.05,
+  rhat_tolerance = 1.05,
+  max_tree_depth_tol = 0.01
 )
-parameter_diagnostics <- fit$raw_fit_obj$summary()
-diagnostic_summary <- fit$raw_fit_obj$diagnostic_summary(quiet = TRUE)
+# Get the tables using the CmdStan functions via wrappers
+summary(ww_fit)
+parameter_diagnostics(ww_fit, quiet = TRUE)
 head(convergence_flag_df)
 ```
 
 ## Fit to only hospital admissions data
+
 The package also has functionality to fit the model without wastewater data.
 This can be useful when doing comparisons of the impact the wastewater data
 has on the forecast, or as a part of a pipeline where one might choose to
 rely on the admissions only model if there are covergence or known data issues
 with the wastewater data.
 
-```{r warning=FALSE, message=FALSE}
+```{r fit-hosp-only, warning=FALSE, message=FALSE}
 fit_hosp_only <- wwinference::wwinference(
   ww_data = ww_data_to_fit,
   count_data = hosp_data_preprocessed,
@@ -385,13 +510,13 @@ fit_hosp_only <- wwinference::wwinference(
     include_ww = FALSE,
     params = params
   ),
-  mcmc_options = get_mcmc_options(),
+  fit_opts = get_mcmc_options(),
   compiled_model = model
 )
 ```
 
-```{r,  out.width='100%'}
-draws_df_hosp_only <- fit_hosp_only$draws_df
+```{r plot-hosp-only, out.width='100%'}
+draws_df_hosp_only <- get_draws_df(fit_hosp_only)
 plot_hosp_hosp_only <- get_plot_forecasted_counts(
   draws = draws_df_hosp_only,
   count_data_eval = hosp_data_eval,

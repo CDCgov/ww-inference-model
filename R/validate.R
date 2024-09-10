@@ -19,13 +19,15 @@ validate_ww_conc_data <- function(ww_data,
     conc_col_name
   })
   arg <- conc_col_name
-  assert_non_missingness(ww_conc, arg, call)
-  assert_elements_non_neg(ww_conc, arg, call,
-    add_err_msg = paste0(
-      "Note that the model expects natural ",
-      "scale concentration values, ",
-      "which must be non-negative"
-    )
+  assert_non_missingness(ww_conc, arg, call,
+    add_err_msg =
+      c(
+        "Package expects that there are no missing",
+        " values in wastewater concentration data.",
+        "Observations below the limit of detection must",
+        " indicate a numeric value less than the limit",
+        "of detection"
+      )
   )
   checkmate::assert_vector(ww_conc)
 
@@ -33,14 +35,7 @@ validate_ww_conc_data <- function(ww_data,
     lod_col_name
   })
   arg <- "lod_col_name"
-  assert_non_missingness(ww_lod, arg, )
-  assert_elements_non_neg(ww_lod, arg, call,
-    add_err_msg = paste0(
-      "Note that the model expects natural ",
-      "scale LOD values, which must be ",
-      "non-negative"
-    )
-  )
+  assert_non_missingness(ww_lod, arg, call)
   checkmate::assert_vector(ww_lod)
 
   # Wastewater date column should be of date type!
