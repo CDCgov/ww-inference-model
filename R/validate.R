@@ -66,7 +66,6 @@ validate_ww_conc_data <- function(ww_data,
   assert_non_missingness(site_pops, arg, call)
   assert_elements_non_neg(site_pops, arg, call)
 
-
   invisible()
 }
 
@@ -196,6 +195,25 @@ validate_both_datasets <- function(input_count_data,
     arg1 = "count data",
     arg2 = "ww data"
   )
+
+  # Warn if sum(site pops) are greater than total pop.
+  # The package can handle this, but warn users that they may have an input
+  # data error.
+  sum_site_pops <- input_ww_data |>
+    dplyr::distinct(ww_data$site_pop) |>
+    sum()
+  total_pop <- input_count_data |>
+    dplyr::distinct(input_count_data$total_pop)
+  if (sum_site_pops > total_pop) {
+    cli::cli_warn(c(
+      "The sum of the populations in the wastewater catchment areas is",
+      "larger than the total population. We suggest checking to make",
+      "sure that wastewater catchment areas are not overlapping"
+    ))
+  }
+
+
+
   invisible()
 }
 
