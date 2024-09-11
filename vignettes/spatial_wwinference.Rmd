@@ -1439,21 +1439,11 @@ global_rt_result_plot <- ggplot(
   geom_ribbon(
     data = global_rt_ribbon_data,
     aes(x = date, ymin = lower, ymax = upper, fill = inf_model_type),
-    alpha = 0.4
+    alpha = 0.2
   ) +
   geom_line(
     data = global_rt_ribbon_data,
     aes(x = date, y = median, color = inf_model_type),
-    size = 1.25,
-  ) +
-  geom_line(
-    data = global_rt_ribbon_data,
-    aes(x = date, y = lower, color = inf_model_type),
-    size = 1.25,
-  ) +
-  geom_line(
-    data = global_rt_ribbon_data,
-    aes(x = date, y = upper, color = inf_model_type),
     size = 1.25,
   ) +
   geom_hline(
@@ -1522,21 +1512,11 @@ site_rt_result_plot <- ggplot() +
   geom_ribbon(
     data = site_rt_ribbon_data,
     aes(x = date, ymin = lower, ymax = upper, fill = inf_model_type),
-    alpha = 0.4
+    alpha = 0.2
   ) +
   geom_line(
     data = site_rt_ribbon_data,
     aes(x = date, y = median, color = inf_model_type),
-    size = 1.25,
-  ) +
-  geom_line(
-    data = site_rt_ribbon_data,
-    aes(x = date, y = lower, color = inf_model_type),
-    size = 1.25,
-  ) +
-  geom_line(
-    data = site_rt_ribbon_data,
-    aes(x = date, y = upper, color = inf_model_type),
     size = 1.25,
   ) +
   geom_hline(
