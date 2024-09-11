@@ -27,6 +27,7 @@ the value of using spatial components within the model.
 library(wwinference)
 library(dplyr)
 library(tibble)
+library(tidyr)
 library(ggplot2)
 library(patchwork)
 library(ggridges)
@@ -49,12 +50,12 @@ correlation function based of the following fake locations.
 ## Fake locations
 ```{r}
 set.seed(2024)
-n_sites <- 4
+n_sites <- 6
 fake_locs <- data.frame(
-  x = c(85, 37, 36, 7),
-  y = c(12, 75, 75, 96),
-  # // x = runif(n_sites, 0, 100),
-  # // y = runif(n_sites, 0, 100),
+  # // x = c(85, 37, 36, 7),
+  # // y = c(12, 75, 75, 96),
+  x = runif(n_sites, 0, 100),
+  y = runif(n_sites, 0, 100),
   ID = paste0("Site ", 1:n_sites)
 ) %>%
   mutate(
@@ -88,14 +89,14 @@ fake_locs_plot
 ```
 ## Central Rt Curve
 ```{r}
-# // r_in_weeks = c(
-# //  rep(1.1, 5), rep(0.9, 5),
-# //  0.9 + 0.0005 * (1:16)^2
-# // )
 r_in_weeks <- c(
   rep(1.1, 5), rep(0.9, 5),
-  1 + 0.007 * 1:16
+  0.9 + 0.0005 * (1:16)^2
 )
+# // r_in_weeks <- c(
+# //   rep(1.1, 5), rep(0.9, 5),
+# //   1 + 0.007 * 1:16
+# // )
 lng <- length(r_in_weeks)
 ggplot() +
   geom_line(
@@ -128,9 +129,9 @@ ggplot() +
 # Presets ----------------------------------------------------------------------
 set.seed(1)
 site <- 1:n_sites
-lab <- 1:n_sites
-# // ww_pop_sites <- c(5e5, 7.5e5, 3.8e5, 4.5e5, 5.5e5, 3.7e5)#, 6e5, 4e5)
-# // pop_size <- 5e6
+lab <- rep(1, n_sites)
+ww_pop_sites <- c(5e5, 7.5e5, 3.8e5, 4.5e5, 5.5e5, 3.7e5) # , 6e5, 4e5)
+pop_size <- 5e6
 global_rt_sd <- 0
 exp_corr_param <- list(
   dist_matrix = as.matrix(
@@ -150,52 +151,58 @@ exp_corr_param <- list(
 sigma_generalized <- 0.01^n_sites
 # ------------------------------------------------------------------------------
 # IID Simulated Data -----------------------------------------------------------
-simulated_data_iid <- wwinference::generate_simulated_data(
-  r_in_weeks = r_in_weeks,
-  n_sites = n_sites,
-  # // site = site,
-  # // lab = lab,
-  # // ww_pop_sites = ww_pop_sites,
-  # // pop_size = pop_size,
-  global_rt_sd = global_rt_sd,
-  use_spatial_corr = TRUE,
-  corr_function = wwinference::independence_corr_func_r,
-  corr_fun_params = list(num_sites = n_sites),
-  sigma_generalized = sigma_generalized,
-  aux_site_bool = TRUE
-)
+simulated_data_iid <- withr::with_seed(1, {
+  wwinference::generate_simulated_data(
+    r_in_weeks = r_in_weeks, # nolint
+    n_sites = n_sites,
+    site = site,
+    lab = lab,
+    ww_pop_sites = ww_pop_sites,
+    pop_size = pop_size,
+    global_rt_sd = global_rt_sd,
+    use_spatial_corr = TRUE,
+    corr_function = wwinference::independence_corr_func_r,
+    corr_fun_params = list(num_sites = n_sites),
+    sigma_generalized = sigma_generalized,
+    aux_site_bool = TRUE
+  )
+})
 # ------------------------------------------------------------------------------
 # Exponential Simulated Data ---------------------------------------------------
-simulated_data_exp <- wwinference::generate_simulated_data(
-  r_in_weeks = r_in_weeks,
-  n_sites = n_sites,
-  # // site = site,
-  # // lab = lab,
-  # // ww_pop_sites = ww_pop_sites,
-  # // pop_size = pop_size,
-  global_rt_sd = global_rt_sd,
-  use_spatial_corr = TRUE,
-  corr_function = exponential_decay_corr_func_r,
-  corr_fun_params = exp_corr_param,
-  sigma_generalized = sigma_generalized,
-  aux_site_bool = TRUE
-)
+simulated_data_exp <- withr::with_seed(1, {
+  wwinference::generate_simulated_data(
+    r_in_weeks = r_in_weeks, # nolint
+    n_sites = n_sites,
+    site = site,
+    lab = lab,
+    ww_pop_sites = ww_pop_sites,
+    pop_size = pop_size,
+    global_rt_sd = global_rt_sd,
+    use_spatial_corr = TRUE,
+    corr_function = exponential_decay_corr_func_r,
+    corr_fun_params = exp_corr_param,
+    sigma_generalized = sigma_generalized,
+    aux_site_bool = TRUE
+  )
+})
 # ------------------------------------------------------------------------------
 # Rand. Corr. Matrix Simulated Data --------------------------------------------
-simulated_data_rng_corr_mat <- wwinference::generate_simulated_data(
-  r_in_weeks = r_in_weeks,
-  n_sites = n_sites,
-  # // site = site,
-  # // lab = lab,
-  # // ww_pop_sites = ww_pop_sites,
-  # // pop_size = pop_size,
-  global_rt_sd = global_rt_sd,
-  use_spatial_corr = TRUE,
-  corr_function = wwinference::rand_corr_matrix_func,
-  corr_fun_params = list(n_sites = n_sites, seed = 2024),
-  sigma_generalized = sigma_generalized,
-  aux_site_bool = TRUE
-)
+simulated_data_rng_corr_mat <- withr::with_seed(1, {
+  wwinference::generate_simulated_data(
+    r_in_weeks = r_in_weeks, # nolint
+    n_sites = n_sites,
+    site = site,
+    lab = lab,
+    ww_pop_sites = ww_pop_sites,
+    pop_size = pop_size,
+    global_rt_sd = global_rt_sd,
+    use_spatial_corr = TRUE,
+    corr_function = wwinference::rand_corr_matrix_func,
+    corr_fun_params = list(n_sites = n_sites, seed = 2024),
+    sigma_generalized = sigma_generalized,
+    aux_site_bool = TRUE
+  )
+})
 # ------------------------------------------------------------------------------
 ```
 
@@ -713,6 +720,8 @@ iter_sampling <- 500
 
 ## Fitting iid data
 ```{r warning=FALSE, message=FALSE}
+# // iter_warmup <- 25
+# // iter_sampling <- 50
 # IID data to IID model --------------------------------------------------------
 fit_iid_to_iid <- wwinference::wwinference(
   ww_data = ww_data_to_fit_iid,
@@ -852,7 +861,7 @@ fit_exp_to_unstruct <- wwinference::wwinference(
 ```
 
 ## Fitting rand. corr. matrix data
-```{r}
+```{r warning=FALSE, message=FALSE}
 # Rand. Corr. Matrix data to IID model -----------------------------------------
 fit_rand_to_iid <- wwinference::wwinference(
   ww_data = ww_data_to_fit_rng_corr_mat,
@@ -1291,21 +1300,11 @@ hosp_result_plot <- ggplot(
   geom_ribbon(
     data = hosp_ribbon_data,
     aes(x = date, ymin = lower, ymax = upper, fill = inf_model_type),
-    alpha = 0.2
+    alpha = 0.1
   ) +
   geom_line(
     data = hosp_ribbon_data,
     aes(x = date, y = median, color = inf_model_type),
-    size = 1,
-  ) +
-  geom_line(
-    data = hosp_ribbon_data,
-    aes(x = date, y = lower, color = inf_model_type),
-    size = 1,
-  ) +
-  geom_line(
-    data = hosp_ribbon_data,
-    aes(x = date, y = upper, color = inf_model_type),
     size = 1,
   ) +
   geom_point(
@@ -1370,21 +1369,11 @@ ww_result_plot <- ggplot(
   geom_ribbon(
     data = ww_ribbon_data,
     aes(x = date, ymin = lower, ymax = upper, fill = inf_model_type),
-    alpha = 0.2
+    alpha = 0.1
   ) +
   geom_line(
     data = ww_ribbon_data,
     aes(x = date, y = median, color = inf_model_type),
-    size = 1,
-  ) +
-  geom_line(
-    data = ww_ribbon_data,
-    aes(x = date, y = lower, color = inf_model_type),
-    size = 1,
-  ) +
-  geom_line(
-    data = ww_ribbon_data,
-    aes(x = date, y = upper, color = inf_model_type),
     size = 1,
   ) +
   geom_point(
@@ -1447,21 +1436,11 @@ global_rt_result_plot <- ggplot(
   geom_ribbon(
     data = global_rt_ribbon_data,
     aes(x = date, ymin = lower, ymax = upper, fill = inf_model_type),
-    alpha = 0.4
+    alpha = 0.2
   ) +
   geom_line(
     data = global_rt_ribbon_data,
     aes(x = date, y = median, color = inf_model_type),
-    size = 1.25,
-  ) +
-  geom_line(
-    data = global_rt_ribbon_data,
-    aes(x = date, y = lower, color = inf_model_type),
-    size = 1.25,
-  ) +
-  geom_line(
-    data = global_rt_ribbon_data,
-    aes(x = date, y = upper, color = inf_model_type),
     size = 1.25,
   ) +
   geom_hline(
@@ -1499,6 +1478,7 @@ global_rt_result_plot <- ggplot(
     breaks = c("Exponential", "Unstructured", "IID"),
     values = c("darkviolet", "deeppink3", "darksalmon")
   ) +
+  scale_y_continuous(trans = "log10") +
   theme_bw()
 # ------------------------------------------------------------------------------
 # Site Rt results --------------------------------------------------------------
@@ -1525,26 +1505,22 @@ site_rt_ribbon_data <- all_pred_draws_df %>%
       x = subpop,
       ignore.case = "remainder of pop"
     )
+  ) %>%
+  mutate(
+    subpop = case_when(
+      subpop == "remainder of pop" ~ "Aux",
+      .default = subpop
+    )
   )
 site_rt_result_plot <- ggplot() +
   geom_ribbon(
     data = site_rt_ribbon_data,
     aes(x = date, ymin = lower, ymax = upper, fill = inf_model_type),
-    alpha = 0.4
+    alpha = 0.2
   ) +
   geom_line(
     data = site_rt_ribbon_data,
     aes(x = date, y = median, color = inf_model_type),
-    size = 1.25,
-  ) +
-  geom_line(
-    data = site_rt_ribbon_data,
-    aes(x = date, y = lower, color = inf_model_type),
-    size = 1.25,
-  ) +
-  geom_line(
-    data = site_rt_ribbon_data,
-    aes(x = date, y = upper, color = inf_model_type),
     size = 1.25,
   ) +
   geom_hline(
@@ -1583,6 +1559,7 @@ site_rt_result_plot <- ggplot() +
     breaks = c("Exponential", "Unstructured", "IID"),
     values = c("darkviolet", "deeppink3", "darksalmon")
   ) +
+  scale_y_continuous(trans = "log10") +
   theme_bw()
 # ------------------------------------------------------------------------------
 
@@ -1595,7 +1572,8 @@ global_rt_result_plot / site_rt_result_plot +
 # IID Correlation Matrix -------------------------------------------------------
 iid_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
   filter(
-    gen_model_type == "IID"
+    gen_model_type == "IID",
+    inf_model_type != "IID"
   )) +
   geom_density_ridges(
     aes(
@@ -1637,7 +1615,8 @@ iid_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
 # Exponential Correlation Matrix -----------------------------------------------
 exp_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
   filter(
-    gen_model_type == "Exponential"
+    gen_model_type == "Exponential",
+    inf_model_type != "IID"
   )) +
   geom_density_ridges(
     aes(
@@ -1679,7 +1658,8 @@ exp_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
 # Rand. Corr. Matrix Correlation Matrix ----------------------------------------
 rand_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
   filter(
-    gen_model_type == "Rand. Corr. Matrix"
+    gen_model_type == "Rand. Corr. Matrix",
+    inf_model_type != "IID"
   )) +
   geom_density_ridges(
     aes(
