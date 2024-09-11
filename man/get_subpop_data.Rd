@@ -4,7 +4,7 @@
 \alias{get_subpop_data}
 \title{Get subpopulation data}
 \usage{
-get_subpop_data(add_auxiliary_site, state_pop, pop_ww, n_ww_sites)
+get_subpop_data(add_auxiliary_site, state_pop, pop_ww, n_ww_sites, include_ww)
 }
 \arguments{
 \item{add_auxiliary_site}{Boolean indicating whether to add another
@@ -15,6 +15,9 @@ subpopulation in addition to the wastewater sites to estimate R(t) of}
 \item{pop_ww}{The population size in each of the wastewater sites}
 
 \item{n_ww_sites}{The number of wastewater sites}
+
+\item{include_ww}{Integer either 1 or 0 indicating whether to fit the
+wastewater data or not, default is 1}
 }
 \value{
 A list containing the necessary integers and vectors that stan
