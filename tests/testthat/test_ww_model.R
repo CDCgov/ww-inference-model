@@ -69,10 +69,50 @@ test_that("Test the wastewater inference model on simulated data.", {
 
   expect_error(get_draws(fit, what = "something else"))
 
-  expect_true(inherits(plot(model_draws, what = "predicted_counts"), "ggplot"))
-  expect_true(inherits(plot(model_draws, what = "predicted_ww"), "ggplot"))
-  expect_true(inherits(plot(model_draws, what = "global_rt"), "ggplot"))
-  expect_true(inherits(plot(model_draws, what = "subpop_rt"), "ggplot"))
+  # Getting a forecast date
+  forecast_date <- model_draws$predicted_counts$date
+  forecast_date <- min(forecast_date) + floor(diff(range(forecast_date)) * .75)
+
+  expect_true(
+    inherits(
+      plot(
+        model_draws,
+        what = "predicted_counts",
+        forecast_date = forecast_date
+      ),
+      "ggplot"
+    )
+  )
+  expect_true(
+    inherits(
+      plot(
+        model_draws,
+        what = "predicted_ww",
+        forecast_date = forecast_date
+      ),
+      "ggplot"
+    )
+  )
+  expect_true(
+    inherits(
+      plot(
+        model_draws,
+        what = "global_rt",
+        forecast_date = forecast_date
+      ),
+      "ggplot"
+    )
+  )
+  expect_true(
+    inherits(
+      plot(
+        model_draws,
+        what = "subpop_rt",
+        forecast_date = forecast_date
+      ),
+      "ggplot"
+    )
+  )
 
   expect_error(plot(model_draws, what = "something else"))
 })

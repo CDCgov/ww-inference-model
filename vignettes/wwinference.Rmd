@@ -334,7 +334,7 @@ ww_fit <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(),
+  fit_opts = get_mcmc_options(seed = 123),
   compiled_model = model
 )
 ```
@@ -430,9 +430,9 @@ plot_subpop_rt
 The previous three are equivalent to calling the `plot` method of `wwinference_fit_draws` using the `what` argument:
 
 ```r
-plot(draws_df, what = "predicted_ww")
-plot(draws_df, what = "global_rt")
-plot(draws_df, what = "subpop_rt")
+plot(draws_df, what = "predicted_ww", forecast_date = forecast_date)
+plot(draws_df, what = "global_rt", forecast_date = forecast_date)
+plot(draws_df, what = "subpop_rt", forecast_date = forecast_date)
 ```
 
 ## Diagnostics
