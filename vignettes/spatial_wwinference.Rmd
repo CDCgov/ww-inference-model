@@ -1303,21 +1303,11 @@ hosp_result_plot <- ggplot(
   geom_ribbon(
     data = hosp_ribbon_data,
     aes(x = date, ymin = lower, ymax = upper, fill = inf_model_type),
-    alpha = 0.2
+    alpha = 0.1
   ) +
   geom_line(
     data = hosp_ribbon_data,
     aes(x = date, y = median, color = inf_model_type),
-    size = 1,
-  ) +
-  geom_line(
-    data = hosp_ribbon_data,
-    aes(x = date, y = lower, color = inf_model_type),
-    size = 1,
-  ) +
-  geom_line(
-    data = hosp_ribbon_data,
-    aes(x = date, y = upper, color = inf_model_type),
     size = 1,
   ) +
   geom_point(
@@ -1382,21 +1372,11 @@ ww_result_plot <- ggplot(
   geom_ribbon(
     data = ww_ribbon_data,
     aes(x = date, ymin = lower, ymax = upper, fill = inf_model_type),
-    alpha = 0.2
+    alpha = 0.1
   ) +
   geom_line(
     data = ww_ribbon_data,
     aes(x = date, y = median, color = inf_model_type),
-    size = 1,
-  ) +
-  geom_line(
-    data = ww_ribbon_data,
-    aes(x = date, y = lower, color = inf_model_type),
-    size = 1,
-  ) +
-  geom_line(
-    data = ww_ribbon_data,
-    aes(x = date, y = upper, color = inf_model_type),
     size = 1,
   ) +
   geom_point(
