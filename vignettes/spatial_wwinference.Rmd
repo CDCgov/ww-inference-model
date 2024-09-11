@@ -743,8 +743,11 @@ fit_iid_to_iid <- wwinference::wwinference(
   dist_matrix = NULL,
   corr_structure_switch = 0
 )
+```
+
 # ------------------------------------------------------------------------------
 # IID data to Exponential model ------------------------------------------------
+```{r}
 fit_iid_to_exp <- wwinference::wwinference(
   ww_data = ww_data_to_fit_iid,
   count_data = hosp_data_preprocessed_iid,

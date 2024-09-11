@@ -109,9 +109,10 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
     ),
     norm_vec_aux_site = stats::rnorm(n_weeks, 0, stdev)
   )
-
-  if (stan_data$corr_structure_switch != 0) {
-    init_list <- c(init_list, L_Omega = diag((n_subpops - 1)))
+  # Initialize the cholesky decomposition matrix if inferring
+  # unstructured correlation matrix
+  if (stan_data$corr_structure_switch == 2) {
+    init_list$L_Omega <- diag((n_subpops - 1))
   }
   return(init_list)
 }
