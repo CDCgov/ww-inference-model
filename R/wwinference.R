@@ -154,28 +154,49 @@ wwinference <- function(ww_data,
                         generate_initial_values = TRUE,
                         initial_values_seed = NULL,
                         compiled_model = compile_model()) {
+  include_ww <- as.integer(model_spec$include_ww)
+
   if (is.null(forecast_date)) {
     cli::cli_abort(
       "The user must specify a forecast date"
     )
   }
 
-  # Check that data is compatible with specifications
-  assert_no_dates_after_max(ww_data$date, forecast_date)
-  assert_no_dates_after_max(count_data$date, forecast_date)
+  # If there is no wastewater data, set include_ww to 0
+  if (is.null(ww_data)) {
+    cli::cli_warn(
+      c(
+        "No wastewater data was passed to the model.",
+        "The model will default to fitting only to the count data"
+      )
+    )
+    include_ww <- 0
+  }
+  # If include_ww <-0, we will specify an empty dataset
+  if (include_ww == 0) {
+    ww_data <- ww_data[0, ]
+  } else {
+    # Check that data is compatible with specifications
+    assert_no_dates_after_max(ww_data$date, forecast_date)
+  }
 
+  # Check that data is compatible with specifications
+  assert_no_dates_after_max(count_data$date, forecast_date)
   input_count_data <- get_input_count_data_for_stan(
     count_data,
     calibration_time
   )
   last_count_data_date <- max(input_count_data$date, na.rm = TRUE)
   first_count_data_date <- min(input_count_data$date, na.rm = TRUE)
+
   input_ww_data <- get_input_ww_data_for_stan(
     ww_data,
     first_count_data_date,
     last_count_data_date,
     calibration_time
   )
+
+
   raw_input_data <- list(
     input_count_data = input_count_data,
     input_ww_data = input_ww_data
@@ -192,7 +213,7 @@ wwinference <- function(ww_data,
     inf_to_count_delay = model_spec$inf_to_count_delay,
     infection_feedback_pmf = model_spec$infection_feedback_pmf,
     params = model_spec$params,
-    include_ww = as.integer(model_spec$include_ww),
+    include_ww = include_ww,
     compute_likelihood = as.integer(model_spec$compute_likelihood)
   )
 

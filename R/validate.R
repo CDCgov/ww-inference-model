@@ -189,9 +189,20 @@ validate_both_datasets <- function(input_count_data,
   )
 
   # check that the time and date indices of both datasets line up
+  ww_data_sizes <- get_ww_data_sizes(
+    input_ww_data
+  )
+  ww_indices <- get_ww_data_indices(
+    ww_data = input_ww_data,
+    first_count_data_date = min(input_count_data$date),
+    owt = ww_data_sizes$owt
+  )
+  input_ww_data_w_t <- input_ww_data |>
+    dplyr::mutate(t = ww_indices$ww_sampled_times)
+
   assert_equivalent_indexing(
     input_count_data,
-    input_ww_data,
+    input_ww_data_w_t,
     arg1 = "count data",
     arg2 = "ww data"
   )

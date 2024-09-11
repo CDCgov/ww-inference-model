@@ -46,13 +46,15 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
       convert_to_logmean(1, stdev),
       convert_to_logsd(1, stdev)
     ),
-    error_subpop = matrix(
-      stats::rnorm((n_subpops - 1) * n_weeks,
-        mean = 0,
-        sd = stdev
-      ),
-      (n_subpops - 1),
-      n_weeks
+    error_subpop = as.matrix(
+      matrix(
+        stats::rnorm((n_subpops - 1) * n_weeks,
+          mean = 0,
+          sd = stdev
+        ),
+        (n_subpops - 1),
+        n_weeks
+      )
     ),
     autoreg_rt_subpop = abs(stats::rnorm(1, 0.5, 0.05)),
     autoreg_p_hosp = abs(stats::rnorm(1, 1 / 100, 0.001)),
@@ -96,5 +98,19 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
     )),
     infection_feedback = abs(stats::rnorm(1, 500, 20))
   )
+  # Hack, pass in a vector of 0s
+  if (stan_data$include_ww == 0) {
+    init_list$error_subpop <- as.matrix(
+      matrix(
+        stats::rnorm(1 * n_weeks,
+          mean = 0,
+          sd = 0
+        ),
+        1,
+        n_weeks
+      )
+    )
+  }
+
   return(init_list)
 }
