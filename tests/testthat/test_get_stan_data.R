@@ -143,6 +143,27 @@ test_that(paste0(
   expect_equal(length(stan_data_ho$subpop_size), 1)
 })
 
+test_that(paste0(
+  "Test that the model handles include_ww = 0 ",
+  "and no data appropriately"
+), {
+  stan_data_ho <- get_stan_data(
+    input_count_data,
+    input_ww_data = NULL,
+    forecast_date,
+    forecast_horizon,
+    calibration_time,
+    generation_interval,
+    inf_to_count_delay,
+    infection_feedback_pmf,
+    params,
+    include_ww = 0
+  )
+
+  expect_equal(stan_data_ho$n_subpops, 1)
+  expect_equal(length(stan_data_ho$subpop_size), 1)
+})
+
 
 test_that(paste0(
   "Test that modifying calibration time generates data of expected",
