@@ -107,7 +107,7 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
       (n_subpops - 1),
       n_weeks
     ),
-    norm_vec_aux_site = stats::rnorm(1, 0, stdev)
+    norm_vec_aux_site = stats::rnorm(n_weeks, 0, stdev)
   )
   return(init_list)
 }
