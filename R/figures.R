@@ -30,7 +30,21 @@ get_plot_forecasted_counts <- function(draws,
                                        forecast_date,
                                        count_type = "hospital admissions",
                                        n_draws_to_plot = 100) {
-  sampled_draws <- sample.int(max(draws$draw), n_draws_to_plot)
+  n_draws_available <- max(draws$draw)
+  if (n_draws_available < n_draws_to_plot) {
+    stop(
+      sprintf(
+        "The number of draws to plot (%i) should be less or equal to ",
+        n_draws_to_plot
+      ),
+      sprintf(
+        "the number of draws in the data (%i).",
+        n_draws_available
+      )
+    )
+  }
+
+  sampled_draws <- sample.int(n_draws_available, n_draws_to_plot)
 
   draws_to_plot <- draws |> dplyr::filter(
     .data$draw %in% !!sampled_draws

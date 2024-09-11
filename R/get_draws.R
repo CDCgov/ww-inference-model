@@ -100,7 +100,8 @@ get_draws.data.frame <- function(x,
     )
   }
 
-  names(what_ok) <- what_ok
+  what_ok <- logical(length(what_ok))
+  names(what_ok) <- get_draws_what_ok
   what_ok[] <- FALSE
   if ("all" %in% what) {
     if (length(what) > 1) {
@@ -244,28 +245,59 @@ get_draws.data.frame <- function(x,
 
 #' @export
 print.wwinference_fit_draws <- function(x, ...) {
-  cat("Draws from the model featuring the following datasets:\n")
+  # Computing the draws
+  draws <- c(
+    ifelse(length(x$predicted_counts) > 0, max(x$predicted_counts$draw), 0),
+    ifelse(length(x$predicted_ww) > 0, max(x$predicted_ww$draw), 0),
+    ifelse(length(x$global_rt) > 0, max(x$global_rt$draw), 0),
+    ifelse(length(x$subpop_rt) > 0, max(x$subpop_rt$draw), 0)
+  ) |> max()
+
+  timepoints <- c(
+    ifelse(
+      length(x$predicted_counts) > 0, diff(range(x$predicted_counts$date)), 0
+    ),
+    ifelse(
+      length(x$predicted_ww) > 0, diff(range(x$predicted_ww$date)), 0
+    ),
+    ifelse(
+      length(x$global_rt) > 0, diff(range(x$global_rt$date)), 0
+    ),
+    ifelse(
+      length(x$subpop_rt) > 0, diff(range(x$subpop_rt$date)), 0
+    )
+  ) |> max()
+
+  cat(
+    sprintf(
+      "Draws from the model featuring %i draws across %i days ",
+      draws, timepoints
+    ),
+    "in the following datasets:\n"
+  ) # Same draws and timepoints
 
   if (length(x$predicted_counts)) {
     cat(
       sprintf(
-        " - `$predicted_counts` with %i observations.\n",
+        " - `$predicted_counts` with %i rows\n",
         nrow(x$predicted_counts)
       )
     )
   }
+
   if (length(x$predicted_ww)) {
     cat(
       sprintf(
-        " - `$predicted_ww` with %i observations.\n",
-        nrow(x$predicted_ww)
+        " - `$predicted_ww` with %i rows across %i sites.\n",
+        nrow(x$predicted_ww),
+        length(unique(x$predicted_ww$lab_site_index))
       )
     )
   }
   if (length(x$global_rt)) {
     cat(
       sprintf(
-        " - `$global_rt` with %i observations.\n",
+        " - `$global_rt` with %i rows\n",
         nrow(x$global_rt)
       )
     )
@@ -273,8 +305,9 @@ print.wwinference_fit_draws <- function(x, ...) {
   if (length(x$subpop_rt)) {
     cat(
       sprintf(
-        " - `$subpop_rt` with %i observations.\n",
-        nrow(x$subpop_rt)
+        " - `$subpop_rt` with %i rows across %i sub-populations\n",
+        nrow(x$subpop_rt),
+        length(unique(x$subpop_rt$subpop))
       )
     )
   }

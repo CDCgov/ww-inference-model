@@ -78,7 +78,8 @@ test_that("Test the wastewater inference model on simulated data.", {
       plot(
         model_draws,
         what = "predicted_counts",
-        forecast_date = forecast_date
+        forecast_date = forecast_date,
+        n_draws_to_plot = model_test_data$fit_opts$iter_sampling
       ),
       "ggplot"
     )
@@ -88,7 +89,8 @@ test_that("Test the wastewater inference model on simulated data.", {
       plot(
         model_draws,
         what = "predicted_ww",
-        forecast_date = forecast_date
+        forecast_date = forecast_date,
+        n_draws_to_plot = model_test_data$fit_opts$iter_sampling
       ),
       "ggplot"
     )
@@ -98,7 +100,8 @@ test_that("Test the wastewater inference model on simulated data.", {
       plot(
         model_draws,
         what = "global_rt",
-        forecast_date = forecast_date
+        forecast_date = forecast_date,
+        n_draws_to_plot = model_test_data$fit_opts$iter_sampling
       ),
       "ggplot"
     )
@@ -108,7 +111,8 @@ test_that("Test the wastewater inference model on simulated data.", {
       plot(
         model_draws,
         what = "subpop_rt",
-        forecast_date = forecast_date
+        forecast_date = forecast_date,
+        n_draws_to_plot = model_test_data$fit_opts$iter_sampling
       ),
       "ggplot"
     )
