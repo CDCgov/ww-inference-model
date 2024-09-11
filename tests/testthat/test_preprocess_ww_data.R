@@ -5,8 +5,23 @@ ww_data <- tibble::tibble(
   lab = c(1, 1, 1, 1),
   conc = c(345.2, 784.1, 401.5, 681.8),
   lod = c(20, 20, 15, 15),
-  site_pop = c(rep(1e6, 2), rep(3e5, 2))
+  site_pop = c(rep(3e5, 2), rep(1e6, 2))
 )
+
+# Test that function returns a dataframe with site indices ordered by
+# population size (with first index at highest pop)
+test_that("Function returns site indices in order of largest site pop", {
+  processed <- preprocess_ww_data(ww_data,
+    conc_col_name = "conc",
+    lod_col_name = "lod"
+  )
+
+  spine <- processed |> distinct(site_pop, site_index)
+
+
+  expect_true(spine$site_pop[spine$site_index == 1] == max(spine$site_pop))
+})
+
 
 # Test that function returns a dataframe with correct columns
 test_that("Function returns dataframe with correct columns", {
