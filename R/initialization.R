@@ -94,7 +94,20 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
     hosp_wday_effect = to_simplex(abs(
       stats::rnorm(7, 1 / 7, stdev)
     )),
-    infection_feedback = abs(stats::rnorm(1, 500, 20))
+    infection_feedback = abs(stats::rnorm(1, 500, 20)),
+    # Spatial inits
+    log_sigma_generalized = stats::rnorm(1, log(0.01^(n_subpops - 1)), 0.5),
+    log_phi = stats::rnorm(1, log(0.2), 0.1),
+    log_scaling_factor = stats::rnorm(1, log(1), 0.1),
+    non_cent_spatial_dev_ns_mat = matrix(
+      stats::rnorm((n_subpops - 1) * n_weeks,
+        mean = 0,
+        sd = stdev
+      ),
+      (n_subpops - 1),
+      n_weeks
+    ),
+    norm_vec_aux_site = stats::rnorm(1, 0, stdev)
   )
   return(init_list)
 }

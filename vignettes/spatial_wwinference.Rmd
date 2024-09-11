@@ -27,6 +27,7 @@ the value of using spatial components within the model.
 library(wwinference)
 library(dplyr)
 library(tibble)
+library(tidyr)
 library(ggplot2)
 library(patchwork)
 library(ggridges)
@@ -128,7 +129,7 @@ ggplot() +
 # Presets ----------------------------------------------------------------------
 set.seed(1)
 site <- 1:n_sites
-lab <- 1:n_sites
+lab <- rep(1, 4)
 # // ww_pop_sites <- c(5e5, 7.5e5, 3.8e5, 4.5e5, 5.5e5, 3.7e5)#, 6e5, 4e5)
 # // pop_size <- 5e6
 global_rt_sd <- 0
@@ -150,52 +151,58 @@ exp_corr_param <- list(
 sigma_generalized <- 0.01^n_sites
 # ------------------------------------------------------------------------------
 # IID Simulated Data -----------------------------------------------------------
-simulated_data_iid <- wwinference::generate_simulated_data(
-  r_in_weeks = r_in_weeks,
-  n_sites = n_sites,
-  # // site = site,
-  # // lab = lab,
-  # // ww_pop_sites = ww_pop_sites,
-  # // pop_size = pop_size,
-  global_rt_sd = global_rt_sd,
-  use_spatial_corr = TRUE,
-  corr_function = wwinference::independence_corr_func_r,
-  corr_fun_params = list(num_sites = n_sites),
-  sigma_generalized = sigma_generalized,
-  aux_site_bool = TRUE
-)
+simulated_data_iid <- withr::with_seed(1, {
+  wwinference::generate_simulated_data(
+    # r_in_weeks = r_in_weeks, #nolint
+    n_sites = n_sites,
+    site = site,
+    lab = lab,
+    # // ww_pop_sites = ww_pop_sites,
+    # // pop_size = pop_size,
+    global_rt_sd = global_rt_sd,
+    use_spatial_corr = TRUE,
+    corr_function = wwinference::independence_corr_func_r,
+    corr_fun_params = list(num_sites = n_sites),
+    sigma_generalized = sigma_generalized,
+    aux_site_bool = TRUE
+  )
+})
 # ------------------------------------------------------------------------------
 # Exponential Simulated Data ---------------------------------------------------
-simulated_data_exp <- wwinference::generate_simulated_data(
-  r_in_weeks = r_in_weeks,
-  n_sites = n_sites,
-  # // site = site,
-  # // lab = lab,
-  # // ww_pop_sites = ww_pop_sites,
-  # // pop_size = pop_size,
-  global_rt_sd = global_rt_sd,
-  use_spatial_corr = TRUE,
-  corr_function = exponential_decay_corr_func_r,
-  corr_fun_params = exp_corr_param,
-  sigma_generalized = sigma_generalized,
-  aux_site_bool = TRUE
-)
+simulated_data_exp <- withr::with_seed(1, {
+  wwinference::generate_simulated_data(
+    # r_in_weeks = r_in_weeks, #nolint
+    n_sites = n_sites,
+    # // site = site,
+    # // lab = lab,
+    # // ww_pop_sites = ww_pop_sites,
+    # // pop_size = pop_size,
+    global_rt_sd = global_rt_sd,
+    use_spatial_corr = TRUE,
+    corr_function = exponential_decay_corr_func_r,
+    corr_fun_params = exp_corr_param,
+    sigma_generalized = sigma_generalized,
+    aux_site_bool = TRUE
+  )
+})
 # ------------------------------------------------------------------------------
 # Rand. Corr. Matrix Simulated Data --------------------------------------------
-simulated_data_rng_corr_mat <- wwinference::generate_simulated_data(
-  r_in_weeks = r_in_weeks,
-  n_sites = n_sites,
-  # // site = site,
-  # // lab = lab,
-  # // ww_pop_sites = ww_pop_sites,
-  # // pop_size = pop_size,
-  global_rt_sd = global_rt_sd,
-  use_spatial_corr = TRUE,
-  corr_function = wwinference::rand_corr_matrix_func,
-  corr_fun_params = list(n_sites = n_sites, seed = 2024),
-  sigma_generalized = sigma_generalized,
-  aux_site_bool = TRUE
-)
+simulated_data_rng_corr_mat <- withr::with_seed(1, {
+  wwinference::generate_simulated_data(
+    # r_in_weeks = r_in_weeks, #nolint
+    n_sites = n_sites,
+    # // site = site,
+    # // lab = lab,
+    # // ww_pop_sites = ww_pop_sites,
+    # // pop_size = pop_size,
+    global_rt_sd = global_rt_sd,
+    use_spatial_corr = TRUE,
+    corr_function = wwinference::rand_corr_matrix_func,
+    corr_fun_params = list(n_sites = n_sites, seed = 2024),
+    sigma_generalized = sigma_generalized,
+    aux_site_bool = TRUE
+  )
+})
 # ------------------------------------------------------------------------------
 ```
 
@@ -713,6 +720,8 @@ iter_sampling <- 500
 
 ## Fitting iid data
 ```{r warning=FALSE, message=FALSE}
+iter_warmup <- 25
+iter_sampling <- 50
 # IID data to IID model --------------------------------------------------------
 fit_iid_to_iid <- wwinference::wwinference(
   ww_data = ww_data_to_fit_iid,
