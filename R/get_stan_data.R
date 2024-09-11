@@ -266,15 +266,6 @@ get_stan_data <- function(input_count_data,
     sum(ww_values$pop_ww) / pop
   )
 
-  if (sum(ww_values$pop_ww) / pop > 1) {
-    cli::cli_warn(c(
-      "The sum of the wastewater site catchment area populations:",
-      "is greater than the global population. While the model supports this",
-      "we advise checking your input data to ensure it is specified correctly."
-    ))
-  }
-
-
   # Logic to determine the number of subpopulations to estimate R(t) for:
   # First determine if we need to add an additional subpopulation
   add_auxiliary_site <- ifelse(pop >= sum(ww_values$pop_ww), TRUE, FALSE)

@@ -218,8 +218,10 @@ validate_both_datasets <- function(input_count_data,
   if (sum_site_pops > total_pop) {
     cli::cli_warn(c(
       "The sum of the populations in the wastewater catchment areas is",
-      "larger than the total population. We suggest checking to make",
-      "sure that wastewater catchment areas are not overlapping"
+      "larger than the total population. While the model supports this",
+      "we advise checking your input data to ensure it is specified",
+      "correctly and to make sure that wastewater treatment plants are not",
+      "overlapping"
     ))
   }
 
