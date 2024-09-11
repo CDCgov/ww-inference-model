@@ -365,7 +365,7 @@ new_wwinference_fit_draws <- function(
 #' will call the appropriate method.
 #'
 plot.wwinference_fit_draws <- function(x, y = NULL, what, ...) {
-  if (legnth(what) != 1L) {
+  if (length(what) != 1L) {
     stop(
       "The value provided to `what` must be a length one character vector. ",
       "Currently, it is of length ", length(what), "."
