@@ -32,6 +32,8 @@ library(ggplot2)
 library(patchwork)
 library(ggridges)
 library(scico)
+library(scoringutils)
+library(ggh4x)
 ```
 
 
@@ -87,6 +89,7 @@ fake_locs_plot <- ggplot(
 
 fake_locs_plot
 ```
+
 ## Central Rt Curve
 ```{r}
 r_in_weeks <- c(
@@ -98,7 +101,7 @@ r_in_weeks <- c(
 # //   1 + 0.007 * 1:16
 # // )
 lng <- length(r_in_weeks)
-ggplot() +
+central_rt_curve <- ggplot() +
   geom_line(
     aes(
       x = 1:lng,
@@ -122,6 +125,8 @@ ggplot() +
   ylab("Rt Value") +
   ggtitle("Central Rt curve") +
   theme_bw()
+
+central_rt_curve
 ```
 
 ## Simulating data
@@ -532,7 +537,7 @@ site_rt_data_plot <- ggplot(site_rt_data_full) +
 # ------------------------------------------------------------------------------
 
 global_rt_data_plot / site_rt_data_plot +
-  plot_layout(heights = c(1, 4))
+  plot_layout(heights = c(1, n_sites))
 ```
 
 ```{r}
@@ -1564,7 +1569,10 @@ site_rt_result_plot <- ggplot() +
 # ------------------------------------------------------------------------------
 
 global_rt_result_plot / site_rt_result_plot +
-  plot_layout(guides = "collect")
+  plot_layout(
+    guides = "collect",
+    heights = c(1, n_sites)
+  )
 ```
 
 ## Correlation matrix
@@ -1706,3 +1714,373 @@ iid_corr_matrix_result_plot + exp_corr_matrix_result_plot +
 
 
 # Numeric Results
+
+```{r}
+# ess / sec #nolint
+fit_names <- list(
+  fit_iid_to_iid, fit_iid_to_exp, fit_iid_to_unstruct,
+  fit_exp_to_iid, fit_exp_to_exp, fit_exp_to_unstruct,
+  fit_rand_to_iid, fit_rand_to_exp, fit_rand_to_unstruct
+)
+gen_names <- c(
+  "IID", "IID", "IID",
+  "Exponential", "Exponential", "Exponential",
+  "Rand. Corr. Matrix", "Rand. Corr. Matrix", "Rand. Corr. Matrix"
+)
+inf_names <- c(
+  "IID", "Exponential", "Unstructured",
+  "IID", "Exponential", "Unstructured",
+  "IID", "Exponential", "Unstructured"
+)
+ess_per_sec_df <- data.frame(
+  model = rep(0, 9),
+  gen_model_type = rep(0, 9),
+  ess_per_sec = rep(0, 9)
+)
+for (i in 1:9) {
+  curr_fit <- fit_names[[i]]
+  ess_per_sec_df$gen_model_type[i] <- gen_names[i]
+  ess_per_sec_df$model[i] <- inf_names[i]
+  ess_per_sec_df$ess_per_sec[i] <- mean(
+    curr_fit$fit$result$summary()$ess_bulk,
+    na.rm = TRUE
+  ) / curr_fit$fit$result$time()$total
+}
+```
+
+## Hospital admissions
+
+### Hospital admissions at forecast period evaluation scores
+```{r}
+hosp_obj_for_eval_forcast <- all_pred_draws_df %>%
+  filter(
+    name == "predicted counts",
+    date > forecast_date
+  ) %>%
+  inner_join(
+    hosp_data_eval_full %>%
+      filter(
+        date > forecast_date
+      ) %>%
+      mutate(
+        gen_model_type = model_type,
+        true_value = daily_hosp_admits_for_eval
+      ) %>%
+      select(
+        date,
+        true_value,
+        gen_model_type
+      ),
+    by = c("date", "gen_model_type")
+  ) %>%
+  mutate(
+    prediction = pred_value,
+    sample = draw,
+    model = inf_model_type
+  ) %>%
+  select(
+    prediction,
+    true_value,
+    sample,
+    date,
+    model,
+    gen_model_type
+  )
+
+hosp_scores_forecast <- hosp_obj_for_eval_forcast %>%
+  score(metrics = c(
+    "log_score",
+    "crps",
+    "dss",
+    "ae_median",
+    "se_mean",
+    "bias"
+  ))
+
+hosp_by_date_eval_forecast_plot <- ggplot( # nolint
+  hosp_scores_forecast %>%
+    pivot_longer(
+      cols = -c("date", "model", "gen_model_type"),
+      names_to = "Evaluation Score",
+      values_to = "Score"
+    ) %>%
+    mutate(
+      `Evaluation Score` = case_when(
+        `Evaluation Score` == "crps" ~ "CRPS",
+        `Evaluation Score` == "dss" ~ "Dawid-Sebastiani Score",
+        `Evaluation Score` == "ae_median" ~ "Absolute Error",
+        `Evaluation Score` == "se_mean" ~ "Squared Error",
+        `Evaluation Score` == "bias" ~ "Bias",
+        .default = `Evaluation Score`
+      )
+    ) %>%
+    mutate(
+      model = factor(
+        model,
+        levels = c(
+          "IID",
+          "Exponential",
+          "Unstructured"
+        )
+      )
+    )
+) +
+  geom_point(
+    aes(x = date, y = Score, colour = model)
+  ) +
+  geom_line(
+    aes(x = date, y = Score, colour = model)
+  ) +
+  facet_grid2(`Evaluation Score` ~ gen_model_type,
+    scales = "free",
+    independent = "y"
+  ) +
+  scale_colour_manual(
+    breaks = c("Exponential", "Unstructured", "IID"),
+    values = c("darkviolet", "deeppink3", "darksalmon")
+  ) +
+  labs(color = "Assumed Corr. Structure") +
+  ggtitle("Hospital Admission Forecast Period Evaluation Metric By Date") +
+  ylab("Score") +
+  xlab("Date") +
+  theme_bw()
+
+
+hosp_eval_forecast_plot <- ggplot(
+  hosp_scores_forecast %>%
+    summarize_scores(by = c("model", "gen_model_type")) %>%
+    pivot_longer(
+      cols = -c("model", "gen_model_type"),
+      names_to = "Evaluation Score",
+      values_to = "Score"
+    ) %>%
+    mutate(
+      `Evaluation Score` = case_when(
+        `Evaluation Score` == "crps" ~ "CRPS",
+        `Evaluation Score` == "dss" ~ "Dawid-Sebastiani Score",
+        `Evaluation Score` == "ae_median" ~ "Absolute Error",
+        `Evaluation Score` == "se_mean" ~ "Squared Error",
+        `Evaluation Score` == "bias" ~ "Bias",
+        .default = `Evaluation Score`
+      )
+    ) %>%
+    group_by(gen_model_type, `Evaluation Score`) %>%
+    mutate(
+      scaled_score = (Score - min(Score)) / (max(Score) - min(Score))
+    ) %>%
+    ungroup() %>%
+    mutate(
+      model = factor(
+        model,
+        levels = c(
+          "IID",
+          "Exponential",
+          "Unstructured"
+        )
+      )
+    )
+) +
+  geom_tile(
+    aes(x = model, y = `Evaluation Score`, fill = scaled_score),
+    color = "black"
+  ) +
+  geom_text(
+    aes(
+      x = model,
+      y = `Evaluation Score`,
+      label = sprintf("%.2f", Score)
+    ),
+    color = "black",
+    size = 3.5
+  ) +
+  facet_wrap(~gen_model_type) +
+  scale_fill_gradient(
+    low = "white",
+    high = "dodgerblue"
+  ) +
+  guides(fill = "none") +
+  labs(fill = "Score Relative to Metric") +
+  ggtitle("Hospital Admission Forecast Period Evaluation Metric") +
+  ylab("Evalutation Metric") +
+  xlab("Assumed Correlation Structure") +
+  theme_bw()
+```
+
+```{r}
+# Raw Scores :
+hosp_scores_forecast %>%
+  summarize_scores(by = c("model", "gen_model_type"))
+```
+
+
+### Hospital admissions at nowcasting period evaluation scores
+```{r}
+hosp_obj_for_eval_nowcast <- all_pred_draws_df %>%
+  filter(
+    name == "predicted counts",
+    date > max(hosp_data$date),
+    date <= forecast_date
+  ) %>%
+  inner_join(
+    hosp_data_eval_full %>%
+      filter(
+        date > max(hosp_data$date),
+        date <= forecast_date
+      ) %>%
+      mutate(
+        gen_model_type = model_type,
+        true_value = daily_hosp_admits_for_eval
+      ) %>%
+      select(
+        date,
+        true_value,
+        gen_model_type
+      ),
+    by = c("date", "gen_model_type")
+  ) %>%
+  mutate(
+    prediction = pred_value,
+    sample = draw,
+    model = inf_model_type
+  ) %>%
+  select(
+    prediction,
+    true_value,
+    sample,
+    date,
+    model,
+    gen_model_type
+  )
+
+hosp_scores_nowcast <- hosp_obj_for_eval_nowcast %>%
+  score(metrics = c(
+    "log_score",
+    "crps",
+    "dss",
+    "ae_median",
+    "se_mean",
+    "bias"
+  ))
+
+hosp_by_date_eval_nowcast_plot <- ggplot(
+  hosp_scores_nowcast %>%
+    pivot_longer(
+      cols = -c("date", "model", "gen_model_type"),
+      names_to = "Evaluation Score",
+      values_to = "Score"
+    ) %>%
+    mutate(
+      `Evaluation Score` = case_when(
+        `Evaluation Score` == "crps" ~ "CRPS",
+        `Evaluation Score` == "dss" ~ "Dawid-Sebastiani Score",
+        `Evaluation Score` == "ae_median" ~ "Absolute Error",
+        `Evaluation Score` == "se_mean" ~ "Squared Error",
+        `Evaluation Score` == "bias" ~ "Bias",
+        .default = `Evaluation Score`
+      )
+    ) %>%
+    mutate(
+      model = factor(
+        model,
+        levels = c(
+          "IID",
+          "Exponential",
+          "Unstructured"
+        )
+      )
+    )
+) +
+  geom_point(
+    aes(x = date, y = Score, colour = model)
+  ) +
+  geom_line(
+    aes(x = date, y = Score, colour = model)
+  ) +
+  facet_grid2(`Evaluation Score` ~ gen_model_type,
+    scales = "free",
+    independent = "y"
+  ) +
+  scale_colour_manual(
+    breaks = c("Exponential", "Unstructured", "IID"),
+    values = c("darkviolet", "deeppink3", "darksalmon")
+  ) +
+  labs(color = "Assumed Corr. Structure") +
+  ggtitle("Hospital Admission Nowcast Period Evaluation Metric By Date") +
+  ylab("Score") +
+  xlab("Date") +
+  theme_bw()
+
+
+hosp_eval_nowcast_plot <- ggplot(
+  hosp_scores_nowcast %>%
+    summarize_scores(by = c("model", "gen_model_type")) %>%
+    pivot_longer(
+      cols = -c("model", "gen_model_type"),
+      names_to = "Evaluation Score",
+      values_to = "Score"
+    ) %>%
+    mutate(
+      `Evaluation Score` = case_when(
+        `Evaluation Score` == "crps" ~ "CRPS",
+        `Evaluation Score` == "dss" ~ "Dawid-Sebastiani Score",
+        `Evaluation Score` == "ae_median" ~ "Absolute Error",
+        `Evaluation Score` == "se_mean" ~ "Squared Error",
+        `Evaluation Score` == "bias" ~ "Bias",
+        .default = `Evaluation Score`
+      )
+    ) %>%
+    group_by(gen_model_type, `Evaluation Score`) %>%
+    mutate(
+      scaled_score = (Score - min(Score)) / (max(Score) - min(Score))
+    ) %>%
+    ungroup() %>%
+    mutate(
+      model = factor(
+        model,
+        levels = c(
+          "IID",
+          "Exponential",
+          "Unstructured"
+        )
+      )
+    )
+) +
+  geom_tile(
+    aes(x = model, y = `Evaluation Score`, fill = scaled_score),
+    color = "black"
+  ) +
+  geom_text(
+    aes(
+      x = model,
+      y = `Evaluation Score`,
+      label = sprintf("%.2f", Score)
+    ),
+    color = "black",
+    size = 3.5
+  ) +
+  facet_wrap(~gen_model_type) +
+  scale_fill_gradient(
+    low = "white",
+    high = "dodgerblue"
+  ) +
+  guides(fill = "none") +
+  labs(fill = "Score Relative to Metric") +
+  ggtitle("Hospital Admission Nowcast Period Evaluation Metric") +
+  ylab("Evalutation Metric") +
+  xlab("Assumed Correlation Structure") +
+  theme_bw()
+```
+
+```{r}
+# Raw Scores :
+hosp_scores_nowcast %>%
+  summarize_scores(by = c("model", "gen_model_type"))
+```
+
+
+### Hospital admissions evaluation scores plot
+```{r}
+(hosp_eval_nowcast_plot + hosp_eval_forecast_plot) /
+  (hosp_by_date_eval_nowcast_plot + hosp_by_date_eval_forecast_plot) +
+  plot_layout(guides = "collect")
+```
