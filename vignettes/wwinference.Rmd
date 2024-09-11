@@ -430,6 +430,13 @@ plot_subpop_rt
 The previous three are equivalent to calling the `plot` method of `wwinference_fit_draws` using the `what` argument:
 
 ```r
+plot(
+  draws = draws_df,
+  what = "predicted_counts",
+  count_data_eval = hosp_data_eval,
+  count_data_eval_col_name = "daily_hosp_admits_for_eval",
+  forecast_date = forecast_date
+)
 plot(draws_df, what = "predicted_ww", forecast_date = forecast_date)
 plot(draws_df, what = "global_rt", forecast_date = forecast_date)
 plot(draws_df, what = "subpop_rt", forecast_date = forecast_date)

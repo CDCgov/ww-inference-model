@@ -73,13 +73,19 @@ test_that("Test the wastewater inference model on simulated data.", {
   forecast_date <- model_draws$predicted_counts$date
   forecast_date <- min(forecast_date) + floor(diff(range(forecast_date)) * .75)
 
+  # Extracting the observed data for the plots
+  count_data_eval <- model_draws$predicted_counts |>
+    dplyr::select(observed_value, date)
+
   expect_true(
     inherits(
       plot(
         model_draws,
         what = "predicted_counts",
         forecast_date = forecast_date,
-        n_draws_to_plot = model_test_data$fit_opts$iter_sampling
+        n_draws_to_plot = model_test_data$fit_opts$iter_sampling,
+        count_data_eval = count_data_eval,
+        count_data_eval_col_name = "observed_value"
       ),
       "ggplot"
     )

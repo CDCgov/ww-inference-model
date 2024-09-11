@@ -312,7 +312,7 @@ print.wwinference_fit_draws <- function(x, ...) {
     )
   }
 
-  cat("You can use $ to access the datasets.")
+  cat("You can use $ to access the datasets.\n")
 
   invisible(x)
 }
