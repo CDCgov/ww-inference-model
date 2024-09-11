@@ -16,7 +16,7 @@
 #' @param ... additional arguments
 #' @param what Character vector. Specifies the variables to extract from the
 #' draws. It could be any from `"all"` `"predicted_counts"`, `"predicted_ww"`,
-#' `"global_rt"`, or `"site_level_rt"`. When `what = "all"` (the default),
+#' `"global_rt"`, or `"subpop_rt"`. When `what = "all"` (the default),
 #' the function will extract all four variables.
 #' @return  A tibble containing the full set of posterior draws of the
 #' estimated, nowcasted, and forecasted: counts, site-level wastewater
@@ -68,8 +68,10 @@ get_draws.default <- function(x, ..., what = "all") {
   )
 }
 
+#' Vector of valid values for `what` in `get_draws`
+#' @noRd
 get_draws_what_ok <- c(
-  "all", "predicted_counts", "predicted_ww", "global_rt", "site_level_rt"
+  "all", "predicted_counts", "predicted_ww", "global_rt", "subpop_rt"
 )
 
 #' @rdname get_draws
@@ -93,7 +95,7 @@ get_draws.data.frame <- function(x,
     idx <- which(!what %in% what_ok)
     stop(
       "The following invalid values were passed to `what`: ",
-      paste(what[idx], collapse = ", "), ". Valid values incllude: ",
+      paste(what[idx], collapse = ", "), ". Valid values include: ",
       paste(what_ok, collapse = ", "), "."
     )
   }
@@ -101,6 +103,9 @@ get_draws.data.frame <- function(x,
   names(what_ok) <- what_ok
   what_ok[] <- FALSE
   if ("all" %in% what) {
+    if (length(what) > 1) {
+      warning("Ignoring other values of `what` when `all` is present.")
+    }
     what_ok[] <- TRUE
   } else {
     what_ok[what] <- TRUE
@@ -205,7 +210,7 @@ get_draws.data.frame <- function(x,
     NULL
   }
 
-  site_level_rt_draws <- if (what_ok["site_level_rt"]) {
+  subpop_rt_draws <- if (what_ok["subpop_rt"]) {
     draws |>
       tidybayes::spread_draws(!!str2lang("r_site_t[site_index, t]")) |>
       dplyr::rename("pred_value" = "r_site_t") |>
@@ -232,7 +237,7 @@ get_draws.data.frame <- function(x,
       predicted_counts = count_draws,
       predicted_ww = ww_draws,
       global_rt = global_rt_draws,
-      site_level_rt = site_level_rt_draws
+      subpop_rt = subpop_rt_draws
     )
   )
 }
@@ -265,11 +270,11 @@ print.wwinference_fit_draws <- function(x, ...) {
       )
     )
   }
-  if (length(x$site_level_rt)) {
+  if (length(x$subpop_rt)) {
     cat(
       sprintf(
-        " - `$site_level_rt` with %i observations.\n",
-        nrow(x$site_level_rt)
+        " - `$subpop_rt` with %i observations.\n",
+        nrow(x$subpop_rt)
       )
     )
   }
@@ -292,19 +297,19 @@ new_wwinference_fit_draws <- function(
     predicted_counts,
     predicted_ww,
     global_rt,
-    site_level_rt) {
+    subpop_rt) {
   # Checking colnames: Must match all exactly
-  predicted_counts_cnames <- c(
+  predicted_counts_colnames <- c(
     "date", "draw", "observed_value", "pred_value", "total_pop"
   )
   if (length(predicted_counts)) {
     checkmate::assert_names(
       colnames(predicted_counts),
-      permutation.of = predicted_counts_cnames
+      permutation.of = predicted_counts_colnames
     )
   }
 
-  predicted_ww_cnames <- c(
+  predicted_ww_colnames <- c(
     "below_lod", "date", "draw", "exclude", "flag_as_ww_outlier",
     "lab", "lab_site_index", "lab_site_name", "log_genome_copies_per_ml",
     "log_lod", "observed_value", "pred_value", "site", "site_index",
@@ -313,28 +318,28 @@ new_wwinference_fit_draws <- function(
   if (length(predicted_ww)) {
     checkmate::assert_names(
       colnames(predicted_ww),
-      permutation.of = predicted_ww_cnames
+      permutation.of = predicted_ww_colnames
     )
   }
 
-  global_rt_cnames <- c(
+  global_rt_colnames <- c(
     "date", "draw", "observed_value", "pred_value", "total_pop"
   )
   if (length(global_rt)) {
     checkmate::assert_names(
       colnames(global_rt),
-      permutation.of = global_rt_cnames
+      permutation.of = global_rt_colnames
     )
   }
 
-  site_level_rt_cnames <- c(
+  subpop_rt_colnames <- c(
     "date", "draw", "pred_value", "site", "site_index", "site_pop",
     "subpop"
   )
-  if (length(site_level_rt)) {
+  if (length(subpop_rt)) {
     checkmate::assert_names(
-      colnames(site_level_rt),
-      permutation.of = site_level_rt_cnames
+      colnames(subpop_rt),
+      permutation.of = subpop_rt_colnames
     )
   }
 
@@ -343,7 +348,7 @@ new_wwinference_fit_draws <- function(
       predicted_counts = predicted_counts,
       predicted_ww = predicted_ww,
       global_rt = global_rt,
-      site_level_rt = site_level_rt
+      subpop_rt = subpop_rt
     ),
     class = "wwinference_fit_draws"
   )
@@ -360,6 +365,13 @@ new_wwinference_fit_draws <- function(
 #' will call the appropriate method.
 #'
 plot.wwinference_fit_draws <- function(x, y = NULL, what, ...) {
+  if (legnth(what) != 1L) {
+    stop(
+      "The value provided to `what` must be a length one character vector. ",
+      "Currently, it is of length ", length(what), "."
+    )
+  }
+
   which_what_are_ok <- setdiff(get_draws_what_ok, "all")
 
   if (!what %in% which_what_are_ok) {
@@ -390,9 +402,9 @@ plot.wwinference_fit_draws <- function(x, y = NULL, what, ...) {
       x$global_rt,
       ...
     )
-  } else if (what == "site_level_rt") {
+  } else if (what == "subpop_rt") {
     get_plot_subpop_rt(
-      x$site_level_rt,
+      x$subpop_rt,
       ...
     )
   }

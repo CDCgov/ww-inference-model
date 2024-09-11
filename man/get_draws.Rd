@@ -28,7 +28,7 @@ get_draws_df(x, ...)
 
 \item{what}{Character vector. Specifies the variables to extract from the
 draws. It could be any from \code{"all"} \code{"predicted_counts"}, \code{"predicted_ww"},
-\code{"global_rt"}, or \code{"site_level_rt"}. When \code{what = "all"} (the default),
+\code{"global_rt"}, or \code{"subpop_rt"}. When \code{what = "all"} (the default),
 the function will extract all four variables.}
 
 \item{count_data}{A dataframe of the preprocessed daily count data (e.g.

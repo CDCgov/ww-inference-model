@@ -72,7 +72,7 @@ test_that("Test the wastewater inference model on simulated data.", {
   expect_true(inherits(plot(model_draws, what = "predicted_counts"), "ggplot"))
   expect_true(inherits(plot(model_draws, what = "predicted_ww"), "ggplot"))
   expect_true(inherits(plot(model_draws, what = "global_rt"), "ggplot"))
-  expect_true(inherits(plot(model_draws, what = "site_level_rt"), "ggplot"))
+  expect_true(inherits(plot(model_draws, what = "subpop_rt"), "ggplot"))
 
   expect_error(plot(model_draws, what = "something else"))
 })
