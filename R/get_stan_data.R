@@ -356,9 +356,11 @@ get_stan_data <- function(input_count_data,
   # if adding auxiliary site, then we need to adjust site and lab indices
   # such that first subpopulation is the auxiliary site.
   if (add_auxiliary_site) {
-    subpop_to_site_map <- ww_indices$ww_sampled_sites + 1
+    subpop_to_samples_map <- ww_indices$ww_sampled_sites + 1
+    lab_site_to_subpop_map <- ww_indices$lab_site_to_site_map + 1
   } else {
-    subpop_to_site_map <- ww_indices$ww_sampled_sites
+    subpop_to_samples_map <- ww_indices$ww_sampled_sites
+    lab_site_to_subpop_map <- ww_indices$lab_site_to_site_map
   }
 
   stan_data_list <- list(
@@ -387,8 +389,8 @@ get_stan_data <- function(input_count_data,
     norm_pop = subpop_data$norm_pop,
     ww_sampled_times = ww_indices$ww_sampled_times,
     hosp_times = count_indices$count_times,
-    ww_sampled_sites = subpop_to_site_map,
-    lab_site_to_site_map = ww_indices$lab_site_to_site_map,
+    ww_sampled_subpops = subpop_to_samples_map,
+    lab_site_to_subpop_map = lab_site_to_subpop_map,
     ww_sampled_lab_sites = ww_indices$ww_sampled_lab_sites,
     ww_log_lod = ww_values$ww_lod,
     ww_censored = ww_indices$ww_censored,

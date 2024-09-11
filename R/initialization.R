@@ -31,9 +31,9 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
   init_list <- list(
     w = stats::rnorm(n_weeks - 1, 0, stdev),
     eta_sd = abs(stats::rnorm(1, 0, stdev)),
-    eta_i_first_obs = abs(stats::rnorm(n_subpops, 0, stdev)),
+    eta_i_first_obs = abs(stats::rnorm((n_subpops - 1), 0, stdev)),
     sigma_i_first_obs = abs(stats::rnorm(1, 0, stdev)),
-    eta_initial_exp_growth_rate = abs(stats::rnorm(n_subpops, 0, stdev)),
+    eta_initial_exp_growth_rate = abs(stats::rnorm((n_subpops - 1), 0, stdev)),
     sigma_initial_exp_growth_rate = abs(stats::rnorm(1, 0, stdev)),
     autoreg_rt = abs(stats::rnorm(
       1,
@@ -47,11 +47,11 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
       convert_to_logsd(1, stdev)
     ),
     error_subpop = matrix(
-      stats::rnorm(n_subpops * n_weeks,
+      stats::rnorm((n_subpops - 1) * n_weeks,
         mean = 0,
         sd = stdev
       ),
-      n_subpops,
+      (n_subpops - 1),
       n_weeks
     ),
     autoreg_rt_subpop = abs(stats::rnorm(1, 0.5, 0.05)),

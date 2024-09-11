@@ -35,14 +35,14 @@ data {
   vector<lower = 1e-20>[n_subpops] subpop_size; // the population sizes for each subpopulation
   real<lower = state_pop> norm_pop;
   array[owt] int<lower=1,upper=ot + ht> ww_sampled_times; // a list of all of the days on which WW is sampled
-                                   // will be mapped to the corresponding sites (ww_sampled_sites)
+                                   // will be mapped to the corresponding subpops (ww_sampled_subpops)
   array[oht] int<lower=1, upper=ot> hosp_times; // the days on which hospital admissions are observed
-  array[owt] int<lower=1,upper=n_subpops> ww_sampled_sites; // vector of unique sites in order of the sampled times
-  array[owt] int<lower=1,upper=n_ww_lab_sites> ww_sampled_lab_sites; // vector mapping the
+  array[owt] int<lower=1,upper=n_subpops> ww_sampled_subpops; // vector of unique subpops in order of the sampled times
+  array[owt] int<lower=1,upper=n_ww_lab_sites+1> ww_sampled_lab_sites; // vector mapping the subpops to lab-site combos
   array[n_censored] int<lower=1,upper=owt> ww_censored; // times that the WW data is below the LOD
   array[n_uncensored] int<lower=1,upper=owt> ww_uncensored; // time that WW data is above LOD
   vector[owt] ww_log_lod; // The limit of detection in that site at that time point
-  array[n_ww_lab_sites] int<lower=1,upper=n_subpops> lab_site_to_site_map; // which lab sites correspond to which sites
+  array[n_ww_lab_sites] int<lower=1,upper=n_subpops> lab_site_to_subpop_map; // which lab sites correspond to which subpops
   array[oht] int<lower=0> hosp; // observed hospital admissions
   array[ot + ht] int<lower=1,upper=7> day_of_week; // integer vector with 1-7 corresponding to the weekday
   vector[owt] log_conc; // observed concentration of viral genomes in WW
@@ -287,7 +287,7 @@ transformed parameters {
   // These are the true expected genomes at the site level before observation error
   // (which is at the lab-site level)
   for (i in 1:owt) {
-    exp_obs_log_v_true[i] = model_log_v_ot[ww_sampled_sites[i], ww_sampled_times[i]];
+    exp_obs_log_v_true[i] = model_log_v_ot[ww_sampled_subpops[i], ww_sampled_times[i]];
   }
 
   // modify by lab-site specific variation (multiplier!)
@@ -381,7 +381,7 @@ generated quantities {
   // Here need to iterate through each lab-site, find the corresponding site
   // and apply the expected lab-site error
   for(i in 1:n_ww_lab_sites) {
-    pred_ww[i] = normal_rng(model_log_v_ot[lab_site_to_site_map[i], 1 : ot + ht] + ww_site_mod[i],
+    pred_ww[i] = normal_rng(model_log_v_ot[lab_site_to_subpop_map[i], 1 : ot + ht] + ww_site_mod[i],
                             sigma_ww_site[i]);
   }
 

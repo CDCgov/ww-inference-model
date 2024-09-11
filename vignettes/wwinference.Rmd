@@ -340,7 +340,11 @@ ww_fit <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(seed = 123),
+  fit_opts = get_mcmc_options(
+    seed = 123,
+    iter_warmup = 25,
+    iter_sampling = 50
+  ),
   compiled_model = model
 )
 ```

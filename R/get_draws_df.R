@@ -184,8 +184,8 @@ get_draws_df.data.frame <- function(x,
     dplyr::select(-"t")
 
   site_level_rt_draws <- draws |>
-    tidybayes::spread_draws(!!str2lang("r_site_t[site_index, t]")) |>
-    dplyr::rename("pred_value" = "r_site_t") |>
+    tidybayes::spread_draws(!!str2lang("r_subpop_t[site_index, t]")) |>
+    dplyr::rename("pred_value" = "r_subpop_t") |>
     dplyr::mutate(
       draw = .data$`.draw`,
       name = "subpopulation R(t)",
