@@ -34,7 +34,7 @@ validate_ww_conc_data <- function(ww_data,
   # Check for repeated wastewater observations within a site and lab
   assert_columns_determine_unique_row(
     df = ww_data,
-    groups = c("date", "site", "lab"),
+    unique_key_columns = c("date", "site", "lab"),
     arg = "lab-site-day",
     add_err_msg =
       c(
