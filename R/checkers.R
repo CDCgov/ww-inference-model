@@ -233,11 +233,11 @@ assert_no_repeats_win_group <- function(df,
                                         arg = "x",
                                         call = rlang::caller_env(),
                                         add_err_msg = "") {
-  duplicates <- df |> dplyr::filter(dplyr::n() > 1,
-    .by = {{ groups }}
+  duplicated_rows <- df |> dplyr::filter(dplyr::n() > 1,
+    .by = {{ unique_key_columns }}
   )
 
-  if (nrow(duplicates) != 0) {
+  if (nrow(duplicated_rows) != 0) {
     cli::cli_abort(
       c("{.arg {arg}} has more than one element", add_err_msg,
         "i" = "Multiple {.arg {arg}} are not currently supported."
