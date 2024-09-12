@@ -62,4 +62,67 @@ test_that("Test the wastewater inference model on simulated data.", {
       tolerance = 0.0001
     )
   }
+
+  # Testing draws
+  model_draws <- get_draws(fit)
+  expect_length(model_draws, 4)
+
+  expect_error(get_draws(fit, what = "something else"))
+
+  # Getting a forecast date
+  forecast_date <- model_draws$predicted_counts$date
+  forecast_date <- min(forecast_date) + floor(diff(range(forecast_date)) * .75)
+
+  # Extracting the observed data for the plots
+  count_data_eval <- model_draws$predicted_counts |>
+    dplyr::select(observed_value, date)
+
+  expect_true(
+    inherits(
+      plot(
+        model_draws,
+        what = "predicted_counts",
+        forecast_date = forecast_date,
+        n_draws_to_plot = model_test_data$fit_opts$iter_sampling,
+        count_data_eval = count_data_eval,
+        count_data_eval_col_name = "observed_value"
+      ),
+      "ggplot"
+    )
+  )
+  expect_true(
+    inherits(
+      plot(
+        model_draws,
+        what = "predicted_ww",
+        forecast_date = forecast_date,
+        n_draws_to_plot = model_test_data$fit_opts$iter_sampling
+      ),
+      "ggplot"
+    )
+  )
+  expect_true(
+    inherits(
+      plot(
+        model_draws,
+        what = "global_rt",
+        forecast_date = forecast_date,
+        n_draws_to_plot = model_test_data$fit_opts$iter_sampling
+      ),
+      "ggplot"
+    )
+  )
+  expect_true(
+    inherits(
+      plot(
+        model_draws,
+        what = "subpop_rt",
+        forecast_date = forecast_date,
+        n_draws_to_plot = model_test_data$fit_opts$iter_sampling
+      ),
+      "ggplot"
+    )
+  )
+
+  expect_error(plot(model_draws, what = "something else"))
 })

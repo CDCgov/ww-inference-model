@@ -30,10 +30,23 @@ get_plot_forecasted_counts <- function(draws,
                                        forecast_date,
                                        count_type = "hospital admissions",
                                        n_draws_to_plot = 100) {
-  sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
+  n_draws_available <- max(draws$draw)
+  if (n_draws_available < n_draws_to_plot) {
+    stop(
+      sprintf(
+        "The number of draws to plot (%i) should be less or equal to ",
+        n_draws_to_plot
+      ),
+      sprintf(
+        "the number of draws in the data (%i).",
+        n_draws_available
+      )
+    )
+  }
+
+  sampled_draws <- sample.int(n_draws_available, n_draws_to_plot)
 
   draws_to_plot <- draws |> dplyr::filter(
-    .data$name == "predicted counts",
     .data$draw %in% !!sampled_draws
   )
 
@@ -97,7 +110,6 @@ get_plot_ww_conc <- function(draws,
 
   draws_to_plot <- draws |>
     dplyr::filter(
-      .data$name == "predicted wastewater",
       .data$draw %in% !!sampled_draws
     ) |>
     dplyr::mutate(
@@ -163,10 +175,9 @@ get_plot_ww_conc <- function(draws,
 get_plot_global_rt <- function(draws,
                                forecast_date,
                                n_draws_to_plot = 100) {
-  sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
+  sampled_draws <- sample.int(max(draws$draw), n_draws_to_plot)
 
   draws_to_plot <- draws |> dplyr::filter(
-    .data$name == "global R(t)",
     .data$draw %in% !!sampled_draws
   )
 
@@ -222,10 +233,9 @@ get_plot_global_rt <- function(draws,
 get_plot_subpop_rt <- function(draws,
                                forecast_date,
                                n_draws_to_plot = 100) {
-  sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
+  sampled_draws <- sample.int(max(draws$draw), n_draws_to_plot)
 
   draws_to_plot <- draws |> dplyr::filter(
-    .data$name == "subpopulation R(t)",
     .data$draw %in% !!sampled_draws
   )
 

@@ -23,7 +23,7 @@ Authors@R: c(
            email = "xuk0@cdc.gov"),
     person(given = "George",
            family = "Vega Yon",
-           role = c("ctb"),
+           role = c("aut"),
            email = "g.vegayon@gmail.com",
            comment = c(ORCID = "0000-0002-3171-0844")),
     person(given = "Damon",
@@ -37,7 +37,25 @@ Authors@R: c(
     person(given = "Scott",
            family = "Olesen",
            role = c("aut"),
-           email = "ulp7@cdc.gov")
+           email = "ulp7@cdc.gov"),
+    person(given = "Adam",
+           family = "Howes",
+           role = c("ctb"),
+           email = "adamthowes@gmail.com",
+           comment = c(ORCID = "0000-0003-2386-4031")),
+    person(given = "Chirag",
+           family = "Kumar",
+           role = c("ctb"),
+           email = "kzs9@cdc.gov"),
+    person(given = "Alexander",
+           family = "Keyel",
+           role = c("ctb"),
+           email = "alexander.keyel@health.ny.gov",
+           comment = c(ORCID = "000-0001-5256-6274")),
+    person(given = "Hannah",
+           family = "Cohen",
+           role = c("ctb"),
+           email = "llg4@cdc.gov")
 	)
 Description: An implementation of a hierarchical semi-mechanistic renewal
     approach jointly calibrating to multiple wastewater concentrations datasets from
