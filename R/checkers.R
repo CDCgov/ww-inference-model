@@ -387,11 +387,11 @@ assert_req_ww_cols_present <- function(ww_data,
 #' traceback.
 #'
 #' @return NULL, invisibly
-check_req_count_cols_present <- function(count_data,
-                                         count_col_name,
-                                         pop_size_col_name,
-                                         add_req_col_names = c("date"),
-                                         call = rlang::caller_env()) {
+assert_req_count_cols_present <- function(count_data,
+                                          count_col_name,
+                                          pop_size_col_name,
+                                          add_req_col_names = c("date"),
+                                          call = rlang::caller_env()) {
   column_names <- colnames(count_data)
   expected_col_names <- c(
     {
