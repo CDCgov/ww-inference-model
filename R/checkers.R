@@ -228,11 +228,11 @@ assert_no_repeated_elements <- function(x, arg = "x",
 #' default is the empty string (`""`)
 #'
 #' @return NULL, invisibly
-assert_columns_determine_unique_row <- function(df,
-                                        unique_key_columns,
-                                        arg = "x",
-                                        call = rlang::caller_env(),
-                                        add_err_msg = "") {
+assert_cols_det_unique_row <- function(df,
+                                       unique_key_columns,
+                                       arg = "x",
+                                       call = rlang::caller_env(),
+                                       add_err_msg = "") {
   duplicated_rows <- df |> dplyr::filter(dplyr::n() > 1,
     .by = {{ unique_key_columns }}
   )
@@ -531,8 +531,9 @@ assert_daily_data <- function(dates,
 #' calibration time
 #'
 #' @param date_vector the vector of dates to check, must be of Date type
-#' @param data_name What data correspond to the dates in `date_vector`. Used to make
-#' the error message informative (e.g. "hospital admissions data")
+#' @param data_name What data correspond to the dates in `date_vector`.
+#' Used to make the error message informative (e.g.
+#' "hospital admissions data")
 #' @param calibration_time integer indicating the number of days that
 #' the dates must span
 #' @param call Calling environment to be passed to [cli::cli_abort()] for

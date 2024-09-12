@@ -16,8 +16,9 @@ assert_sufficient_days_of_data(
 \arguments{
 \item{date_vector}{the vector of dates to check, must be of Date type}
 
-\item{data_name}{What data correspond to the dates in \code{date_vector}. Used to make
-the error message informative (e.g. "hospital admissions data")}
+\item{data_name}{What data correspond to the dates in \code{date_vector}.
+Used to make the error message informative (e.g.
+"hospital admissions data")}
 
 \item{calibration_time}{integer indicating the number of days that
 the dates must span}
