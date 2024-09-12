@@ -38,7 +38,17 @@ ww_data_char <- tibble::tibble(
 
 ww_data_int <- tibble::tibble(
   date = lubridate::ymd(rep(c("2023-11-01", "2023-11-02"), 2)),
-  site = c(2, 2, 1, 1),
+  site = c(1, 1, 2, 2),
+  lab = c(1, 1, 1, 1),
+  conc = log(c(345.2, 784.1, 401.5, 681.8)),
+  lod = log(c(20, 20, 15, 15)),
+  site_pop = c(rep(1e6, 2), rep(3e5, 2)),
+  location = c(rep("MA", 4))
+)
+
+ww_data_int_alt <- tibble::tibble(
+  date = lubridate::ymd(rep(c("2023-11-01", "2023-11-02"), 2)),
+  site = c(5, 5, 1, 1),
   lab = c(1, 1, 1, 1),
   conc = log(c(345.2, 784.1, 401.5, 681.8)),
   lod = log(c(20, 20, 15, 15)),
@@ -55,8 +65,17 @@ test_that("Function returns dataframe with correct site indices", {
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
-
+  processed_int_alt <- preprocess_ww_data(ww_data_int_alt,
+    conc_col_name = "conc",
+    lod_col_name = "lod"
+  )
+  # site indices should be the same even if sites are not ordered or are
+  # characters
   expect_equal(processed_int$site_index, processed_char$site_index)
+  expect_equal(processed_int_alt$site_index, processed_int$site_index)
+  expect_equal(processed_int_alt$site_index, processed_char$site_index)
+  # Ordering shouldn't change even if site integers not in order
+  expect_equal(processed_int_alt$site, ww_data_int_alt$site)
 })
 
 ww_data_w_repeats <- tibble::tibble(
