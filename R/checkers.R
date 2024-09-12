@@ -211,8 +211,8 @@ assert_no_repeated_elements <- function(x, arg = "x",
   invisible()
 }
 
-#' Check that there are no repeated elements in groups within
-#' a dataframe
+#' Check a set of columns in a data frame uniquely identify 
+#' data frame rows.
 #'
 #' @description
 #' This function  checks that the elements of groups within a dataframe
