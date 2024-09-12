@@ -211,7 +211,7 @@ assert_no_repeated_elements <- function(x, arg = "x",
   invisible()
 }
 
-#' Check a set of columns in a data frame uniquely identify 
+#' Check a set of columns in a data frame uniquely identify
 #' data frame rows.
 #'
 #' @description
@@ -219,9 +219,9 @@ assert_no_repeated_elements <- function(x, arg = "x",
 #'  each group has a single entry
 #'
 #' @param df the dataframe to check
-#' @param unique_key_columns Columns that, taken together, should 
+#' @param unique_key_columns Columns that, taken together, should
 #' uniquely identify a row in the data frame.
-#' @param arg the name of the dataframe to check
+#' @param arg the name of the unique grouping to check
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
 #' @param add_err_msg string containing an additional error message,
@@ -239,8 +239,10 @@ assert_no_repeats_win_group <- function(df,
 
   if (nrow(duplicated_rows) != 0) {
     cli::cli_abort(
-      c("{.arg {arg}} has more than one element", add_err_msg,
-        "i" = "Multiple {.arg {arg}} are not currently supported."
+      c("The data has more than one observation per {.arg{arg}}",
+        add_err_msg,
+        "i" = "Multiple observations in a {.arg{arg}} are not",
+        "currently supported."
       ),
       call = call,
       class = "wwinference_input_data_error"
