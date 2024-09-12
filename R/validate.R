@@ -170,7 +170,7 @@ validate_both_datasets <- function(input_count_data,
   # check that you have sufficient count data for the calibration time
   assert_sufficient_days_of_data(
     input_count_data$date,
-    arg = "input count data length",
+    data_name = "input count data",
     calibration_time,
     add_err_msg = c(
       "Check that the count data supplied has sufficient values",
