@@ -176,7 +176,7 @@ test_that(
     )
     count_col_name <- "hosp"
     pop_size_col_name <- "pop"
-    expect_no_error(check_req_count_cols_present(
+    expect_no_error(assert_req_count_cols_present(
       x,
       count_col_name,
       pop_size_col_name
@@ -190,7 +190,7 @@ test_that(
     )
     count_col_name <- "count"
     pop_size_col_name <- "pop"
-    expect_error(check_req_hosp_columns_present(
+    expect_error(assert_req_count_columns_present(
       x,
       count_col_name,
       pop_size_col_name
@@ -204,7 +204,7 @@ test_that(
     )
     count_col_name <- "hosp"
     pop_size_col_name <- "pop"
-    expect_error(check_req_hosp_columns_present(
+    expect_error(assert_req_count_columns_present(
       x,
       count_col_name,
       pop_size_col_name
