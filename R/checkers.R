@@ -219,8 +219,8 @@ assert_no_repeated_elements <- function(x, arg = "x",
 #' dont have repeated elements
 #'
 #' @param df the dataframe to check
-#' @param groups a vector of strings indicating the groups of column
-#' names that are expected to have no repeated combinations
+#' @param unique_key_columns Columns that, taken together, should 
+#' uniquely identify a row in the data frame.
 #' @param arg the name of the dataframe to check
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
