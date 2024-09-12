@@ -39,7 +39,7 @@ validate_ww_conc_data <- function(ww_data,
     add_err_msg =
       c(
         "Package expects either at most one ",
-        "wastewater observation per a given a site, lab, "
+        "wastewater observation per a given a site, lab, ",
         "and sample collection date. Got date(s) with ",
         "more than one observation for a given site and lab."
       )
