@@ -542,7 +542,7 @@ assert_daily_data <- function(dates,
 #'
 #' @return NULL invisible
 assert_sufficient_days_of_data <- function(date_vector,
-                                           arg,
+                                           data_name,
                                            calibration_time,
                                            call = rlang::caller_env(),
                                            add_err_msg = "") {
