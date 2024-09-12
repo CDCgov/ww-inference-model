@@ -554,7 +554,7 @@ assert_sufficient_days_of_data <- function(date_vector,
   if (!check_sufficient_data) {
     cli::cli_abort(
       c(
-        "Insufficient {.arg {arg}} for the specified calibration time.",
+        "Insufficient {.arg {data_name}} for the specified calibration time.",
         add_err_msg
       ),
       call = call,
