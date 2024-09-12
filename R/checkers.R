@@ -229,7 +229,7 @@ assert_no_repeated_elements <- function(x, arg = "x",
 #'
 #' @return NULL, invisibly
 assert_no_repeats_win_group <- function(df,
-                                        groups,
+                                        unique_key_columns,
                                         arg = "x",
                                         call = rlang::caller_env(),
                                         add_err_msg = "") {
