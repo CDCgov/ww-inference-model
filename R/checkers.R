@@ -228,7 +228,7 @@ assert_no_repeated_elements <- function(x, arg = "x",
 #' default is the empty string (`""`)
 #'
 #' @return NULL, invisibly
-assert_no_repeats_win_group <- function(df,
+assert_columns_determine_unique_row <- function(df,
                                         unique_key_columns,
                                         arg = "x",
                                         call = rlang::caller_env(),
