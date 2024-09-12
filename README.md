@@ -1,4 +1,4 @@
-# `wwinference`: joint inference and forecasting from wastewater and epidemiological indicators  <img src='man/figures/wwinference-logo.png' align="right" height="140" />
+# `wwinference`: joint inference and forecasting from wastewater and epidemiological indicators  <img src='man/figures/wwinference-logo.svg' align="right" height="140" />
 
 > [!CAUTION]
 > This project is a work-in-progress. Despite this project's early stage, all development is in public as part of the Center for Forecasting and Outbreak Analytics' goals around open development. Questions and suggestions are welcome through GitHub issues or a PR.
