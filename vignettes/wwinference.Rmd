@@ -335,7 +335,9 @@ ww_fit <- wwinference::wwinference(
     params = params
   ),
   fit_opts = get_mcmc_options(
-    seed = 123
+    seed = 123,
+    iter_warmup = 50,
+    iter_sampling = 100
   ),
   compiled_model = model
 )
@@ -393,6 +395,8 @@ predicted hospital admissions in this case), access the corresponding tibble usi
 You can also specify which outputs to return using the `what` argument.
 ```{r example subset draws}
 hosp_draws <- get_draws(ww_fit, what = "predicted_counts")
+hosp_draws_df <- hosp_draws$predicted_counts
+head(hosp_draws_df)
 ```
 
 ### Using explicit passed arguments rather than S3 methods
@@ -447,9 +451,9 @@ plot(
   count_data_eval_col_name = "daily_hosp_admits_for_eval",
   forecast_date = forecast_date
 )
-plot(draws_df, what = "predicted_ww", forecast_date = forecast_date)
-plot(draws_df, what = "global_rt", forecast_date = forecast_date)
-plot(draws_df, what = "subpop_rt", forecast_date = forecast_date)
+plot(draws, what = "predicted_ww", forecast_date = forecast_date)
+plot(draws, what = "global_rt", forecast_date = forecast_date)
+plot(draws, what = "subpop_rt", forecast_date = forecast_date)
 ```
 
 ## Diagnostics

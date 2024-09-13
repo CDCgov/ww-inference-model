@@ -111,6 +111,18 @@ get_draws.data.frame <- function(x,
   } else {
     what_ok[what] <- TRUE
   }
+  if (stan_data_list$include_ww == 0) {
+    what_ok["predicted_ww"] <- FALSE
+    what_ok["subpop_rt"] <- FALSE
+    if (what == "all") {
+      warning(c(
+        "Model wasn't fit to wastewater data. ",
+        "Predicted wastewater concentrations and subpopulation R(t)",
+        "\nestimates will not be returned in the ",
+        "`wwinference_fit_draws` object"
+      ))
+    }
+  }
 
   draws <- fit_obj$result$draws()
 
@@ -220,8 +232,8 @@ get_draws.data.frame <- function(x,
       dplyr::distinct(.data$site, .data$site_index, .data$site_pop) |>
       dplyr::mutate(subpop = glue::glue("Site: {as.factor(.data$site)}")) |>
       dplyr::rename(
-        subpop_pop = .data$site_pop,
-        subpop_index = .data$site_index
+        "subpop_pop" = "site_pop",
+        "subpop_index" = "site_index"
       )
 
     # If we added an auxiliary site, we need to adjust indexing accordingly
@@ -279,16 +291,20 @@ print.wwinference_fit_draws <- function(x, ...) {
 
   timepoints <- c(
     ifelse(
-      length(x$predicted_counts) > 0, diff(range(x$predicted_counts$date)), 0
+      length(x$predicted_counts) > 0,
+      diff(range(x$predicted_counts$date)) + 1, 0
     ),
     ifelse(
-      length(x$predicted_ww) > 0, diff(range(x$predicted_ww$date)), 0
+      length(x$predicted_ww) > 0,
+      diff(range(x$predicted_ww$date)) + 1, 0
     ),
     ifelse(
-      length(x$global_rt) > 0, diff(range(x$global_rt$date)), 0
+      length(x$global_rt) > 0,
+      diff(range(x$global_rt$date)) + 1, 0
     ),
     ifelse(
-      length(x$subpop_rt) > 0, diff(range(x$subpop_rt$date)), 0
+      length(x$subpop_rt) > 0,
+      diff(range(x$subpop_rt$date)) + 1, 0
     )
   ) |> max()
 
@@ -329,7 +345,7 @@ print.wwinference_fit_draws <- function(x, ...) {
   if (length(x$subpop_rt)) {
     cat(
       sprintf(
-        " - `$subpop_rt` with %i rows across %i sub-populations\n",
+        " - `$subpop_rt` with %i rows across %i subpopulations\n",
         nrow(x$subpop_rt),
         length(unique(x$subpop_rt$subpop))
       )
