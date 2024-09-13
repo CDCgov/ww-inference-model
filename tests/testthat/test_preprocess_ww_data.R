@@ -92,7 +92,7 @@ ww_data_w_repeats <- tibble::tibble(
 )
 
 test_that("Function returns an error if there are repeated values", {
-  expect_error(
+  msg <- expect_error(
     preprocess_ww_data(ww_data_w_repeats,
       conc_col_name = "conc",
       lod_col_name = "lod"
