@@ -384,7 +384,6 @@ draws_df <- get_draws(ww_fit)
 print(draws_df)
 ```
 
-<<<<<<< HEAD
 Note that the `get_draws_df()` function will return a tidy long
 dataframe with all of the posterior draws for the calibration, nowcast, and
 forecast period joined to applicable data for each of
