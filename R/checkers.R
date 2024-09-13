@@ -239,9 +239,9 @@ assert_cols_det_unique_row <- function(df,
 
   if (nrow(duplicated_rows) != 0) {
     cli::cli_abort(
-      c("The data has more than one observation per {.arg{arg}}",
+      c("The data has more than one observation per {.arg {arg}}",
         add_err_msg,
-        "i" = "Multiple observations in a {.arg{arg}} are not",
+        "i" = "Multiple observations in a {.arg {arg}} are not",
         "currently supported."
       ),
       call = call,
@@ -394,12 +394,8 @@ assert_req_count_cols_present <- function(count_data,
                                           call = rlang::caller_env()) {
   column_names <- colnames(count_data)
   expected_col_names <- c(
-    {
-      count_col_name
-    },
-    {
-      pop_size_col_name
-    },
+    count_col_name,
+    pop_size_col_name,
     add_req_col_names
   )
 
