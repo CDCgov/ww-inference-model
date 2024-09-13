@@ -86,7 +86,10 @@ Imports:
     MASS,
     cramer,
     expm,
-    checkmate
+    checkmate,
+    patchwork,
+    scoringutils,
+    ggh4x
 Remotes:
     stan-dev/cmdstanr
 VignetteBuilder:

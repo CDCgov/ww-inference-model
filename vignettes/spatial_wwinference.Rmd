@@ -1,12 +1,15 @@
 ---
-title: "Title"
-description: "des"
+title: "Assessing the value of adding a spatial correlation structure."
+description: "Here we showcase how we can add a site to site correlations."
 author: "Christian O. Bernal Zelaya"
-date: "2024-09-03"
+date: "2024-09-13"
 output:
-  bookdown::html_vignette2:
-    fig_caption: yes
-    code_folding: show
+  html_document:
+    fig_width: 15
+    fig_height: 12
+    number_sections: true
+    toc: true
+    toc_depth: 1
 pkgdown:
   as_is: true
 vignette: >
@@ -18,22 +21,87 @@ vignette: >
 knitr::opts_chunk$set(dev = "svg")
 ```
 
-# Start
+<script type="text/javascript">
+$(document).ready(function() {
 
+  $chunks = $('.fold');
+
+  $chunks.each(function () {
+
+    // Add button to source code chunks
+    if ( $(this).hasClass('s') ) {
+      $('pre.r', this).prepend("<div class=\"showopt\">Hide Source</div><br style=\"line-height:22px;\"/>");
+      $('pre.r', this).children('code').removeClass('folded'); // Default to show code
+    }
+
+    // Add button to output chunks
+    if ( $(this).hasClass('o') ) {
+      $('pre:not(.r)', this).has('code').prepend("<div class=\"showopt\">Show Output</div><br style=\"line-height:22px;\"/>");
+      $('pre:not(.r)', this).children('code:not(r)').addClass('folded'); // Default to hide output
+
+      // Add button to plots
+      $(this).find('img').wrap('<pre class=\"plot\"></pre>');
+      $('pre.plot', this).prepend("<div class=\"showopt\">Show Plot</div><br style=\"line-height:22px;\"/>");
+      $('pre.plot', this).children('img').addClass('folded'); // Default to hide plots
+
+    }
+  });
+
+  // Hide all chunks when document is loaded
+  $('.folded').css('display', 'none');
+
+  // Function to toggle the visibility
+  $('.showopt').click(function() {
+    var label = $(this).html();
+    if (label.indexOf("Show") >= 0) {
+      $(this).html(label.replace("Show", "Hide"));
+    } else {
+      $(this).html(label.replace("Hide", "Show"));
+    }
+    $(this).siblings('code, img').slideToggle('fast', 'swing');
+  });
+});
+</script>
+
+<style>
+.showopt {
+  background-color: #004c93;
+  color: #FFFFFF;
+  width: 100px;
+  height: 20px;
+  text-align: center;
+  vertical-align: middle !important;
+  float: right;
+  font-family: sans-serif;
+  border-radius: 8px;
+  cursor: pointer; /* Add cursor pointer for better UX */
+}
+
+.showopt:hover {
+  background-color: #dfe4f2;
+  color: #004c93;
+}
+
+pre.plot {
+  background-color: white !important;
+}
+</style>
+
+# Start
 Here we present the way simulating and fitting with 3 separate models using the
 `wwinference` package.  We also compare the results a number of ways to see
 the value of using spatial components within the model.
-```{r}
+
+<div class="fold s">
+```{r warning=FALSE, message=FALSE}
 library(wwinference)
 library(dplyr)
 library(tibble)
 library(tidyr)
 library(ggplot2)
 library(patchwork)
-library(ggridges)
-library(scico)
 library(scoringutils)
-library(ggh4x)
+library(ggh4x) # for facet_grid2
 ```
 
 
@@ -50,35 +118,35 @@ and `rand_corr_matrix_func`.  The default used is `exponential_decay_corr_func_r
 correlation function based of the following fake locations.
 
 ## Fake locations
-```{r}
+Since we want to explore the usefulness of including spatial information into
+the wastewater informed inference model, we must first generate fake locations
+that serve as the wastewater treatment plant locations.  Here we randomly place
+4 wastewater treatment plants.
+
+<div class="fold s">
+```{r fig.height=6, fig.width=6}
 set.seed(2024)
-n_sites <- 6
+n_sites <- 4
 fake_locs <- data.frame(
-  # // x = c(85, 37, 36, 7),
-  # // y = c(12, 75, 75, 96),
   x = runif(n_sites, 0, 100),
   y = runif(n_sites, 0, 100),
   ID = paste0("Site ", 1:n_sites)
-) %>%
-  mutate(
-    for_text_x = 0,
-    for_text_y = 0
-  )
+)
 fake_locs_plot <- ggplot(
   data = fake_locs
 ) +
   geom_point(
     aes(x = x, y = y),
     color = "blue",
-    size = 3
+    size = 5
   ) +
   geom_text(
-    aes(label = ID, x = x + for_text_x, y = y + for_text_y),
-    vjust = -0.6
+    aes(label = ID, x = x, y = y),
+    vjust = -1
   ) +
-  geom_segment(
-    aes(x = x, y = y, xend = x + for_text_x, yend = y + for_text_y),
-    color = "black"
+  coord_cartesian(
+    xlim = c(min(fake_locs$x) - 2, max(fake_locs$x) + 2),
+    ylim = c(min(fake_locs$y) - 2, max(fake_locs$y) + 2)
   ) +
   labs(
     title = "Fake Locations",
@@ -91,15 +159,17 @@ fake_locs_plot
 ```
 
 ## Central Rt Curve
+Another requirement that we need to have based of the model definition, is a
+central Rt curve that is the underlining behavior of the pathogen.  Here we
+visualize the central Rt curve that is used in this vignette, but any central
+Rt can be used here.
+
+<div class="fold s">
 ```{r}
 r_in_weeks <- c(
   rep(1.1, 5), rep(0.9, 5),
   0.9 + 0.0005 * (1:16)^2
 )
-# // r_in_weeks <- c(
-# //   rep(1.1, 5), rep(0.9, 5),
-# //   1 + 0.007 * 1:16
-# // )
 lng <- length(r_in_weeks)
 central_rt_curve <- ggplot() +
   geom_line(
@@ -130,13 +200,33 @@ central_rt_curve
 ```
 
 ## Simulating data
+Now we simulate the data with 3 different data generation models.  The
+difference between these will be the correlation structure that is used for
+site to site correlations.  We will have an iid (imposes no correlations),
+exponential decay correlation function based off distance matrix, and a random
+correlation matrix structure (site to site correlations, but based off
+something we are not aware of).  We also set the necessary presets for our
+simulations, these presets include site names, lab names, wastewater treatment
+plant populations, total population, the global Rt standard deviation (we set
+this to 0 to ensure central Rt is used without any deviations), and necessary
+correlation function parameters.  To change the type of correlation structures
+used is by setting `corr_function` to some correlation function made by the
+user of one of 3 functions included in the package : `independence_corr_func_r`,
+`exponential_decay_corr_func_r`, and `rand_corr_matrix_func`.  Another thing
+that needs to be set is `corr_fun_params`, which are the parameters for the
+correlation function passed into `corr_function`.  Under the hood, the
+correlation matrix is created by calling `corr_function(corr_fun_params)`.  So,
+`corr_function` and `corr_fun_params` need to be set to work in sync.  The
+object that comes out of `generate_simulated_data` will have hospital admission
+data, hospital admission data for eval, and global and site level Rt's.
+
+<div class="fold s">
 ```{r warning=FALSE, message=FALSE}
 # Presets ----------------------------------------------------------------------
-set.seed(1)
 site <- 1:n_sites
 lab <- rep(1, n_sites)
-ww_pop_sites <- c(5e5, 7.5e5, 3.8e5, 4.5e5, 5.5e5, 3.7e5) # , 6e5, 4e5)
-pop_size <- 5e6
+ww_pop_sites <- c(5e5, 7.5e5, 3.8e5, 4.5e5)
+pop_size <- 2 * sum(ww_pop_sites)
 global_rt_sd <- 0
 exp_corr_param <- list(
   dist_matrix = as.matrix(
@@ -149,8 +239,7 @@ exp_corr_param <- list(
       upper = TRUE
     )
   ),
-  phi = 0.2,
-  # // phi = 0.4
+  phi = 0.4,
   l = 1
 )
 sigma_generalized <- 0.01^n_sites
@@ -212,6 +301,10 @@ simulated_data_rng_corr_mat <- withr::with_seed(1, {
 ```
 
 ## Preparing data
+Here we take the output of the `generate_simulated_data` and prepare it for the
+`wwinference` function that does the fitting to an inference model.
+
+<div class="fold s">
 ```{r}
 # iid case
 hosp_data_preprocessed_iid <- wwinference::preprocess_count_data(
@@ -260,10 +353,19 @@ ww_data_to_fit_rng_corr_mat <- wwinference::indicate_ww_exclusions(
 ```
 
 ## Visualziing
-We can explore what this generated data looks like given the different types of
-correlation functions given into the `generate_simulated_data` function.
+With all of the data ready to fit, we first visualize what our simulations looks
+like.  We visualize using the ggplot package.
 
 ### Visualizing data
+We start with visualizing the hospital and wastewater data.  Here open circles
+represent the evaluation data that will be used to evaluate the nowcasting and
+forecasting periods.  The data that will be fed into the model will be the
+solid dots in the plots.  We separate these plots by their data generation
+models, this will be consistent across all plots.  We also seperate the
+wastewater plots by their site, with the dotted lines representing the outlier
+levels.
+
+<div class="fold s">
 ```{r}
 # hosp plots--------------------------------------------------------------------
 hosp_data_full <- rbind(
@@ -358,6 +460,10 @@ hosp_data_plot / ww_data_plot +
   plot_layout(heights = c(1, 2))
 ```
 
+We might also want to visualize what the combined wastewater data looks like,
+which we do here.  Colors correspond with which treatment plant that wastewater
+came from.  We still have that the dotted line is the outlier level for the
+wastewater data.
 
 ```{r}
 ww_total_plot <- ggplot(ww_data_full) +
@@ -382,10 +488,10 @@ ww_total_plot <- ggplot(ww_data_full) +
     scales = "fixed"
   ) +
   scale_color_manual(
-    breaks = c("1", "2", "3", "4", "5", "6"),
+    breaks = c("1", "2", "3", "4"),
     values = c(
-      "darkviolet", "darkblue", "darkgreen",
-      "darkred", "gold", "darkorange"
+      "darkviolet", "darkgreen",
+      "darkred", "darkorange"
     )
   ) +
   xlab("") +
@@ -395,8 +501,14 @@ ww_total_plot <- ggplot(ww_data_full) +
 ww_total_plot
 ```
 
-
 ### Visualizing actual Rt curves
+Here we visualize both the global and site level Rt curves.  We have facets for
+each of the data generation models.  We also look at a site called the Aux site,
+which, per model definitions, is the population that is not captured by a
+wastewater treatment plant.  We have a blue horizontal line at Rt = 1 for
+reference of pathogen severity.
+
+<div class="fold s">
 ```{r}
 # Global Rt --------------------------------------------------------------------
 rt_global_data_full <- rbind(
@@ -540,6 +652,10 @@ global_rt_data_plot / site_rt_data_plot +
   plot_layout(heights = c(1, n_sites))
 ```
 
+Similarly we can visualize the combined site level Rt curves.  Colors are the
+different sites.  Again, we have a blue horizontal line at Rt = 1 for
+reference of pathogen severity.
+
 ```{r}
 site_rt_total_plot <- ggplot(site_rt_data_full) +
   geom_hline(
@@ -557,12 +673,11 @@ site_rt_total_plot <- ggplot(site_rt_data_full) +
   ) +
   scale_color_manual(
     breaks = c(
-      "Site 1", "Site 2", "Site 3", "Site 4",
-      "Site 5", "Site 6", "Aux"
+      "Site 1", "Site 2", "Site 3", "Site 4", "Aux"
     ),
     values = c(
-      "darkviolet", "darkblue", "darkgreen",
-      "darkred", "gold", "darkorange", "grey"
+      "darkviolet", "darkgreen",
+      "darkred", "darkorange", "grey"
     )
   ) +
   scale_y_continuous(transform = "log10") +
@@ -576,7 +691,20 @@ site_rt_total_plot
 
 
 ### Visual of correlation matrix
-```{r}
+One other thing that we want to visualize, because it is the key difference
+between the data generation models, is the site to site correlation matrix.
+Here we do that, faceted by data generation model, we provide a scale that
+gives level of correlation.  We also make the area of each circle correspond
+with the correlation, so larger the area of the circle, larger the correlation.
+To remind ourselves, IID will have no correlations between wastewater sites.
+Exponential will have correlations between wastewater sites that are based off
+the exponential correlation function that uses the distances between wastewater
+treatment plants.  Rand. Corr. Matrix will have correlations between wastewater
+treatment plants that are based off some unknown factors, to emulate this we
+just set random correlations between sites.
+
+<div class="fold s">
+```{r fig.height=5, fig.width=10}
 # Correlation Visuals ----------------------------------------------------------
 corr_matrix_df <- rbind(
   simulated_data_iid$corr_matrix %>%
@@ -653,19 +781,13 @@ corr_matrix_plot <- ggplot(corr_matrix_df, aes(Var1, Var2)) +
     shape = 21,
     color = "black"
   ) +
-  # // scale_fill_gradient2(
-  # //  low = "blue",
-  # //  high = "red",
-  # //  mid = "white",
-  # //  midpoint = 0,
-  # //  limit = c(-1, 1),
-  # //  space = "Lab",
-  # //  name = "Correlation"
-  # // ) +
-  scale_fill_scico(
-    palette = "vik",
-    direction = 1,
-    limits = c(-1, 1),
+  scale_fill_gradient2(
+    low = "darkblue",
+    high = "darkred",
+    mid = "white",
+    midpoint = 0,
+    limit = c(-1, 1),
+    space = "Lab",
     name = "Correlation"
   ) +
   scale_size(
@@ -691,16 +813,21 @@ only have 3 spatial structures to choose from when using the `wwinference` model
 Those are iid, for non-spatial assumptions where we infer only a common
 generalized variance, exponential correlation function based off distances of
 subpopulations or sites where we infer the parameters of the correlation
-function, and unstructured where the entire correlation matrix is infered.  The
+function, and unstructured where the entire correlation matrix is inferred.  The
 switch required to change from each type is `corr_structure_switch` in the
 `wwinference` function.  Inputs for this switch are currently, `0` - iid,
 `1` - exponential, and `2` - unstructured.  Keep in mind that if exponential is
 used, a distance matrix is required as input as well.
 
-Here we will fit each data, iid, exponential, rand. corr. matrix to the 3 types
-of inference models, iid, exponential, and unstructured.
-
 ## Fitting presets
+We start by getting necessary inference model parameters and we also set a
+couple of presets, these being the forecast date, calibration time, forecast
+horizon, generation interval, infection to hospitalization distribution,
+infection feedback distribution, stan file, and stan warmup and sampling
+iterations.  Some of these are required to preset to run the model, but some
+have defaults, be sure to look over documentation of functions for more details.
+
+<div class="fold s">
 ```{r warning=FALSE, message=FALSE}
 params <- get_params(
   system.file("extdata", "example_params.toml",
@@ -719,14 +846,17 @@ infection_feedback_pmf <- generation_interval
 
 model <- wwinference::compile_model()
 
-iter_warmup <- 150
-iter_sampling <- 500
+iter_warmup <- 25
+iter_sampling <- 50
 ```
 
 ## Fitting iid data
+We start with fitting the IID data generation model to the 3 types of inference
+models.  These 3 types of inference models are differing only by their assumed
+correlation structure, as mentioned above.
+
+<div class="fold s o">
 ```{r warning=FALSE, message=FALSE}
-# // iter_warmup <- 25
-# // iter_sampling <- 50
 # IID data to IID model --------------------------------------------------------
 fit_iid_to_iid <- wwinference::wwinference(
   ww_data = ww_data_to_fit_iid,
@@ -792,10 +922,13 @@ fit_iid_to_unstruct <- wwinference::wwinference(
   dist_matrix = NULL,
   corr_structure_switch = 2
 )
-# ------------------------------------------------------------------------------
 ```
 
 ## Fitting exponential data
+We proceed to fit the exponential data generation model to the 3 types of
+inference models.
+
+<div class="fold s o">
 ```{r warning=FALSE, message=FALSE}
 # Exponential data to IID model ------------------------------------------------
 fit_exp_to_iid <- wwinference::wwinference(
@@ -862,10 +995,14 @@ fit_exp_to_unstruct <- wwinference::wwinference(
   dist_matrix = NULL,
   corr_structure_switch = 2
 )
-# ------------------------------------------------------------------------------
 ```
 
 ## Fitting rand. corr. matrix data
+Finally, we fit the rand. corr. matrix data generation model to all 3 of the
+inference models.  Again, the inference models only differ by their assumed
+site to site correlation structures.
+
+<div class="fold s o">
 ```{r warning=FALSE, message=FALSE}
 # Rand. Corr. Matrix data to IID model -----------------------------------------
 fit_rand_to_iid <- wwinference::wwinference(
@@ -932,10 +1069,19 @@ fit_rand_to_unstruct <- wwinference::wwinference(
   dist_matrix = NULL,
   corr_structure_switch = 2
 )
-# ------------------------------------------------------------------------------
 ```
 
 ## Preparing sampled draws
+Here we prepare results for visualization.  This step is not part of visualizing
+spatial wwinference results, a simpler way is in the `wwinference` vignette
+that uses the package's build in functionality.  This step is here to compare
+the 3 data generation models agains the 3 inference models.
+
+We start with just sampling a portion of the draws that came from the results.
+We also combine all the results into one dataset with columns indicating what
+data generation model and inference model was used.
+
+<div class="fold s">
 ```{r}
 set.seed(2024)
 draws_to_keep <- sample(1:max(get_draws_df(fit_iid_to_iid)$draw), 100)
@@ -1030,7 +1176,22 @@ all_pred_draws_df <- rbind(
   )
 ```
 
+
 ## Preparing sampled draws for correlation matrix
+Here we prepare results for visualizing the correlation matrix posterior
+distributions.  Again this is not a required step, but this is not included in
+the `wwinference` vignette.
+
+We start by looking at the raw draws of our fit object, then subset teh draws
+by non_norm_omega, which is the matrix that contains nonnormalize correlations.
+For more information on normalized vs nonnormalize correlations, refer to the
+model definitions.  We then make a dataset that has a two columns indicating
+which site to site pair the correlation value is for.  The last column is the
+correlation value.  We also do this for each of the 9 fits we did above, and
+combine them into one dataset iwth columns indicating waht data generation model
+and inference model was used.
+
+<div class="fold s">
 ```{r}
 # IID data ---------------------------------------------------------------------
 iid_corr_matrix_draws_df <- rbind(
@@ -1276,10 +1437,30 @@ all_corr_matrix_draws_df <- rbind(
   )
 ```
 
-
 # Visualizing Fits
+Here we visualize all the results, for each one, we look at the 95th quantile
+of the parameters we are interested in.
+
 ## Hospital admissions and wastewater
-```{r}
+Here we showcase the hospital admissions and wastewater results.  Here we
+facet again by the data generation model.  The colors represent the different
+inference models, where the only difference between the inference models are
+the assumed correlation structure.  Solid lines are medians of the
+distributions, solid dots are data points used to in fitting, open dots are
+for evaluation purposes.  The vertical dashed line represents the date that we
+told the model to begin forecasting which ends based off the forecast horizon
+specified in the model presets.  The nowcasting period will be from the period
+from the last solid dot to the dashed line.  The forecast period is the period
+after the dashed line.  Below hospital admissions, we have the wastewater
+posterior predictive, with the same notations as the hospital admissions.
+
+Exploring these results, we see that all models do relatively well to include
+evaluation points, open dots, in their 95th quantiles.  Evaluation metrics will
+be used to place numerical values on model performances, this section will be
+towards the end of the vignette.
+
+<div class="fold s">
+```{r warning=FALSE}
 # Hospital admissions results --------------------------------------------------
 hosp_ribbon_data <- all_pred_draws_df %>%
   filter(
@@ -1409,12 +1590,23 @@ ww_result_plot <- ggplot(
   theme_bw()
 # ------------------------------------------------------------------------------
 
-hosp_result_plot / ww_result_plot +
-  plot_layout(guides = "collect")
+(hosp_result_plot / ww_result_plot) +
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
 ```
 
-
 ## Rt curves, global and site
+Here we showcase the global and site level Rt's.  Notation is the same as
+hospital admissions and wastewater results, except here the actual global and
+site Rt curves are plotted for visual evaluation.  These actual curves are not
+used by the model, so these curves must be inferred by the model.
+
+We do very well to capture the actual Rt curves, there is some concern with how
+high the inferred Rt reaches toward the nowcasting and forecasting periods.  This
+is not surprising as there is no data there to guide the model for a more
+accurate quantile.
+
+<div class="fold s">
 ```{r}
 # Global Rt results ------------------------------------------------------------
 global_rt_ribbon_data <- all_pred_draws_df %>%
@@ -1572,23 +1764,58 @@ global_rt_result_plot / site_rt_result_plot +
   plot_layout(
     guides = "collect",
     heights = c(1, n_sites)
-  )
+  ) &
+  theme(legend.position = "bottom")
 ```
 
 ## Correlation matrix
-```{r}
+The last visual we will see of the results is the posteriors of the elements in
+the correlation matrix.  Here we violate our previous plot structures and have
+the data generation models on separate plots as opposed to faceting them.  We
+have inference model indicated by the color.  Red dashed lines are the actual
+site to site correlations.  Solid dots are the medians, and the solid line with
+the line stops is the 95th quantile.
+
+A couple of things to note here is that the exponential inference model will not
+be able to sample a negative value.  But regardless, each inference model does
+well enough, with an unstructured correlation assumption inference model
+performing visually better then the exponential correlation assumption.
+
+<div class="fold s">
+```{r message=FALSE, fig.height=5, fig.width=15}
 # IID Correlation Matrix -------------------------------------------------------
 iid_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
+  group_by(
+    Row,
+    Column,
+    inf_model_type,
+    gen_model_type
+  ) %>%
+  summarise(
+    lower = quantile(Freq, 0.025, na.rm = TRUE),
+    median = median(Freq),
+    upper = quantile(Freq, 0.975, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
   filter(
     gen_model_type == "IID",
     inf_model_type != "IID"
   )) +
-  geom_density_ridges(
+  geom_point(
     aes(
-      x = Freq, y = inf_model_type,
-      colour = inf_model_type, fill = inf_model_type
+      x = median, y = inf_model_type,
+      colour = inf_model_type
     ),
-    alpha = .4
+    size = 2.5
+  ) +
+  geom_errorbarh(
+    aes(
+      xmin = lower, xmax = upper,
+      y = inf_model_type,
+      colour = inf_model_type
+    ),
+    height = 0.2,
+    size = 1
   ) +
   geom_vline(
     data = corr_matrix_df %>%
@@ -1603,35 +1830,56 @@ iid_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
     size = 1
   ) +
   facet_grid(Row ~ Column, switch = "y") +
-  scale_fill_manual(
-    breaks = c("Exponential", "Unstructured", "IID"),
-    values = c("darkviolet", "deeppink3", "darksalmon")
-  ) +
   scale_colour_manual(
-    breaks = c("Exponential", "Unstructured", "IID"),
-    values = c("darkviolet", "deeppink3", "darksalmon")
+    breaks = c("Exponential", "Unstructured"),
+    values = c("darkviolet", "deeppink3")
   ) +
-  ylab("Assumed Corr. Structure") +
+  ylab("") +
   xlab("Correlation Drawed") +
   ggtitle("Data Generation Model : IID") +
-  guides(
-    fill = "none",
-    color = "none"
+  labs(
+    color = "Assumed Corr. Structure",
+    fill = "Assumed Corr. Structure"
   ) +
-  theme_bw()
+  theme_bw() +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
 # ------------------------------------------------------------------------------
 # Exponential Correlation Matrix -----------------------------------------------
 exp_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
+  group_by(
+    Row,
+    Column,
+    inf_model_type,
+    gen_model_type
+  ) %>%
+  summarise(
+    lower = quantile(Freq, 0.025, na.rm = TRUE),
+    median = median(Freq),
+    upper = quantile(Freq, 0.975, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
   filter(
     gen_model_type == "Exponential",
     inf_model_type != "IID"
   )) +
-  geom_density_ridges(
+  geom_point(
     aes(
-      x = Freq, y = inf_model_type,
-      colour = inf_model_type, fill = inf_model_type
+      x = median, y = inf_model_type,
+      colour = inf_model_type
     ),
-    alpha = .4
+    size = 2.5
+  ) +
+  geom_errorbarh(
+    aes(
+      xmin = lower, xmax = upper,
+      y = inf_model_type,
+      colour = inf_model_type
+    ),
+    height = 0.2,
+    size = 1
   ) +
   geom_vline(
     data = corr_matrix_df %>%
@@ -1647,34 +1895,59 @@ exp_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
   ) +
   facet_grid(Row ~ Column, switch = "y") +
   scale_fill_manual(
-    breaks = c("Exponential", "Unstructured", "IID"),
-    values = c("darkviolet", "deeppink3", "darksalmon")
+    breaks = c("Exponential", "Unstructured"),
+    values = c("darkviolet", "deeppink3")
   ) +
   scale_colour_manual(
-    breaks = c("Exponential", "Unstructured", "IID"),
-    values = c("darkviolet", "deeppink3", "darksalmon")
+    breaks = c("Exponential", "Unstructured"),
+    values = c("darkviolet", "deeppink3")
   ) +
-  ylab("Assumed Corr. Structure") +
+  ylab("") +
   xlab("Correlation Drawed") +
   ggtitle("Data Generation Model : Exponential") +
-  guides(
-    fill = "none",
-    color = "none"
+  labs(
+    color = "Assumed Corr. Structure",
+    fill = "Assumed Corr. Structure"
   ) +
-  theme_bw()
+  theme_bw() +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
 # ------------------------------------------------------------------------------
 # Rand. Corr. Matrix Correlation Matrix ----------------------------------------
 rand_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
+  group_by(
+    Row,
+    Column,
+    inf_model_type,
+    gen_model_type
+  ) %>%
+  summarise(
+    lower = quantile(Freq, 0.025, na.rm = TRUE),
+    median = median(Freq),
+    upper = quantile(Freq, 0.975, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
   filter(
     gen_model_type == "Rand. Corr. Matrix",
     inf_model_type != "IID"
   )) +
-  geom_density_ridges(
+  geom_point(
     aes(
-      x = Freq, y = inf_model_type,
-      colour = inf_model_type, fill = inf_model_type
+      x = median, y = inf_model_type,
+      colour = inf_model_type
     ),
-    alpha = .4
+    size = 2.5
+  ) +
+  geom_errorbarh(
+    aes(
+      xmin = lower, xmax = upper,
+      y = inf_model_type,
+      colour = inf_model_type
+    ),
+    height = 0.2,
+    size = 1
   ) +
   geom_vline(
     data = corr_matrix_df %>%
@@ -1690,33 +1963,52 @@ rand_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
   ) +
   facet_grid(Row ~ Column, switch = "y") +
   scale_fill_manual(
-    breaks = c("Exponential", "Unstructured", "IID"),
-    values = c("darkviolet", "deeppink3", "darksalmon")
+    breaks = c("Exponential", "Unstructured"),
+    values = c("darkviolet", "deeppink3")
   ) +
   scale_colour_manual(
-    breaks = c("Exponential", "Unstructured", "IID"),
-    values = c("darkviolet", "deeppink3", "darksalmon")
+    breaks = c("Exponential", "Unstructured"),
+    values = c("darkviolet", "deeppink3")
   ) +
-  ylab("Assumed Corr. Structure") +
+  ylab("") +
   xlab("Correlation Drawed") +
   ggtitle("Data Generation Model : Rand. Corr. Matrix") +
-  guides(
-    fill = "none",
-    color = "none"
+  labs(
+    color = "Assumed Corr. Structure",
+    fill = "Assumed Corr. Structure"
   ) +
-  theme_bw()
+  theme_bw() +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
 # ------------------------------------------------------------------------------
 
 iid_corr_matrix_result_plot + exp_corr_matrix_result_plot +
-  rand_corr_matrix_result_plot
+  rand_corr_matrix_result_plot +
+  plot_layout(
+    guides = "collect"
+  ) &
+  theme(legend.position = "bottom")
 ```
 
 
-
 # Numeric Results
+For this section we explore how well our models did numerically.  The metrics
+that we will be using are effective sample size per second (ess/sec), continuous
+ranked probability score (CRPS), David-Sebastiani score (DSS), absolute error
+(AE), squared error (SE), and bias.  All these, apart from ess/sec, will get
+attained using the
+[scoringutils](https://epiforecasts.io/scoringutils/index.html) package.
 
-```{r}
-# ess / sec #nolint
+We start by getting the ess/sec by looking at the fit object's mean bulk
+effective sample size and total computation time.  Here, larger ess/sec is
+better. This will be combined with the evaluation metrics from
+[scoringutils](https://epiforecasts.io/scoringutils/index.html)
+
+<div class="fold s">
+```{r warning=FALSE}
+# effective sample size per second ---------------------------------------------
 fit_names <- list(
   fit_iid_to_iid, fit_iid_to_exp, fit_iid_to_unstruct,
   fit_exp_to_iid, fit_exp_to_exp, fit_exp_to_unstruct,
@@ -1746,11 +2038,20 @@ for (i in 1:9) {
     na.rm = TRUE
   ) / curr_fit$fit$result$time()$total
 }
+# ------------------------------------------------------------------------------
 ```
 
 ## Hospital admissions
+Here we prepare the evaluation metric plots.  The general form will be a plot
+that is by date, and another tile plot where the darker the color, the higher
+the value.  For most of the metrics, smaller is better, but for ess/sec, higher
+is better.
 
 ### Hospital admissions at forecast period evaluation scores
+Again, here we prepare evaluation metric plots for the forecast period, where we
+make a plot that looks at metrics by date and then across the entire forecast
+period.
+
 ```{r}
 hosp_obj_for_eval_forcast <- all_pred_draws_df %>%
   filter(
@@ -1795,7 +2096,11 @@ hosp_scores_forecast <- hosp_obj_for_eval_forcast %>%
     "ae_median",
     "se_mean",
     "bias"
-  ))
+  )) %>%
+  inner_join(
+    ess_per_sec_df,
+    by = c("model", "gen_model_type")
+  )
 
 hosp_by_date_eval_forecast_plot <- ggplot( # nolint
   hosp_scores_forecast %>%
@@ -1807,10 +2112,11 @@ hosp_by_date_eval_forecast_plot <- ggplot( # nolint
     mutate(
       `Evaluation Score` = case_when(
         `Evaluation Score` == "crps" ~ "CRPS",
-        `Evaluation Score` == "dss" ~ "Dawid-Sebastiani Score",
-        `Evaluation Score` == "ae_median" ~ "Absolute Error",
-        `Evaluation Score` == "se_mean" ~ "Squared Error",
+        `Evaluation Score` == "dss" ~ "DSS",
+        `Evaluation Score` == "ae_median" ~ "AE",
+        `Evaluation Score` == "se_mean" ~ "SE",
         `Evaluation Score` == "bias" ~ "Bias",
+        `Evaluation Score` == "ess_per_sec" ~ "ess/sec",
         .default = `Evaluation Score`
       )
     ) %>%
@@ -1821,6 +2127,14 @@ hosp_by_date_eval_forecast_plot <- ggplot( # nolint
           "IID",
           "Exponential",
           "Unstructured"
+        )
+      ),
+      gen_model_type = factor(
+        gen_model_type,
+        levels = c(
+          "IID",
+          "Exponential",
+          "Rand. Corr. Matrix"
         )
       )
     )
@@ -1849,6 +2163,10 @@ hosp_by_date_eval_forecast_plot <- ggplot( # nolint
 hosp_eval_forecast_plot <- ggplot(
   hosp_scores_forecast %>%
     summarize_scores(by = c("model", "gen_model_type")) %>%
+    inner_join(
+      ess_per_sec_df,
+      by = c("model", "gen_model_type")
+    ) %>%
     pivot_longer(
       cols = -c("model", "gen_model_type"),
       names_to = "Evaluation Score",
@@ -1857,10 +2175,11 @@ hosp_eval_forecast_plot <- ggplot(
     mutate(
       `Evaluation Score` = case_when(
         `Evaluation Score` == "crps" ~ "CRPS",
-        `Evaluation Score` == "dss" ~ "Dawid-Sebastiani Score",
-        `Evaluation Score` == "ae_median" ~ "Absolute Error",
-        `Evaluation Score` == "se_mean" ~ "Squared Error",
+        `Evaluation Score` == "dss" ~ "DSS",
+        `Evaluation Score` == "ae_median" ~ "AE",
+        `Evaluation Score` == "se_mean" ~ "SE",
         `Evaluation Score` == "bias" ~ "Bias",
+        `Evaluation Score` == "ess_per_sec" ~ "ess/sec",
         .default = `Evaluation Score`
       )
     ) %>%
@@ -1876,6 +2195,14 @@ hosp_eval_forecast_plot <- ggplot(
           "IID",
           "Exponential",
           "Unstructured"
+        )
+      ),
+      gen_model_type = factor(
+        gen_model_type,
+        levels = c(
+          "IID",
+          "Exponential",
+          "Rand. Corr. Matrix"
         )
       )
     )
@@ -1906,14 +2233,23 @@ hosp_eval_forecast_plot <- ggplot(
   theme_bw()
 ```
 
+Here we show the raw scores for the forecast period, where model is the
+inference model and gen_model_type is the data generation model.
+
 ```{r}
 # Raw Scores :
 hosp_scores_forecast %>%
-  summarize_scores(by = c("model", "gen_model_type"))
+  summarize_scores(by = c("model", "gen_model_type")) %>%
+  inner_join(
+    ess_per_sec_df,
+    by = c("model", "gen_model_type")
+  )
 ```
 
-
 ### Hospital admissions at nowcasting period evaluation scores
+Here we prepare the evaluation metric plots for the nowcasting period.  We still
+make two plots one for metrics by date, and another across all dates.
+
 ```{r}
 hosp_obj_for_eval_nowcast <- all_pred_draws_df %>%
   filter(
@@ -1960,7 +2296,11 @@ hosp_scores_nowcast <- hosp_obj_for_eval_nowcast %>%
     "ae_median",
     "se_mean",
     "bias"
-  ))
+  )) %>%
+  inner_join(
+    ess_per_sec_df,
+    by = c("model", "gen_model_type")
+  )
 
 hosp_by_date_eval_nowcast_plot <- ggplot(
   hosp_scores_nowcast %>%
@@ -1972,10 +2312,11 @@ hosp_by_date_eval_nowcast_plot <- ggplot(
     mutate(
       `Evaluation Score` = case_when(
         `Evaluation Score` == "crps" ~ "CRPS",
-        `Evaluation Score` == "dss" ~ "Dawid-Sebastiani Score",
-        `Evaluation Score` == "ae_median" ~ "Absolute Error",
-        `Evaluation Score` == "se_mean" ~ "Squared Error",
+        `Evaluation Score` == "dss" ~ "DSS",
+        `Evaluation Score` == "ae_median" ~ "AE",
+        `Evaluation Score` == "se_mean" ~ "SE",
         `Evaluation Score` == "bias" ~ "Bias",
+        `Evaluation Score` == "ess_per_sec" ~ "ess/sec",
         .default = `Evaluation Score`
       )
     ) %>%
@@ -1986,6 +2327,14 @@ hosp_by_date_eval_nowcast_plot <- ggplot(
           "IID",
           "Exponential",
           "Unstructured"
+        )
+      ),
+      gen_model_type = factor(
+        gen_model_type,
+        levels = c(
+          "IID",
+          "Exponential",
+          "Rand. Corr. Matrix"
         )
       )
     )
@@ -2014,6 +2363,10 @@ hosp_by_date_eval_nowcast_plot <- ggplot(
 hosp_eval_nowcast_plot <- ggplot(
   hosp_scores_nowcast %>%
     summarize_scores(by = c("model", "gen_model_type")) %>%
+    inner_join(
+      ess_per_sec_df,
+      by = c("model", "gen_model_type")
+    ) %>%
     pivot_longer(
       cols = -c("model", "gen_model_type"),
       names_to = "Evaluation Score",
@@ -2022,10 +2375,11 @@ hosp_eval_nowcast_plot <- ggplot(
     mutate(
       `Evaluation Score` = case_when(
         `Evaluation Score` == "crps" ~ "CRPS",
-        `Evaluation Score` == "dss" ~ "Dawid-Sebastiani Score",
-        `Evaluation Score` == "ae_median" ~ "Absolute Error",
-        `Evaluation Score` == "se_mean" ~ "Squared Error",
+        `Evaluation Score` == "dss" ~ "DSS",
+        `Evaluation Score` == "ae_median" ~ "AE",
+        `Evaluation Score` == "se_mean" ~ "SE",
         `Evaluation Score` == "bias" ~ "Bias",
+        `Evaluation Score` == "ess_per_sec" ~ "ess/sec",
         .default = `Evaluation Score`
       )
     ) %>%
@@ -2041,6 +2395,14 @@ hosp_eval_nowcast_plot <- ggplot(
           "IID",
           "Exponential",
           "Unstructured"
+        )
+      ),
+      gen_model_type = factor(
+        gen_model_type,
+        levels = c(
+          "IID",
+          "Exponential",
+          "Rand. Corr. Matrix"
         )
       )
     )
@@ -2071,16 +2433,25 @@ hosp_eval_nowcast_plot <- ggplot(
   theme_bw()
 ```
 
+Here we show the raw scores for the nowcasting period, where model is the
+inference model and gen_model_type is the data generation model.
+
 ```{r}
 # Raw Scores :
 hosp_scores_nowcast %>%
-  summarize_scores(by = c("model", "gen_model_type"))
+  summarize_scores(by = c("model", "gen_model_type")) %>%
+  inner_join(
+    ess_per_sec_df,
+    by = c("model", "gen_model_type")
+  )
 ```
 
-
 ### Hospital admissions evaluation scores plot
+Here we showcase the evaluation metric scores.
+
 ```{r}
 (hosp_eval_nowcast_plot + hosp_eval_forecast_plot) /
   (hosp_by_date_eval_nowcast_plot + hosp_by_date_eval_forecast_plot) +
-  plot_layout(guides = "collect")
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
 ```

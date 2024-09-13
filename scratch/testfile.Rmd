@@ -1,0 +1,144 @@
+---
+title: "Assessing the value of adding a spatial correlation structure."
+description: "Here we showcase how we can add a site to site correlations."
+author: "Christian O. Bernal Zelaya"
+date: "2024-09-12"
+output:
+  html_document:
+    fig_width: 5
+    fig_height: 5
+    number_sections: true
+    toc: true
+pkgdown:
+  as_is: true
+vignette: >
+  %\VignetteIndexEntry{spatial-wwinference}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r echo=FALSE}
+knitr::opts_chunk$set(dev = "svg")
+```
+
+<script type="text/javascript">
+$(document).ready(function() {
+
+  $chunks = $('.fold');
+
+  $chunks.each(function () {
+
+    // Add button to source code chunks
+    if ( $(this).hasClass('s') ) {
+      $('pre.r', this).prepend("<div class=\"showopt\">Hide Source</div><br style=\"line-height:22px;\"/>");
+      $('pre.r', this).children('code').removeClass('folded'); // Default to show code
+    }
+
+    // Add button to output chunks
+    if ( $(this).hasClass('o') ) {
+      $('pre:not(.r)', this).has('code').prepend("<div class=\"showopt\">Show Output</div><br style=\"line-height:22px;\"/>");
+      $('pre:not(.r)', this).children('code:not(r)').addClass('folded'); // Default to hide output
+
+      // Add button to plots
+      $(this).find('img').wrap('<pre class=\"plot\"></pre>');
+      $('pre.plot', this).prepend("<div class=\"showopt\">Show Plot</div><br style=\"line-height:22px;\"/>");
+      $('pre.plot', this).children('img').addClass('folded'); // Default to hide plots
+
+    }
+  });
+
+  // Hide all chunks when document is loaded
+  $('.folded').css('display', 'none');
+
+  // Function to toggle the visibility
+  $('.showopt').click(function() {
+    var label = $(this).html();
+    if (label.indexOf("Show") >= 0) {
+      $(this).html(label.replace("Show", "Hide"));
+    } else {
+      $(this).html(label.replace("Hide", "Show"));
+    }
+    $(this).siblings('code, img').slideToggle('fast', 'swing');
+  });
+});
+</script>
+
+<style>
+.showopt {
+  background-color: #004c93;
+  color: #FFFFFF;
+  width: 100px;
+  height: 20px;
+  text-align: center;
+  vertical-align: middle !important;
+  float: right;
+  font-family: sans-serif;
+  border-radius: 8px;
+  cursor: pointer; /* Add cursor pointer for better UX */
+}
+
+.showopt:hover {
+  background-color: #dfe4f2;
+  color: #004c93;
+}
+
+pre.plot {
+  background-color: white !important;
+}
+</style>
+
+
+asdfasdfa
+
+# Visualizing data
+We start with visualizing the hospital and wastewater data.  Here open circles
+represent the evaluation data that will be used to evaluate the nowcasting and
+forecasting periods.  The data that will be fed into the model will be the
+solid dots in the plots.  We separate these plots by their data generation
+models, this will be consistent across all plots.  We also seperate the
+wastewater plots by their site, with the dotted lines representing the outlier
+levels.
+
+<div class="fold s">
+```{r}
+# hosp plots--------------------------------------------------------------------
+df <- runif(100, 0, 1)
+hist(df)
+```
+
+We might also want to visualize what the combined wastewater data looks like,
+which we do here.  Colors correspond with which treatment plant that wastewater
+came from.  We still have that the dotted line is the outlier level for the
+wastewater data.
+
+```{r fig.height=10, fig.width=10}
+df <- rnorm(100, 0, 1)
+hist(df)
+```
+
+# Visualizing data
+We start with visualizing the hospital and wastewater data.  Here open circles
+represent the evaluation data that will be used to evaluate the nowcasting and
+forecasting periods.  The data that will be fed into the model will be the
+solid dots in the plots.  We separate these plots by their data generation
+models, this will be consistent across all plots.  We also seperate the
+wastewater plots by their site, with the dotted lines representing the outlier
+levels.
+
+<div class="fold s">
+```{r}
+# hosp plots--------------------------------------------------------------------
+df <- runif(100, 0, 1)
+hist(df)
+```
+
+We might also want to visualize what the combined wastewater data looks like,
+which we do here.  Colors correspond with which treatment plant that wastewater
+came from.  We still have that the dotted line is the outlier level for the
+wastewater data.
+
+```{r}
+df <- rnorm(100, 0, 1)
+hist(df)
+```
