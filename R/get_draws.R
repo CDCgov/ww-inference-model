@@ -112,12 +112,19 @@ get_draws.data.frame <- function(x,
     what_ok[what] <- TRUE
   }
   if (stan_data_list$include_ww == 0) {
+    if (any(c("predicted_ww", "subpop_rt") %in% what)) {
+      cli::cli_abort(c(
+        "Predicted wastewater concentrations and subpopulation R(t)s",
+        " can not be returned because the model wasn't fit to ",
+        " site-level wastewater data"
+      ))
+    }
     what_ok["predicted_ww"] <- FALSE
     what_ok["subpop_rt"] <- FALSE
     if (what == "all") {
       warning(c(
         "Model wasn't fit to wastewater data. ",
-        "Predicted wastewater concentrations and subpopulation R(t)",
+        "Predicted wastewater concentrations and subpopulation R(t)s",
         "\nestimates will not be returned in the ",
         "`wwinference_fit_draws` object"
       ))

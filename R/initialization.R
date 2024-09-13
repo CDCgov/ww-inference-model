@@ -41,7 +41,7 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
         (stan_data$autoreg_rt_a + stan_data$autoreg_rt_b),
       0.05
     )),
-    log_r_mu_intercept = stats::rnorm(
+    log_r_0_intercept = stats::rnorm(
       1,
       convert_to_logmean(1, stdev),
       convert_to_logsd(1, stdev)
