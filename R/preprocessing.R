@@ -227,7 +227,6 @@ flag_ww_outliers <- function(ww_data,
       ),
       flagged_for_removal_rho = dplyr::case_when(
         (
-          abs(.data$z_score_rho) >= rho_threshold &
             abs(.data$z_score_rho) >= !!rho_threshold &
             (abs(.data$z_score_rho_t_plus_1) >= !!rho_threshold) &
             sign(.data$z_score_rho != sign(.data$z_score_rho_t_plus_1))

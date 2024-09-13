@@ -215,8 +215,8 @@ assert_no_repeated_elements <- function(x, arg = "x",
 #' data frame rows.
 #'
 #' @description
-#'  Equivalently, this checks that when grouping by the columns in question,
-#'  each group has a single entry
+#' Equivalently, this checks that when grouping by the columns in question,
+#' each group has a single entry
 #'
 #' @param df the dataframe to check
 #' @param unique_key_columns Columns that, taken together, should
