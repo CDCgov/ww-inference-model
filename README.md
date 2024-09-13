@@ -1,4 +1,4 @@
-# `wwinference`: joint inference and forecasting from \n wastewater and epidemiological indicators  <a href="https://cdcgov.github.io/ww-inference-model/"><img src="man/figures/logo.svg" align="right" height="139" alt="wwinference website" /></a>
+# `wwinference`: joint inference and forecasting from wastewater and epidemiological indicators  <a href="https://cdcgov.github.io/ww-inference-model/"><img src="man/figures/logo.svg" align="right" height="139" alt="wwinference website" /></a>
 
 > [!CAUTION]
 > This project is a work-in-progress. Despite this project's early stage, all development is in public as part of the Center for Forecasting and Outbreak Analytics' goals around open development. Questions and suggestions are welcome through GitHub issues or a PR.
