@@ -445,7 +445,7 @@ The previous three are equivalent to calling the `plot` method of `wwinference_f
 
 ```{r}
 plot(
-  draws = draws,
+  x = draws,
   what = "predicted_counts",
   count_data_eval = hosp_data_eval,
   count_data_eval_col_name = "daily_hosp_admits_for_eval",
@@ -462,7 +462,7 @@ We strongly recommend running diagnostics as a post-processing step on the
 model outputs.
 
 This can be done by passing the output of
-`wwinference()` into the `get_model_diagnostic_flags()`, `parameter_diagnostics()`,
+`wwinference()` into the `get_model_diagnostic_flags()`, `summary_diagnostics()`
 and `parameter_diagnostics()` functions.
 
 `get_model_diagnostic_flags()` will print out a table of any flags, if any of
@@ -471,45 +471,22 @@ We have set default thresholds on the model diagnostics for production-level
 runs, we recommend adjusting as needed (see below)
 
 To further troubleshoot, you can look at
-the diagnostic summary and the diagnostics of the individual parameters using
+the summary diagnostics using the `summary_diagnostics()` function
+and the diagnostics of the individual parameters using
 the `parameter_diagnostics()` function.
-
-```{r diagnostics-using-S3-methods}
-convergence_flag_df <- get_model_diagnostic_flags(ww_fit)
-print(convergence_flag_df)
-parameter_diagnostics(ww_fit)
-```
-
-This can also be done explicitly by parsing the elements of the
-`wwinference_fit` object into the custom functions we built / directly calling
-`CmdStan`'s built in functions.
-
-Start by passing the stan fit object(`ww_fit$fit$result`) into the
-`get_model_diagnostic_flags()` and adjusting the thresholds if desired.
-
-Then, we recommend looking at the diagnostics summary provided by `CmdStan`,
-which we had wrapped into the `parameter_diagnostics()` call above. Lastly,
-we recommend looking at the individual model parameters provided by `CmdStan`
-to identify which components of the model might be driving the convergence
-issues.
 
 For further information on troubleshooting the model diagnostics,
 we recommend the (bayesplot tutorial)[https://mc-stan.org/bayesplot/articles/visual-mcmc-diagnostics.html].
 
-```{r diagnostics-explicit}
-convergence_flag_df <- get_model_diagnostic_flags(
-  x = ww_fit$fit$result,
-  ebmfi_tolerance = 0.2,
-  divergences_tolerance = 0.01,
-  frac_high_rhat_tolerance = 0.05,
-  rhat_tolerance = 1.05,
-  max_tree_depth_tol = 0.01
-)
-# Get the tables using the CmdStan functions via wrappers
-summary(ww_fit)
-parameter_diagnostics(ww_fit, quiet = TRUE)
-head(convergence_flag_df)
+You can access the CmdStan object directly using `ww_fit$fit$result`
+
+```{r diagnostics-using-S3-methods}
+convergence_flag_df <- get_model_diagnostic_flags(ww_fit)
+print(convergence_flag_df)
+summary_diagnostics(ww_fit)
+parameter_diagnostics(ww_fit)
 ```
+
 
 ## Fit to only hospital admissions data
 
@@ -543,12 +520,12 @@ fit_hosp_only <- wwinference::wwinference(
 ```
 
 ```{r plot-hosp-only, out.width='100%'}
-draws_df_hosp_only <- get_draws(fit_hosp_only)
-plot_hosp_hosp_only <- get_plot_forecasted_counts(
-  draws = draws_df_hosp_only$predicted_counts,
+draws_hosp_only <- get_draws(fit_hosp_only)
+plot(draws_hosp_only,
+  what = "predicted_counts",
   count_data_eval = hosp_data_eval,
   count_data_eval_col_name = "daily_hosp_admits_for_eval",
   forecast_date = forecast_date
 )
-plot_hosp_hosp_only
+plot(draws_hosp_only, what = "global_rt", forecast_date = forecast_date)
 ```
