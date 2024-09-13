@@ -1,12 +1,13 @@
-# wwinference 0.0.0.9000 (dev)
+# wwinference 0.0.1 (dev)
 
-This will serve as our change-log
+This is the first major release, focused on providing an initial version of the package.
+Note the package is still flagged as in development, though the authors plan on using it for production work in the coming weeks.
+As it's written, the package is intended to allow users to do the following:
 
-- 2024-07-12: Add functionality to fit the wastewater-informed model to an example fitting COVID-19 hospital admissions and wastewater from a few sites
-- 2024-07-19: Add an example in the vignette to fit the model to only the hospital admissions. Plus a few small tweaks to the vignette.
-- 2024-08-05: Add input data validation with informative error messaging
-- 2024-08-09: Add testing and additional validation of the data being passed into the model
-- 2024-08-22: Update `generate_simulated_data()` function to modularize the model components, adding additional forward simulation functions.
-- 2024-08-23: Added new `wwinference_fit` class with corresponding print and summary methods.
-- 2024-08-30: Switch from asking users to pass in natural scale wastewater concentration data to asking them to pass in log scale data
-- 2024-08-30: Fix bug in how hierarchical standard deviation in the wastewater observation model was being estimated. Update model definition.
+- Provide basic functionality to fit the wastewater-informed model to an example fitting COVID-19 hospital admissions and wastewater from a few sites ([#5](https://github.com/CDCgov/ww-inference-model/issues/5))
+- Performs basic post-processing and plotting of data and modeled outputs, including calibrated, nowcasted, and forecasted count data (in the example, hospital admissions), wastewater concentrations, global R(t) estimates and subpopulation-level R(t) estimates
+- Provide an example in the vignette to fit the model to only the hospital admissions ([#24](https://github.com/CDCgov/ww-inference-model/issues/24))
+- Validate input data validation with informative error messaging ([#37](https://github.com/CDCgov/ww-inference-model/issues/37), [#54](https://github.com/CDCgov/ww-inference-model/issues/54))
+- Provide a wrapper function to generate forward simulated data with user-specified variables. It calls a number of functions to perform specific model components ([#27](https://github.com/CDCgov/ww-inference-model/issues/27))
+- Contains S3 class methods applied to the output of the main model wrapper function, the `wwinference_fit` class object ([#58](https://github.com/CDCgov/ww-inference-model/issues/58)).
+- Wastewater concentration data is expected to be in log scale ([#122](https://onetakeda.box.com/s/pju273g5khx3y3cwoae2zwv3e7vu03x3)).
