@@ -207,8 +207,8 @@ test_that("lab_site_name is constructed properly", {
   )
 
   expected_lab_site_names <- c(
-    "Site: 1, Lab: 1", "Site: 1, Lab: 1",
-    "Site: 2, Lab: 1", "Site: 2, Lab: 1"
+    "Site: 2, Lab: 1", "Site: 2, Lab: 1",
+    "Site: 1, Lab: 1", "Site: 1, Lab: 1"
   )
 
   expect_equal(processed$lab_site_name, expected_lab_site_names)
