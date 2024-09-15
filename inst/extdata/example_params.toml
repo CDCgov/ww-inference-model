@@ -25,6 +25,8 @@ autoreg_rt_subpop_a = 1 # shape1 parameter of autoreg term on difference between
   # R(t) ref and R(t) subpop
 autoreg_rt_subpop_b = 4 # shape2 parameter of autoreg term on difference between
 # R(t) ref and R(t) subpop
+m_stdev_prior = 0.05 # average deviation in log scale R(t) in reference pop to central
+# R(t)
 autoreg_p_hosp_a = 1 # shape1 parameter of autoreg term on IHR(t) trend
 autoreg_p_hosp_b = 100 # shape2 parameter of autoreg term on IHR(t) trend
 eta_sd_sd = 0.01

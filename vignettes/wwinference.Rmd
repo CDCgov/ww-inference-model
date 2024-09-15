@@ -335,9 +335,7 @@ ww_fit <- wwinference::wwinference(
     params = params
   ),
   fit_opts = get_mcmc_options(
-    seed = 123,
-    iter_warmup = 50,
-    iter_sampling = 100
+    seed = 123
   ),
   compiled_model = model
 )

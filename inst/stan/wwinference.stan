@@ -52,6 +52,7 @@ data {
 
   // Priors
   vector[6] viral_shedding_pars;// tpeak, viral peak, shedding duration mean and sd
+  real m_stdev_prior;
   real<lower=0> autoreg_rt_a;
   real<lower=0> autoreg_rt_b;
   real<lower=0> autoreg_rt_subpop_a;
@@ -310,7 +311,7 @@ transformed parameters {
 model {
   // priors
   w ~ std_normal();
-  m ~ normal(0, 0.05); // Stick an arbitrary sd on m for now
+  m ~ normal(0, m_stdev_prior); // Stick an arbitrary sd on m for now
   eta_sd ~ normal(0, eta_sd_sd);
   autoreg_rt_subpop ~ beta(autoreg_rt_subpop_a, autoreg_rt_subpop_b);
 
