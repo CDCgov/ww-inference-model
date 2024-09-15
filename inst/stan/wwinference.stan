@@ -112,6 +112,7 @@ transformed data {
 parameters {
   vector[n_weeks-1] w; // weekly random walk of ref pop baseline R(t) (log scale)
   real<lower=0> eta_sd;
+  real m; // log scale scalar shift of reference population from central dynamic
   real<lower=0, upper=1> autoreg_rt;// coefficient on AR process in R(t)
   real log_r_0_intercept; // reference subpop baseline reproduction number estimate (log) at t=0
   real<lower=0> sigma_rt; // magnitude of site level variation from state level
@@ -179,7 +180,7 @@ transformed parameters {
 
   // Reference subpopulation R(t) AR + RW implementation:
   log_r_0_t_in_weeks = diff_ar1(log_r_0_intercept,
-                                 autoreg_rt, eta_sd, w, 0);
+                                 autoreg_rt, eta_sd, w, 0) + m;
   unadj_r = ind_m*log_r_0_t_in_weeks;
   unadj_r = exp(unadj_r);
 
@@ -309,6 +310,7 @@ transformed parameters {
 model {
   // priors
   w ~ std_normal();
+  m ~ normal(0, 0.05); // Stick an arbitrary sd on m for now
   eta_sd ~ normal(0, eta_sd_sd);
   autoreg_rt_subpop ~ beta(autoreg_rt_subpop_a, autoreg_rt_subpop_b);
 
