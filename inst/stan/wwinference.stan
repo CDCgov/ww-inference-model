@@ -311,7 +311,7 @@ transformed parameters {
 model {
   // priors
   w ~ std_normal();
-  m ~ normal(1, m_stdev_prior); // Stick an arbitrary sd on m for now
+  m ~ normal(0, m_stdev_prior); // Stick an arbitrary sd on m for now
   eta_sd ~ normal(0, eta_sd_sd);
   autoreg_rt_subpop ~ beta(autoreg_rt_subpop_a, autoreg_rt_subpop_b);
 
