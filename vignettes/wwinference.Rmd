@@ -482,7 +482,8 @@ You can access the CmdStan object directly using `ww_fit$fit$result`
 convergence_flag_df <- get_model_diagnostic_flags(ww_fit)
 print(convergence_flag_df)
 summary_diagnostics(ww_fit)
-parameter_diagnostics(ww_fit)
+param_diagnostics <- parameter_diagnostics(ww_fit)
+head(param_diagnostics)
 ```
 
 
