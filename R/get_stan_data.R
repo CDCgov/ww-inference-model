@@ -725,7 +725,13 @@ add_time_indexing <- function(input_count_data) {
 #' needs to estiamte infection dynamics for each subpopulation
 #' @export
 #'
-#' @examples subpop_data <- get_subpop_data(TRUE, 100000, c(1000, 500), 2)
+#' @examples subpop_data <- get_subpop_data(
+#'   TRUE,
+#'   100000,
+#'   c(1000, 500),
+#'   2,
+#'   TRUE
+#' )
 get_subpop_data <- function(add_auxiliary_site,
                             state_pop,
                             pop_ww,
