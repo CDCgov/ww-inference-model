@@ -68,7 +68,7 @@
 #' defaulted to presets for exponential decay correlation function
 #' @param phi_rt Coefficient for AR(1) temporal correlation on subpopulation
 #' deviations
-#' @param sigma_generalized  Generalized variance of the spatial epsilon
+#' @param sigma_sqrd_generalized  Generalized variance of the spatial epsilon
 #' (determinant of the covariance matrix).
 #' @param scaling_factor Scaling factor for aux site
 #' @param aux_site_bool Boolean to use the aux site framework with
@@ -116,7 +116,7 @@
 #'     l = 1
 #'   ),
 #'   phi_rt = 0.6,
-#'   sigma_generalized = 0.05^6,
+#'   sigma_sqrd_generalized = 0.05^6,
 #'   scaling_factor = 1.1,
 #'   aux_site_bool = TRUE,
 #'   init_stat = TRUE
@@ -182,7 +182,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                       l = 1
                                     ),
                                     phi_rt = 0.6,
-                                    sigma_generalized = 0.005^4,
+                                    sigma_sqrd_generalized = 0.005^4,
                                     scaling_factor = 1,
                                     aux_site_bool = TRUE,
                                     init_stat = TRUE) {
@@ -369,8 +369,8 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     )
   }
   corr_matrix <- corr_function(corr_fun_params)
-  sigma_matrix <- (sigma_generalized^(1 / n_sites)) * matrix_normalization(
-    corr_matrix
+  sigma_matrix <- (sigma_sqrd_generalized^(1 / n_sites)) * matrix_normalization(
+    matrx = corr_matrix
   )
   spatial_deviation_noise_matrix <- spatial_deviation_noise_matrix_rng(
     sigma_matrix,
@@ -388,11 +388,12 @@ generate_simulated_data <- function(r_in_weeks = # nolint
       mean = 0,
       sd = 1
     )
+    stdev_generalized <- sqrt(sigma_sqrd_generalized^(1 / n_sites))
     log_r_site_aux <- construct_aux_rt(
       log_state_rt = log_r_state_week,
       state_deviation_ar_coeff = phi_rt,
       scaling_factor = scaling_factor,
-      sigma_eps = sqrt(sigma_generalized^(1 / n_sites)),
+      sigma_eps = stdev_generalized,
       z = state_deviation_noise_vec,
       init_stat = init_stat
     )

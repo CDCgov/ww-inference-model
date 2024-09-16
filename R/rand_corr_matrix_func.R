@@ -5,7 +5,8 @@
 #' seed desired for rng.  Defaults are set to NULL.
 #' @export
 #'
-#' @return Correlation matrix.
+#' @return Correlation matrix.  A symmetric matrix with off diagonal values
+#' sampled randomly from -1 to 1, using a uniform distribution.
 #'
 rand_corr_matrix_func <- function(
     corr_function_params = list(

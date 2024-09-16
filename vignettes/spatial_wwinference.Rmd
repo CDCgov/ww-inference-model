@@ -242,7 +242,7 @@ exp_corr_param <- list(
   phi = 0.4,
   l = 1
 )
-sigma_generalized <- 0.01^n_sites
+sigma_sqrd_generalized <- 0.01^n_sites
 # ------------------------------------------------------------------------------
 # IID Simulated Data -----------------------------------------------------------
 simulated_data_iid <- withr::with_seed(1, {
@@ -257,7 +257,7 @@ simulated_data_iid <- withr::with_seed(1, {
     use_spatial_corr = TRUE,
     corr_function = wwinference::independence_corr_func_r,
     corr_fun_params = list(num_sites = n_sites),
-    sigma_generalized = sigma_generalized,
+    sigma_sqrd_generalized = sigma_sqrd_generalized,
     aux_site_bool = TRUE
   )
 })
@@ -275,7 +275,7 @@ simulated_data_exp <- withr::with_seed(1, {
     use_spatial_corr = TRUE,
     corr_function = exponential_decay_corr_func_r,
     corr_fun_params = exp_corr_param,
-    sigma_generalized = sigma_generalized,
+    sigma_sqrd_generalized = sigma_sqrd_generalized,
     aux_site_bool = TRUE
   )
 })
@@ -293,7 +293,7 @@ simulated_data_rng_corr_mat <- withr::with_seed(1, {
     use_spatial_corr = TRUE,
     corr_function = wwinference::rand_corr_matrix_func,
     corr_fun_params = list(n_sites = n_sites, seed = 2024),
-    sigma_generalized = sigma_generalized,
+    sigma_sqrd_generalized = sigma_sqrd_generalized,
     aux_site_bool = TRUE
   )
 })
@@ -846,8 +846,8 @@ infection_feedback_pmf <- generation_interval
 
 model <- wwinference::compile_model()
 
-iter_warmup <- 25
-iter_sampling <- 50
+iter_warmup <- 250
+iter_sampling <- 500
 ```
 
 ## Fitting iid data

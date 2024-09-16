@@ -12,7 +12,8 @@ Ensure that this list follows this structure. Number of sites n_sites, and
 seed desired for rng.  Defaults are set to NULL.}
 }
 \value{
-Correlation matrix.
+Correlation matrix.  A symmetric matrix with off diagonal values
+sampled randomly from -1 to 1, using a uniform distribution.
 }
 \description{
 Generates a random correlation matrix.
