@@ -126,7 +126,7 @@ parameters {
   // initial per capita infection incidence relative to state value
   real<lower=0> sigma_i_first_obs; // stdev between logit state and site initial
   // per capita infection incidence
-  vector[n_subpops-1] eta_initial_exp_growth_rate; // z scores of individual site level initial exponential growth rates
+  vector[n_subpops-1] eta_initial_exp_growth_rate; // z scores of individual subpopulation-level initial exponential growth rates
   real<lower=0> sigma_initial_exp_growth_rate; // sd of distribution of site level initial exp growth rates
   real mean_initial_exp_growth_rate; // mean of distribution of site level initial exp growth rates
   real<lower=1/sqrt(5000)> inv_sqrt_phi_h;
