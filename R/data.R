@@ -32,6 +32,9 @@
 #'    units of log estimated genome copies per mL.}
 #'   \item{site_pop}{The population size of the wastewater catchment area
 #'   represented by the site variable}
+#'   \item{location}{ A string indicating the location that all of the
+#'   data is coming from. This is not a necessary column, but instead is
+#'   included to more realistically mirror a typical workflow}
 #'   }
 #' @source vignette_data.R
 "ww_data"
@@ -66,6 +69,9 @@
 #'   hospital on that date, available as of the forecast date}
 #'   \item{state_pop}{The number of people contributing to the daily hospital
 #'   admissions}
+#'   \item{location}{ A string indicating the location that all of the
+#'   data is coming from. This is not a necessary column, but instead is
+#'   included to more realistically mirror a typical workflow}
 #'   }
 #' @source vignette_data.R
 "hosp_data"

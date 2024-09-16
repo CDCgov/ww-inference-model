@@ -73,6 +73,7 @@ simulated hospital admissions 28 days ahead of the forecast date, which can be
 used to evaluate the model.
 
 For the wastewater data, the expcted format is a table of observations with the
+
 following columns. The wastewater data should not contain `NA` values for days with
 missing observations, instead these should be excluded:
 - a date (column `date`): the date the sample was collected
@@ -99,6 +100,7 @@ ww_data <- wwinference::ww_data
 head(ww_data)
 head(hosp_data)
 ```
+
 
 # Pre-processing
 
@@ -153,7 +155,7 @@ ww_data_preprocessed <- wwinference::preprocess_ww_data(
 ```
 Note that this function assumes that there are no missing values in the
 concentration column. The package expects observations below the LOD will
-be replaced with a numeric value below the LOD. If there are `NA` values in your dataset
+be replaced with a numeric value below the LOD. If there are NAs in your dataset
 when observations are below the LOD, we suggest replacing them with a value
 below the LOD in upstream pre-processing.
 
@@ -385,6 +387,7 @@ print(draws_df)
 Note that by default the `get_draws()` function will return a list of class `wwinference_fit_draws` all of the posterior draws for predicted hospitalizations, wastewater concentration, global, and site Rt estimates. To examine a particular variable (e.g. `"predicted counts"` for posterior
 predicted hospital admissions), access the corresponding tibble using the `$` operator.
 
+
 ### Using explicit passed arguments rather than S3 methods
 
 Rather than using S3 methods supplied for `wwinference()`, the elements in the
@@ -407,6 +410,7 @@ We can create plots of the outputs using `draws_df` and
 the fitting wrapper functions. Note that by default, these plots will not
 visualize data that was below the LOD (even though the fit incorporated
 them via the censored observation process.)
+
 
 ```{r generating-figures,  out.width='100%'}
 plot_hosp <- get_plot_forecasted_counts(

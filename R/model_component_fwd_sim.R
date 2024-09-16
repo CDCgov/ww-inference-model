@@ -339,7 +339,8 @@ downsample_ww_obs <- function(log_conc_lab_site,
 #' site combination
 #'
 #' @return a tidy dataframe containing observed wastewater concentrations
-#' in log genome copies per mL for each site and lab at each time point
+#' in log estimated genome copies per mL for each site and lab at each time
+#' point
 format_ww_data <- function(log_obs_conc_lab_site,
                            ot,
                            ht,

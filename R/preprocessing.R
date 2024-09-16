@@ -112,7 +112,7 @@ preprocess_count_data <- function(count_data,
                                   count_col_name = "daily_hosp_admits",
                                   pop_size_col_name = "state_pop") {
   # This checks that we have all the right column names
-  check_req_count_cols_present(
+  assert_req_count_cols_present(
     count_data,
     count_col_name,
     pop_size_col_name
