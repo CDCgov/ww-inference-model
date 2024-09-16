@@ -38,7 +38,7 @@ data {
                                    // will be mapped to the corresponding subpops (ww_sampled_subpops)
   array[oht] int<lower=1, upper=ot> hosp_times; // the days on which hospital admissions are observed
   array[owt] int<lower=1,upper=n_subpops> ww_sampled_subpops; // vector of unique subpops in order of the sampled times
-  array[owt] int<lower=1,upper=n_ww_lab_sites+1> ww_sampled_lab_sites; // vector mapping the subpops to lab-site combos
+  array[owt] int<lower=1,upper=n_ww_lab_sites> ww_sampled_lab_sites; // vector mapping the subpops to lab-site combos
   array[n_censored] int<lower=1,upper=owt> ww_censored; // times that the WW data is below the LOD
   array[n_uncensored] int<lower=1,upper=owt> ww_uncensored; // time that WW data is above LOD
   vector[owt] ww_log_lod; // The limit of detection in that site at that time point
