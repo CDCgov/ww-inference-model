@@ -64,8 +64,8 @@ The total population consists of $K_\mathrm{total}$ subpopulations $k$ with corr
 
 Whenever the sum of the wastewater catchment population sizes $\sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k$ is less than the total population size $n$, we use an additional subpopulation of size $n - \sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k$ to model individuals in the population who are not covered by wastewater sampling.
 
-The total number of subpopulations is then $K_\mathrm{total} = K_\mathrm{sites} + 1$: the $K_\mathrm{sites}$ subpopulations with sampled wastewater, and the final subpopulation to account for individuals not covered by wastewater sampling. 
-The model without wastewater (hospital admissions only model) is therefore a special case of the model where $K_\mathrm{sites} = 0$ and $K_\mathrm{total} = 1$, with subpopulation size $n_k = n$, the total population. 
+The total number of subpopulations is then $K_\mathrm{total} = K_\mathrm{sites} + 1$: the $K_\mathrm{sites}$ subpopulations with sampled wastewater, and the final subpopulation to account for individuals not covered by wastewater sampling.
+The model without wastewater (hospital admissions only model) is therefore a special case of the model where $K_\mathrm{sites} = 0$ and $K_\mathrm{total} = 1$, with subpopulation size $n_k = n$, the total population.
 In the case where the sum of the wastewater site catchment populations meets or exceeds the total population ($\sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k \ge n$) the model does not use a final subpopulation without sampled wastewater. In that case, the total number of subpopulations $K_\mathrm{total} = K_\mathrm{sites}$.
 
 This amounts to modeling the wastewater catchments populations as approximately non-overlapping; every infected individual either does not contribute to measured wastewater or contributes principally to one wastewater catchment.
