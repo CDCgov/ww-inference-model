@@ -169,7 +169,7 @@ parameters {
   real log_scaling_factor;
   matrix[n_subpops-1,n_weeks] non_cent_spatial_dev_ns_mat;
   vector[n_weeks] norm_vec_aux_site;
-  cholesky_factor_corr[corr_structure_switch == 2 ? n_subpops-1 : 0] L_Omega;
+  cholesky_factor_corr[corr_structure_switch == 2 ? n_subpops-1 : 2] L_Omega;
   //----------------------------------------------------------------------------
 }
 //
