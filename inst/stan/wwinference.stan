@@ -128,7 +128,7 @@ parameters {
   // per capita infection incidence
   vector[n_subpops-1] eta_initial_exp_growth_rate; // z scores of individual subpopulation-level initial exponential growth rates
   real<lower=0> sigma_initial_exp_growth_rate; // sd of distribution of subpopulation level initial exp growth rates
-  real mean_initial_exp_growth_rate; // mean of distribution of site level initial exp growth rates
+  real mean_initial_exp_growth_rate; // mean of distribution of subpopulation level initial exp growth rates
   real<lower=1/sqrt(5000)> inv_sqrt_phi_h;
   real mode_sigma_ww_site; //mode of site level stdev
   real<lower=0> sd_log_sigma_ww_site; // stdev of the log site level stdev
