@@ -77,21 +77,26 @@ This amounts to making two key additional modeling assumptions:
 - Any individuals who contribute to wastewaster measurements but are not part of the total population are distributed among the catchment populations approximately proportional to catchment population size.
 - Whenever $\sum n_k \ge n$, the fraction of individuals in the jurisdiction not covered by wastewater is small enough to have minimal impact on the jurisdiction-wide per capita infection dynamics.
 
+The hierarchical subpopulation structure linking infection dynamics in each subpopulation to a central or "global" dynamic is implemented using a reference subpopulation.
+The reference subpopulation is by default the subpopulation not covered by wastewater, or in the case where the sum of the wastewater site catchment populations meet or exceed the total population ($\sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k \ge n$), the reference subpopulation  is by default the wastewater catchment area with the largest population size. 
+
 #### Subpopulation-level infections
-We couple the subpopulation and total population infection dynamics at the level of the un-damped instantaneous reproduction number $\mathcal{R}^\mathrm{u}_ {0}(t)$, where $\mathcal{R}^\mathrm{u}_ {0}(t)$ is the effective reproductive number in the reference subpopulation.
+We couple the subpopulation and total population infection dynamics at the level of the un-damped instantaneous reproduction number in the reference subpopulation, $\mathcal{R}^\mathrm{u}_ {0}(t)$.
 
-We model the subpopulations as having infection dynamics that are _similar_ to one another but can differ from the overall "global" dynamic.
+We model the subpopulations as having infection dynamics that are _similar_ to one another but can differ from the reference subpopulation dynamic.
 
-We represent this with a hierarchical model where we first model a "global" un-damped effective reproductive number $\mathcal{R}^\mathrm{u}(t)$, but then allow individual subpopulations $k$ to have individual subpopulation values of $\mathcal{R}^\mathrm{u}_{k}(t)$
+We represent this with a hierarchical model where we estimate the reference subpopulation's un-damped effective reproductive number $\mathcal{R}^\mathrm{u}_ {0}(t)$ and then estimate the individual subpopulations $k$ deviations from the reference value, $\mathcal{R}^\mathrm{u}_{k}(t)$
 
-The "global" model for the undamped instantaneous reproductive number $\mathcal{R}^\mathrm{u}(t)$ follows the time-evolution described above.
-Subpopulation deviations from the "global" reproduction number are modeled via a log-scale AR(1) process. Specifically, for subpopulation $k$:
+The refrence value for the undamped instantaneous reproductive number $\mathcal{R}^\mathrm{u}(t)$ follows the time-evolution described above.
+Subpopulation deviations from the reference reproduction number are modeled via a log-scale AR(1) process. Specifically, for subpopulation $k$:
 
 $$
-\log[\mathcal{R}^\mathrm{u}_{k}(t)] = \log[\mathcal{R}^\mathrm{u}_\0(t)] +  m +\delta_k(t)
+\log[\mathcal{R}^\mathrm{u}_{k}(t)] = \log[\mathcal{R}^\mathrm{u}_0(t)] + m +\delta_k(t)
 $$
 
-where $\delta_k(t)$ is the time-varying subpopulation effect on $\mathcal{R}(t)$, modeled as,
+where $m$ is an "intercept" for the reference subpopulation, which is a fixed parameter and allows for the fact that $\log[\mathcal{R}^\mathrm{u}_ {0}(t)]$ may differ from the central dynamic by $m$.  
+
+The time-varying subpopulation effect on $log[\mathcal{R}_ {0}(t)]$,  $\delta_k(t)$ is modeled as:
 
 $$\delta_k(t) = \varphi_{R(t)} \delta_k(t-1) + \epsilon_{kt}$$
 
