@@ -30,7 +30,7 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
 
   init_list <- list(
     w = stats::rnorm(n_weeks - 1, 0, stdev),
-    m = stats::rnorm(1, 1, stdev * stan_data$m_stdev_prior),
+    m = stats::rnorm(1, 0, stdev * stan_data$m_stdev_prior),
     eta_sd = abs(stats::rnorm(1, 0, stdev)),
     eta_i_first_obs = abs(stats::rnorm((n_subpops - 1), 0, stdev)),
     sigma_i_first_obs = abs(stats::rnorm(1, 0, stdev)),
