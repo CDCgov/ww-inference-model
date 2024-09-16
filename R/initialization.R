@@ -107,12 +107,15 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
       (n_subpops - 1),
       n_weeks
     ),
-    norm_vec_aux_site = stats::rnorm(n_weeks, 0, stdev)
+    norm_vec_aux_site = stats::rnorm(n_weeks, 0, stdev),
+    # Initialize the cholesky decomposition matrix if inferring
+    # unstructured correlation matrix
+    L_Omega = as.matrix(diag(2))
   )
-  # Initialize the cholesky decomposition matrix if inferring
-  # unstructured correlation matrix
+
   if (stan_data$corr_structure_switch == 2) {
     init_list$L_Omega <- diag((n_subpops - 1))
   }
+
   return(init_list)
 }
