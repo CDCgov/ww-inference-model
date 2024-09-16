@@ -122,7 +122,7 @@ parameters {
   matrix[include_ww ? n_subpops-1 : 1, n_weeks] error_subpop;
   //matrix[n_subpops-1, n_weeks] error_subpop; // matrix of subpopulation deviations from ref R(t)
   real<lower=0,upper=1> i_first_obs_over_n; // per capita
-  // infection incidence on the day of the first observed infection of reference subpop
+  // mean per capita infection incidence on the day of the first observation
   vector[n_subpops-1] eta_i_first_obs; // z-score on logit scale of site
   // initial per capita infection incidence relative to state value
   real<lower=0> sigma_i_first_obs; // stdev between logit state and site initial
