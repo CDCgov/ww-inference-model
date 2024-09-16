@@ -186,7 +186,7 @@ flag_ww_outliers <- function(ww_data,
       .data$n_data_points > !!threshold_n_dps
     ) |>
     dplyr::group_by(.data$lab_site_index) |>
-    dplyr::arrange(.data$date, "desc") |>
+    dplyr::arrange(desc(.data$date)) |>
     dplyr::mutate(
       log_conc = .data[[conc_col_name]],
       prev_log_conc = dplyr::lag(.data$log_conc, 1),
