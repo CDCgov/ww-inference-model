@@ -14,7 +14,7 @@ get_input_count_data_for_stan <- function(preprocessed_count_data,
 
   input_count_data_filtered <- preprocessed_count_data |>
     dplyr::filter(
-      .data$date > last_count_data_date - lubridate::days(!!calibration_time)
+      .data$date > !!last_count_data_date - lubridate::days(!!calibration_time)
     )
 
   count_data <- add_time_indexing(input_count_data_filtered)
@@ -662,6 +662,7 @@ get_ww_values <- function(ww_data,
     # Get the vector of log wastewater concentrations
     log_conc <- ww_data |>
       dplyr::pull({{ ww_measurement_col_name }})
+
     ww_values <- list(
       ww_lod = ww_lod,
       pop_ww = pop_ww,

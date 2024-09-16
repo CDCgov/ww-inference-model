@@ -13,6 +13,7 @@ withr::with_seed(123, {
   )
 })
 
+
 ww_data_preprocessed <- preprocess_ww_data(ww_data,
   conc_col_name = "conc",
   lod_col_name = "lod"
@@ -165,6 +166,7 @@ test_that(paste0(
 })
 
 
+
 test_that(paste0(
   "Test that modifying calibration time generates data of expected",
   " length"
@@ -175,6 +177,7 @@ test_that(paste0(
   )
   expect_true(nrow(result) == 80)
 })
+
 
 test_that(paste0(
   "Test that things not flagged for removal don't get removed ",
@@ -203,6 +206,26 @@ test_that(paste0(
   expect_true(nrow(input_ww_data_ne) == nrow(input_ww_data_we) + 1)
 })
 
+
+test_that(paste0(
+  "Test that passing input wastewater and admissions data and ",
+  "parameters works as expected"
+), {
+  expect_no_error(
+    get_stan_data(
+      input_count_data,
+      input_ww_data,
+      forecast_date,
+      forecast_horizon,
+      calibration_time,
+      generation_interval,
+      inf_to_count_delay,
+      infection_feedback_pmf,
+      params,
+      include_ww
+    )
+  )
+})
 
 
 test_that(paste0(

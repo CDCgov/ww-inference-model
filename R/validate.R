@@ -31,6 +31,20 @@ validate_ww_conc_data <- function(ww_data,
   )
   checkmate::assert_vector(ww_conc)
 
+  # Check for repeated wastewater observations within a site and lab
+  assert_cols_det_unique_row(
+    df = ww_data,
+    unique_key_columns = c("date", "site", "lab"),
+    arg = "lab-site-day",
+    add_err_msg =
+      c(
+        "Package expects either at most one ",
+        "wastewater observation per a given a site, lab, ",
+        "and sample collection date. Got date(s) with ",
+        "more than one observation for a given site and lab."
+      )
+  )
+
   ww_lod <- ww_data |> dplyr::pull({
     lod_col_name
   })
@@ -156,7 +170,12 @@ validate_both_datasets <- function(input_count_data,
   # check that you have sufficient count data for the calibration time
   assert_sufficient_days_of_data(
     input_count_data$date,
-    calibration_time
+    data_name = "input count data",
+    calibration_time,
+    add_err_msg = c(
+      "Check that the count data supplied has sufficient values",
+      " before the forecast date"
+    )
   )
 
   assert_elements_non_neg(calibration_time,

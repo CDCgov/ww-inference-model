@@ -161,8 +161,11 @@ get_draws.data.frame <- function(x,
       dplyr::ungroup() |>
       dplyr::rename("observed_value" = "count") |>
       dplyr::select(
-        "date", "pred_value", "draw",
-        "observed_value", "total_pop"
+        "date",
+        "draw",
+        "observed_value",
+        "pred_value",
+        "total_pop"
       )
   } else {
     NULL
@@ -203,11 +206,19 @@ get_draws.data.frame <- function(x,
         observed_value = .data$log_genome_copies_per_ml,
         subpop = glue::glue("Site: {site}")
       ) |>
-      dplyr::select(-t) |>
       dplyr::select(
-        "date", "lab_site_name", "pred_value", "draw",
-        "observed_value", "subpop", "site_pop", "site", "lab",
-        "log_lod", "below_lod", "lab_site_index"
+        "date",
+        "lab_site_name",
+        "pred_value",
+        "draw",
+        "observed_value",
+        "subpop",
+        "site_pop",
+        "site",
+        "lab",
+        "log_lod",
+        "below_lod",
+        "lab_site_index"
       )
   } else {
     NULL
@@ -228,7 +239,12 @@ get_draws.data.frame <- function(x,
         by = "date"
       ) |>
       dplyr::ungroup() |>
-      dplyr::select("date", "pred_value", "draw", "total_pop")
+      dplyr::select(
+        "date",
+        "pred_value",
+        "draw",
+        "total_pop"
+      )
   } else {
     NULL
   }
@@ -269,8 +285,12 @@ get_draws.data.frame <- function(x,
       dplyr::left_join(subpop_spine, by = "subpop_index") |>
       dplyr::ungroup() |>
       dplyr::select(
-        "date", "pred_value",
-        "draw", "subpop", "subpop_pop", "site"
+        "date",
+        "pred_value",
+        "draw",
+        "subpop",
+        "subpop_pop",
+        "site"
       )
   } else {
     NULL
@@ -390,10 +410,18 @@ new_wwinference_fit_draws <- function(
   }
 
   predicted_ww_colnames <- c(
-    "below_lod", "date", "draw",
-    "lab", "lab_site_name",
-    "log_lod", "observed_value", "pred_value", "site",
-    "site_pop", "subpop", "lab_site_index"
+    "below_lod",
+    "date",
+    "draw",
+    "lab",
+    "lab_site_name",
+    "log_lod",
+    "observed_value",
+    "pred_value",
+    "site",
+    "site_pop",
+    "subpop",
+    "lab_site_index"
   )
   if (length(predicted_ww)) {
     checkmate::assert_names(
