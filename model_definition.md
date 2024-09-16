@@ -78,7 +78,7 @@ This amounts to making two key additional modeling assumptions:
 - Whenever $\sum n_k \ge n$, the fraction of individuals in the jurisdiction not covered by wastewater is small enough to have minimal impact on the jurisdiction-wide per capita infection dynamics.
 
 The hierarchical subpopulation structure linking infection dynamics in each subpopulation to a central or "global" dynamic is implemented using a reference subpopulation.
-The reference subpopulation is by default the subpopulation not covered by wastewater, or in the case where the sum of the wastewater site catchment populations meet or exceed the total population ($\sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k \ge n$), the reference subpopulation  is by default the wastewater catchment area with the largest population size. 
+The reference subpopulation is by default the subpopulation not covered by wastewater, or in the case where the sum of the wastewater site catchment populations meet or exceed the total population ($\sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k \ge n$), the reference subpopulation  is by default the wastewater catchment area with the largest population size.
 
 #### Subpopulation-level infections
 We couple the subpopulation and total population infection dynamics at the level of the un-damped instantaneous reproduction number in the reference subpopulation, $\mathcal{R}^\mathrm{u}_ {0}(t)$.
@@ -94,7 +94,7 @@ $$
 \log[\mathcal{R}^\mathrm{u}_{k}(t)] = \log[\mathcal{R}^\mathrm{u}_0(t)] + m +\delta_k(t)
 $$
 
-where $m$ is an "intercept" for the reference subpopulation, which is a fixed parameter and allows for the fact that $\log[\mathcal{R}^\mathrm{u}_ {0}(t)]$ may differ from the central dynamic by $m$.  
+where $m$ is an "intercept" for the reference subpopulation, which is a fixed parameter and allows for the fact that $\log[\mathcal{R}^\mathrm{u}_ {0}(t)]$ may differ from the central dynamic by $m$.
 
 The time-varying subpopulation effect on $log[\mathcal{R}_ {0}(t)]$,  $\delta_k(t)$ is modeled as:
 
