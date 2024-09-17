@@ -52,9 +52,13 @@ data {
 
   // Priors
   vector[6] viral_shedding_pars;// tpeak, viral peak, shedding duration mean and sd
-  real<lower=0> m_stdev_prior;
-  real<lower=0> m_r_stdev_prior;
-  real<lower=0> m_first_obs_stdev_prior;
+  real offset_ref_log_r_t_prior_mean;
+  real<lower=0> offset_ref_log_r_t_prior_sd;
+  real offset_ref_logit_i_first_obs_prior_mean;
+  real<lower=0> offset_ref_logit_i_first_obs_prior_sd;
+  real offset_ref_initial_exp_growth_rate_prior_mean;
+  real<lower=0> offset_ref_initial_exp_growth_rate_prior_sd;
+
   real<lower=0> autoreg_rt_a;
   real<lower=0> autoreg_rt_b;
   real<lower=0> autoreg_rt_subpop_a;
@@ -113,33 +117,52 @@ transformed data {
 
 // The parameters accepted by the model.
 parameters {
-  vector[n_weeks-1] w; // weekly random walk of ref pop baseline R(t) (log scale)
+  vector[n_weeks-1] w; // Normal(0,1) noise for the weekly random
+  // walk on reference subpopulation log R(t)
   real<lower=0> eta_sd;
-  real m; // log scale scalar shift of reference population from central dynamic
-  real m_r; // shift of unobserved initial exponential growth rate of reference pop from central dynamic
-  real m_first_obs; // shift of unbserved initial infections per capita of reference pop from central dynamic
-  real<lower=0, upper=1> autoreg_rt;// coefficient on AR process in R(t)
-  real log_r_0_intercept; // reference subpop baseline reproduction number estimate (log) at t=0
-  real<lower=0> sigma_rt; // magnitude of site level variation from state level
+  vector[n_subpops > 1 ? 1 : 0] offset_ref_log_r_t;
+  // offset of reference population log R(t) from central dynamic
+  vector[n_subpops > 1 ? 1 : 0] offset_ref_logit_i_first_obs;
+  // offset of reference population per capita infections
+  // at the time of first observation from central value
+  vector[n_subpops > 1 ? 1 : 0] offset_ref_initial_exp_growth_rate;
+  // offset of reference population initial exponential growth rate
+  // from central value
+  real<lower=0, upper=1> autoreg_rt; // autoregressive coefficient for
+  // AR process on first differences in log R(t)
+  real log_r_t_first_obs; // central log R(t) at the time of
+  // the first observation
+  real<lower=0> sigma_rt; // magnitude of subpopulation level
+  // R(t) heterogeneity
   real<lower=0, upper=1> autoreg_rt_subpop;
   real<lower=0, upper=1> autoreg_p_hosp;
-  matrix[include_ww ? n_subpops-1 : 1, n_weeks] error_subpop;
-  real<lower=0,upper=1> i_first_obs_over_n; // per capita
-  // mean per capita infection incidence on the day of the first observation
-  vector[n_subpops-1] eta_i_first_obs; // z-score on logit scale of subpopulation per capita infection incidences on the day of the first observation
-  // initial per capita infection incidence relative to state value
-  real<lower=0> sigma_i_first_obs; // stdev between logit state and site initial
-  // per capita infection incidence
-  vector[n_subpops-1] eta_initial_exp_growth_rate; // z scores of individual subpopulation-level initial exponential growth rates
-  real<lower=0> sigma_initial_exp_growth_rate; // sd of distribution of subpopulation level initial exp growth rates
-  real mean_initial_exp_growth_rate; // mean of distribution of subpopulation level initial exp growth rates
+  matrix[include_ww ? n_subpops-1 : 0, n_weeks] error_rt_subpop;
+  real<lower=0, upper=1> i_first_obs_over_n; // mean per capita
+  // infection incidence on the day of the first observation
+  vector[n_subpops - 1] eta_i_first_obs; // z-score on logit scale
+  // of subpopulation per capita infection incidences
+  // on the day of the first observation
+  real<lower=0> sigma_i_first_obs; // logit scale variability
+  // in per capita incidence at time of first observation
+  real mean_initial_exp_growth_rate; // central initial exponential growth
+  // rate across all subpopulations
+  real<lower=0> sigma_initial_exp_growth_rate; // variability of
+  // subpopulation level initial exponential growth rates
+  vector[n_subpops - 1] eta_initial_exp_growth_rate; // z scores of
+  // individual subpopulation-level initial exponential growth rates
+
   real<lower=1/sqrt(5000)> inv_sqrt_phi_h;
-  real mode_sigma_ww_site; //mode of site level stdev
-  real<lower=0> sd_log_sigma_ww_site; // stdev of the log site level stdev
-  vector[n_ww_lab_sites] eta_log_sigma_ww_site; // let each lab-site combo have its own observation error
+  real mode_sigma_ww_site; // mode of site level wastewater
+  // observation error standard deviations
+  real<lower=0> sd_log_sigma_ww_site; // sd of the log site level
+  // wastewater observation error standard deviations
+  vector[n_ww_lab_sites] eta_log_sigma_ww_site; // z-scores
+  // of the log site level wastewater observation error standard
+  // deviations
   real p_hosp_mean; // Estimated mean IHR
-  vector[tot_weeks] p_hosp_w; // weekly random walk for IHR
-  real<lower=0> p_hosp_w_sd; // Estimated IHR sd
+  vector[tot_weeks] p_hosp_w; // weekly Normal(0, 1)
+  // stochastic process noise for IHR
+  real<lower=0> p_hosp_w_sd; // Estimated IHR stochasti cprocess sd
   real<lower=0> t_peak; // time to viral load peak in shedding
   real viral_peak; // log10 peak viral load shed /mL
   real<lower=0> dur_shed; // duration of detectable viral shedding
@@ -154,10 +177,6 @@ parameters {
 }
 //
 transformed parameters {
-  // transformed reference pop offset parameters to allow for case when n_subpop ==1
-  real m_tr = m;
-  real m_first_obs_tr = m_first_obs;
-  real m_r_tr = m_r;
   vector[ot + uot + ht] p_hosp; // probability of hospitalization
   vector[ot + uot + ht] model_hosp_per_capita; // model estimated hospital admissions per capita
   vector[oht] exp_obs_hosp; //  expected observed hospital admissions
@@ -170,7 +189,6 @@ transformed parameters {
   real<lower=0> phi_h = inv_square(inv_sqrt_phi_h);
   vector<lower=0>[n_ww_lab_sites] sigma_ww_site;
   vector[n_weeks] log_r_0_t_in_weeks; // log of state level mean R(t) in weeks
-  vector<lower=0>[ot + ht] unadj_r; // state level R(t) before damping
   matrix[n_subpops, ot+ht] r_subpop_t; // matrix of subpopulation level R(t)
   row_vector[ot + ht] unadj_r_subpop_t; // subpopulation level R(t) before damping -- temp vector
   vector[n_weeks] log_r_subpop_t_in_weeks; // subpop level R(t) in weeks-- temp vector
@@ -185,43 +203,49 @@ transformed parameters {
   vector[n_subpops-1] initial_exp_growth_rate_subpop;
      // site level unobserved period growth rate
 
-  // If only one subpopulation, then we don't want to estimate any offsets
-  if(n_subpops == 1){
-    m_tr = 0;
-    m_first_obs_tr = 0;
-    m_r_tr = 0;
-  }
-  // Reference subpopulation R(t) AR + RW implementation:
-  log_r_0_t_in_weeks = diff_ar1(log_r_0_intercept,
-                                 autoreg_rt, eta_sd, w, 0) + m_tr;
-  unadj_r = ind_m*log_r_0_t_in_weeks;
-  unadj_r = exp(unadj_r);
+  // AR(1) process on first differences in "global"
+  // (central) R(t)
+  log_r_t_in_weeks = diff_ar1(log_r_t_first_obs,
+                              autoreg_rt, eta_sd, w, 0);
 
   // Shedding kinetics trajectory
   s = get_vl_trajectory(t_peak, viral_peak, dur_shed, gt_max);
 
   // Site level disease dynamics
-  i_first_obs_over_n_subpop = inv_logit(logit(i_first_obs_over_n + m_first_obs_tr) +
+
+  // initial conditions
+  i_first_obs_over_n_subpop[1] = inv_logit(logit(i_first_obs_over_n) +
+     (n_subpops > 1 ? offset_ref_logit_i_first_obs[1] : 0);
+  inital_exp_growth_rate[1] = mean_inital_exp_growth_rate +
+     (n_subpops > 1 ? offset_ref_inital_exp_growth_rate[1] : 0);
+  i_first_obs_over_n_subpop[1:n_subpops] = inv_logit(logit(i_first_obs_over_n) +
       sigma_i_first_obs * eta_i_first_obs);
-  initial_exp_growth_rate_subpop = mean_initial_exp_growth_rate + m_r_tr +
+  initial_exp_growth_rate_subpop[1:n_subpops] = mean_initial_exp_growth_rate +
      sigma_initial_exp_growth_rate * eta_initial_exp_growth_rate;
 
-  // Loop over n_subpops - 1 to estimate deviations from reference subpop and
-  // generate infections and expected wastewater concentrations
-  for (i in 1:(n_subpops-1)) {
+  // Loop over n_subpops to estimate deviations from reference subpop and
+  // generate infections and wastewater concentrations
+  for (i in 1:n_subpops) {
 
     log_i0_subpop = log(i_first_obs_over_n_subpop[i]) - uot * initial_exp_growth_rate_subpop[i];
+
     // Let site-level R(t) vary around the reference subpopulation R(t)
     // log(R(t)subpop) ~ log(R(t)sref) + autoreg*(log(R(t)ref-log(R(t)subpop)) + eta_subpop
-    log_r_subpop_t_in_weeks = ar1(log_r_0_t_in_weeks,
-                                autoreg_rt_subpop, sigma_rt,
-                                to_vector(error_subpop[i]),
-                                1);
+    if(i == 1) {
+      log_r_subpop_t_in_weeks = log_r_t_in_weeks +
+         (n_subpops > 1 ? offset_ref_log_r_t[1] : 0);
+    } else {
+    log_r_subpop_t_in_weeks = ar1(log_r_t_in_weeks,
+                                  autoreg_rt_subpop,
+				  sigma_rt,
+                                  to_vector(error_rt_subpop[i]),
+                                  1);
+    }
      //convert from weekly to daily
      unadj_r_subpop_t = exp(to_row_vector(ind_m*(log_r_subpop_t_in_weeks)));
 
     {
-      tuple(vector[num_elements(state_inf_per_capita)], vector[num_elements(unadj_r)]) output;
+      tuple(vector[num_elements(state_inf_per_capita)], vector[num_elements(unadj_r_subpop_t)]) output;
       output = generate_infections(
         to_vector(unadj_r_subpop_t),
 	      uot,
@@ -323,16 +347,17 @@ transformed parameters {
 model {
   // priors
   w ~ std_normal();
-  m ~ normal(0, m_stdev_prior);
-  m_r ~ normal(0, m_r_stdev_prior);
-  m_first_obs ~ normal(0, m_first_obs_stdev_prior);
+  offset_ref_log_r_t ~ normal(offset_ref_log_r_t_prior_mean, offset_ref_log_r_t_prior_sd);
+  offset_ref_i_first_obs ~ normal(offset_ref_i_first_obs_prior_mean, offset_i_first_obs_prior_sd);
+  offset_ref_initial_exp_growth_rate ~ normal(offset_ref_initial_exp_growth_rate_prior_mean,
+                                              offset_ref_initial_exp_growth_rate_prior_sd);
   eta_sd ~ normal(0, eta_sd_sd);
   autoreg_rt_subpop ~ beta(autoreg_rt_subpop_a, autoreg_rt_subpop_b);
 
   autoreg_rt ~ beta(autoreg_rt_a, autoreg_rt_b);
   autoreg_p_hosp ~ beta(autoreg_p_hosp_a, autoreg_p_hosp_b);
   log_r_0_intercept ~ normal(r_logmean, r_logsd);
-  to_vector(error_subpop) ~ std_normal();
+  to_vector(error_rt_subpop) ~ std_normal();
   sigma_rt ~ normal(0, sigma_rt_prior);
   i_first_obs_over_n ~ beta(i_first_obs_over_n_prior_a,
                              i_first_obs_over_n_prior_b);
