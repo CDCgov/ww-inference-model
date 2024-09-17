@@ -9,7 +9,13 @@ test_that("Test the wastewater inference model on simulated data.", {
     )
   })
 
-  expect_true(!is.null(fit$fit))
+  expect_true(
+    !is.null(fit$fit),
+    label = paste0(
+      "Wastewater model fit to test data ",
+      "without error (fit$fit is not NULL)"
+    )
+  )
 
   if (!is.null(fit$fit)) {
     params <- model_test_data$model_spec$params
