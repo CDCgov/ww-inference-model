@@ -188,7 +188,7 @@ transformed parameters {
   row_vector [ot + uot + ht] model_net_i; // number of net infected individuals shedding on each day (sum of individuals in dift stages of infection)
   real<lower=0> phi_h = inv_square(inv_sqrt_phi_h);
   vector<lower=0>[n_ww_lab_sites] sigma_ww_site;
-  vector[n_weeks] log_r_0_t_in_weeks; // log of state level mean R(t) in weeks
+  vector[n_weeks] log_r_t_in_weeks; // global unadjusted weekly log R(t)
   matrix[n_subpops, ot+ht] r_subpop_t; // matrix of subpopulation level R(t)
   row_vector[ot + ht] unadj_r_subpop_t; // subpopulation level R(t) before damping -- temp vector
   vector[n_weeks] log_r_subpop_t_in_weeks; // subpop level R(t) in weeks-- temp vector
