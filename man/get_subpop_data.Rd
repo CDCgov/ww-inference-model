@@ -27,9 +27,11 @@ needs to estiamte infection dynamics for each subpopulation
 Get subpopulation data
 }
 \examples{
-subpop_data <- get_subpop_data(TRUE,
-                                    100000,
-                                    c(1000, 500),
-                                    2,
-                                    TRUE)
+subpop_data <- get_subpop_data(
+  TRUE,
+  100000,
+  c(1000, 500),
+  2,
+  TRUE
+)
 }
