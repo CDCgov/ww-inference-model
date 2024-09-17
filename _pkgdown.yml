@@ -1,3 +1,4 @@
 url: https://cdcgov.github.io/ww-inference-model/
 template:
   bootstrap: 5
+  math-rendering: katex

@@ -372,8 +372,8 @@ nowcasted/forecast quantities look reasonable.
 We will generate a dataframe that we'll call `draws_df`, that contains
 the posterior draws of the estimated, nowcasted, and forecasted expected
 observed hospital admissions and wastewater concentrations, as well as the
-latent variables of interest including the site-level R(t) estimates and the
-state-level R(t) estimate.
+latent variables of interest including the site-level $\mathcal{R}(t)$ estimates and the
+state-level $\mathcal{R}(t)$ estimate.
 
 We can generate this directly on the output of `wwinference()` using:
 ```{r extracting-draws}
