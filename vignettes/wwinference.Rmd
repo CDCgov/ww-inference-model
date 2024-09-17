@@ -31,7 +31,7 @@ subset of that population, e.g. a municipality within that state.
 This is intended to be used as a reference for those
 interested in fitting the `wwinference` model to their own data.
 
-# Package
+# Packages
 
 In this quick start, we also use `dplyr` `tidybayes` and `ggplot2` packages.
 These are installed as dependencies when `wwinference` is installed.
@@ -61,6 +61,7 @@ as of December 6, 2023. These data are provided as part of the package data.
 
 These data are already in a format that can be used for `wwinference`. For the
 hospital admissions data, it contains:
+
 - a date (column `date`): the date of the observation, in this case, the date
 the hospital admissions occurred
 - a count (column `daily_hosp_admits`): the number of hospital admissions
@@ -186,21 +187,41 @@ ggplot(ww_data_preprocessed) +
       x = date, y = log_genome_copies_per_ml,
       color = as.factor(lab_site_name)
     ),
-    show.legend = FALSE
+    show.legend = FALSE,
+    size = 0.5
   ) +
   geom_point(
     data = ww_data_preprocessed |> filter(
       log_genome_copies_per_ml <= log_lod
     ),
     aes(x = date, y = log_genome_copies_per_ml, color = "red"),
-    show.legend = FALSE
+    show.legend = FALSE, size = 0.5
+  ) +
+  scale_x_date(
+    date_breaks = "2 weeks",
+    labels = scales::date_format("%Y-%m-%d")
   ) +
   geom_hline(aes(yintercept = log_lod), linetype = "dashed") +
   facet_wrap(~lab_site_name, scales = "free") +
   xlab("") +
   ylab("Genome copies/mL") +
   ggtitle("Lab-site level wastewater concentration") +
-  theme_bw()
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(
+      size = 5, vjust = 1,
+      hjust = 1, angle = 45
+    ),
+    axis.title.x = element_text(size = 12),
+    axis.text.y = element_text(size = 5),
+    strip.text = element_text(size = 5),
+    axis.title.y = element_text(size = 12),
+    plot.title = element_text(
+      size = 10,
+      vjust = 0.5, hjust = 0.5
+    )
+  )
+
 
 ggplot(hosp_data_preprocessed) +
   # Plot the hospital admissions data that we will evaluate against in white
@@ -213,10 +234,26 @@ ggplot(hosp_data_preprocessed) +
   ) +
   # Plot the data we will calibrate to
   geom_point(aes(x = date, y = count)) +
+  scale_x_date(
+    date_breaks = "2 weeks",
+    labels = scales::date_format("%Y-%m-%d")
+  ) +
   xlab("") +
   ylab("Daily hospital admissions") +
   ggtitle("State level hospital admissions") +
-  theme_bw()
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(
+      size = 8, vjust = 1,
+      hjust = 1, angle = 45
+    ),
+    axis.title.x = element_text(size = 12),
+    axis.title.y = element_text(size = 12),
+    plot.title = element_text(
+      size = 10,
+      vjust = 0.5, hjust = 0.5
+    )
+  )
 ```
 
 The closed circles indicate the data the model will be calibrated to, while
@@ -240,12 +277,13 @@ ww_data_to_fit <- wwinference::indicate_ww_exclusions(
 
 # Model specification:
 
-We will need to set some metadata to facilitate model specification. This includes:
-- forecast date (the date we are making a forecast)
-- number of days to calibrate the model for
-- number of days to forecast beyond the forecast date
-- specification of the generation interval, in this case for COVID-19
-- specification of the delay from infection to the count data, in this case
+We will need to set some metadata to facilitate model specification.
+*This includes:
++ forecast date (the date we are making a forecast)
++ number of days to calibrate the model for
++ number of days to forecast beyond the forecast date
++ specification of the generation interval, in this case for COVID-19
++ specification of the delay from infection to the count data, in this case
  from infection to COVID-19 hospital admission
 
 ## Calibration time and forecast time
@@ -294,7 +332,7 @@ along with the other specified parameters above.
 # Precompiling the model
 
 As `wwinference` uses `cmdstan` to fit its models, it is necessary to first
-compile the model. This can be done using the compile_model() function.
+compile the model. This can be done using the `compile_model()` function.
 
 ```{r compile-model}
 model <- wwinference::compile_model()
@@ -377,14 +415,14 @@ observed hospital admissions and wastewater concentrations, as well as the
 latent variables of interest including the site-level $\mathcal{R}(t)$ estimates and the
 state-level $\mathcal{R}(t)$ estimate.
 
-We can generate this directly on the output of `wwinference()` using:
+We can generate this directly on the output of [`wwinference::wwinference()`] using:
 ```{r extracting-draws}
 draws_df <- get_draws(ww_fit)
 
 print(draws_df)
 ```
 
-Note that by default the `get_draws()` function will return a list of class `wwinference_fit_draws` all of the posterior draws for predicted hospitalizations, wastewater concentration, global, and site Rt estimates. To examine a particular variable (e.g. `"predicted counts"` for posterior
+Note that by default the `get_draws()` function will return a list of class `wwinference_fit_draws` all of the posterior draws for predicted hospitalizations, wastewater concentration, global, and site $\mathcal{R}(t)$ estimates. To examine a particular variable (e.g. `"predicted counts"` for posterior
 predicted hospital admissions), access the corresponding tibble using the `$` operator.
 
 
@@ -433,9 +471,9 @@ plot_subpop_rt
 
 The previous three are equivalent to calling the `plot` method of `wwinference_fit_draws` using the `what` argument:
 
-```r
+```{r, out.width='100%'}
 plot(
-  draws = draws_df,
+  x = draws_df,
   what = "predicted_counts",
   count_data_eval = hosp_data_eval,
   count_data_eval_col_name = "daily_hosp_admits_for_eval",
@@ -523,7 +561,7 @@ fit_hosp_only <- wwinference::wwinference(
     include_ww = FALSE,
     params = params
   ),
-  fit_opts = get_mcmc_options(),
+  fit_opts = get_mcmc_options(seed = 123),
   compiled_model = model
 )
 ```
