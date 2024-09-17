@@ -5,7 +5,7 @@
 #'
 #' @return Correlation matrix of diagonal ones.
 #'
-independence_corr_func <- function(
+independence_corr_func_r <- function(
     corr_function_params = list(
       num_sites = NULL
     )) {
@@ -21,5 +21,5 @@ independence_corr_func <- function(
       is.numeric(corr_function_params$num_sites)
   )
 
-  return(diag(x = 1, nrow = corr_function_params$num_sites))
+  return(diag(x = 1, nrow = as.integer(corr_function_params$num_sites)))
 }

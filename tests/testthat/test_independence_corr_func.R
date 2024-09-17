@@ -12,7 +12,7 @@ test_that(
       space_model_fxns$functions$independence_corr_func(
         corr_func_params$num_sites
       )
-    ind_corr_func_r <- independence_corr_func(
+    ind_corr_func_r <- independence_corr_func_r(
       corr_func_params
     )
     # both functions return correlation matrix using an
@@ -33,7 +33,7 @@ test_that(
       space_model_fxns$functions$independence_corr_func(
         corr_func_params$num_sites
       )
-    ind_corr_func_r <- independence_corr_func(
+    ind_corr_func_r <- independence_corr_func_r(
       corr_func_params
     )
     # both functions return correlation matrix using an
@@ -54,7 +54,7 @@ test_that(
       space_model_fxns$functions$independence_corr_func(
         corr_func_params$num_sites
       )
-    ind_corr_func_r <- independence_corr_func(
+    ind_corr_func_r <- independence_corr_func_r(
       corr_func_params
     )
     # both functions return correlation matrix using an

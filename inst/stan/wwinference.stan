@@ -135,7 +135,6 @@ parameters {
   real<lower=0> sigma_rt; // magnitude of site level variation from state level
   real<lower=0, upper=1> autoreg_rt_site;
   real<lower=0, upper=1> autoreg_p_hosp;
-  matrix[n_subpops, n_weeks] error_site; // matrix of subpopulations
   real<lower=0,upper=1> i_first_obs_over_n; // per capita
   // infection incidence on the day of the first observed infection
   vector[n_subpops] eta_i_first_obs; // z-score on logit scale of site
@@ -170,7 +169,7 @@ parameters {
   real log_scaling_factor;
   matrix[n_subpops-1,n_weeks] non_cent_spatial_dev_ns_mat;
   vector[n_weeks] norm_vec_aux_site;
-  cholesky_factor_corr[corr_structure_switch == 2 ? n_subpops-1 : 0] L_Omega;
+  cholesky_factor_corr[corr_structure_switch == 2 ? n_subpops-1 : 2] L_Omega;
   //----------------------------------------------------------------------------
 }
 //
@@ -259,7 +258,7 @@ transformed parameters {
     log_r_mu_t_in_weeks,
     autoreg_rt_site,
     scaling_factor,
-    sigma_generalized,
+    sqrt(sigma_generalized),
     norm_vec_aux_site,
     0
   );

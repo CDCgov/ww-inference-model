@@ -37,8 +37,8 @@ generate_simulated_data(
   corr_fun_params = list(dist_matrix = as.matrix(dist(data.frame(x = c(85, 37, 36, 7), y
     = c(12, 75, 75, 96)), diag = TRUE, upper = TRUE)), phi = 0.2, l = 1),
   phi_rt = 0.6,
-  sigma_generalized = 0.05^4,
-  scaling_factor = 1.1,
+  sigma_sqrd_generalized = 0.005^4,
+  scaling_factor = 1,
   aux_site_bool = TRUE,
   init_stat = TRUE
 )
@@ -138,7 +138,7 @@ defaulted to presets for exponential decay correlation function}
 \item{phi_rt}{Coefficient for AR(1) temporal correlation on subpopulation
 deviations}
 
-\item{sigma_generalized}{Generalized variance of the spatial epsilon
+\item{sigma_sqrd_generalized}{Generalized variance of the spatial epsilon
 (determinant of the covariance matrix).}
 
 \item{scaling_factor}{Scaling factor for aux site}
@@ -194,7 +194,7 @@ sim_data <- generate_simulated_data(
     l = 1
   ),
   phi_rt = 0.6,
-  sigma_generalized = 0.05^6,
+  sigma_sqrd_generalized = 0.05^6,
   scaling_factor = 1.1,
   aux_site_bool = TRUE,
   init_stat = TRUE
