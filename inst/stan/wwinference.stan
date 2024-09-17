@@ -52,7 +52,9 @@ data {
 
   // Priors
   vector[6] viral_shedding_pars;// tpeak, viral peak, shedding duration mean and sd
-  real m_stdev_prior;
+  real<lower=0> m_stdev_prior;
+  real<lower=0> m_r_stdev_prior;
+  real<lower=0> m_first_obs_stdev_prior;
   real<lower=0> autoreg_rt_a;
   real<lower=0> autoreg_rt_b;
   real<lower=0> autoreg_rt_subpop_a;
@@ -114,6 +116,8 @@ parameters {
   vector[n_weeks-1] w; // weekly random walk of ref pop baseline R(t) (log scale)
   real<lower=0> eta_sd;
   real m; // log scale scalar shift of reference population from central dynamic
+  real m_r; // shift of unobserved initial exponential growth rate of reference pop from central dynamic
+  real m_first_obs; // shift of unbserved initial infections per capita of reference pop from central dynamic
   real<lower=0, upper=1> autoreg_rt;// coefficient on AR process in R(t)
   real log_r_0_intercept; // reference subpop baseline reproduction number estimate (log) at t=0
   real<lower=0> sigma_rt; // magnitude of site level variation from state level
@@ -150,6 +154,10 @@ parameters {
 }
 //
 transformed parameters {
+  // transformed reference pop offset parameters to allow for case when n_subpop ==1
+  real m_tr = m;
+  real m_first_obs_tr = m_first_obs;
+  real m_r_tr = m_r;
   vector[ot + uot + ht] p_hosp; // probability of hospitalization
   vector[ot + uot + ht] model_hosp_per_capita; // model estimated hospital admissions per capita
   vector[oht] exp_obs_hosp; //  expected observed hospital admissions
@@ -177,10 +185,15 @@ transformed parameters {
   vector[n_subpops-1] initial_exp_growth_rate_subpop;
      // site level unobserved period growth rate
 
-
+  // If only one subpopulation, then we don't want to estimate any offsets
+  if(n_subpops == 1){
+    m_tr = 0;
+    m_first_obs_tr = 0;
+    m_r_tr = 0;
+  }
   // Reference subpopulation R(t) AR + RW implementation:
   log_r_0_t_in_weeks = diff_ar1(log_r_0_intercept,
-                                 autoreg_rt, eta_sd, w, 0) + m;
+                                 autoreg_rt, eta_sd, w, 0) + m_tr;
   unadj_r = ind_m*log_r_0_t_in_weeks;
   unadj_r = exp(unadj_r);
 
@@ -188,9 +201,9 @@ transformed parameters {
   s = get_vl_trajectory(t_peak, viral_peak, dur_shed, gt_max);
 
   // Site level disease dynamics
-  i_first_obs_over_n_subpop = inv_logit(logit(i_first_obs_over_n) +
+  i_first_obs_over_n_subpop = inv_logit(logit(i_first_obs_over_n + m_first_obs_tr) +
       sigma_i_first_obs * eta_i_first_obs);
-  initial_exp_growth_rate_subpop = mean_initial_exp_growth_rate +
+  initial_exp_growth_rate_subpop = mean_initial_exp_growth_rate + m_r_tr +
      sigma_initial_exp_growth_rate * eta_initial_exp_growth_rate;
 
   // Loop over n_subpops - 1 to estimate deviations from reference subpop and
@@ -310,7 +323,9 @@ transformed parameters {
 model {
   // priors
   w ~ std_normal();
-  m ~ normal(0, m_stdev_prior); // Stick an arbitrary sd on m for now
+  m ~ normal(0, m_stdev_prior);
+  m_r ~ normal(0, m_r_stdev_prior);
+  m_first_obs ~ normal(0, m_first_obs_stdev_prior);
   eta_sd ~ normal(0, eta_sd_sd);
   autoreg_rt_subpop ~ beta(autoreg_rt_subpop_a, autoreg_rt_subpop_b);
 
