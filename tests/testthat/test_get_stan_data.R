@@ -87,12 +87,11 @@ test_that(paste0(
 })
 
 test_that(paste0(
-  "Test that the number of subpopulations is correct for the",
+  "Test that the number of subpopulations is correct for the ",
   "standard case where sum(site_pops) > total_pop"
 ), {
   input_count_data_mod <- input_count_data
-  input_count_data_mod$total_pop <- sum(unique(input_ww_data$site_pop) - 100)
-  stan_data_mod <- get_stan_data(
+  stan_data_mod <- expect_no_warning(get_stan_data(
     input_count_data_mod,
     input_ww_data,
     forecast_date,
@@ -103,7 +102,9 @@ test_that(paste0(
     infection_feedback_pmf,
     params,
     include_ww
-  )
+  ))
+
+  input_count_data_mod$total_pop <- sum(unique(input_ww_data$site_pop) - 100)
 
   expect_warning(get_stan_data(
     input_count_data_mod,
