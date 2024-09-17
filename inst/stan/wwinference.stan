@@ -198,9 +198,9 @@ transformed parameters {
   vector[ot + uot + ht] state_inf_per_capita = rep_vector(0, uot + ot + ht); // state level incident infections per capita
   matrix[n_subpops, ot + ht] model_log_v_ot; // expected observed viral genomes/mL at all observed and forecasted times
   real<lower=0> g = pow(log10_g, 10); // Estimated genomes shed per infected individual
-  vector<lower=0, upper=1>[n_subpops-1] i_first_obs_over_n_subpop;
+  vector<lower=0, upper=1>[n_subpops] i_first_obs_over_n_subpop;
   // per capita infection incidence at the first observed time
-  vector[n_subpops-1] initial_exp_growth_rate_subpop;
+  vector[n_subpops] initial_exp_growth_rate_subpop;
      // site level unobserved period growth rate
 
   // AR(1) process on first differences in "global"
@@ -218,9 +218,9 @@ transformed parameters {
      (n_subpops > 1 ? offset_ref_logit_i_first_obs[1] : 0));
   initial_exp_growth_rate_subpop[1] = mean_initial_exp_growth_rate +
      (n_subpops > 1 ? offset_ref_initial_exp_growth_rate[1] : 0);
-  i_first_obs_over_n_subpop[1:n_subpops] = inv_logit(logit(i_first_obs_over_n) +
+  i_first_obs_over_n_subpop[2:n_subpops] = inv_logit(logit(i_first_obs_over_n) +
       sigma_i_first_obs * eta_i_first_obs);
-  initial_exp_growth_rate_subpop[1:n_subpops] = mean_initial_exp_growth_rate +
+  initial_exp_growth_rate_subpop[2:n_subpops] = mean_initial_exp_growth_rate +
      sigma_initial_exp_growth_rate * eta_initial_exp_growth_rate;
 
   // Loop over n_subpops to estimate deviations from reference subpop and
@@ -238,7 +238,7 @@ transformed parameters {
     log_r_subpop_t_in_weeks = ar1(log_r_t_in_weeks,
                                   autoreg_rt_subpop,
 				  sigma_rt,
-                                  to_vector(error_rt_subpop[i]),
+                                  to_vector(error_rt_subpop[i - 1]),
                                   1);
     }
      //convert from weekly to daily
@@ -257,7 +257,7 @@ transformed parameters {
 	      infection_feedback_rev_pmf
       );
       new_i_subpop = to_row_vector(output.1);
-      r_subpop_t[i+1] =  to_row_vector(output.2);
+      r_subpop_t[i] =  to_row_vector(output.2);
     }
 
     // For each subpopulation, tack on number of infections
@@ -265,9 +265,10 @@ transformed parameters {
     pop_fraction = subpop_size[i] / norm_pop; // first subpop is ref subpop
     state_inf_per_capita +=  pop_fraction * to_vector(new_i_subpop);
 
-    model_net_i = to_row_vector(convolve_dot_product(to_vector(new_i_subpop),
+    model_net_i = to_row_vector(
+       convolve_dot_product(to_vector(new_i_subpop),
                                reverse(s), (uot + ot + ht)));
-    model_log_v_ot[i+1] = log(10) * log10_g +
+    model_log_v_ot[i] = log(10) * log10_g +
       log(model_net_i[(uot+1):(uot + ot + ht) ] + 1e-8) -
       log(mwpd);
   }
