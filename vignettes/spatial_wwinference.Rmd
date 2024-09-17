@@ -88,7 +88,7 @@ pre.plot {
 </style>
 
 # Start
-Here we present the way simulating and fitting with three separate models using
+Here we present a workflow to simulate and fit three separate models using
 the `wwinference` package.  We also compare the results a number of ways to see
 the value of using spatial components within the model.
 
@@ -108,7 +108,7 @@ library(ggh4x) # for facet_grid2
 # Generating Data
 
 We start by generating the data that our models require, using the
-`generate_simulation_data()` function.  The presets that are required to use the
+`generate_simulated_data()` function.  The presets that are required to use the
 spatial components are `use_spatial_corr = TRUE` and `aux_site_bool = TRUE`.
 We also require that if `use_spatial_corr = TRUE`, the user must specify a
 correlation function in the `corr_function` and the necessary parameters of the
@@ -857,6 +857,11 @@ model <- wwinference::compile_model()
 
 iter_warmup <- 250
 iter_sampling <- 500
+fit_options <- get_mcmc_options(
+  iter_warmup = iter_warmup,
+  iter_sampling = iter_sampling,
+  seed = 123
+)
 ```
 
 ## Fitting iid data
@@ -879,10 +884,7 @@ fit_iid_to_iid <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(
-    iter_warmup = iter_warmup,
-    iter_sampling = iter_sampling
-  ),
+  fit_opts = fit_options,
   compiled_model = model,
   dist_matrix = NULL,
   corr_structure_switch = 0
@@ -901,10 +903,7 @@ fit_iid_to_exp <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(
-    iter_warmup = iter_warmup,
-    iter_sampling = iter_sampling
-  ),
+  fit_opts = fit_options,
   compiled_model = model,
   dist_matrix = as.matrix(exp_corr_param$dist_matrix),
   corr_structure_switch = 1
@@ -923,10 +922,7 @@ fit_iid_to_unstruct <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(
-    iter_warmup = iter_warmup,
-    iter_sampling = iter_sampling
-  ),
+  fit_opts = fit_options,
   compiled_model = model,
   dist_matrix = NULL,
   corr_structure_switch = 2
@@ -952,10 +948,7 @@ fit_exp_to_iid <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(
-    iter_warmup = iter_warmup,
-    iter_sampling = iter_sampling
-  ),
+  fit_opts = fit_options,
   compiled_model = model,
   dist_matrix = NULL,
   corr_structure_switch = 0
@@ -974,10 +967,7 @@ fit_exp_to_exp <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(
-    iter_warmup = iter_warmup,
-    iter_sampling = iter_sampling
-  ),
+  fit_opts = fit_options,
   compiled_model = model,
   dist_matrix = as.matrix(exp_corr_param$dist_matrix),
   corr_structure_switch = 1
@@ -996,10 +986,7 @@ fit_exp_to_unstruct <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(
-    iter_warmup = iter_warmup,
-    iter_sampling = iter_sampling
-  ),
+  fit_opts = fit_options,
   compiled_model = model,
   dist_matrix = NULL,
   corr_structure_switch = 2
@@ -1026,10 +1013,7 @@ fit_rand_to_iid <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(
-    iter_warmup = iter_warmup,
-    iter_sampling = iter_sampling
-  ),
+  fit_opts = fit_options,
   compiled_model = model,
   dist_matrix = NULL,
   corr_structure_switch = 0
@@ -1048,10 +1032,7 @@ fit_rand_to_exp <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(
-    iter_warmup = iter_warmup,
-    iter_sampling = iter_sampling
-  ),
+  fit_opts = fit_options,
   compiled_model = model,
   dist_matrix = as.matrix(exp_corr_param$dist_matrix),
   corr_structure_switch = 1
@@ -1070,10 +1051,7 @@ fit_rand_to_unstruct <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(
-    iter_warmup = iter_warmup,
-    iter_sampling = iter_sampling
-  ),
+  fit_opts = fit_options,
   compiled_model = model,
   dist_matrix = NULL,
   corr_structure_switch = 2
