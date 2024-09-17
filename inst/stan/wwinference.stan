@@ -216,7 +216,7 @@ transformed parameters {
   // initial conditions
   i_first_obs_over_n_subpop[1] = inv_logit(logit(i_first_obs_over_n) +
      (n_subpops > 1 ? offset_ref_logit_i_first_obs[1] : 0));
-  initial_exp_growth_rate[1] = mean_initial_exp_growth_rate +
+  initial_exp_growth_rate_subpop[1] = mean_initial_exp_growth_rate +
      (n_subpops > 1 ? offset_ref_initial_exp_growth_rate[1] : 0);
   i_first_obs_over_n_subpop[1:n_subpops] = inv_logit(logit(i_first_obs_over_n) +
       sigma_i_first_obs * eta_i_first_obs);
@@ -262,7 +262,7 @@ transformed parameters {
 
     // For each subpopulation, tack on number of infections
     // subpopulation level infection dynamics sum to the total infections:
-    pop_fraction = subpop_size[i+1] / norm_pop; // first subpop is ref subpop
+    pop_fraction = subpop_size[i] / norm_pop; // first subpop is ref subpop
     state_inf_per_capita +=  pop_fraction * to_vector(new_i_subpop);
 
     model_net_i = to_row_vector(convolve_dot_product(to_vector(new_i_subpop),
@@ -271,34 +271,6 @@ transformed parameters {
       log(model_net_i[(uot+1):(uot + ot + ht) ] + 1e-8) -
       log(mwpd);
   }
-
-  // Generate infections and concentrations from reference subpop
-  {
-      tuple(vector[num_elements(state_inf_per_capita)], vector[num_elements(unadj_r)]) output;
-      output = generate_infections(
-        to_vector(unadj_r),
-	      uot,
-	      gt_rev_pmf,
-	      log(i_first_obs_over_n),
-	      mean_initial_exp_growth_rate,
-	      ht,
-        infection_feedback,
-	      infection_feedback_rev_pmf
-      );
-      new_i_subpop = to_row_vector(output.1);
-      r_subpop_t[1] =  to_row_vector(output.2);
-    }
-
-    // For each subpopulation, tack on number of infections
-    // subpopulation level infection dynamics sum to the total infections:
-    pop_fraction = subpop_size[1] / norm_pop; // first subpop is ref subpop
-    state_inf_per_capita +=  pop_fraction * to_vector(new_i_subpop);
-
-    model_net_i = to_row_vector(convolve_dot_product(to_vector(new_i_subpop),
-                               reverse(s), (uot + ot + ht)));
-    model_log_v_ot[1] = log(10) * log10_g +
-      log(model_net_i[(uot+1):(uot + ot + ht) ] + 1e-8) -
-      log(mwpd);
 
 
   // Set up p_hosp as an AR(1) process that regresses back towards the initial value of p_hosp
@@ -348,7 +320,8 @@ model {
   // priors
   w ~ std_normal();
   offset_ref_log_r_t ~ normal(offset_ref_log_r_t_prior_mean, offset_ref_log_r_t_prior_sd);
-  offset_ref_i_first_obs ~ normal(offset_ref_i_first_obs_prior_mean, offset_i_first_obs_prior_sd);
+  offset_ref_logit_i_first_obs ~ normal(offset_ref_logit_i_first_obs_prior_mean,
+                                        offset_ref_logit_i_first_obs_prior_sd);
   offset_ref_initial_exp_growth_rate ~ normal(offset_ref_initial_exp_growth_rate_prior_mean,
                                               offset_ref_initial_exp_growth_rate_prior_sd);
   eta_sd ~ normal(0, eta_sd_sd);
@@ -356,7 +329,7 @@ model {
 
   autoreg_rt ~ beta(autoreg_rt_a, autoreg_rt_b);
   autoreg_p_hosp ~ beta(autoreg_p_hosp_a, autoreg_p_hosp_b);
-  log_r_0_intercept ~ normal(r_logmean, r_logsd);
+  log_r_t_first_obs ~ normal(r_logmean, r_logsd);
   to_vector(error_rt_subpop) ~ std_normal();
   sigma_rt ~ normal(0, sigma_rt_prior);
   i_first_obs_over_n ~ beta(i_first_obs_over_n_prior_a,
