@@ -88,8 +88,8 @@ pre.plot {
 </style>
 
 # Start
-Here we present the way simulating and fitting with 3 separate models using the
-`wwinference` package.  We also compare the results a number of ways to see
+Here we present the way simulating and fitting with three separate models using
+the `wwinference` package.  We also compare the results a number of ways to see
 the value of using spatial components within the model.
 
 <div class="fold s">
@@ -108,20 +108,21 @@ library(ggh4x) # for facet_grid2
 # Generating Data
 
 We start by generating the data that our models require, using the
-`generate_simulation_data` function.  The presets that are required to use the
+`generate_simulation_data()` function.  The presets that are required to use the
 spatial components are `use_spatial_corr = TRUE` and `aux_site_bool = TRUE`.
 We also require that if `use_spatial_corr = TRUE`, the user must specify a
 correlation function in the `corr_function` and the necessary parameters of the
-function in `corr_fun_params`.  Currently we have 3 built in functions for
-correlation types : `independence_corr_func_r`, `exponential_decay_corr_func_r`,
-and `rand_corr_matrix_func`.  The default used is `exponential_decay_corr_func_r`
-correlation function based of the following fake locations.
+function in `corr_fun_params`.  Currently we have three built in functions for
+correlation types : `independence_corr_func_r()`,
+`exponential_decay_corr_func_r()`, and `rand_corr_matrix_func()`.  The default
+used is `exponential_decay_corr_func_r()` correlation function based of the
+following fake locations.
 
 ## Fake locations
 Since we want to explore the usefulness of including spatial information into
 the wastewater informed inference model, we must first generate fake locations
 that serve as the wastewater treatment plant locations.  Here we randomly place
-4 wastewater treatment plants.
+four wastewater treatment plants.
 
 <div class="fold s">
 ```{r fig.height=6, fig.width=6}
@@ -200,7 +201,7 @@ central_rt_curve
 ```
 
 ## Simulating data
-Now we simulate the data with 3 different data generation models.  The
+Now we simulate the data with three different data generation models.  The
 difference between these will be the correlation structure that is used for
 site to site correlations.  We will have an iid (imposes no correlations),
 exponential decay correlation function based off distance matrix, and a random
@@ -208,20 +209,20 @@ correlation matrix structure (site to site correlations, but based off
 something we are not aware of).  We also set the necessary presets for our
 simulations.  These presets include site names, lab names, wastewater treatment
 plant populations, total population, the global $\mathcal{R}(t)$ standard
-deviation (we set this to 0 to ensure central $\mathcal{R}(t)$ is used without
-any deviations), and necessary correlation function parameters.  The type of
-correlation structure can be changed by setting `corr_function` to one of 3
-functions included in the package : `independence_corr_func_r`,
-`exponential_decay_corr_func_r`, and `rand_corr_matrix_func`.  Each correlation
-matrix function, built in or user created, expects a set of parameters
-`corr_fun_params` that are specific to that function.  See each built in
-function's documentation for details on how to set these parameters.  Under the
-hood, the correlation matrix is created by calling
+deviation (we set this to zero to ensure central $\mathcal{R}(t)$ is used
+without any deviations), and necessary correlation function parameters.  The
+type of correlation structure can be changed by setting `corr_function` to one
+of three functions included in the package : `independence_corr_func_r`,
+`exponential_decay_corr_func_r()`, and `rand_corr_matrix_func()`.  Each
+correlation matrix function, built in or user created, expects a set of
+parameters `corr_fun_params` that are specific to that function.  See each built
+in function's documentation for details on how to set these parameters.  Under
+the hood, the correlation matrix is created by calling
 `corr_function(corr_fun_params)`.  So, `corr_function` and `corr_fun_params`
 need to be set to work in sync.  The object that comes out of
-`generate_simulated_data` will have hospital admission data, hospital admission
-data for eval, site-level wastewater concentration data, and global and site
-level $\mathcal{R}(t)$'s.
+`generate_simulated_data()` will have hospital admission data, hospital
+admission data for eval, site-level wastewater concentration data, and global
+and site level $\mathcal{R}(t)$'s.
 
 <div class="fold s">
 ```{r warning=FALSE, message=FALSE}
@@ -304,8 +305,8 @@ simulated_data_rng_corr_mat <- withr::with_seed(1, {
 ```
 
 ## Preparing data
-Here we take the output of the `generate_simulated_data` and prepare it for the
-`wwinference` function that does the fitting to an inference model.
+Here we take the output of the `generate_simulated_data()` and prepare it for
+the `wwinference()` function that does the fitting to an inference model.
 
 <div class="fold s">
 ```{r}
@@ -817,13 +818,13 @@ corr_matrix_plot
 
 # Fitting Data
 We now show how we can fit different types of models to the data.  We currently
-only have 3 spatial structures to choose from when using the `wwinference` model.
-Those are iid, for non-spatial assumptions where we infer only a common
+only have three spatial structures to choose from when using the `wwinference()`
+model.  Those are iid, for non-spatial assumptions where we infer only a common
 generalized variance, exponential correlation function based off distances of
 subpopulations or sites where we infer the parameters of the correlation
 function, and unstructured where the entire correlation matrix is inferred.  The
 switch required to change from each type is `corr_structure_switch` in the
-`wwinference` function.  Inputs for this switch are currently, `0` - iid,
+`wwinference()` function.  Inputs for this switch are currently, `0` - iid,
 `1` - exponential, and `2` - unstructured.  Keep in mind that if exponential is
 used, a distance matrix is required as input as well.
 
@@ -859,9 +860,9 @@ iter_sampling <- 500
 ```
 
 ## Fitting iid data
-We start with fitting the data generated from the IID model to the 3 types of
-inference models.  These 3 types of inference models are differing only by their
-assumed correlation structure, as mentioned above.
+We start with fitting the data generated from the IID model to the three types
+of inference models.  These three types of inference models are differing only
+by their assumed correlation structure, as mentioned above.
 
 <div class="fold s o">
 ```{r warning=FALSE, message=FALSE}
@@ -933,7 +934,7 @@ fit_iid_to_unstruct <- wwinference::wwinference(
 ```
 
 ## Fitting exponential data
-We proceed to fit the exponential data generation model to the 3 types of
+We proceed to fit the exponential data generation model to the three types of
 inference models.
 
 <div class="fold s o">
@@ -1006,7 +1007,7 @@ fit_exp_to_unstruct <- wwinference::wwinference(
 ```
 
 ## Fitting rand. corr. matrix data
-Finally, we fit the rand. corr. matrix data generation model to all 3 of the
+Finally, we fit the rand. corr. matrix data generation model to all three of the
 inference models.  Again, the inference models only differ by their assumed
 site to site correlation structures.
 
@@ -1083,7 +1084,7 @@ fit_rand_to_unstruct <- wwinference::wwinference(
 Here we prepare results for visualization.  This step is not part of visualizing
 spatial wwinference results, a simpler way is in the `wwinference` vignette
 that uses the package's build in functionality for plotting.  Our goal here is
-to compare the 3 data generation models agains the 3 inference models.
+to compare the three data generation models agains the three inference models.
 
 We start with just sampling a portion of the draws that came from the results.
 We also combine all the results into one dataset with columns indicating what
@@ -1194,9 +1195,9 @@ We start by looking at the raw draws of our fit object, then select the draws
 from `non_norm_omega`, which is the matrix that contains non-normalized
 correlations.  For more information on normalized vs non-normalized
 correlations, refer to the model definitions.  We then make a dataset that has a
-3 columns, two of indicating the site to site correlations.  The third
-containing the correlation value.  We also do this for each of the 9 fits we did
-above, and combine them into one dataset with columns indicating what data
+three columns, two of indicating the site to site correlations.  The third
+containing the correlation value.  We also do this for each of the nine fits we
+did above, and combine them into one dataset with columns indicating what data
 generation model and inference model was used.
 
 <div class="fold s">
@@ -1614,10 +1615,6 @@ concern with how high the inferred $\mathcal{R}(t)$ reaches toward the
 nowcasting and forecasting periods.  We expect to see higher uncertainty in the
 nowcasting and forecasting periods because the $\mathcal{R}(t)$ is only
 partially or not at all informed by recent data.
-
-
-This is not surprising as there is no data
-there to guide the model for a more accurate quantile.
 
 <div class="fold s">
 ```{r}
