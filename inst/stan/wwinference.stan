@@ -215,7 +215,7 @@ transformed parameters {
 
   // initial conditions
   i_first_obs_over_n_subpop[1] = inv_logit(logit(i_first_obs_over_n) +
-     (n_subpops > 1 ? offset_ref_logit_i_first_obs[1] : 0);
+     (n_subpops > 1 ? offset_ref_logit_i_first_obs[1] : 0));
   inital_exp_growth_rate[1] = mean_inital_exp_growth_rate +
      (n_subpops > 1 ? offset_ref_inital_exp_growth_rate[1] : 0);
   i_first_obs_over_n_subpop[1:n_subpops] = inv_logit(logit(i_first_obs_over_n) +
