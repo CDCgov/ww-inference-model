@@ -159,10 +159,10 @@ fake_locs_plot
 ```
 
 ## Central Rt Curve
-Another requirement that we need to have based of the model definition, is a
-central Rt curve that is the underlining behavior of the pathogen.  Here we
-visualize the central Rt curve that is used in this vignette, but any central
-Rt can be used here.
+Another requirement that we need to have based on the model definition, is a
+central $\mathcal{R}(t)$ curve that is the underlining central infection
+dynamic.  Here we visualize the central $\mathcal{R}(t)$ curve that is used in
+this vignette, but any central $\mathcal{R}(t)$ can be used here.
 
 <div class="fold s">
 ```{r}
@@ -206,19 +206,22 @@ site to site correlations.  We will have an iid (imposes no correlations),
 exponential decay correlation function based off distance matrix, and a random
 correlation matrix structure (site to site correlations, but based off
 something we are not aware of).  We also set the necessary presets for our
-simulations, these presets include site names, lab names, wastewater treatment
-plant populations, total population, the global Rt standard deviation (we set
-this to 0 to ensure central Rt is used without any deviations), and necessary
-correlation function parameters.  To change the type of correlation structures
-used is by setting `corr_function` to some correlation function made by the
-user of one of 3 functions included in the package : `independence_corr_func_r`,
-`exponential_decay_corr_func_r`, and `rand_corr_matrix_func`.  Another thing
-that needs to be set is `corr_fun_params`, which are the parameters for the
-correlation function passed into `corr_function`.  Under the hood, the
-correlation matrix is created by calling `corr_function(corr_fun_params)`.  So,
-`corr_function` and `corr_fun_params` need to be set to work in sync.  The
-object that comes out of `generate_simulated_data` will have hospital admission
-data, hospital admission data for eval, and global and site level Rt's.
+simulations.  These presets include site names, lab names, wastewater treatment
+plant populations, total population, the global $\mathcal{R}(t)$ standard
+deviation (we set this to 0 to ensure central $\mathcal{R}(t)$ is used without
+any deviations), and necessary correlation function parameters.  The type of
+correlation structure can be changed by setting `corr_function` to one of 3
+functions included in the package : `independence_corr_func_r`,
+`exponential_decay_corr_func_r`, and `rand_corr_matrix_func`.  Each correlation
+matrix function, built in or user created, expects a set of parameters
+`corr_fun_params` that are specific to that function.  See each built in
+function's documentation for details on how to set these parameters.  Under the
+hood, the correlation matrix is created by calling
+`corr_function(corr_fun_params)`.  So, `corr_function` and `corr_fun_params`
+need to be set to work in sync.  The object that comes out of
+`generate_simulated_data` will have hospital admission data, hospital admission
+data for eval, site-level wastewater concentration data, and global and site
+level $\mathcal{R}(t)$'s.
 
 <div class="fold s">
 ```{r warning=FALSE, message=FALSE}
@@ -352,18 +355,19 @@ ww_data_to_fit_rng_corr_mat <- wwinference::indicate_ww_exclusions(
 )
 ```
 
-## Visualziing
-With all of the data ready to fit, we first visualize what our simulations looks
-like.  We visualize using the ggplot package.
+## Visualizing
+With all of the data ready to fit, we first visualize the data we simulated
+under each of the data generation models.  We visualize using the `ggplot2`
+package.
 
 ### Visualizing data
 We start with visualizing the hospital and wastewater data.  Here open circles
-represent the evaluation data that will be used to evaluate the nowcasting and
-forecasting periods.  The data that will be fed into the model will be the
-solid dots in the plots.  We separate these plots by their data generation
-models, this will be consistent across all plots.  We also seperate the
-wastewater plots by their site, with the dotted lines representing the outlier
-levels.
+represent the retrospectively observed data that will be used to evaluate the
+nowcasting and forecasting periods.  The data that will be fed into the model
+will be the solid dots in the plots.  We separate these plots by their data
+generation models, this will be consistent across all plots.  We also separate
+the wastewater plots by their site, with the dotted lines representing the
+limit of detection in that site and lab.
 
 <div class="fold s">
 ```{r}
@@ -447,7 +451,7 @@ ww_data_plot <- ggplot(ww_data_full) +
     show.legend = FALSE
   ) +
   geom_hline(aes(yintercept = log_lod), linetype = "dashed") +
-  facet_grid(site ~ model_type,
+  facet_grid(~model_type,
     scales = "fixed",
     labeller = labeller(site = function(x) paste("Site", x))
   ) +
@@ -461,9 +465,10 @@ hosp_data_plot / ww_data_plot +
 ```
 
 We might also want to visualize what the combined wastewater data looks like,
-which we do here.  Colors correspond with which treatment plant that wastewater
-came from.  We still have that the dotted line is the outlier level for the
-wastewater data.
+which we do here.  Colors correspond to the treatment plant that wastewater
+came from.  We still have that the dotted line is the limit of detection.  A
+couple of things that we should expect to see is that sites that are closer
+together in the fake locations plot should have similar trends.
 
 ```{r}
 ww_total_plot <- ggplot(ww_data_full) +
@@ -501,12 +506,15 @@ ww_total_plot <- ggplot(ww_data_full) +
 ww_total_plot
 ```
 
-### Visualizing actual Rt curves
-Here we visualize both the global and site level Rt curves.  We have facets for
-each of the data generation models.  We also look at a site called the Aux site,
-which, per model definitions, is the population that is not captured by a
-wastewater treatment plant.  We have a blue horizontal line at Rt = 1 for
-reference of pathogen severity.
+### Visualizing actual $\mathcal{R}(t)$ curves
+Here we visualize both the global and site level $\mathcal{R}(t)$ curves.  We
+have facets for each of the data generation models.  We also look at a site
+called the Aux site, which, per the model definition, is the population that is
+not captured by a wastewater treatment plant.  We include a blue horizontal line
+at $\mathcal{R}(t)$ = 1 to denote when infections should be increasing
+$(\mathcal{R}(t) > 1)$ or decreasing $(\mathcal{R}(t) < 1)$.
+
+For these site level $\mathcal{R}(t)$'s, refer to the model definition.
 
 <div class="fold s">
 ```{r}
@@ -652,11 +660,12 @@ global_rt_data_plot / site_rt_data_plot +
   plot_layout(heights = c(1, n_sites))
 ```
 
-Similarly we can visualize the combined site level Rt curves.  Colors are the
-different sites.  Again, we have a blue horizontal line at Rt = 1 for
-reference of pathogen severity.
+Similarly we can visualize the combined site level $\mathcal{R}(t)$ curves.
+Colors are the different sites.  One thing to also note is that we should expect
+to see sites that are highly correlated with each other should have very similar
+curves.  The correlations plot can be seen in the next section.
 
-```{r}
+```{r fig.height=5, fig.width=10}
 site_rt_total_plot <- ggplot(site_rt_data_full) +
   geom_hline(
     yintercept = 1,
@@ -693,15 +702,14 @@ site_rt_total_plot
 ### Visual of correlation matrix
 One other thing that we want to visualize, because it is the key difference
 between the data generation models, is the site to site correlation matrix.
-Here we do that, faceted by data generation model, we provide a scale that
-gives level of correlation.  We also make the area of each circle correspond
-with the correlation, so larger the area of the circle, larger the correlation.
-To remind ourselves, IID will have no correlations between wastewater sites.
-Exponential will have correlations between wastewater sites that are based off
-the exponential correlation function that uses the distances between wastewater
-treatment plants.  Rand. Corr. Matrix will have correlations between wastewater
-treatment plants that are based off some unknown factors, to emulate this we
-just set random correlations between sites.
+Here we facet by data generation model and visualize site-site correlations
+using both color and area of the circle. To remind ourselves, IID will have no
+correlations between wastewater sites.  Exponential will have correlations
+between wastewater sites that are a function of the distance between the
+centroids of the sites, with closer sited being more highly correlated.  Rand.
+Corr. Matrix will have correlations between wastewater treatment plants that are
+based off some unknown factors, to emulate this we just set random correlations
+between sites.
 
 <div class="fold s">
 ```{r fig.height=5, fig.width=10}
@@ -851,9 +859,9 @@ iter_sampling <- 500
 ```
 
 ## Fitting iid data
-We start with fitting the IID data generation model to the 3 types of inference
-models.  These 3 types of inference models are differing only by their assumed
-correlation structure, as mentioned above.
+We start with fitting the data generated from the IID model to the 3 types of
+inference models.  These 3 types of inference models are differing only by their
+assumed correlation structure, as mentioned above.
 
 <div class="fold s o">
 ```{r warning=FALSE, message=FALSE}
@@ -1074,8 +1082,8 @@ fit_rand_to_unstruct <- wwinference::wwinference(
 ## Preparing sampled draws
 Here we prepare results for visualization.  This step is not part of visualizing
 spatial wwinference results, a simpler way is in the `wwinference` vignette
-that uses the package's build in functionality.  This step is here to compare
-the 3 data generation models agains the 3 inference models.
+that uses the package's build in functionality for plotting.  Our goal here is
+to compare the 3 data generation models agains the 3 inference models.
 
 We start with just sampling a portion of the draws that came from the results.
 We also combine all the results into one dataset with columns indicating what
@@ -1182,14 +1190,14 @@ Here we prepare results for visualizing the correlation matrix posterior
 distributions.  Again this is not a required step, but this is not included in
 the `wwinference` vignette.
 
-We start by looking at the raw draws of our fit object, then subset teh draws
-by non_norm_omega, which is the matrix that contains nonnormalize correlations.
-For more information on normalized vs nonnormalize correlations, refer to the
-model definitions.  We then make a dataset that has a two columns indicating
-which site to site pair the correlation value is for.  The last column is the
-correlation value.  We also do this for each of the 9 fits we did above, and
-combine them into one dataset iwth columns indicating waht data generation model
-and inference model was used.
+We start by looking at the raw draws of our fit object, then select the draws
+from `non_norm_omega`, which is the matrix that contains non-normalized
+correlations.  For more information on normalized vs non-normalized
+correlations, refer to the model definitions.  We then make a dataset that has a
+3 columns, two of indicating the site to site correlations.  The third
+containing the correlation value.  We also do this for each of the 9 fits we did
+above, and combine them into one dataset with columns indicating what data
+generation model and inference model was used.
 
 <div class="fold s">
 ```{r}
@@ -1438,26 +1446,25 @@ all_corr_matrix_draws_df <- rbind(
 ```
 
 # Visualizing Fits
-Here we visualize all the results, for each one, we look at the 95th quantile
+Here we visualize all the results. For each one, we look at the 95th quantile
 of the parameters we are interested in.
 
 ## Hospital admissions and wastewater
-Here we showcase the hospital admissions and wastewater results.  Here we
-facet again by the data generation model.  The colors represent the different
-inference models, where the only difference between the inference models are
-the assumed correlation structure.  Solid lines are medians of the
-distributions, solid dots are data points used to in fitting, open dots are
-for evaluation purposes.  The vertical dashed line represents the date that we
-told the model to begin forecasting which ends based off the forecast horizon
-specified in the model presets.  The nowcasting period will be from the period
-from the last solid dot to the dashed line.  The forecast period is the period
-after the dashed line.  Below hospital admissions, we have the wastewater
-posterior predictive, with the same notations as the hospital admissions.
+Here we showcase the hospital admissions and wastewater results.  We facet again
+by the data generation model.  The colors represent the different inference
+models, where the only difference between the inference models are the assumed
+correlation structure.  Solid lines are medians of the distributions, solid dots
+are data points used to fit the model, open dots are for evaluation purposes.
+The vertical dashed line represents the date that we told the model to begin
+forecasting which ends based off the forecast horizon specified in the model
+presets.  The nowcasting period will be from the period from the last solid dot
+to the dashed line.  The forecast period is the period after the dashed line.
+Below hospital admissions, we have the wastewater concentration posterior
+predictions, with the same notations as the hospital admissions.
 
 Exploring these results, we see that all models do relatively well to include
-evaluation points, open dots, in their 95th quantiles.  Evaluation metrics will
-be used to place numerical values on model performances, this section will be
-towards the end of the vignette.
+evaluation points, open dots, in their 95th quantiles.  Later in the vignette,
+evaluation metrics will be used to quantify forecast performance.
 
 <div class="fold s">
 ```{r warning=FALSE}
@@ -1595,16 +1602,22 @@ ww_result_plot <- ggplot(
   theme(legend.position = "bottom")
 ```
 
-## Rt curves, global and site
-Here we showcase the global and site level Rt's.  Notation is the same as
-hospital admissions and wastewater results, except here the actual global and
-site Rt curves are plotted for visual evaluation.  These actual curves are not
-used by the model, so these curves must be inferred by the model.
+## $\mathcal{R}(t)$ curves, global and site
+Here we showcase the global and site level $\mathcal{R}(t)$'s.  Notation is the
+same as hospital admissions and wastewater results, except here the true
+simulated global and site $\mathcal{R}(t)$ curves are plotted for visual
+evaluation.  The true simulated $\mathcal{R}(t)$ curves are latent quantities
+that must be inferred by the model.
 
-We do very well to capture the actual Rt curves, there is some concern with how
-high the inferred Rt reaches toward the nowcasting and forecasting periods.  This
-is not surprising as there is no data there to guide the model for a more
-accurate quantile.
+We do very well to capture the actual $\mathcal{R}(t)$ curves.  There is some
+concern with how high the inferred $\mathcal{R}(t)$ reaches toward the
+nowcasting and forecasting periods.  We expect to see higher uncertainty in the
+nowcasting and forecasting periods because the $\mathcal{R}(t)$ is only
+partially or not at all informed by recent data.
+
+
+This is not surprising as there is no data
+there to guide the model for a more accurate quantile.
 
 <div class="fold s">
 ```{r}
@@ -1993,12 +2006,12 @@ iid_corr_matrix_result_plot + exp_corr_matrix_result_plot +
 ```
 
 
-# Numeric Results
-For this section we explore how well our models did numerically.  The metrics
-that we will be using are effective sample size per second (ess/sec), continuous
-ranked probability score (CRPS), David-Sebastiani score (DSS), absolute error
-(AE), squared error (SE), and bias.  All these, apart from ess/sec, will get
-attained using the
+# Quantitative Forecast Evaluation Results
+For this section we explore how well our forecasts performed quantitatively.
+The metrics that we will be using are effective sample size per second
+(ess/sec), continuous ranked probability score (CRPS), David-Sebastiani score
+(DSS), absolute error (AE), squared error (SE), and bias.  All these, apart from
+ess/sec, will get attained using the
 [scoringutils](https://epiforecasts.io/scoringutils/index.html) package.
 
 We start by getting the ess/sec by looking at the fit object's mean bulk
