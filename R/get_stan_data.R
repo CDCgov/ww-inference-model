@@ -380,9 +380,6 @@ get_stan_data <- function(input_count_data,
     infection_feedback_pmf = infection_feedback_pmf,
     # All the priors!
     viral_shedding_pars = viral_shedding_pars, # tpeak, viral peak, dur_shed
-    m_stdev_prior = params$m_stdev_prior,
-    m_r_stdev_prior = params$m_r_stdev_prior,
-    m_first_obs_stdev_prior = params$m_first_obs_stdev_prior,
     autoreg_rt_a = params$autoreg_rt_a,
     autoreg_rt_b = params$autoreg_rt_b,
     autoreg_rt_subpop_a = params$autoreg_rt_subpop_a,
@@ -428,9 +425,18 @@ get_stan_data <- function(input_count_data,
     inf_feedback_prior_logsd = params$infection_feedback_prior_logsd,
     sigma_rt_prior = params$sigma_rt_prior,
     log_phi_g_prior_mean = params$log_phi_g_prior_mean,
-    log_phi_g_prior_sd = params$log_phi_g_prior_sd
+    log_phi_g_prior_sd = params$log_phi_g_prior_sd,
+    offset_ref_log_r_t_prior_mean = params$offset_ref_log_r_t_prior_mean,
+    offset_ref_log_r_t_prior_sd = params$offset_ref_log_r_t_prior_sd,
+    offset_ref_logit_i_first_obs_prior_mean =
+      params$offset_ref_logit_i_first_obs_prior_mean,
+    offset_ref_logit_i_first_obs_prior_sd =
+      params$offset_ref_logit_i_first_obs_prior_sd,
+    offset_ref_initial_exp_growth_rate_prior_mean =
+      params$offset_ref_initial_exp_growth_rate_prior_mean,
+    offset_ref_initial_exp_growth_rate_prior_sd =
+      params$offset_ref_initial_exp_growth_rate_prior_sd
   )
-
 
   return(stan_data_list)
 }

@@ -1,6 +1,7 @@
 ############
 # Make entirely fake stan input data via prior-predictive generated quantities
 ############
+message("Generating test data for wwinference.stan model")
 
 hosp_data <- wwinference::hosp_data
 ww_data <- wwinference::ww_data

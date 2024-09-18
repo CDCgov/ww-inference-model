@@ -87,36 +87,26 @@ test_that(paste0(
 })
 
 test_that(paste0(
-  "Test that the number of subpopulations is correct for the",
+  "Test that the number of subpopulations is correct for the ",
   "standard case where sum(site_pops) > total_pop"
 ), {
   input_count_data_mod <- input_count_data
   input_count_data_mod$total_pop <- sum(unique(input_ww_data$site_pop) - 100)
-  stan_data_mod <- get_stan_data(
-    input_count_data_mod,
-    input_ww_data,
-    forecast_date,
-    forecast_horizon,
-    calibration_time,
-    generation_interval,
-    inf_to_count_delay,
-    infection_feedback_pmf,
-    params,
-    include_ww
-  )
 
-  expect_warning(get_stan_data(
-    input_count_data_mod,
-    input_ww_data,
-    forecast_date,
-    forecast_horizon,
-    calibration_time,
-    generation_interval,
-    inf_to_count_delay,
-    infection_feedback_pmf,
-    params,
-    include_ww
-  ))
+  expect_warning({
+    stan_data_mod <- get_stan_data(
+      input_count_data_mod,
+      input_ww_data,
+      forecast_date,
+      forecast_horizon,
+      calibration_time,
+      generation_interval,
+      inf_to_count_delay,
+      infection_feedback_pmf,
+      params,
+      include_ww
+    )
+  })
 
   expect_equal(stan_data_mod$n_subpop, (stan_data_mod$n_ww_sites))
   expect_equal(length(stan_data_mod$subpop_size), stan_data_mod$n_subpops)
