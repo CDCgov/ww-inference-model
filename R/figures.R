@@ -123,11 +123,11 @@ get_plot_ww_conc <- function(draws,
         color = .data$subpop,
         group = .data$draw
       ),
-      alpha = 0.1, linewidth = 0.2,
+      alpha = 0.1, size = 0.2,
       show.legend = FALSE
     ) +
     geom_point(aes(x = .data$date, y = .data$observed_value),
-      color = "black", show.legend = FALSE
+      color = "black", show.legend = FALSE, size = 0.5
     ) +
     facet_wrap(~site_lab_name, scales = "free") +
     geom_vline(
@@ -136,7 +136,7 @@ get_plot_ww_conc <- function(draws,
     ) +
     xlab("") +
     ylab("Log genome copies/mL") +
-    ggtitle("Lab-site level wastewater concentration") +
+    ggtitle("Lab-site level wastewater concentrations") +
     scale_x_date(
       date_breaks = "2 weeks",
       labels = scales::date_format("%Y-%m-%d")
@@ -144,11 +144,13 @@ get_plot_ww_conc <- function(draws,
     theme_bw() +
     theme(
       axis.text.x = element_text(
-        size = 8, vjust = 1,
+        size = 5, vjust = 1,
         hjust = 1, angle = 45
       ),
       axis.title.x = element_text(size = 12),
+      axis.text.y = element_text(size = 5),
       axis.title.y = element_text(size = 12),
+      strip.text = element_text(size = 6),
       plot.title = element_text(
         size = 10,
         vjust = 0.5, hjust = 0.5
@@ -202,10 +204,11 @@ get_plot_global_rt <- function(draws,
     theme_bw() +
     theme(
       axis.text.x = element_text(
-        size = 8, vjust = 1,
+        size = 5, vjust = 1,
         hjust = 1, angle = 45
       ),
       axis.title.x = element_text(size = 12),
+      axis.text.y = element_text(size = 5),
       axis.title.y = element_text(size = 12),
       plot.title = element_text(
         size = 10,
@@ -265,11 +268,13 @@ get_plot_subpop_rt <- function(draws,
     theme_bw() +
     theme(
       axis.text.x = element_text(
-        size = 8, vjust = 1,
+        size = 5, vjust = 1,
         hjust = 1, angle = 45
       ),
+      axis.text.y = element_text(size = 5),
       axis.title.x = element_text(size = 12),
       axis.title.y = element_text(size = 12),
+      strip.text = element_text(size = 6),
       plot.title = element_text(
         size = 10,
         vjust = 0.5, hjust = 0.5
