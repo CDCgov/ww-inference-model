@@ -29,7 +29,7 @@ wwinference(
 \item{ww_data}{A dataframe containing the pre-processed, site-level
 wastewater concentration data for a model run. The dataframe must contain
 the following columns: \code{date}, \code{site}, \code{lab}, \code{log_genome_copies_per_ml},
-\code{lab_site_index}, \code{log_lod}, \code{below_lod}, \code{site_pop} \code{exclude}}
+\code{lab_site_index}, \code{log_lod}, \code{below_lod}, \code{site_pop} \code{exclude}.}
 
 \item{count_data}{A dataframe containing the pre-procssed, "global" (e.g.
 state) daily count data, pertaining to the number of events that are being

@@ -42,37 +42,38 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
                                        last_count_data_date,
                                        calibration_time) {
   # Test to see if ww_data_present
-  ww_data_present <- nrow(preprocessed_ww_data) != 0
+  ww_data_present <- !is.null(preprocessed_ww_data)
   if (ww_data_present == FALSE) {
     message("No wastewater data present")
-  }
-
-  if (all(sum(preprocessed_ww_data$flag_as_ww_outlier) > sum(
-    preprocessed_ww_data$exclude
-  ))) {
-    cli::cli_warn(
-      c(
-        "Wastewater data being passed to the model has outliers flagged,",
-        "but not all have been indicated for exclusion from model fit"
+    ww_data <- NULL
+  } else {
+    if (all(sum(preprocessed_ww_data$flag_as_ww_outlier) > sum(
+      preprocessed_ww_data$exclude
+    ))) {
+      cli::cli_warn(
+        c(
+          "Wastewater data being passed to the model has outliers flagged,",
+          "but not all have been indicated for exclusion from model fit"
+        )
       )
+    }
+
+    # Test for presence of needed column names
+    assert_req_ww_cols_present(preprocessed_ww_data,
+      conc_col_name = "log_genome_copies_per_ml",
+      lod_col_name = "log_lod"
     )
+
+    # Filter out wastewater outliers, and remove extra wastewater
+    # data. Arrange data for indexing. This is what will be returned.
+    ww_data <- preprocessed_ww_data |>
+      dplyr::filter(
+        .data$exclude != 1,
+        .data$date > !!last_count_data_date -
+          lubridate::days(!!calibration_time)
+      ) |>
+      dplyr::arrange(.data$date, .data$lab_site_index)
   }
-
-  # Test for presence of needed column names
-  assert_req_ww_cols_present(preprocessed_ww_data,
-    conc_col_name = "log_genome_copies_per_ml",
-    lod_col_name = "log_lod"
-  )
-
-  # Filter out wastewater outliers, and remove extra wastewater
-  # data. Arrange data for indexing. This is what will be returned.
-  ww_data <- preprocessed_ww_data |>
-    dplyr::filter(
-      .data$exclude != 1,
-      .data$date > !!last_count_data_date -
-        lubridate::days(!!calibration_time)
-    ) |>
-    dplyr::arrange(.data$date, .data$lab_site_index)
 
   return(ww_data)
 }

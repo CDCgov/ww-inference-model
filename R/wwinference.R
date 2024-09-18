@@ -16,7 +16,7 @@
 #' @param ww_data A dataframe containing the pre-processed, site-level
 #' wastewater concentration data for a model run. The dataframe must contain
 #' the following columns: `date`, `site`, `lab`, `log_genome_copies_per_ml`,
-#' `lab_site_index`, `log_lod`, `below_lod`, `site_pop` `exclude`
+#' `lab_site_index`, `log_lod`, `below_lod`, `site_pop` `exclude`.
 #' @param count_data A dataframe containing the pre-procssed, "global" (e.g.
 #' state) daily count data, pertaining to the number of events that are being
 #' counted on that day, e.g. number of daily cases or daily hospital admissions.
@@ -163,7 +163,7 @@ wwinference <- function(ww_data,
   }
 
   # If there is no wastewater data, set include_ww to 0
-  if (is.null(ww_data)) {
+  if (is.null(ww_data) || nrow(ww_data) == 0) {
     cli::cli_warn(
       c(
         "No wastewater data was passed to the model.",
@@ -174,7 +174,7 @@ wwinference <- function(ww_data,
   }
   # If include_ww <-0, we will specify an empty dataset
   if (include_ww == 0) {
-    ww_data <- ww_data[0, ]
+    ww_data <- NULL
   } else {
     # Check that data is compatible with specifications
     assert_no_dates_after_max(ww_data$date, forecast_date)

@@ -2,6 +2,7 @@ test_that("Test the wastewater inference model on simulated data.", {
   #######
   # run model briefly on the simulated data
   #######
+  model_test_data$compiled_model <- compiled_site_inf_model
   withr::with_seed(5, {
     fit <- do.call(
       wwinference::wwinference,
