@@ -31,15 +31,18 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
   init_list <- list(
     w = stats::rnorm(n_weeks - 1, 0, stdev),
     offset_ref_log_r_t = stats::rnorm(
-      1, stan_data$offset_ref_log_r_t_prior_mean,
+      stan_data$n_subpops > 1,
+      stan_data$offset_ref_log_r_t_prior_mean,
       stdev
     ),
     offset_ref_logit_i_first_obs = stats::rnorm(
-      1, stan_data$offset_ref_logit_i_first_obs_prior_mean,
+      stan_data$n_subpops > 1,
+      stan_data$offset_ref_logit_i_first_obs_prior_mean,
       stdev
     ),
     offset_ref_initial_exp_growth_rate = stats::rnorm(
-      1, stan_data$offset_ref_initial_exp_growth_rate_prior_mean,
+      stan_data$n_subpops > 1,
+      stan_data$offset_ref_initial_exp_growth_rate_prior_mean,
       stdev
     ),
     eta_sd = abs(stats::rnorm(1, 0, stdev)),
@@ -57,16 +60,6 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
       1,
       convert_to_logmean(1, stdev),
       convert_to_logsd(1, stdev)
-    ),
-    error_rt_subpop = as.matrix(
-      matrix(
-        stats::rnorm((n_subpops - 1) * n_weeks,
-          mean = 0,
-          sd = stdev
-        ),
-        (n_subpops - 1),
-        n_weeks
-      )
     ),
     autoreg_rt_subpop = abs(stats::rnorm(1, 0.5, 0.05)),
     autoreg_p_hosp = abs(stats::rnorm(1, 1 / 100, 0.001)),
@@ -111,14 +104,14 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
     infection_feedback = abs(stats::rnorm(1, 500, 20))
   )
   # Hack, pass in a vector of 0s
-  if (stan_data$include_ww == 0) {
+  if (stan_data$n_subpops > 1) {
     init_list$error_subpop <- as.matrix(
       matrix(
-        stats::rnorm(1 * n_weeks,
+        stats::rnorm((n_subpops - 1) * n_weeks,
           mean = 0,
-          sd = 0
+          sd = stdev
         ),
-        1,
+        (n_subpops - 1),
         n_weeks
       )
     )

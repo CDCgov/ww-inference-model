@@ -136,7 +136,7 @@ parameters {
   // R(t) heterogeneity
   real<lower=0, upper=1> autoreg_rt_subpop;
   real<lower=0, upper=1> autoreg_p_hosp;
-  matrix[include_ww ? n_subpops-1 : 0, n_weeks] error_rt_subpop;
+  matrix[n_subpops-1, n_subpops > 1 ? n_weeks : 0] error_rt_subpop;
   real<lower=0, upper=1> i_first_obs_over_n; // mean per capita
   // infection incidence on the day of the first observation
   vector[n_subpops - 1] eta_i_first_obs; // z-score on logit scale
