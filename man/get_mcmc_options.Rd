@@ -7,7 +7,7 @@
 get_mcmc_options(
   iter_warmup = 750,
   iter_sampling = 500,
-  n_chains = 4,
+  chains = 4,
   parallel_chains = 4,
   seed = NULL,
   adapt_delta = 0.95,
@@ -18,7 +18,7 @@ get_mcmc_options(
   output_dir = getOption("cmdstanr_output_dir"),
   output_basename = NULL,
   sig_figs = NULL,
-  chain_ids = seq_len(n_chains),
+  chain_ids = seq_len(chains),
   threads_per_chain = NULL,
   opencl_ids = NULL,
   save_warmup = FALSE,
@@ -45,7 +45,7 @@ default is \code{750}}
 \item{iter_sampling}{integer indicating the number of sampling iterations,
 default is \code{500}}
 
-\item{n_chains}{integer indicating the number of MCMC chains to run, default
+\item{chains}{integer indicating the number of MCMC chains to run, default
 is \code{4}}
 
 \item{parallel_chains}{integer indicating the number of chains to run
@@ -75,7 +75,7 @@ during the execution process, default is \code{TRUE}}
 \item{sig_figs}{positive integer cmdstanr default, default is  \code{NULL}}
 
 \item{chain_ids}{integer vector cdmstanr default, default is
-\code{seq_len(n_chains)},}
+\code{seq_len(chains)},}
 
 \item{threads_per_chain}{positive integer cmdstanr default, default
 is  \code{NULL}}

@@ -184,7 +184,7 @@ ww_fit <- wwinference(input_ww_data,
   fit_opts = get_mcmc_options(
     iter_warmup = 250,
     iter_sampling = 250,
-    n_chains = 2
+    chains = 2
   )
 )
 }
