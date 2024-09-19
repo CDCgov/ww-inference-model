@@ -31,13 +31,10 @@
 #' `get_model_spec()`. The default here pertains to the `forecast_date` in the
 #' example data provided by the package, but this should be specified by the
 #' user based on the date they are producing a forecast
-#' @param fit_opts The fit options, which in this case default to the
-#' MCMC parameters as defined using `get_mcmc_options()`. This includes
-#' the following arguments, which are passed to
-#' [`$sample()`][cmdstanr::model-method-sample]:
-#' the number of chains, the number of warmup
-#' and sampling iterations, the maximum tree depth, the average acceptance
-#' probability, and the stan PRNG seed
+#' @param fit_opts The fit options to pass to
+#' [`$sample()`][cmdstanr::model-method-sample], must be a valid cmdstanr
+#' sample arg. Default is an empty list, which uses the
+#' default parameters in `get_mcmc_options()`
 #' @param generate_initial_values Boolean indicating whether or not to specify
 #' the initialization of the sampler, default is `TRUE`, meaning that
 #' initialization lists will be generated and passed as the `init` argument
@@ -150,7 +147,7 @@ wwinference <- function(ww_data,
                         calibration_time = 90,
                         forecast_horizon = 28,
                         model_spec = get_model_spec(),
-                        fit_opts = get_mcmc_options(),
+                        fit_opts = list(),
                         generate_initial_values = TRUE,
                         initial_values_seed = NULL,
                         compiled_model = compile_model()) {
@@ -159,6 +156,12 @@ wwinference <- function(ww_data,
       "The user must specify a forecast date"
     )
   }
+
+  fit_opts_use <- get_mcmc_options() # get defaults
+  # this overwrites all and only the values the user sets in `fit_opts`
+  fit_opts_use[names(fit_opts)] <- fit_opts
+
+  # maybe check for invalid options here?
 
   # Check that data is compatible with specifications
   assert_no_dates_after_max(ww_data$date, forecast_date)
@@ -220,7 +223,7 @@ wwinference <- function(ww_data,
   fit <- safe_fit_model(
     compiled_model = compiled_model,
     stan_data_list = stan_data_list,
-    fit_opts = fit_opts,
+    fit_opts = fit_opts_use,
     init_lists = init_lists
   )
 

@@ -15,7 +15,7 @@ wwinference(
   calibration_time = 90,
   forecast_horizon = 28,
   model_spec = get_model_spec(),
-  fit_opts = get_mcmc_options(),
+  fit_opts = list(),
   generate_initial_values = TRUE,
   initial_values_seed = NULL,
   compiled_model = compile_model()
@@ -50,13 +50,10 @@ forecast date, to produce forecasts for, default is \code{28}}
 example data provided by the package, but this should be specified by the
 user based on the date they are producing a forecast}
 
-\item{fit_opts}{The fit options, which in this case default to the
-MCMC parameters as defined using \code{get_mcmc_options()}. This includes
-the following arguments, which are passed to
-\code{\link[cmdstanr:model-method-sample]{$sample()}}:
-the number of chains, the number of warmup
-and sampling iterations, the maximum tree depth, the average acceptance
-probability, and the stan PRNG seed}
+\item{fit_opts}{The fit options to pass to
+\code{\link[cmdstanr:model-method-sample]{$sample()}}, must be a valid cmdstanr
+sample arg. Default is an empty list, which uses the
+default parameters in \code{get_mcmc_options()}}
 
 \item{generate_initial_values}{Boolean indicating whether or not to specify
 the initialization of the sampler, default is \code{TRUE}, meaning that
