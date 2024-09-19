@@ -50,7 +50,8 @@ mcmc_options <- wwinference::get_mcmc_options(
   seed = 55,
   iter_warmup = 25,
   iter_sampling = 25,
-  n_chains = 1
+  n_chains = 1,
+  show_messages = FALSE
 )
 
 generate_initial_values <- TRUE
