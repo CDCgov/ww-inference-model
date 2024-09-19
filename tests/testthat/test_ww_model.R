@@ -2,7 +2,7 @@ test_that("Test the wastewater inference model on simulated data.", {
   #######
   # run model briefly on the simulated data
   #######
-  expect_warnin(withr::with_seed(5, {
+  expect_warning(withr::with_seed(5, {
     fit <- do.call(
       wwinference::wwinference,
       model_test_data
