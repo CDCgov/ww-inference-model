@@ -8,9 +8,34 @@ get_mcmc_options(
   iter_warmup = 750,
   iter_sampling = 500,
   n_chains = 4,
+  parallel_chains = 4,
   seed = NULL,
   adapt_delta = 0.95,
-  max_treedepth = 12
+  max_treedepth = 12,
+  show_messages = TRUE,
+  refresh = NULL,
+  save_latent_dynamics = FALSE,
+  output_dir = getOption("cmdstanr_output_dir"),
+  output_basename = NULL,
+  sig_figs = NULL,
+  chain_ids = seq_len(n_chains),
+  threads_per_chain = NULL,
+  opencl_ids = NULL,
+  save_warmup = FALSE,
+  thin = NULL,
+  adapt_engaged = TRUE,
+  step_size = NULL,
+  metric = NULL,
+  metric_file = NULL,
+  inv_metric = NULL,
+  init_buffer = NULL,
+  term_buffer = NULL,
+  window = NULL,
+  fixed_param = FALSE,
+  show_exceptions = TRUE,
+  diagnostics = c("divergences", "treedepth", "ebfmi"),
+  save_metric = NULL,
+  save_cmdstan_config = NULL
 )
 }
 \arguments{
@@ -23,7 +48,10 @@ default is \code{500}}
 \item{n_chains}{integer indicating the number of MCMC chains to run, default
 is \code{4}}
 
-\item{seed}{set of integers indicating the random seed of the stan sampler,
+\item{parallel_chains}{integer indicating the number of chains to run
+in parallel, default is \code{4}}
+
+\item{seed}{set of integers indicating the random seed of the Stan sampler,
 default is NULL}
 
 \item{adapt_delta}{float between 0 and 1 indicating the average acceptance
@@ -31,16 +59,71 @@ probability, default is \code{0.95}}
 
 \item{max_treedepth}{integer indicating the maximum tree depth of the
 sampler, default is 12}
+
+\item{show_messages}{logical indicating whether to print all output
+during the execution process, default is \code{TRUE}}
+
+\item{save_latent_dynamics}{logical cmdstanr default, default is \code{FALSE}}
+
+\item{output_dir}{string cmdstanr default, default is
+\code{getOption("cmdstanr_output_dir")}}
+
+\item{output_basename}{string cmdstanr default, default is \code{NULL}}
+
+\item{sig_figs}{positive integer cmdstanr default, default is  \code{NULL}}
+
+\item{chain_ids}{integer vector cdmstanr default, default is
+\code{seq_len(n_chains)},}
+
+\item{threads_per_chain}{positive integer cmdstanr default, default
+is  \code{NULL}}
+
+\item{opencl_ids}{integer vector of length 2 cmdstanr default, default
+is \code{NULL}}
+
+\item{save_warmup}{logical cmdstanr default, default is \code{FALSE}}
+
+\item{thin}{positive integer cmdstanr default, default is \code{NULL}}
+
+\item{adapt_engaged}{logical cmdstanr default, default is \code{TRUE}}
+
+\item{step_size}{positive real cmdstanr default, default is \code{NULL}}
+
+\item{metric}{string cmdstanr default, default is \code{NULL}}
+
+\item{metric_file}{character vector cmdstanr default, default is \code{NULL}}
+
+\item{inv_metric}{vector, matrix cmdstanr default, default is `NULL``}
+
+\item{init_buffer}{nonnegative integer cmdstanr default, default is \code{NULL}}
+
+\item{term_buffer}{nonnegative integer cmdstanr default, default is \code{NULL}}
+
+\item{window}{nonnegative integer cmdstanr default, default is \code{NULL}}
+
+\item{fixed_param}{logical cmdstanr default, default is \code{FALSE}}
+
+\item{show_exceptions}{logical cmdstanr default, default is  TRUE,}
+
+\item{diagnostics}{character vector cmdstanr default, default is
+\code{c("divergences", "treedepth", "ebfmi")}}
+
+\item{save_metric}{logical cmdstanr default, default is \code{NULL}}
+
+\item{save_cmdstan_config}{logical cmdstanr default, default is \code{NULL}}
 }
 \value{
-a list of mcmc settings with the values given by the  function
+a list of MCMC settings with the values given by the  function
 arguments
 }
 \description{
 This function returns a list of MCMC settings to pass to the
 \code{cmdstanr::sample()} function to fit the model. The default settings are
 specified for production-level runs, consider adjusting to optimize
-for speed while iterating.
+for speed while iterating. All input arguments to \code{cmdstanr::sample()}
+are configurable by the user. See \code{cmdstanr::sample()} documentation
+https://mc-stan.org/cmdstanr/reference/model-method-sample.html for a full
+description of each argument.
 }
 \examples{
 mcmc_settings <- get_mcmc_options()
