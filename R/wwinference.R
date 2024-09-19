@@ -138,7 +138,7 @@
 #'   fit_opts = get_mcmc_options(
 #'     iter_warmup = 250,
 #'     iter_sampling = 250,
-#'     n_chains = 2
+#'     chains = 2
 #'   )
 #' )
 #' }
@@ -204,7 +204,7 @@ wwinference <- function(ww_data,
   if (generate_initial_values) {
     withr::with_seed(initial_values_seed, {
       init_lists <- lapply(
-        1:fit_opts$n_chains,
+        1:fit_opts$chains,
         \(x) {
           get_inits_for_one_chain(stan_data_list)
         }
@@ -329,39 +329,18 @@ fit_model <- function(compiled_model,
                       stan_data_list,
                       fit_opts,
                       init_lists) {
-  fit <- compiled_model$sample(
-    data = stan_data_list,
-    init = init_lists,
-    seed = fit_opts$seed,
-    iter_sampling = fit_opts$iter_sampling,
-    iter_warmup = fit_opts$iter_warmup,
-    max_treedepth = fit_opts$max_treedepth,
-    chains = fit_opts$n_chains,
-    parallel_chains = fit_opts$parallel_chains,
-    show_messages = fit_opts$show_messages,
-    refresh = fit_opts$refresh,
-    save_latent_dynamics = fit_opts$save_latent_dynamics,
-    output_dir = fit_opts$output_dir,
-    output_basename = fit_opts$output_basename,
-    sig_figs = fit_opts$sig_figs,
-    chain_ids = fit_opts$chain_ids,
-    threads_per_chain = fit_opts$threads_per_chain,
-    opencl_ids = fit_opts$opencl_ids,
-    save_warmup = fit_opts$save_warmup,
-    thin = fit_opts$thin,
-    adapt_engaged = fit_opts$adapt_engaged,
-    step_size = fit_opts$step_size,
-    metric = fit_opts$metric,
-    metric_file = fit_opts$metric_file,
-    inv_metric = fit_opts$inv_metric,
-    init_buffer = fit_opts$init_buffer,
-    term_buffer = fit_opts$term_buffer,
-    window = fit_opts$window,
-    fixed_param = fit_opts$fixed_param,
-    show_exceptions = fit_opts$show_exceptions,
-    diagnostics = fit_opts$diagnostics,
-    save_metric = fit_opts$save_metric,
-    save_cmdstan_config = fit_opts$save_cmdstan_config
+  args_for_stan_sampling <-
+    c(
+      list(
+        data = stan_data_list,
+        init = init_lists
+      ),
+      fit_opts
+    )
+
+  fit <- do.call(
+    compiled_model$sample,
+    args_for_stan_sampling
   )
 
   return(fit)
@@ -384,7 +363,7 @@ fit_model <- function(compiled_model,
 #' default is `750`
 #' @param iter_sampling integer indicating the number of sampling iterations,
 #' default is `500`
-#' @param n_chains integer indicating the number of MCMC chains to run, default
+#' @param chains integer indicating the number of MCMC chains to run, default
 #' is `4`
 #' @param parallel_chains integer indicating the number of chains to run
 #' in parallel, default is `4`
@@ -402,7 +381,7 @@ fit_model <- function(compiled_model,
 #' @param output_basename string cmdstanr default, default is `NULL`
 #' @param sig_figs positive integer cmdstanr default, default is  `NULL`
 #' @param chain_ids integer vector cdmstanr default, default is
-#' `seq_len(n_chains)`,
+#' `seq_len(chains)`,
 #' @param threads_per_chain positive integer cmdstanr default, default
 #' is  `NULL`
 #' @param opencl_ids integer vector of length 2 cmdstanr default, default
@@ -433,7 +412,7 @@ fit_model <- function(compiled_model,
 get_mcmc_options <- function(
     iter_warmup = 750,
     iter_sampling = 500,
-    n_chains = 4,
+    chains = 4,
     parallel_chains = 4,
     seed = NULL,
     adapt_delta = 0.95,
@@ -445,7 +424,7 @@ get_mcmc_options <- function(
     output_dir = getOption("cmdstanr_output_dir"),
     output_basename = NULL,
     sig_figs = NULL,
-    chain_ids = seq_len(n_chains),
+    chain_ids = seq_len(chains),
     threads_per_chain = NULL,
     opencl_ids = NULL,
     save_warmup = FALSE,
@@ -466,7 +445,7 @@ get_mcmc_options <- function(
   mcmc_settings <- list(
     iter_warmup = iter_warmup,
     iter_sampling = iter_sampling,
-    n_chains = n_chains,
+    chains = chains,
     seed = seed,
     adapt_delta = adapt_delta,
     max_treedepth = max_treedepth,
