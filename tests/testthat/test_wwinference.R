@@ -68,8 +68,7 @@ test_that("Function to get mcmc options produces the expected outputs", {
     "init_buffer", "term_buffer", "window", "fixed_param", "show_exceptions",
     "diagnostics", "save_metric", "save_cmdstan_config"
   )
-  # Checkmare doesn't work here for a list, says it must be a character vector
-  expect_true(all(names(mcmc_options) %in% expected_names))
+  checkmate::check_names(names(mcmc_options), must.include = expected_names)
 })
 
 test_that("Function to get model specs produces expected outputs", {
