@@ -1,8 +1,8 @@
 ---
-title: "Assessing the value of adding a spatial correlation structure."
-description: "Here we showcase how we can add a site to site correlations."
+title: "Scenario 2."
+description: "Finding scenes that make IID fail."
 author: "Christian O. Bernal Zelaya"
-date: "2024-09-13"
+date: "2024-09-18"
 output:
   html_document:
     fig_width: 15
@@ -88,9 +88,7 @@ pre.plot {
 </style>
 
 # Start
-Here we present a workflow to simulate and fit three separate models using
-the `wwinference` package.  We also compare the results a number of ways to see
-the value of using spatial components within the model.
+Here we find scenes that make the IID fail.
 
 <div class="fold s">
 ```{r warning=FALSE, message=FALSE}
@@ -107,31 +105,17 @@ library(ggh4x) # for facet_grid2
 
 # Generating Data
 
-We start by generating the data that our models require, using the
-`generate_simulated_data()` function.  The presets that are required to use the
-spatial components are `use_spatial_corr = TRUE` and `aux_site_bool = TRUE`.
-We also require that if `use_spatial_corr = TRUE`, the user must specify a
-correlation function in the `corr_function` and the necessary parameters of the
-function in `corr_fun_params`.  Currently we have three built in functions for
-correlation types : `independence_corr_func_r()`,
-`exponential_decay_corr_func_r()`, and `rand_corr_matrix_func()`.  The default
-used is `exponential_decay_corr_func_r()` correlation function based of the
-following fake locations.
 
 ## Fake locations
-Since we want to explore the usefulness of including spatial information into
-the wastewater informed inference model, we must first generate fake locations
-that serve as the wastewater treatment plant locations.  Here we randomly place
-four wastewater treatment plants.
 
 <div class="fold s">
 ```{r fig.height=6, fig.width=6}
 set.seed(2024)
 n_sites <- 4
 fake_locs <- data.frame(
-  x = runif(n_sites, 0, 100),
-  y = runif(n_sites, 0, 100),
-  ID = paste0("Site ", 1:n_sites)
+  x = c(90, 51, 52, 15),
+  y = c(90, 51, 52, 15),
+  ID = 1:n_sites
 )
 fake_locs_plot <- ggplot(
   data = fake_locs
@@ -143,7 +127,7 @@ fake_locs_plot <- ggplot(
   ) +
   geom_text(
     aes(label = ID, x = x, y = y),
-    vjust = -1
+    color = "white"
   ) +
   coord_cartesian(
     xlim = c(min(fake_locs$x) - 2, max(fake_locs$x) + 2),
@@ -160,10 +144,6 @@ fake_locs_plot
 ```
 
 ## Central Rt Curve
-Another requirement that we need to have based on the model definition, is a
-central $\mathcal{R}(t)$ curve that is the underlining central infection
-dynamic.  Here we visualize the central $\mathcal{R}(t)$ curve that is used in
-this vignette, but any central $\mathcal{R}(t)$ can be used here.
 
 <div class="fold s">
 ```{r}
@@ -201,28 +181,6 @@ central_rt_curve
 ```
 
 ## Simulating data
-Now we simulate the data with three different data generation models.  The
-difference between these will be the correlation structure that is used for
-site to site correlations.  We will have an iid (imposes no correlations),
-exponential decay correlation function based off distance matrix, and a random
-correlation matrix structure (site to site correlations, but based off
-something we are not aware of).  We also set the necessary presets for our
-simulations.  These presets include site names, lab names, wastewater treatment
-plant populations, total population, the global $\mathcal{R}(t)$ standard
-deviation (we set this to zero to ensure central $\mathcal{R}(t)$ is used
-without any deviations), and necessary correlation function parameters.  The
-type of correlation structure can be changed by setting `corr_function` to one
-of three functions included in the package : `independence_corr_func_r`,
-`exponential_decay_corr_func_r()`, and `rand_corr_matrix_func()`.  Each
-correlation matrix function, built in or user created, expects a set of
-parameters `corr_fun_params` that are specific to that function.  See each built
-in function's documentation for details on how to set these parameters.  Under
-the hood, the correlation matrix is created by calling
-`corr_function(corr_fun_params)`.  So, `corr_function` and `corr_fun_params`
-need to be set to work in sync.  The object that comes out of
-`generate_simulated_data()` will have hospital admission data, hospital
-admission data for eval, site-level wastewater concentration data, and global
-and site level $\mathcal{R}(t)$'s.
 
 <div class="fold s">
 ```{r warning=FALSE, message=FALSE}
@@ -246,7 +204,9 @@ exp_corr_param <- list(
   phi = 0.4,
   l = 1
 )
-sigma_sqrd_generalized <- 0.01^n_sites
+sigma_sqrd_generalized <- 0.025^n_sites
+mean_reporting_freq <- 1 / 3
+mean_obs_error_in_ww_lab_site <- 1
 # ------------------------------------------------------------------------------
 # IID Simulated Data -----------------------------------------------------------
 simulated_data_iid <- withr::with_seed(1, {
@@ -257,6 +217,8 @@ simulated_data_iid <- withr::with_seed(1, {
     lab = lab,
     ww_pop_sites = ww_pop_sites,
     pop_size = pop_size,
+    mean_obs_error_in_ww_lab_site = mean_obs_error_in_ww_lab_site,
+    mean_reporting_freq = mean_reporting_freq,
     global_rt_sd = global_rt_sd,
     use_spatial_corr = TRUE,
     corr_function = wwinference::independence_corr_func_r,
@@ -275,6 +237,8 @@ simulated_data_exp <- withr::with_seed(1, {
     lab = lab,
     ww_pop_sites = ww_pop_sites,
     pop_size = pop_size,
+    mean_obs_error_in_ww_lab_site = mean_obs_error_in_ww_lab_site,
+    mean_reporting_freq = mean_reporting_freq,
     global_rt_sd = global_rt_sd,
     use_spatial_corr = TRUE,
     corr_function = exponential_decay_corr_func_r,
@@ -293,6 +257,8 @@ simulated_data_rng_corr_mat <- withr::with_seed(1, {
     lab = lab,
     ww_pop_sites = ww_pop_sites,
     pop_size = pop_size,
+    mean_obs_error_in_ww_lab_site = mean_obs_error_in_ww_lab_site,
+    mean_reporting_freq = mean_reporting_freq,
     global_rt_sd = global_rt_sd,
     use_spatial_corr = TRUE,
     corr_function = wwinference::rand_corr_matrix_func,
@@ -305,8 +271,6 @@ simulated_data_rng_corr_mat <- withr::with_seed(1, {
 ```
 
 ## Preparing data
-Here we take the output of the `generate_simulated_data()` and prepare it for
-the `wwinference()` function that does the fitting to an inference model.
 
 <div class="fold s">
 ```{r}
@@ -357,18 +321,8 @@ ww_data_to_fit_rng_corr_mat <- wwinference::indicate_ww_exclusions(
 ```
 
 ## Visualizing
-With all of the data ready to fit, we first visualize the data we simulated
-under each of the data generation models.  We visualize using the `ggplot2`
-package.
 
 ### Visualizing data
-We start with visualizing the hospital and wastewater data.  Here open circles
-represent the retrospectively observed data that will be used to evaluate the
-nowcasting and forecasting periods.  The data that will be fed into the model
-will be the solid dots in the plots.  We separate these plots by their data
-generation models, this will be consistent across all plots.  We also separate
-the wastewater plots by their site, with the dotted lines representing the
-limit of detection in that site and lab.
 
 <div class="fold s">
 ```{r}
@@ -465,11 +419,6 @@ hosp_data_plot / ww_data_plot +
   plot_layout(heights = c(1, 2))
 ```
 
-We might also want to visualize what the combined wastewater data looks like,
-which we do here.  Colors correspond to the treatment plant that wastewater
-came from.  We still have that the dotted line is the limit of detection.  A
-couple of things that we should expect to see is that sites that are closer
-together in the fake locations plot should have similar trends.
 
 ```{r}
 ww_total_plot <- ggplot(ww_data_full) +
@@ -493,13 +442,6 @@ ww_total_plot <- ggplot(ww_data_full) +
     ~model_type,
     scales = "fixed"
   ) +
-  scale_color_manual(
-    breaks = c("1", "2", "3", "4"),
-    values = c(
-      "darkviolet", "darkgreen",
-      "darkred", "darkorange"
-    )
-  ) +
   xlab("") +
   ylab("Genome copies/mL on log scale") +
   labs(color = "Site") +
@@ -508,14 +450,6 @@ ww_total_plot
 ```
 
 ### Visualizing actual $\mathcal{R}(t)$ curves
-Here we visualize both the global and site level $\mathcal{R}(t)$ curves.  We
-have facets for each of the data generation models.  We also look at a site
-called the Aux site, which, per the model definition, is the population that is
-not captured by a wastewater treatment plant.  We include a blue horizontal line
-at $\mathcal{R}(t)$ = 1 to denote when infections should be increasing
-$(\mathcal{R}(t) > 1)$ or decreasing $(\mathcal{R}(t) < 1)$.
-
-For these site level $\mathcal{R}(t)$'s, refer to the model definition.
 
 <div class="fold s">
 ```{r}
@@ -661,10 +595,6 @@ global_rt_data_plot / site_rt_data_plot +
   plot_layout(heights = c(1, n_sites))
 ```
 
-Similarly we can visualize the combined site level $\mathcal{R}(t)$ curves.
-Colors are the different sites.  One thing to also note is that we should expect
-to see sites that are highly correlated with each other should have very similar
-curves.  The correlations plot can be seen in the next section.
 
 ```{r fig.height=5, fig.width=10}
 site_rt_total_plot <- ggplot(site_rt_data_full) +
@@ -681,15 +611,6 @@ site_rt_total_plot <- ggplot(site_rt_data_full) +
   facet_grid(~model_type,
     scales = "fixed"
   ) +
-  scale_color_manual(
-    breaks = c(
-      "Site 1", "Site 2", "Site 3", "Site 4", "Aux"
-    ),
-    values = c(
-      "darkviolet", "darkgreen",
-      "darkred", "darkorange", "grey"
-    )
-  ) +
   scale_y_continuous(transform = "log10") +
   xlab("") +
   ylab("Subpopulation R(t)") +
@@ -701,16 +622,6 @@ site_rt_total_plot
 
 
 ### Visual of correlation matrix
-One other thing that we want to visualize, because it is the key difference
-between the data generation models, is the site to site correlation matrix.
-Here we facet by data generation model and visualize site-site correlations
-using both color and area of the circle. To remind ourselves, IID will have no
-correlations between wastewater sites.  Exponential will have correlations
-between wastewater sites that are a function of the distance between the
-centroids of the sites, with closer sited being more highly correlated.  Rand.
-Corr. Matrix will have correlations between wastewater treatment plants that are
-based off some unknown factors, to emulate this we just set random correlations
-between sites.
 
 <div class="fold s">
 ```{r fig.height=5, fig.width=10}
@@ -817,24 +728,8 @@ corr_matrix_plot
 
 
 # Fitting Data
-We now show how we can fit different types of models to the data.  We currently
-only have three spatial structures to choose from when using the `wwinference()`
-model.  Those are iid, for non-spatial assumptions where we infer only a common
-generalized variance, exponential correlation function based off distances of
-subpopulations or sites where we infer the parameters of the correlation
-function, and unstructured where the entire correlation matrix is inferred.  The
-switch required to change from each type is `corr_structure_switch` in the
-`wwinference()` function.  Inputs for this switch are currently, `0` - iid,
-`1` - exponential, and `2` - unstructured.  Keep in mind that if exponential is
-used, a distance matrix is required as input as well.
 
 ## Fitting presets
-We start by getting necessary inference model parameters and we also set a
-couple of presets, these being the forecast date, calibration time, forecast
-horizon, generation interval, infection to hospitalization distribution,
-infection feedback distribution, stan file, and stan warmup and sampling
-iterations.  Some of these are required to preset to run the model, but some
-have defaults, be sure to look over documentation of functions for more details.
 
 <div class="fold s">
 ```{r warning=FALSE, message=FALSE}
@@ -865,9 +760,6 @@ fit_options <- get_mcmc_options(
 ```
 
 ## Fitting iid data
-We start with fitting the data generated from the IID model to the three types
-of inference models.  These three types of inference models are differing only
-by their assumed correlation structure, as mentioned above.
 
 <div class="fold s o">
 ```{r warning=FALSE, message=FALSE}
@@ -930,8 +822,6 @@ fit_iid_to_unstruct <- wwinference::wwinference(
 ```
 
 ## Fitting exponential data
-We proceed to fit the exponential data generation model to the three types of
-inference models.
 
 <div class="fold s o">
 ```{r warning=FALSE, message=FALSE}
@@ -994,9 +884,6 @@ fit_exp_to_unstruct <- wwinference::wwinference(
 ```
 
 ## Fitting rand. corr. matrix data
-Finally, we fit the rand. corr. matrix data generation model to all three of the
-inference models.  Again, the inference models only differ by their assumed
-site to site correlation structures.
 
 <div class="fold s o">
 ```{r warning=FALSE, message=FALSE}
@@ -1059,14 +946,6 @@ fit_rand_to_unstruct <- wwinference::wwinference(
 ```
 
 ## Preparing sampled draws
-Here we prepare results for visualization.  This step is not part of visualizing
-spatial wwinference results, a simpler way is in the `wwinference` vignette
-that uses the package's build in functionality for plotting.  Our goal here is
-to compare the three data generation models agains the three inference models.
-
-We start with just sampling a portion of the draws that came from the results.
-We also combine all the results into one dataset with columns indicating what
-data generation model and inference model was used.
 
 <div class="fold s">
 ```{r}
@@ -1165,18 +1044,6 @@ all_pred_draws_df <- rbind(
 
 
 ## Preparing sampled draws for correlation matrix
-Here we prepare results for visualizing the correlation matrix posterior
-distributions.  Again this is not a required step, but this is not included in
-the `wwinference` vignette.
-
-We start by looking at the raw draws of our fit object, then select the draws
-from `non_norm_omega`, which is the matrix that contains non-normalized
-correlations.  For more information on normalized vs non-normalized
-correlations, refer to the model definitions.  We then make a dataset that has a
-three columns, two of indicating the site to site correlations.  The third
-containing the correlation value.  We also do this for each of the nine fits we
-did above, and combine them into one dataset with columns indicating what data
-generation model and inference model was used.
 
 <div class="fold s">
 ```{r}
@@ -1425,25 +1292,8 @@ all_corr_matrix_draws_df <- rbind(
 ```
 
 # Visualizing Fits
-Here we visualize all the results. For each one, we look at the 95th quantile
-of the parameters we are interested in.
 
 ## Hospital admissions and wastewater
-Here we showcase the hospital admissions and wastewater results.  We facet again
-by the data generation model.  The colors represent the different inference
-models, where the only difference between the inference models are the assumed
-correlation structure.  Solid lines are medians of the distributions, solid dots
-are data points used to fit the model, open dots are for evaluation purposes.
-The vertical dashed line represents the date that we told the model to begin
-forecasting which ends based off the forecast horizon specified in the model
-presets.  The nowcasting period will be from the period from the last solid dot
-to the dashed line.  The forecast period is the period after the dashed line.
-Below hospital admissions, we have the wastewater concentration posterior
-predictions, with the same notations as the hospital admissions.
-
-Exploring these results, we see that all models do relatively well to include
-evaluation points, open dots, in their 95th quantiles.  Later in the vignette,
-evaluation metrics will be used to quantify forecast performance.
 
 <div class="fold s">
 ```{r warning=FALSE}
@@ -1581,20 +1431,310 @@ ww_result_plot <- ggplot(
   theme(legend.position = "bottom")
 ```
 
-## $\mathcal{R}(t)$ curves, global and site
-Here we showcase the global and site level $\mathcal{R}(t)$'s.  Notation is the
-same as hospital admissions and wastewater results, except here the true
-simulated global and site $\mathcal{R}(t)$ curves are plotted for visual
-evaluation.  The true simulated $\mathcal{R}(t)$ curves are latent quantities
-that must be inferred by the model.
 
-We do very well to capture the actual $\mathcal{R}(t)$ curves.  There is some
-concern with how high the inferred $\mathcal{R}(t)$ reaches toward the
-nowcasting and forecasting periods.  We expect to see higher uncertainty in the
-nowcasting and forecasting periods because the $\mathcal{R}(t)$ is only
-partially or not at all informed by recent data.
+```{r}
+hosp_ribbon_data <- all_pred_draws_df %>%
+  filter(
+    name == "predicted counts",
+    inf_model_type != "IID"
+  ) %>%
+  group_by(
+    date,
+    inf_model_type,
+    gen_model_type
+  ) %>%
+  summarise(
+    lower = quantile(pred_value, 0.025, na.rm = TRUE),
+    median = median(pred_value),
+    upper = quantile(pred_value, 0.975, na.rm = TRUE),
+    .groups = "drop"
+  )
+hosp_result_plot <- ggplot(
+  all_pred_draws_df %>%
+    filter(
+      name == "predicted counts",
+      inf_model_type != "IID"
+    )
+) +
+  geom_ribbon(
+    data = hosp_ribbon_data,
+    aes(x = date, ymin = lower, ymax = upper, fill = inf_model_type),
+    alpha = 0.1
+  ) +
+  geom_line(
+    data = hosp_ribbon_data,
+    aes(x = date, y = median, color = inf_model_type),
+    size = 1,
+  ) +
+  geom_point(
+    data = hosp_data_eval_full %>%
+      mutate(gen_model_type = model_type),
+    aes(x = date, y = daily_hosp_admits_for_eval),
+    shape = 21, color = "black", fill = "white"
+  ) +
+  geom_point(
+    aes(x = date, y = observed_value)
+  ) +
+  geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
+    linetype = "dashed"
+  ) +
+  xlab("") +
+  ylab("Daily hospital admissions") +
+  facet_wrap(~gen_model_type, scales = "free_y") +
+  guides(
+    fill = guide_legend(
+      title = "Assumed Corr. Structure"
+    ),
+    color = guide_legend(
+      title = "Assumed Corr. Structure"
+    )
+  ) +
+  scale_fill_manual(
+    breaks = c("Exponential", "Unstructured", "IID"),
+    values = c("darkviolet", "deeppink3", "darksalmon")
+  ) +
+  scale_colour_manual(
+    breaks = c("Exponential", "Unstructured", "IID"),
+    values = c("darkviolet", "deeppink3", "darksalmon")
+  ) +
+  theme_bw()
+# ------------------------------------------------------------------------------
+# Wastewater results -----------------------------------------------------------
+ww_ribbon_data <- all_pred_draws_df %>%
+  filter(
+    name == "predicted wastewater",
+    inf_model_type != "IID"
+  ) %>%
+  mutate(
+    site_lab_name = glue::glue("{subpop}, Lab: {lab}")
+  ) %>%
+  group_by(
+    date,
+    subpop,
+    inf_model_type,
+    gen_model_type
+  ) %>%
+  summarise(
+    lower = quantile(pred_value, 0.025, na.rm = TRUE),
+    median = median(pred_value),
+    upper = quantile(pred_value, 0.975, na.rm = TRUE),
+    .groups = "drop"
+  )
+ww_result_plot <- ggplot(
+  all_pred_draws_df %>%
+    filter(
+      name == "predicted wastewater",
+      inf_model_type != "IID"
+    )
+) +
+  geom_ribbon(
+    data = ww_ribbon_data,
+    aes(x = date, ymin = lower, ymax = upper, fill = inf_model_type),
+    alpha = 0.1
+  ) +
+  geom_line(
+    data = ww_ribbon_data,
+    aes(x = date, y = median, color = inf_model_type),
+    size = 1,
+  ) +
+  geom_point(
+    aes(x = date, y = observed_value)
+  ) +
+  geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
+    linetype = "dashed"
+  ) +
+  xlab("") +
+  ylab("Genome copies/mL on Log Scale") +
+  facet_grid(subpop ~ gen_model_type, scales = "free_y") +
+  guides(
+    fill = guide_legend(
+      title = "Assumed Corr. Structure"
+    ),
+    color = guide_legend(
+      title = "Assumed Corr. Structure"
+    )
+  ) +
+  scale_fill_manual(
+    breaks = c("Exponential", "Unstructured", "IID"),
+    values = c("darkviolet", "deeppink3", "darksalmon")
+  ) +
+  scale_colour_manual(
+    breaks = c("Exponential", "Unstructured", "IID"),
+    values = c("darkviolet", "deeppink3", "darksalmon")
+  ) +
+  theme_bw()
+# ------------------------------------------------------------------------------
+
+(hosp_result_plot / ww_result_plot) +
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
+```
+
+## $\mathcal{R}(t)$ curves, global and site
 
 <div class="fold s">
+```{r}
+# Global Rt results ------------------------------------------------------------
+global_rt_ribbon_data <- all_pred_draws_df %>%
+  filter(
+    name == "global R(t)"
+  ) %>%
+  group_by(
+    date,
+    inf_model_type,
+    gen_model_type
+  ) %>%
+  summarise(
+    lower = quantile(pred_value, 0.025, na.rm = TRUE),
+    median = median(pred_value),
+    upper = quantile(pred_value, 0.975, na.rm = TRUE),
+    .groups = "drop"
+  )
+global_rt_result_plot <- ggplot(
+  all_pred_draws_df %>%
+    filter(
+      name == "global R(t)"
+    )
+) +
+  geom_ribbon(
+    data = global_rt_ribbon_data,
+    aes(x = date, ymin = lower, ymax = upper, fill = inf_model_type),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = global_rt_ribbon_data,
+    aes(x = date, y = median, color = inf_model_type),
+    size = 1.25,
+  ) +
+  geom_hline(
+    yintercept = 1,
+    color = "blue",
+    alpha = .7,
+    size = 1,
+    linetype = "dashed"
+  ) +
+  geom_line(
+    data = rt_global_data_full %>%
+      mutate(gen_model_type = model_type),
+    aes(x = date, y = global_rt),
+    size = 1.25
+  ) +
+  geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
+    linetype = "dashed"
+  ) +
+  xlab("") +
+  ylab("Global Rt Results") +
+  facet_wrap(~gen_model_type, scales = "free_y") +
+  guides(
+    fill = guide_legend(
+      title = "Assumed Corr. Structure"
+    ),
+    color = guide_legend(
+      title = "Assumed Corr. Structure"
+    )
+  ) +
+  scale_fill_manual(
+    breaks = c("Exponential", "Unstructured", "IID"),
+    values = c("darkviolet", "deeppink3", "darksalmon")
+  ) +
+  scale_colour_manual(
+    breaks = c("Exponential", "Unstructured", "IID"),
+    values = c("darkviolet", "deeppink3", "darksalmon")
+  ) +
+  coord_cartesian(ylim = c(0.1, 3)) +
+  # scale_y_continuous(trans = "log10") +
+  theme_bw()
+# ------------------------------------------------------------------------------
+# Site Rt results --------------------------------------------------------------
+site_rt_ribbon_data <- all_pred_draws_df %>%
+  filter(
+    name == "subpopulation R(t)"
+  ) %>%
+  group_by(
+    date,
+    subpop,
+    inf_model_type,
+    gen_model_type
+  ) %>%
+  summarise(
+    lower = quantile(pred_value, 0.025, na.rm = TRUE),
+    median = median(pred_value),
+    upper = quantile(pred_value, 0.975, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    subpop = sub(
+      pattern = "Site: (\\d+)",
+      replacement = "Site \\1",
+      x = subpop,
+      ignore.case = "remainder of pop"
+    )
+  ) %>%
+  mutate(
+    subpop = case_when(
+      subpop == "remainder of pop" ~ "Aux",
+      .default = subpop
+    )
+  )
+site_rt_result_plot <- ggplot() +
+  geom_ribbon(
+    data = site_rt_ribbon_data,
+    aes(x = date, ymin = lower, ymax = upper, fill = inf_model_type),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = site_rt_ribbon_data,
+    aes(x = date, y = median, color = inf_model_type),
+    size = 1.25,
+  ) +
+  geom_hline(
+    yintercept = 1,
+    color = "blue",
+    alpha = .7,
+    size = 1,
+    linetype = "dashed"
+  ) +
+  geom_line(
+    data = site_rt_data_full %>%
+      mutate(gen_model_type = model_type),
+    aes(x = date, y = value),
+    size = 1.25
+  ) +
+  geom_vline(
+    xintercept = lubridate::ymd(forecast_date),
+    linetype = "dashed"
+  ) +
+  xlab("") +
+  ylab("Site Rt") +
+  facet_grid(subpop ~ gen_model_type, scales = "free_y") +
+  guides(
+    fill = guide_legend(
+      title = "Assumed Corr. Structure"
+    ),
+    color = guide_legend(
+      title = "Assumed Corr. Structure"
+    )
+  ) +
+  scale_fill_manual(
+    breaks = c("Exponential", "Unstructured", "IID"),
+    values = c("darkviolet", "deeppink3", "darksalmon")
+  ) +
+  scale_colour_manual(
+    breaks = c("Exponential", "Unstructured", "IID"),
+    values = c("darkviolet", "deeppink3", "darksalmon")
+  ) +
+  coord_cartesian(ylim = c(0.1, 3)) +
+  # scale_y_continuous(trans = "log10") +
+  theme_bw()
+# ------------------------------------------------------------------------------
+
+global_rt_result_plot / site_rt_result_plot +
+  plot_layout(
+    guides = "collect",
+    heights = c(1, n_sites)
+  ) &
+  theme(legend.position = "bottom")
+```
 ```{r}
 # Global Rt results ------------------------------------------------------------
 global_rt_ribbon_data <- all_pred_draws_df %>%
@@ -1756,18 +1896,8 @@ global_rt_result_plot / site_rt_result_plot +
   theme(legend.position = "bottom")
 ```
 
-## Correlation matrix
-The last visual we will see of the results is the posteriors of the elements in
-the correlation matrix.  Here we violate our previous plot structures and have
-the data generation models on separate plots as opposed to faceting them.  We
-have inference model indicated by the color.  Red dashed lines are the actual
-site to site correlations.  Solid dots are the medians, and the solid line with
-the line stops is the 95th quantile.
 
-A couple of things to note here is that the exponential inference model will not
-be able to sample a negative value.  But regardless, each inference model does
-well enough, with an unstructured correlation assumption inference model
-performing visually better then the exponential correlation assumption.
+## Correlation matrix
 
 <div class="fold s">
 ```{r message=FALSE, fig.height=5, fig.width=15}
@@ -1982,17 +2112,6 @@ iid_corr_matrix_result_plot + exp_corr_matrix_result_plot +
 
 
 # Quantitative Forecast Evaluation Results
-For this section we explore how well our forecasts performed quantitatively.
-The metrics that we will be using are effective sample size per second
-(ess/sec), continuous ranked probability score (CRPS), David-Sebastiani score
-(DSS), absolute error (AE), squared error (SE), and bias.  All these, apart from
-ess/sec, will get attained using the
-[scoringutils](https://epiforecasts.io/scoringutils/index.html) package.
-
-We start by getting the ess/sec by looking at the fit object's mean bulk
-effective sample size and total computation time.  Here, larger ess/sec is
-better. This will be combined with the evaluation metrics from
-[scoringutils](https://epiforecasts.io/scoringutils/index.html)
 
 <div class="fold s">
 ```{r warning=FALSE}
@@ -2030,15 +2149,8 @@ for (i in 1:9) {
 ```
 
 ## Hospital admissions
-Here we prepare the evaluation metric plots.  The general form will be a plot
-that is by date, and another tile plot where the darker the color, the higher
-the value.  For most of the metrics, smaller is better, but for ess/sec, higher
-is better.
 
 ### Hospital admissions at forecast period evaluation scores
-Again, here we prepare evaluation metric plots for the forecast period, where we
-make a plot that looks at metrics by date and then across the entire forecast
-period.
 
 ```{r}
 hosp_obj_for_eval_forcast <- all_pred_draws_df %>%
@@ -2221,8 +2333,6 @@ hosp_eval_forecast_plot <- ggplot(
   theme_bw()
 ```
 
-Here we show the raw scores for the forecast period, where model is the
-inference model and gen_model_type is the data generation model.
 
 ```{r}
 # Raw Scores :
@@ -2235,8 +2345,6 @@ hosp_scores_forecast %>%
 ```
 
 ### Hospital admissions at nowcasting period evaluation scores
-Here we prepare the evaluation metric plots for the nowcasting period.  We still
-make two plots one for metrics by date, and another across all dates.
 
 ```{r}
 hosp_obj_for_eval_nowcast <- all_pred_draws_df %>%
@@ -2421,8 +2529,6 @@ hosp_eval_nowcast_plot <- ggplot(
   theme_bw()
 ```
 
-Here we show the raw scores for the nowcasting period, where model is the
-inference model and gen_model_type is the data generation model.
 
 ```{r}
 # Raw Scores :
@@ -2435,7 +2541,6 @@ hosp_scores_nowcast %>%
 ```
 
 ### Hospital admissions evaluation scores plot
-Here we showcase the evaluation metric scores.
 
 ```{r}
 (hosp_eval_nowcast_plot + hosp_eval_forecast_plot) /
