@@ -2,12 +2,12 @@ test_that("Test the wastewater inference model on simulated data.", {
   #######
   # run model briefly on the simulated data
   #######
-  withr::with_seed(5, {
+  expect_warnin(withr::with_seed(5, {
     fit <- do.call(
       wwinference::wwinference,
       model_test_data
     )
-  })
+  }))
 
   params <- model_test_data$model_spec$params
   obs_last_draw <- posterior::subset_draws(fit$fit$result$draws(),
