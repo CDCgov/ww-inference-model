@@ -9,6 +9,7 @@ output:
     code_folding: show
 pkgdown:
   as_is: true
+link-citations: true
 vignette: >
   %\VignetteIndexEntry{Getting started with wwinference}
   %\VignetteEngine{knitr::rmarkdown}
