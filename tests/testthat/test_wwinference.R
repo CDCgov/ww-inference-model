@@ -60,7 +60,7 @@ test_that("Function to get mcmc options produces the expected outputs", {
   mcmc_options <- get_mcmc_options()
   expected_names <- c(
     "iter_warmup", "iter_sampling",
-    "n_chains", "seed", "adapt_delta", "max_treedepth",
+    "chains", "seed", "adapt_delta", "max_treedepth",
     "show_messages", "refresh", "save_latent_dynamics", "output_dir",
     "output_basename", "sig_figs", "parallel_chains", "chain_ids",
     "threads_per_chain", "opencl_ids", "save_warmup", "thin",
