@@ -375,6 +375,7 @@ fit_model <- function(compiled_model,
 #' sampler, default is 12
 #' @param show_messages logical indicating whether to print all output
 #' during the execution process, default is `TRUE`
+#' @param refresh non-negative integer cmdstanr default, default is `NULL`
 #' @param save_latent_dynamics logical cmdstanr default, default is `FALSE`
 #' @param output_dir string cmdstanr default, default is
 #' `getOption("cmdstanr_output_dir")`

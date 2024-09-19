@@ -63,6 +63,8 @@ sampler, default is 12}
 \item{show_messages}{logical indicating whether to print all output
 during the execution process, default is \code{TRUE}}
 
+\item{refresh}{non-negative integer cmdstanr default, default is \code{NULL}}
+
 \item{save_latent_dynamics}{logical cmdstanr default, default is \code{FALSE}}
 
 \item{output_dir}{string cmdstanr default, default is
