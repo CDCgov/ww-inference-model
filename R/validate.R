@@ -243,9 +243,6 @@ validate_both_datasets <- function(input_count_data,
       "overlapping"
     ))
   }
-
-
-
   invisible()
 }
 
