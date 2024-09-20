@@ -239,8 +239,10 @@ validate_both_datasets <- function(input_count_data,
       "The sum of the populations in the wastewater catchment areas is ",
       "larger than the total population. While the model supports this ",
       "we advise checking your input data to ensure it is specified ",
-      "correctly and to make sure that wastewater treatment plants are not ",
-      "overlapping."
+      "correctly and to make sure that populations represented by the ",
+      "wastewater catchment areas are not overlapping (e.g. if both ",
+      " the larger wastewater treatment plant and the upstream manhole ",
+      "are included)."
     ))
   }
   invisible()
