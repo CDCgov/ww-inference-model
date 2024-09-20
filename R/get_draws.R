@@ -176,10 +176,10 @@ get_draws.data.frame <- function(x,
     # Lab-site index to corresponding lab, site, and site population size
     lab_site_spine <- x |>
       dplyr::distinct(
-        .data$site, 
-        .data$lab, 
+        .data$site,
+        .data$lab,
         .data$lab_site_index,
-        .data$site_pop, 
+        .data$site_pop,
         .data$lab_site_name
       )
 
