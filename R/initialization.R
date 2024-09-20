@@ -101,21 +101,18 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
     hosp_wday_effect = to_simplex(abs(
       stats::rnorm(7, 1 / 7, stdev)
     )),
-    infection_feedback = abs(stats::rnorm(1, 500, 20))
-  )
-  # Hack, pass in a vector of 0s
-  if (stan_data$n_subpops > 1) {
-    init_list$error_subpop <- as.matrix(
-      matrix(
+    infection_feedback = abs(stats::rnorm(1, 500, 20)),
+    ifelse(stan_data$n_subpops > 1,
+      error_subpop = matrix(
         stats::rnorm((n_subpops - 1) * n_weeks,
           mean = 0,
           sd = stdev
         ),
         (n_subpops - 1),
         n_weeks
-      )
+      ),
+      error_subpop = NULL
     )
-  }
-
+  )
   return(init_list)
 }
