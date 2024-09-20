@@ -269,7 +269,7 @@ get_stan_data <- function(input_count_data,
 
   # Logic to determine the number of subpopulations to estimate R(t) for:
   # First determine if we need to add an additional subpopulation
-  add_auxiliary_site <- ifelse(pop >= sum(ww_values$pop_ww), TRUE, FALSE)
+  add_auxiliary_site <- ifelse(pop > sum(ww_values$pop_ww), TRUE, FALSE)
   # Then get the number of subpopulations, the population to normalize by
   # (sum of the subpopulations), and the vector of sizes of each subpopulation
   subpop_data <- get_subpop_data(add_auxiliary_site,
