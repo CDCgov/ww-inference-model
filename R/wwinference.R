@@ -158,7 +158,7 @@ wwinference <- function(ww_data,
   }
 
   fit_opts_use <- get_mcmc_options() # get defaults
-  # this overwrites all and only the values the user sets in `fit_opts`
+  # this overwrites defaults with all and only the values the user sets in `fit_opts`
   fit_opts_use[names(fit_opts)] <- fit_opts
 
   # maybe check for invalid options here?
