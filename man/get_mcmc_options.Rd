@@ -53,6 +53,3 @@ are configurable by the user. See \code{cmdstanr::sample()} documentation
 https://mc-stan.org/cmdstanr/reference/model-method-sample.html for a full
 description of each argument.
 }
-\examples{
-mcmc_settings <- get_mcmc_options()
-}
