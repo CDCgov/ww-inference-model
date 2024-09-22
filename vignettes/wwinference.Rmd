@@ -130,7 +130,7 @@ params <- get_params(
 
 ## Wastewater data pre-processing
 
-The `preprocess_ww_data` function adds the following variables to the original
+The `preprocess_ww_data()` function adds the following variables to the original
 dataset. First, it assigns a unique identifier
 the unique combinations of labs and sites, since this is the unit we will
 use for estimating the observation error in the reported measurements.
@@ -149,7 +149,7 @@ and `lab`, and will return a dataframe with the column names needed to
 pass to the downstream model fitting functions.
 
 ```{r preprocess-ww-data}
-ww_data_preprocessed <- wwinference::preprocess_ww_data(
+ww_data_preprocessed <- preprocess_ww_data(
   ww_data,
   conc_col_name = "log_genome_copies_per_ml",
   lod_col_name = "log_lod"
@@ -163,7 +163,7 @@ below the LOD in upstream pre-processing.
 
 ## Hospital admissions data pre-processing
 
-The `preprocess_hosp_data`  function standardizes the column names of the
+The `preprocess_hosp_data()`  function standardizes the column names of the
 resulting datafame. The user must specify the name of the column containing
 the daily hospital admissions counts and the population size that the hospital
 admissions are coming from (from in this case, a hypothetical US state). The
@@ -172,7 +172,7 @@ return a dataframe with the column names needed to pass to the downstream model
 fitting functions.
 
 ```{r preprocess-hosp-data}
-hosp_data_preprocessed <- wwinference::preprocess_count_data(
+hosp_data_preprocessed <- preprocess_count_data(
   hosp_data,
   count_col_name = "daily_hosp_admits",
   pop_size_col_name = "state_pop"
@@ -269,7 +269,7 @@ we will use the `indicate_ww_exclusions()` function, which will add the
 flagged outliers to the exclude column where indicated.
 
 ```{r indicate-ww-exclusions}
-ww_data_to_fit <- wwinference::indicate_ww_exclusions(
+ww_data_to_fit <- indicate_ww_exclusions(
   ww_data_preprocessed,
   outlier_col_name = "flag_as_ww_outlier",
   remove_outliers = TRUE
@@ -363,7 +363,7 @@ pre-compiled model(`model`) to `wwinference()` where they are combined and
 used to fit the model.
 
 ```{r fitting-model, warning=FALSE, message=FALSE}
-ww_fit <- wwinference::wwinference(
+ww_fit <- wwinference(
   ww_data = ww_data_to_fit,
   count_data = hosp_data_preprocessed,
   forecast_date = forecast_date,
@@ -416,7 +416,7 @@ observed hospital admissions and wastewater concentrations, as well as the
 latent variables of interest including the site-level $\mathcal{R}(t)$ estimates and the
 state-level $\mathcal{R}(t)$ estimate.
 
-We can generate this directly on the output of [`wwinference::wwinference()`] using:
+We can generate this directly on the output of `wwinference()` using:
 ```{r extracting-draws}
 draws_df <- get_draws(ww_fit)
 
@@ -491,7 +491,7 @@ We strongly recommend running diagnostics as a post-processing step on the
 model outputs.
 
 This can be done by passing the output of
-`wwinference()` into the `get_model_diagnostic_flags()`, `parameter_diagnostics()`,
+`wwinference()` into the `get_model_diagnostic_flags()`,
 and `parameter_diagnostics()` functions.
 
 `get_model_diagnostic_flags()` will print out a table of any flags, if any of
@@ -549,7 +549,7 @@ rely on the admissions only model if there are covergence or known data issues
 with the wastewater data.
 
 ```{r fit-hosp-only, warning=FALSE, message=FALSE}
-fit_hosp_only <- wwinference::wwinference(
+fit_hosp_only <- wwinference(
   ww_data = ww_data_to_fit,
   count_data = hosp_data_preprocessed,
   forecast_date = forecast_date,
