@@ -46,7 +46,7 @@ model_spec <- wwinference::get_model_spec(
   params = params
 )
 
-mcmc_options <- wwinference::get_mcmc_options(
+mcmc_options <- list(
   seed = 55,
   iter_warmup = 25,
   iter_sampling = 25,

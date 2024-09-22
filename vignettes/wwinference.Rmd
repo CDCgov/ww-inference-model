@@ -374,7 +374,7 @@ ww_fit <- wwinference::wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(seed = 123),
+  fit_opts = list(seed = 123),
   compiled_model = model
 )
 ```
@@ -561,7 +561,7 @@ fit_hosp_only <- wwinference::wwinference(
     include_ww = FALSE,
     params = params
   ),
-  fit_opts = get_mcmc_options(seed = 123),
+  fit_opts = list(seed = 123),
   compiled_model = model
 )
 ```
