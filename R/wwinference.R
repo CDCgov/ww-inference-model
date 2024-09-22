@@ -391,7 +391,6 @@ fit_model <- function(compiled_model,
 #'
 #' @return a list of MCMC settings with the values given by the  function
 #' arguments
-#' @export
 #'
 #' @examples
 #' mcmc_settings <- get_mcmc_options()

@@ -175,15 +175,15 @@ ww_fit <- wwinference(
   calibration_time = calibration_time,
   forecast_horizon = forecast_horizon,
   model_spec = get_model_spec(
-   generation_interval = generation_interval,
+    generation_interval = generation_interval,
     inf_to_count_delay = inf_to_count_delay,
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
- fit_opts = list(
+  fit_opts = list(
     iter_warmup = 250,
-   iter_sampling = 250,
-   chains = 2
+    iter_sampling = 250,
+    chains = 2
   )
 )
 }
