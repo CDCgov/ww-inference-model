@@ -31,10 +31,11 @@
 #' `get_model_spec()`. The default here pertains to the `forecast_date` in the
 #' example data provided by the package, but this should be specified by the
 #' user based on the date they are producing a forecast
-#' @param fit_opts The fit options to pass to
-#' [`$sample()`][cmdstanr::model-method-sample], must be a valid cmdstanr
-#' sample arg. Default is an empty list, which uses the
-#' default parameters in `get_mcmc_options()`
+#' @param fit_opts MCMC fitting options, as a list of keys and values. 
+#' These are passed as keyword arguments to [`$sample()`][cmdstanr::model-method-sample].
+#' Where no option is specified, [wwinference()] will fall back first on a package-specific default value 
+#' defined by [get_mcmc_options()]. If no package-specific default exists, it will fall back on
+#' the default value defined in [`$sample()`][cmdstanr::model-method-sample].
 #' @param generate_initial_values Boolean indicating whether or not to specify
 #' the initialization of the sampler, default is `TRUE`, meaning that
 #' initialization lists will be generated and passed as the `init` argument
