@@ -51,9 +51,11 @@ example data provided by the package, but this should be specified by the
 user based on the date they are producing a forecast}
 
 \item{fit_opts}{MCMC fitting options, as a list of keys and values.
-These are passed as keyword arguments to \code{\link[cmdstanr:model-method-sample]{$sample()}}.
-Where no option is specified, \code{\link[=wwinference]{wwinference()}} will fall back first on a package-specific default value
-defined by \code{\link[=get_mcmc_options]{get_mcmc_options()}}. If no package-specific default exists, it will fall back on
+These are passed as keyword arguments to
+\code{\link[cmdstanr:model-method-sample]{$sample()}}.
+Where no option is specified, \code{\link[=wwinference]{wwinference()}} will fall back first on
+package-specific default value defined by \code{\link[=get_mcmc_options]{get_mcmc_options()}}. If no
+package-specific default exists, it will fall back on
 the default value defined in \code{\link[cmdstanr:model-method-sample]{$sample()}}.}
 
 \item{generate_initial_values}{Boolean indicating whether or not to specify
