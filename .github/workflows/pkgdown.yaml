@@ -23,6 +23,8 @@ jobs:
       contents: write
       id-token: write
       pages: write
+    outputs:
+      page_artifact_id: ${{ steps.upload-artifact.outputs.artifact_id }}
     steps:
       - uses: actions/checkout@v4
 
@@ -52,6 +54,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Upload artifact for GH pages deployment
+        id: upload-artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: "docs/"
@@ -72,3 +75,21 @@ jobs:
     steps:
       - name: Deploy to GitHub pages
         uses: actions/deploy-pages@v4
+
+  post-page-artifact:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+        contents: read
+        pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Post comment preview
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          gh pr comment ${{ github.event.number }} --body \
+            "Thank you for your contribution @${{ github.triggering_actor }}:rocket:! Your page is ready to preview :point_right: [here](https://github.com/${{github.repository}}/actions/runs/${{ github.run_id }}/artifacts/${{ needs.build.outputs.page_artifact_id }}) :point_left:!"
