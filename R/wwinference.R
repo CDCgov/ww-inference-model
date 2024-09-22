@@ -121,24 +121,27 @@
 #' calibration_time <- 90
 #' forecast_horizon <- 28
 #' include_ww <- 1
-#' ww_fit <- wwinference(input_ww_data,
-#'   input_count_data,
+#'
+#' ww_fit <- wwinference(
+#'   ww_data = input_ww_data,
+#'   count_data = input_count_data,
+#'   forecast_date = forecast_date,
+#'   calibration_time = calibration_time,
+#'   forecast_horizon = forecast_horizon,
 #'   model_spec = get_model_spec(
-#'     forecast_date = forecast_date,
-#'     calibration_time = calibration_time,
-#'     forecast_horizon = forecast_horizon,
 #'     generation_interval = generation_interval,
-#'     inf_to_count_delay = inf_to_coutn_delay,
+#'     inf_to_count_delay = inf_to_count_delay,
 #'     infection_feedback_pmf = infection_feedback_pmf,
 #'     params = params
 #'   ),
-#'   fit_opts = get_mcmc_options(
+#'   fit_opts = list(
 #'     iter_warmup = 250,
 #'     iter_sampling = 250,
 #'     chains = 2
 #'   )
 #' )
 #' }
+#'
 #' @rdname wwinference
 #' @aliases wwinference_fit
 wwinference <- function(ww_data,
@@ -161,6 +164,9 @@ wwinference <- function(ww_data,
   # this overwrites defaults with all and only the values the user sets in
   # `fit_opts`
   fit_opts_use[names(fit_opts)] <- fit_opts
+
+  # Check that the fit options passed to wwinference are valid cmdstanr::sample
+  # arguments
 
   # maybe check for invalid options here?
 
