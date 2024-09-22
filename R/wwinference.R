@@ -167,6 +167,9 @@ wwinference <- function(ww_data,
 
   # Check that the fit options passed to wwinference are valid cmdstanr::sample
   # arguments
+  checkmate::expect_names(names(fit_opts),
+    subset.of = formalArgs(compiled_model$sample)
+  )
 
   # maybe check for invalid options here?
 
