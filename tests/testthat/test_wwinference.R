@@ -61,14 +61,9 @@ test_that("Function to get mcmc options produces the expected outputs", {
   expected_names <- c(
     "iter_warmup", "iter_sampling",
     "chains", "seed", "adapt_delta", "max_treedepth",
-    "show_messages", "refresh", "save_latent_dynamics", "output_dir",
-    "output_basename", "sig_figs", "parallel_chains", "chain_ids",
-    "threads_per_chain", "opencl_ids", "save_warmup", "thin",
-    "adapt_engaged", "step_size", "metric", "metric_file", "inv_metric",
-    "init_buffer", "term_buffer", "window", "fixed_param", "show_exceptions",
-    "diagnostics", "save_metric", "save_cmdstan_config"
+    "show_messages"
   )
-  checkmate::check_names(names(mcmc_options), must.include = expected_names)
+  checkmate::expect_names(names(mcmc_options), must.include = expected_names)
 })
 
 test_that("Function to get model specs produces expected outputs", {
