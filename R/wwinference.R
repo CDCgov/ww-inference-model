@@ -217,7 +217,7 @@ wwinference <- function(ww_data,
   if (generate_initial_values) {
     withr::with_seed(initial_values_seed, {
       init_lists <- lapply(
-        1:fit_opts$chains,
+        1:fit_opts_use$chains,
         \(x) {
           get_inits_for_one_chain(stan_data_list)
         }
