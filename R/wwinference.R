@@ -158,7 +158,8 @@ wwinference <- function(ww_data,
   }
 
   fit_opts_use <- get_mcmc_options() # get defaults
-  # this overwrites defaults with all and only the values the user sets in `fit_opts`
+  # this overwrites defaults with all and only the values the user sets in
+  # `fit_opts`
   fit_opts_use[names(fit_opts)] <- fit_opts
 
   # maybe check for invalid options here?
@@ -378,34 +379,6 @@ fit_model <- function(compiled_model,
 #' sampler, default is 12
 #' @param show_messages logical indicating whether to print all output
 #' during the execution process, default is `TRUE`
-#' @param refresh non-negative integer cmdstanr default, default is `NULL`
-#' @param save_latent_dynamics logical cmdstanr default, default is `FALSE`
-#' @param output_dir string cmdstanr default, default is
-#' `getOption("cmdstanr_output_dir")`
-#' @param output_basename string cmdstanr default, default is `NULL`
-#' @param sig_figs positive integer cmdstanr default, default is  `NULL`
-#' @param chain_ids integer vector cdmstanr default, default is
-#' `seq_len(chains)`,
-#' @param threads_per_chain positive integer cmdstanr default, default
-#' is  `NULL`
-#' @param opencl_ids integer vector of length 2 cmdstanr default, default
-#' is `NULL`
-#' @param save_warmup logical cmdstanr default, default is `FALSE`
-#' @param thin positive integer cmdstanr default, default is `NULL`
-#' @param adapt_engaged logical cmdstanr default, default is `TRUE`
-#' @param step_size positive real cmdstanr default, default is `NULL`
-#' @param metric string cmdstanr default, default is `NULL`
-#' @param metric_file character vector cmdstanr default, default is `NULL`
-#' @param inv_metric vector, matrix cmdstanr default, default is `NULL``
-#' @param init_buffer nonnegative integer cmdstanr default, default is `NULL`
-#' @param term_buffer nonnegative integer cmdstanr default, default is `NULL`
-#' @param window nonnegative integer cmdstanr default, default is `NULL`
-#' @param fixed_param logical cmdstanr default, default is `FALSE`
-#' @param show_exceptions logical cmdstanr default, default is  TRUE,
-#' @param diagnostics character vector cmdstanr default, default is
-#' `c("divergences", "treedepth", "ebfmi")`
-#' @param save_metric logical cmdstanr default, default is `NULL`
-#' @param save_cmdstan_config logical cmdstanr default, default is `NULL`
 #'
 #' @return a list of MCMC settings with the values given by the  function
 #' arguments
@@ -421,31 +394,7 @@ get_mcmc_options <- function(
     seed = NULL,
     adapt_delta = 0.95,
     max_treedepth = 12,
-    show_messages = TRUE,
-    # CmdstanR default configurations
-    refresh = NULL,
-    save_latent_dynamics = FALSE,
-    output_dir = getOption("cmdstanr_output_dir"),
-    output_basename = NULL,
-    sig_figs = NULL,
-    chain_ids = seq_len(chains),
-    threads_per_chain = NULL,
-    opencl_ids = NULL,
-    save_warmup = FALSE,
-    thin = NULL,
-    adapt_engaged = TRUE,
-    step_size = NULL,
-    metric = NULL,
-    metric_file = NULL,
-    inv_metric = NULL,
-    init_buffer = NULL,
-    term_buffer = NULL,
-    window = NULL,
-    fixed_param = FALSE,
-    show_exceptions = TRUE,
-    diagnostics = c("divergences", "treedepth", "ebfmi"),
-    save_metric = NULL,
-    save_cmdstan_config = NULL) {
+    show_messages = TRUE) {
   mcmc_settings <- list(
     iter_warmup = iter_warmup,
     iter_sampling = iter_sampling,
@@ -453,31 +402,7 @@ get_mcmc_options <- function(
     seed = seed,
     adapt_delta = adapt_delta,
     max_treedepth = max_treedepth,
-    show_messages = show_messages,
-    refresh = refresh,
-    save_latent_dynamics = save_latent_dynamics,
-    output_dir = output_dir,
-    output_basename = output_basename,
-    sig_figs = sig_figs,
-    parallel_chains = parallel_chains,
-    chain_ids = chain_ids,
-    threads_per_chain = threads_per_chain,
-    opencl_ids = opencl_ids,
-    save_warmup = save_warmup,
-    thin = thin,
-    adapt_engaged = adapt_engaged,
-    step_size = step_size,
-    metric = metric,
-    metric_file = metric_file,
-    inv_metric = inv_metric,
-    init_buffer = init_buffer,
-    term_buffer = term_buffer,
-    window = window,
-    fixed_param = fixed_param,
-    show_exceptions = show_exceptions,
-    diagnostics = diagnostics,
-    save_metric = save_metric,
-    save_cmdstan_config = save_cmdstan_config
+    show_messages = show_messages
   )
 
   return(mcmc_settings)

@@ -12,30 +12,7 @@ get_mcmc_options(
   seed = NULL,
   adapt_delta = 0.95,
   max_treedepth = 12,
-  show_messages = TRUE,
-  refresh = NULL,
-  save_latent_dynamics = FALSE,
-  output_dir = getOption("cmdstanr_output_dir"),
-  output_basename = NULL,
-  sig_figs = NULL,
-  chain_ids = seq_len(chains),
-  threads_per_chain = NULL,
-  opencl_ids = NULL,
-  save_warmup = FALSE,
-  thin = NULL,
-  adapt_engaged = TRUE,
-  step_size = NULL,
-  metric = NULL,
-  metric_file = NULL,
-  inv_metric = NULL,
-  init_buffer = NULL,
-  term_buffer = NULL,
-  window = NULL,
-  fixed_param = FALSE,
-  show_exceptions = TRUE,
-  diagnostics = c("divergences", "treedepth", "ebfmi"),
-  save_metric = NULL,
-  save_cmdstan_config = NULL
+  show_messages = TRUE
 )
 }
 \arguments{
@@ -62,57 +39,6 @@ sampler, default is 12}
 
 \item{show_messages}{logical indicating whether to print all output
 during the execution process, default is \code{TRUE}}
-
-\item{refresh}{non-negative integer cmdstanr default, default is \code{NULL}}
-
-\item{save_latent_dynamics}{logical cmdstanr default, default is \code{FALSE}}
-
-\item{output_dir}{string cmdstanr default, default is
-\code{getOption("cmdstanr_output_dir")}}
-
-\item{output_basename}{string cmdstanr default, default is \code{NULL}}
-
-\item{sig_figs}{positive integer cmdstanr default, default is  \code{NULL}}
-
-\item{chain_ids}{integer vector cdmstanr default, default is
-\code{seq_len(chains)},}
-
-\item{threads_per_chain}{positive integer cmdstanr default, default
-is  \code{NULL}}
-
-\item{opencl_ids}{integer vector of length 2 cmdstanr default, default
-is \code{NULL}}
-
-\item{save_warmup}{logical cmdstanr default, default is \code{FALSE}}
-
-\item{thin}{positive integer cmdstanr default, default is \code{NULL}}
-
-\item{adapt_engaged}{logical cmdstanr default, default is \code{TRUE}}
-
-\item{step_size}{positive real cmdstanr default, default is \code{NULL}}
-
-\item{metric}{string cmdstanr default, default is \code{NULL}}
-
-\item{metric_file}{character vector cmdstanr default, default is \code{NULL}}
-
-\item{inv_metric}{vector, matrix cmdstanr default, default is `NULL``}
-
-\item{init_buffer}{nonnegative integer cmdstanr default, default is \code{NULL}}
-
-\item{term_buffer}{nonnegative integer cmdstanr default, default is \code{NULL}}
-
-\item{window}{nonnegative integer cmdstanr default, default is \code{NULL}}
-
-\item{fixed_param}{logical cmdstanr default, default is \code{FALSE}}
-
-\item{show_exceptions}{logical cmdstanr default, default is  TRUE,}
-
-\item{diagnostics}{character vector cmdstanr default, default is
-\code{c("divergences", "treedepth", "ebfmi")}}
-
-\item{save_metric}{logical cmdstanr default, default is \code{NULL}}
-
-\item{save_cmdstan_config}{logical cmdstanr default, default is \code{NULL}}
 }
 \value{
 a list of MCMC settings with the values given by the  function
