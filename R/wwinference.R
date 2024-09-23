@@ -381,7 +381,7 @@ fit_model <- function(compiled_model,
 #' @param chains integer indicating the number of MCMC chains to run, default
 #' is `4`.
 #' @param parallel_chains integer indicating the number of chains to run
-#' in parallel, default is `4`
+#' in parallel, default is `4`.
 #' @param seed set of integers indicating the random seed of the Stan sampler,
 #' default is NULL
 #' @param adapt_delta float between 0 and 1 indicating the average acceptance
