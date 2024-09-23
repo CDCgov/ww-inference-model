@@ -391,7 +391,7 @@ fit_model <- function(compiled_model,
 #' @param show_messages logical indicating whether to print all output
 #' during the execution process, default is `TRUE`
 #'
-#' @return a list of MCMC settings with the values given by the  function
+#' @return A list of MCMC settings with the values given by the function.
 #' arguments
 #'
 get_mcmc_options <- function(
