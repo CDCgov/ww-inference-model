@@ -199,28 +199,6 @@ wwinference <- function(ww_data,
     calibration_time
   )
   # Get the table that maps 1-indexed time to dates
-  get_date_time_spine <- function(forecast_date,
-                                  input_count_data,
-                                  last_count_data_date,
-                                  calibration_time,
-                                  forecast_horizon) {
-    nowcast_time <- as.integer(
-      lubridate::ymd(forecast_date) - last_count_data_date
-    )
-    date_time_spine <- tibble::tibble(
-      date = seq(
-        from = min(input_count_data$date),
-        to = min(input_count_data$date) +
-          calibration_time +
-          nowcast_time +
-          forecast_horizon,
-        by = "days"
-      )
-    ) |>
-      dplyr::mutate(t = row_number())
-    return(date_time_spine)
-  }
-
   date_time_spine <- get_date_time_spine(
     forecast_date = forecast_date,
     input_count_data = input_count_data,
@@ -229,79 +207,15 @@ wwinference <- function(ww_data,
   )
 
   # Get lab_site_site_spine
-  get_lab_site_site_spine <- function(input_ww_data) {
-    lab_site_site_spine <-
-      input_ww_data |>
-      dplyr::select(
-        "lab_site_index", "site_index",
-        "site", "lab", "site_pop"
-      ) |>
-      dplyr::arrange(.data$lab_site_index) |>
-      dplyr::distinct() |>
-      dplyr::mutate(
-        "site_lab_name" = glue::glue(
-          "Site: {site}, Lab: {lab}"
-        )
-      )
-
-    return(lab_site_site_spine)
-  }
-
   lab_site_site_spine <- get_lab_site_site_spine(
     input_ww_data = input_ww_data
   )
 
   # Get site to subpop spine
-  get_site_subpop_spine <- function(input_ww_data,
-                                    input_count_data) {
-    total_pop <- input_count_data |>
-      dplyr::distinct(.data$total_pop) |>
-      dplyr::pull()
-
-    add_auxiliary_subpop <- ifelse(
-      total_pop > sum(unique(input_ww_data$site_pop)),
-      TRUE,
-      FALSE
-    )
-    site_indices <- input_ww_data |>
-      dplyr::select("site_index", "site", "site_pop") |>
-      dplyr::distinct() |>
-      dplyr::arrange(.data$site_index)
-
-    if (add_auxiliary_subpop) {
-      aux_subpop <- tibble::tibble(
-        site_index = NA,
-        site = NA,
-        site_pop = total_pop - sum(site_indices$site_pop)
-      )
-    } else {
-      aux_subpop <- tibble::tibble()
-    }
-
-    site_subpop_spine <- aux_subpop |>
-      dplyr::bind_rows(site_indices) |>
-      dplyr::mutate(
-        subpop_index = dplyr::row_number()
-      ) |>
-      dplyr::mutate(
-        subpop_name = ifelse(!is.na(site),
-          glue::glue("Site: {site}"),
-          "remainder of population"
-        )
-      ) |>
-      dplyr::rename(
-        "subpop_pop" = "site_pop"
-      )
-
-    return(site_subpop_spine)
-  }
-
   site_subpop_spine <- get_site_subpop_spine(
     input_ww_data = input_ww_data,
     input_count_data = input_cout_data
   )
-
-
 
 
   raw_input_data <- list(
@@ -316,6 +230,9 @@ wwinference <- function(ww_data,
   stan_data_list <- get_stan_data(
     input_count_data = input_count_data,
     input_ww_data = input_ww_data,
+    date_time_spine = date_time_spine,
+    lab_site_site_spine = lab_site_site_spine,
+    site_subpop_spine = site_subpop_spine,
     forecast_date = forecast_date,
     calibration_time = calibration_time,
     forecast_horizon = forecast_horizon,

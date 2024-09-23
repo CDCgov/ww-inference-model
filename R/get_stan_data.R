@@ -78,7 +78,107 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
   return(ww_data)
 }
 
+#' Get date time spine to map to model output
+#'
+#' @param forecast_date a character string in ISO8601 format (YYYY-MM-DD)
+#' indicating the date that the forecast is to be made.
+#' @param input_count_data a dataframe of the count data to be passed
+#' directly to stan, , must have the following columns: date, count, total_pop
+#' @param last_count_data_date string indicating the date of the last observed
+#' count data point in 1SO8601 format (YYYY-MM-DD)
+#' @param calibration_time integer indicating the number of days to calibrate
+#' the model for, default is `90`
+#' @param forecast_horizon integer indicating the number of days, including the
+#' forecast date, to produce forecasts for, default is `28`
+#'
+#'
+#' @return a tibble containing an integer for time mapped to the corresponding
+#' date, for the entire calibration and forecast period
+#' @export
+#'
+get_date_time_spine <- function(forecast_date,
+                                input_count_data,
+                                last_count_data_date,
+                                calibration_time,
+                                forecast_horizon) {
+  nowcast_time <- as.integer(
+    lubridate::ymd(forecast_date) - last_count_data_date
+  )
+  date_time_spine <- tibble::tibble(
+    date = seq(
+      from = min(input_count_data$date),
+      to = min(input_count_data$date) +
+        calibration_time +
+        nowcast_time +
+        forecast_horizon,
+      by = "days"
+    )
+  ) |>
+    dplyr::mutate(t = row_number())
+  return(date_time_spine)
+}
 
+get_lab_site_site_spine <- function(input_ww_data) {
+  lab_site_site_spine <-
+    input_ww_data |>
+    dplyr::select(
+      "lab_site_index", "site_index",
+      "site", "lab", "site_pop"
+    ) |>
+    dplyr::arrange(.data$lab_site_index) |>
+    dplyr::distinct() |>
+    dplyr::mutate(
+      "site_lab_name" = glue::glue(
+        "Site: {site}, Lab: {lab}"
+      )
+    )
+
+  return(lab_site_site_spine)
+}
+
+get_site_subpop_spine <- function(input_ww_data,
+                                  input_count_data) {
+  total_pop <- input_count_data |>
+    dplyr::distinct(.data$total_pop) |>
+    dplyr::pull()
+
+  add_auxiliary_subpop <- ifelse(
+    total_pop > sum(unique(input_ww_data$site_pop)),
+    TRUE,
+    FALSE
+  )
+  site_indices <- input_ww_data |>
+    dplyr::select("site_index", "site", "site_pop") |>
+    dplyr::distinct() |>
+    dplyr::arrange(.data$site_index)
+
+  if (add_auxiliary_subpop) {
+    aux_subpop <- tibble::tibble(
+      site_index = NA,
+      site = NA,
+      site_pop = total_pop - sum(site_indices$site_pop)
+    )
+  } else {
+    aux_subpop <- tibble::tibble()
+  }
+
+  site_subpop_spine <- aux_subpop |>
+    dplyr::bind_rows(site_indices) |>
+    dplyr::mutate(
+      subpop_index = dplyr::row_number()
+    ) |>
+    dplyr::mutate(
+      subpop_name = ifelse(!is.na(site),
+        glue::glue("Site: {site}"),
+        "remainder of population"
+      )
+    ) |>
+    dplyr::rename(
+      "subpop_pop" = "site_pop"
+    )
+
+  return(site_subpop_spine)
+}
 
 
 #' Get stan data for ww + hosp model
