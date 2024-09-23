@@ -4,10 +4,16 @@
 \alias{get_subpop_data}
 \title{Get subpopulation data}
 \usage{
-get_subpop_data(add_auxiliary_site, state_pop, pop_ww, n_ww_sites, include_ww)
+get_subpop_data(
+  add_auxiliary_subpop,
+  state_pop,
+  pop_ww,
+  n_ww_sites,
+  include_ww
+)
 }
 \arguments{
-\item{add_auxiliary_site}{Boolean indicating whether to add another
+\item{add_auxiliary_subpop}{Boolean indicating whether to add another
 subpopulation in addition to the wastewater sites to estimate R(t) of}
 
 \item{state_pop}{The state population size}

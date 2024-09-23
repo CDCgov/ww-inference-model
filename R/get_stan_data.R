@@ -269,10 +269,10 @@ get_stan_data <- function(input_count_data,
 
   # Logic to determine the number of subpopulations to estimate R(t) for:
   # First determine if we need to add an additional subpopulation
-  add_auxiliary_site <- ifelse(pop > sum(ww_values$pop_ww), TRUE, FALSE)
+  add_auxiliary_subpop <- ifelse(pop > sum(ww_values$pop_ww), TRUE, FALSE)
   # Then get the number of subpopulations, the population to normalize by
   # (sum of the subpopulations), and the vector of sizes of each subpopulation
-  subpop_data <- get_subpop_data(add_auxiliary_site,
+  subpop_data <- get_subpop_data(add_auxiliary_subpop,
     state_pop = pop,
     pop_ww = ww_values$pop_ww,
     n_ww_sites = ww_data_sizes$n_ww_sites,
@@ -329,9 +329,9 @@ get_stan_data <- function(input_count_data,
 
   inf_to_count_delay_max <- length(inf_to_count_delay)
 
-  # if adding auxiliary site, then we need to adjust site and lab indices
+  # if adding auxiliary subpop, then we need to adjust site and lab indices
   # such that first subpopulation is the auxiliary site.
-  if (add_auxiliary_site) {
+  if (add_auxiliary_subpop) {
     subpop_to_samples_map <- ww_indices$ww_sampled_sites + 1
     lab_site_to_subpop_map <- ww_indices$lab_site_to_site_map + 1
   } else {
@@ -722,7 +722,7 @@ add_time_indexing <- function(input_count_data) {
 
 #' Get subpopulation data
 #'
-#' @param add_auxiliary_site Boolean indicating whether to add another
+#' @param add_auxiliary_subpop Boolean indicating whether to add another
 #' subpopulation in addition to the wastewater sites to estimate R(t) of
 #' @param state_pop The state population size
 #' @param pop_ww The population size in each of the wastewater sites
@@ -741,13 +741,13 @@ add_time_indexing <- function(input_count_data) {
 #'   2,
 #'   TRUE
 #' )
-get_subpop_data <- function(add_auxiliary_site,
+get_subpop_data <- function(add_auxiliary_subpop,
                             state_pop,
                             pop_ww,
                             n_ww_sites,
                             include_ww) {
   if (include_ww == 1) {
-    if (add_auxiliary_site) {
+    if (add_auxiliary_subpop) {
       # In most cases, wastewater catchment coverage < entire state.
       # So here we add a subpopulation that represents the population not
       # covered by wastewater surveillance. This is the ref pop.
