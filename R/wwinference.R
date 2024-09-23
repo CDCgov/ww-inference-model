@@ -174,7 +174,6 @@ wwinference <- function(ww_data,
     subset.of = formalArgs(compiled_model$sample)
   )
 
-  # maybe check for invalid options here?
 
   # Check that data is compatible with specifications
   assert_no_dates_after_max(ww_data$date, forecast_date)
