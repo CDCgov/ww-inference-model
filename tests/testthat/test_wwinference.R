@@ -59,7 +59,7 @@ test_that("wwinference model can compile", {
 test_that("Function to get mcmc options produces the expected outputs", {
   mcmc_options <- get_mcmc_options()
   expected_names <- c(
-    "iter_warmup", "iter_sampling", "seed", "adapt_delta", "max_treedepth",
+    "iter_warmup", "iter_sampling", "seed", "adapt_delta", "max_treedepth"
   )
   checkmate::expect_names(names(mcmc_options), must.include = expected_names)
 })
