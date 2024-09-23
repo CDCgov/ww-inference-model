@@ -385,7 +385,7 @@ fit_model <- function(compiled_model,
 #' @param seed set of integers indicating the random seed of the Stan sampler,
 #' default is `NULL`.
 #' @param adapt_delta float between 0 and 1 indicating the average acceptance
-#' probability, default is `0.95`
+#' probability, default is `0.95`.
 #' @param max_treedepth integer indicating the maximum tree depth of the
 #' sampler, default is 12
 #' @param show_messages logical indicating whether to print all output
