@@ -329,9 +329,6 @@ get_stan_data <- function(input_count_data,
 
   inf_to_count_delay_max <- length(inf_to_count_delay)
 
-  # if adding auxiliary subpop, then we need to adjust site and lab indices
-  # such that first subpopulation is the auxiliary site.
-
   # This creates a dataframe that maps subpopulations to sample indices
   # by joining the site:subpop map to vector of site indices for each sample.
   # Then we just pull the subpop indices corresponding to each sample
