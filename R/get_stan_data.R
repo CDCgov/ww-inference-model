@@ -336,18 +336,18 @@ get_stan_data <- function(input_count_data,
   # by joining the site:subpop map to vector of site indices for each sample.
   # Then we just pull the subpop indices corresponding to each sample
   subpop_to_samples_map <- tibble::tibble(
-    site = ww_indices$ww_sampled_sites
+    site_index = ww_indices$ww_sampled_sites
   ) |>
-    dplyr::left_join(subpop_data$site_to_subpop_map, by = "site") |>
-    pull(subpop)
+    dplyr::left_join(subpop_data$site_to_subpop_map, by = "site_index") |>
+    pull(subpop_index)
   # This creates a dataframe that maps subpopulations to lab_site indices
   # by joining the site:subpop map to lab_site indices. Then we just pull the
   # subpop indices corresponding to the lab_sites
   lab_site_to_subpop_map <- tibble::tibble(
-    site = ww_indices$lab_site_to_site_map
+    site_index = ww_indices$lab_site_to_site_map
   ) |>
-    dplyr::left_join(subpop_data$site_to_subpop_map, by = "site") |>
-    pull(subpop)
+    dplyr::left_join(subpop_data$site_to_subpop_map, by = "site_index") |>
+    pull(subpop_index)
 
 
   stan_data_list <- list(
@@ -766,8 +766,8 @@ get_subpop_data <- function(add_auxiliary_subpop,
       norm_pop <- state_pop
       n_subpops <- n_ww_sites + 1
       site_to_subpop_map <- tibble::tibble(
-        site = c(NA, 1:n_ww_sites),
-        subpop = c(1:(n_ww_sites + 1))
+        site_index = c(NA, 1:n_ww_sites),
+        subpop_index = c(1:(n_ww_sites + 1))
       )
       subpop_size <- c(state_pop - sum(pop_ww), pop_ww)
     } else {
@@ -778,8 +778,8 @@ get_subpop_data <- function(add_auxiliary_subpop,
       n_subpops <- n_ww_sites # Only divide the state into n_site subpops
       subpop_size <- pop_ww
       site_to_subpop_map <- tibble::tibble(
-        site = c(1:n_ww_sites),
-        subpop = c(1:n_ww_sites)
+        site_index = c(1:n_ww_sites),
+        subpop_index = c(1:n_ww_sites)
       )
     }
   } else {
@@ -787,8 +787,8 @@ get_subpop_data <- function(add_auxiliary_subpop,
     n_subpops <- 1
     subpop_size <- c(state_pop)
     site_to_subpop_map <- tibble::tibble(
-      site = NA,
-      subpop = 1
+      site_index = NA,
+      subpop_index = 1
     )
   }
 
