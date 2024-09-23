@@ -331,13 +331,24 @@ get_stan_data <- function(input_count_data,
 
   # if adding auxiliary subpop, then we need to adjust site and lab indices
   # such that first subpopulation is the auxiliary site.
-  if (add_auxiliary_subpop) {
-    subpop_to_samples_map <- ww_indices$ww_sampled_sites + 1
-    lab_site_to_subpop_map <- ww_indices$lab_site_to_site_map + 1
-  } else {
-    subpop_to_samples_map <- ww_indices$ww_sampled_sites
-    lab_site_to_subpop_map <- ww_indices$lab_site_to_site_map
-  }
+
+  # This creates a dataframe that maps subpopulations to sample indices
+  # by joining the site:subpop map to vector of site indices for each sample.
+  # Then we just pull the subpop indices corresponding to each sample
+  subpop_to_samples_map <- tibble::tibble(
+    site = ww_indices$ww_sampled_sites
+  ) |>
+    dplyr::left_join(subpop_data$site_to_subpop_map, by = "site") |>
+    pull(subpop)
+  # This creates a dataframe that maps subpopulations to lab_site indices
+  # by joining the site:subpop map to lab_site indices. Then we just pull the
+  # subpop indices corresponding to the lab_sites
+  lab_site_to_subpop_map <- tibble::tibble(
+    site = ww_indices$lab_site_to_site_map
+  ) |>
+    dplyr::left_join(subpop_data$site_to_subpop_map, by = "site") |>
+    pull(subpop)
+
 
   stan_data_list <- list(
     gt_max = min(length(generation_interval), params$gt_max),
