@@ -54,8 +54,8 @@ user based on the date they are producing a forecast}
 These are passed as keyword arguments to
 \code{\link[cmdstanr:model-method-sample]{$sample()}}.
 Where no option is specified, \code{\link[=wwinference]{wwinference()}} will fall back first on a
-package-specific default value given by \code{\link[=get_mcmc_options]{get_mcmc_options()}}, if one exists. If no
-package-specific default exists, \code{\link[=wwinference]{wwinference()}} will fall back on
+package-specific default value given by \code{\link[=get_mcmc_options]{get_mcmc_options()}}, if one exists.
+If no package-specific default exists, \code{\link[=wwinference]{wwinference()}} will fall back on
 the default value defined in \code{\link[cmdstanr:model-method-sample]{$sample()}}.}
 
 \item{generate_initial_values}{Boolean indicating whether or not to specify

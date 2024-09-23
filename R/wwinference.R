@@ -378,8 +378,6 @@ fit_model <- function(compiled_model,
 #' default is `750`.
 #' @param iter_sampling integer indicating the number of sampling iterations,
 #' default is `500`.
-#' @param parallel_chains integer indicating the number of chains to run
-#' in parallel, default is `4`.
 #' @param seed set of integers indicating the random seed of the Stan sampler,
 #' default is `NULL`.
 #' @param adapt_delta float between 0 and 1 indicating the average acceptance
@@ -394,7 +392,6 @@ fit_model <- function(compiled_model,
 get_mcmc_options <- function(
     iter_warmup = 750,
     iter_sampling = 500,
-    parallel_chains = 4,
     seed = NULL,
     adapt_delta = 0.95,
     max_treedepth = 12) {

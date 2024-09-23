@@ -7,7 +7,6 @@
 get_mcmc_options(
   iter_warmup = 750,
   iter_sampling = 500,
-  parallel_chains = 4,
   seed = NULL,
   adapt_delta = 0.95,
   max_treedepth = 12
@@ -19,9 +18,6 @@ default is \code{750}.}
 
 \item{iter_sampling}{integer indicating the number of sampling iterations,
 default is \code{500}.}
-
-\item{parallel_chains}{integer indicating the number of chains to run
-in parallel, default is \code{4}.}
 
 \item{seed}{set of integers indicating the random seed of the Stan sampler,
 default is \code{NULL}.}
