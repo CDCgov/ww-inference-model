@@ -754,6 +754,10 @@ get_subpop_data <- function(add_auxiliary_subpop,
       # It wil always be the first subpopulation.
       norm_pop <- state_pop
       n_subpops <- n_ww_sites + 1
+      site_to_subpop_map <- tibble::tibble(
+        site = c(NA, 1:n_ww_sites),
+        subpop = c(1:(n_ww_sites + 1))
+      )
       subpop_size <- c(state_pop - sum(pop_ww), pop_ww)
     } else {
       message("Sum of wastewater catchment areas is greater than state pop")
@@ -762,18 +766,27 @@ get_subpop_data <- function(add_auxiliary_subpop,
       # use sum of catchment area pop to normalize
       n_subpops <- n_ww_sites # Only divide the state into n_site subpops
       subpop_size <- pop_ww
+      site_to_subpop_map <- tibble::tibble(
+        site = c(1:n_ww_sites),
+        subpop = c(1:n_ww_sites)
+      )
     }
   } else {
     norm_pop <- state_pop
     n_subpops <- 1
     subpop_size <- c(state_pop)
+    site_to_subpop_map <- tibble::tibble(
+      site = NA,
+      subpop = 1
+    )
   }
 
 
   subpop_data <- list(
     norm_pop = norm_pop,
     n_subpops = n_subpops,
-    subpop_size = subpop_size
+    subpop_size = subpop_size,
+    site_to_subpop_map = site_to_subpop_map
   )
   return(subpop_data)
 }
