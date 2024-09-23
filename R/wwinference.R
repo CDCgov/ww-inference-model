@@ -389,7 +389,7 @@ fit_model <- function(compiled_model,
 #' @param max_treedepth integer indicating the maximum tree depth of the
 #' sampler, default is 12
 #' @param show_messages logical indicating whether to print all output
-#' during the execution process, default is `TRUE`
+#' during the execution process, default is `TRUE`.
 #'
 #' @return A list of MCMC settings with the values given by the function.
 #' arguments
