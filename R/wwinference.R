@@ -34,7 +34,7 @@
 #' @param fit_opts MCMC fitting options, as a list of keys and values.
 #' These are passed as keyword arguments to
 #' [`$sample()`][cmdstanr::model-method-sample].
-#' Where no option is specified, [wwinference()] will fall back first on
+#' Where no option is specified, [wwinference()] will fall back first on a
 #' package-specific default value defined by [get_mcmc_options()]. If no
 #' package-specific default exists, it will fall back on
 #' the default value defined in [`$sample()`][cmdstanr::model-method-sample].
