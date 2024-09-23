@@ -7,41 +7,33 @@
 get_mcmc_options(
   iter_warmup = 750,
   iter_sampling = 500,
-  chains = 4,
   parallel_chains = 4,
   seed = NULL,
   adapt_delta = 0.95,
-  max_treedepth = 12,
-  show_messages = TRUE
+  max_treedepth = 12
 )
 }
 \arguments{
 \item{iter_warmup}{integer indicating the number of warm-up iterations,
-default is \code{750}}
+default is \code{750}.}
 
 \item{iter_sampling}{integer indicating the number of sampling iterations,
-default is \code{500}}
-
-\item{chains}{integer indicating the number of MCMC chains to run, default
-is \code{4}}
+default is \code{500}.}
 
 \item{parallel_chains}{integer indicating the number of chains to run
-in parallel, default is \code{4}}
+in parallel, default is \code{4}.}
 
 \item{seed}{set of integers indicating the random seed of the Stan sampler,
-default is NULL}
+default is \code{NULL}.}
 
 \item{adapt_delta}{float between 0 and 1 indicating the average acceptance
-probability, default is \code{0.95}}
+probability, default is \code{0.95}.}
 
 \item{max_treedepth}{integer indicating the maximum tree depth of the
-sampler, default is 12}
-
-\item{show_messages}{logical indicating whether to print all output
-during the execution process, default is \code{TRUE}}
+sampler, default is 12.}
 }
 \value{
-a list of MCMC settings with the values given by the  function
+A list of MCMC settings with the values given by the function.
 arguments
 }
 \description{

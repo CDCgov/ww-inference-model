@@ -35,8 +35,8 @@
 #' These are passed as keyword arguments to
 #' [`$sample()`][cmdstanr::model-method-sample].
 #' Where no option is specified, [wwinference()] will fall back first on a
-#' package-specific default value given by [get_mcmc_options()], if one exists. If no
-#' package-specific default exists, [wwinference()] will fall back on
+#' package-specific default value given by [get_mcmc_options()], if one exists.
+#' If no package-specific default exists, [wwinference()] will fall back on
 #' the default value defined in [`$sample()`][cmdstanr::model-method-sample].
 #' @param generate_initial_values Boolean indicating whether or not to specify
 #' the initialization of the sampler, default is `TRUE`, meaning that
@@ -378,8 +378,6 @@ fit_model <- function(compiled_model,
 #' default is `750`.
 #' @param iter_sampling integer indicating the number of sampling iterations,
 #' default is `500`.
-#' @param chains integer indicating the number of MCMC chains to run, default
-#' is `4`.
 #' @param parallel_chains integer indicating the number of chains to run
 #' in parallel, default is `4`.
 #' @param seed set of integers indicating the random seed of the Stan sampler,
@@ -388,29 +386,24 @@ fit_model <- function(compiled_model,
 #' probability, default is `0.95`.
 #' @param max_treedepth integer indicating the maximum tree depth of the
 #' sampler, default is 12.
-#' @param show_messages logical indicating whether to print all output
-#' during the execution process, default is `TRUE`.
 #'
 #' @return A list of MCMC settings with the values given by the function.
 #' arguments
 #'
+#' @export
 get_mcmc_options <- function(
     iter_warmup = 750,
     iter_sampling = 500,
-    chains = 4,
     parallel_chains = 4,
     seed = NULL,
     adapt_delta = 0.95,
-    max_treedepth = 12,
-    show_messages = TRUE) {
+    max_treedepth = 12) {
   mcmc_settings <- list(
     iter_warmup = iter_warmup,
     iter_sampling = iter_sampling,
-    chains = chains,
     seed = seed,
     adapt_delta = adapt_delta,
-    max_treedepth = max_treedepth,
-    show_messages = show_messages
+    max_treedepth = max_treedepth
   )
 
   return(mcmc_settings)
