@@ -377,7 +377,7 @@ fit_model <- function(compiled_model,
 #' @param iter_warmup integer indicating the number of warm-up iterations,
 #' default is `750`.
 #' @param iter_sampling integer indicating the number of sampling iterations,
-#' default is `500`
+#' default is `500`.
 #' @param chains integer indicating the number of MCMC chains to run, default
 #' is `4`.
 #' @param parallel_chains integer indicating the number of chains to run
