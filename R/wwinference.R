@@ -35,7 +35,7 @@
 #' These are passed as keyword arguments to
 #' [`$sample()`][cmdstanr::model-method-sample].
 #' Where no option is specified, [wwinference()] will fall back first on a
-#' package-specific default value defined by [get_mcmc_options()]. If no
+#' package-specific default value given by [get_mcmc_options()], if one exists. If no
 #' package-specific default exists, it will fall back on
 #' the default value defined in [`$sample()`][cmdstanr::model-method-sample].
 #' @param generate_initial_values Boolean indicating whether or not to specify
