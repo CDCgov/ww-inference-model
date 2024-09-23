@@ -118,6 +118,17 @@ get_date_time_spine <- function(forecast_date,
   return(date_time_spine)
 }
 
+#' Get mapping from lab-site to site
+#'
+#' @param input_ww_data a dataframe of the wastewater data to be passed
+#' directly to stan, must have the following columns: date, site, lab,
+#' genome_copies_per_ml, site_pop, below_lod, and exclude
+#'
+#' @return a dataframe mapping the unique combinations of sites and labs
+#' to their indices in the model and the population of the site in that
+#' observation unit (lab_site)
+#' @export
+#'
 get_lab_site_site_spine <- function(input_ww_data) {
   lab_site_site_spine <-
     input_ww_data |>
@@ -136,6 +147,20 @@ get_lab_site_site_spine <- function(input_ww_data) {
   return(lab_site_site_spine)
 }
 
+#' Get site to subpopulation map
+#'
+#' @param input_ww_data a dataframe of the wastewater data to be passed
+#' directly to stan, must have the following columns: date, site, lab,
+#' genome_copies_per_ml, site_pop, below_lod, and exclude
+#' @param input_count_data a dataframe of the count data to be passed
+#' directly to stan, , must have the following columns: date, count, total_pop
+#'
+#' @return a dataframe mapping the sites to the corresponding subpopulation and
+#' subpopulation index, plus the population in each subpopulation. Imposes
+#' the logic to add a subpopulation if the total population is greater than
+#' the sum of the site populations in the input wastewater data
+#' @export
+#'
 get_site_subpop_spine <- function(input_ww_data,
                                   input_count_data) {
   total_pop <- input_count_data |>
@@ -183,11 +208,7 @@ get_site_subpop_spine <- function(input_ww_data,
 
 #' Get stan data for ww + hosp model
 #'
-#' @param input_count_data a dataframe of the count data to be passed
-#' directly to stan, , must have the following columns: date, count, total_pop
-#' @param input_ww_data a dataframe of the wastewater data to be passed
-#' directly to stan, must have the following columns: date, site, lab,
-#' genome_copies_per_ml, site_pop, below_lod, and exclude
+
 #' @param forecast_date string indicating the forecast date in ISO8601
 #'  convention e.g. YYYY-MM-DD
 #' @param forecast_horizon integer indicating the number of days to make a

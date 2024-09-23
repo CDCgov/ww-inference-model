@@ -19,13 +19,6 @@ get_stan_data(
 )
 }
 \arguments{
-\item{input_count_data}{a dataframe of the count data to be passed
-directly to stan, , must have the following columns: date, count, total_pop}
-
-\item{input_ww_data}{a dataframe of the wastewater data to be passed
-directly to stan, must have the following columns: date, site, lab,
-genome_copies_per_ml, site_pop, below_lod, and exclude}
-
 \item{forecast_date}{string indicating the forecast date in ISO8601
 convention e.g. YYYY-MM-DD}
 
