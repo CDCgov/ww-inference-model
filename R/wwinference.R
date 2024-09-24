@@ -33,7 +33,7 @@
 #' user based on the date they are producing a forecast
 #' @param fit_opts MCMC fitting options, as a list of keys and values.
 #' These are passed as keyword arguments to
-#' [`$sample()`][cmdstanr::model-method-sample].
+#' [`compiled_model$sample()`][cmdstanr::model-method-sample].
 #' Where no option is specified, [wwinference()] will fall back first on a
 #' package-specific default value given by [get_mcmc_options()], if one exists.
 #' If no package-specific default exists, [wwinference()] will fall back on
