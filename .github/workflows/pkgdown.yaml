@@ -93,7 +93,7 @@ jobs:
         with:
            issue-number: ${{ github.event.pull_request.number }}
            comment-author: 'github-actions[bot]'
-           body-includes: Build output
+           body-includes: Your page is ready to preview
 
       - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v4
@@ -101,5 +101,5 @@ jobs:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            "Thank you for your contribution, @${{ github.triggering_actor }} :rocket:! Your page is ready to preview [here](https://github.com/${{github.repository}}/actions/runs/${{ github.run_id }}/artifacts/${{ needs.build.outputs.page_artifact_id }})"
+            Thank you for your contribution, @${{ github.triggering_actor }} :rocket:! Your page is ready to preview [here](https://github.com/${{github.repository}}/actions/runs/${{ github.run_id }}/artifacts/${{ needs.build.outputs.page_artifact_id }})
           edit-mode: replace
