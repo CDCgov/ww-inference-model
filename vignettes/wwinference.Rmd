@@ -162,7 +162,7 @@ below the LOD in upstream pre-processing.
 
 ## Hospital admissions data pre-processing
 
-The `preprocess_hosp_data()`  function standardizes the column names of the
+The `preprocess_count_data()`  function standardizes the column names of the
 resulting datafame. The user must specify the name of the column containing
 the daily hospital admissions counts and the population size that the hospital
 admissions are coming from (from in this case, a hypothetical US state). The
