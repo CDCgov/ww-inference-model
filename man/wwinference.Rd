@@ -52,11 +52,13 @@ user based on the date they are producing a forecast}
 
 \item{fit_opts}{MCMC fitting options, as a list of keys and values.
 These are passed as keyword arguments to
-\code{\link[cmdstanr:model-method-sample]{$sample()}}.
+\code{\link[cmdstanr:model-method-sample]{compiled_model$sample()}}.
 Where no option is specified, \code{\link[=wwinference]{wwinference()}} will fall back first on a
 package-specific default value given by \code{\link[=get_mcmc_options]{get_mcmc_options()}}, if one exists.
 If no package-specific default exists, \code{\link[=wwinference]{wwinference()}} will fall back on
-the default value defined in \code{\link[cmdstanr:model-method-sample]{$sample()}}.}
+the default value defined in \code{\link[cmdstanr:model-method-sample]{$sample()}}.
+See the documentation for \code{\link[cmdstanr:model-method-sample]{$sample()}} for
+details on available options.}
 
 \item{generate_initial_values}{Boolean indicating whether or not to specify
 the initialization of the sampler, default is \code{TRUE}, meaning that
