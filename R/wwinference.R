@@ -38,7 +38,7 @@
 #' package-specific default value given by [get_mcmc_options()], if one exists.
 #' If no package-specific default exists, [wwinference()] will fall back on
 #' the default value defined in [`$sample()`][cmdstanr::model-method-sample].
-#' See the documentation for [`$sample()`][cmdstanr::model-method-sample] for 
+#' See the documentation for [`$sample()`][cmdstanr::model-method-sample] for
 #' details on available options.
 #' @param generate_initial_values Boolean indicating whether or not to specify
 #' the initialization of the sampler, default is `TRUE`, meaning that
