@@ -59,8 +59,8 @@ from September 1, 2023 to December 1, 2023, with varying sampling frequencies.
 We will be using this data to produce a forecast of COVID-19 hospital admissions
 as of December 6, 2023. These data are provided as part of the package data.
 
-These data are already in a format that can be used for `wwinference`. For the
-hospital admissions data, it contains:
+These data are already in a format that can be used for the `wwinference` package.
+For the hospital admissions data, it contains:
 
 - a date (column `date`): the date of the observation, in this case, the date
 the hospital admissions occurred
@@ -278,12 +278,12 @@ ww_data_to_fit <- indicate_ww_exclusions(
 # Model specification:
 
 We will need to set some metadata to facilitate model specification.
-*This includes:
-+ forecast date (the date we are making a forecast)
-+ number of days to calibrate the model for
-+ number of days to forecast beyond the forecast date
-+ specification of the generation interval, in this case for COVID-19
-+ specification of the delay from infection to the count data, in this case
+This includes:
+- forecast date (the date we are making a forecast)
+- number of days to calibrate the model for
+- number of days to forecast beyond the forecast date
+- specification of the generation interval, in this case for COVID-19
+- specification of the delay from infection to the count data, in this case
  from infection to COVID-19 hospital admission
 
 ## Calibration time and forecast time
@@ -326,7 +326,7 @@ inf_to_hosp <- wwinference::default_covid_inf_to_hosp
 infection_feedback_pmf <- generation_interval
 ```
 
-We will pass these to the `model_spec()` function of the `wwinference()` model,
+We will pass these to the `get_model_spec()` function of the `wwinference()` model,
 along with the other specified parameters above.
 
 # Precompiling the model
@@ -522,7 +522,7 @@ to identify which components of the model might be driving the convergence
 issues.
 
 For further information on troubleshooting the model diagnostics,
-we recommend the (bayesplot tutorial)[https://mc-stan.org/bayesplot/articles/visual-mcmc-diagnostics.html].
+we recommend the [bayesplot tutorial](https://mc-stan.org/bayesplot/articles/visual-mcmc-diagnostics.html).
 
 ```{r diagnostics-explicit}
 convergence_flag_df <- get_model_diagnostic_flags(
