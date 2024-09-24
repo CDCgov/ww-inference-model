@@ -8,6 +8,7 @@ get_mcmc_options(
   iter_warmup = 750,
   iter_sampling = 500,
   seed = NULL,
+  chains = 4,
   adapt_delta = 0.95,
   max_treedepth = 12
 )
@@ -21,6 +22,9 @@ default is \code{500}.}
 
 \item{seed}{set of integers indicating the random seed of the Stan sampler,
 default is \code{NULL}.}
+
+\item{chains}{integer indicating the number of MCMC chains to run, default
+is \code{4}.}
 
 \item{adapt_delta}{float between 0 and 1 indicating the average acceptance
 probability, default is \code{0.95}.}

@@ -382,6 +382,8 @@ fit_model <- function(compiled_model,
 #' default is `500`.
 #' @param seed set of integers indicating the random seed of the Stan sampler,
 #' default is `NULL`.
+#' @param chains integer indicating the number of MCMC chains to run, default
+#' is `4`.
 #' @param adapt_delta float between 0 and 1 indicating the average acceptance
 #' probability, default is `0.95`.
 #' @param max_treedepth integer indicating the maximum tree depth of the
@@ -395,12 +397,14 @@ get_mcmc_options <- function(
     iter_warmup = 750,
     iter_sampling = 500,
     seed = NULL,
+    chains = 4,
     adapt_delta = 0.95,
     max_treedepth = 12) {
   mcmc_settings <- list(
     iter_warmup = iter_warmup,
     iter_sampling = iter_sampling,
     seed = seed,
+    chains = chains,
     adapt_delta = adapt_delta,
     max_treedepth = max_treedepth
   )
