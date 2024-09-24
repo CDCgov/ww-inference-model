@@ -17,5 +17,4 @@
 #' @importFrom stats dnbinom dweibull ecdf plogis qlogis rlnorm rnbinom rnorm
 #' rt sd time
 #' @importFrom tibble tibble
-#' @importFrom methods formalArgs
 NULL
