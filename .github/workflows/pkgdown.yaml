@@ -77,6 +77,8 @@ jobs:
         uses: actions/deploy-pages@v4
 
   post-page-artifact:
+    # only comment on PRs
+    if: ${{ github.event_name == 'pull_request' }}
     needs: build
     runs-on: ubuntu-latest
     permissions:
