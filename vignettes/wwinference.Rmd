@@ -17,6 +17,7 @@ vignette: >
 
 ```{r setup, echo=FALSE}
 knitr::opts_chunk$set(dev = "svg")
+options(mc.cores = 4) # This tells cmdstan to run the 4 chains in parallel
 ```
 
 # Quick start
