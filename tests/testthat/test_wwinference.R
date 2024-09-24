@@ -75,15 +75,15 @@ test_that("Function to get model specs produces expected outputs", {
   expect_true(all(names(model_spec) %in% expected_names))
 })
 
-test_that(c(
-  "Passing arguments that are not expected in cmdstanr::sample ",
-  "throws an error"
-), {
-  expect_error(wwinference(
-    ww_data = input_ww_data,
-    count_data = input_count_data,
-    forecast_date = forecast_date,
-    model_spec = get_model_spec,
-    fit_opts = list(not_an_arg = 4)
-  ))
+test_that("Passing invalid args to fit_opts throws an error ", {
+  expect_error(
+    wwinference(
+      ww_data = input_ww_data,
+      count_data = input_count_data,
+      forecast_date = forecast_date,
+      model_spec = get_model_spec,
+      fit_opts = list(not_an_arg = 4)
+    ),
+    regexp = c("Names must be a subset of ")
+  )
 })
