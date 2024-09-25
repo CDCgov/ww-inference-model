@@ -1,5 +1,5 @@
 ---
-title: "Scenario 3."
+title: "Scenario 4."
 description: "Finding scenes that make IID fail."
 author: "Christian O. Bernal Zelaya"
 date: "2024-09-18"
@@ -113,10 +113,10 @@ library(ggh4x) # for facet_grid2
 <div class="fold s">
 ```{r fig.height=6, fig.width=6}
 set.seed(2024)
-n_sites <- 4
+n_sites <- 15
 fake_locs <- data.frame(
-  x = c(90, 51, 52, 15),
-  y = c(90, 51, 52, 15),
+  x = runif(n_sites, 0, 100),
+  y = runif(n_sites, 0, 100),
   ID = 1:n_sites
 )
 fake_locs_plot <- ggplot(
@@ -153,6 +153,7 @@ r_in_weeks <- c(
   rep(1.1, 5), rep(0.9, 5),
   0.9 + 0.0005 * (1:16)^2
 )
+# r_in_weeks = rep(1, times = length(r_in_weeks)) #nolint
 lng <- length(r_in_weeks)
 central_rt_curve <- ggplot() +
   geom_line(
@@ -189,7 +190,10 @@ central_rt_curve
 # Presets ----------------------------------------------------------------------
 site <- 1:n_sites
 lab <- rep(1, n_sites)
-ww_pop_sites <- c(5e5, 7.5e5, 3.8e5, 4.5e5)
+ww_pop_sites <- c(
+  4e5, 7e5, 3.8e5, 4.5e5, 4e5, 7e5, 3.8e5, 4.5e5,
+  4e5, 7e5, 3.8e5, 4.5e5, 4e5, 7e5, 3.8e5
+)
 pop_size <- 2 * sum(ww_pop_sites)
 global_rt_sd <- 0
 exp_corr_param <- list(
@@ -203,26 +207,15 @@ exp_corr_param <- list(
       upper = TRUE
     )
   ),
-  phi = 0.4,
+  phi = 1,
   l = 1
 )
-sigma_sqrd_generalized <- 0.025^n_sites
-custom_corr_func_param <- list(
-  corr_matrix = matrix(
-    data = c(
-      1, .25, .25, .95,
-      .25, 1, .05, .25,
-      .25, .05, 1, .25,
-      .95, .25, .25, 1
-    ),
-    nrow = n_sites
-  )
-)
+sigma_sqrd_generalized <- 0.0085^n_sites
 mean_reporting_freq <- 1 / 3
 mean_obs_error_in_ww_lab_site <- 1
 # ------------------------------------------------------------------------------
 # IID Simulated Data -----------------------------------------------------------
-simulated_data_iid <- withr::with_seed(1, {
+simulated_data_iid <- withr::with_seed(2024, {
   wwinference::generate_simulated_data(
     r_in_weeks = r_in_weeks, # nolint
     n_sites = n_sites,
@@ -242,7 +235,7 @@ simulated_data_iid <- withr::with_seed(1, {
 })
 # ------------------------------------------------------------------------------
 # Exponential Simulated Data ---------------------------------------------------
-simulated_data_exp <- withr::with_seed(1, {
+simulated_data_exp <- withr::with_seed(2024, {
   wwinference::generate_simulated_data(
     r_in_weeks = r_in_weeks, # nolint
     n_sites = n_sites,
@@ -262,7 +255,7 @@ simulated_data_exp <- withr::with_seed(1, {
 })
 # ------------------------------------------------------------------------------
 # Rand. Corr. Matrix Simulated Data --------------------------------------------
-simulated_data_rng_corr_mat <- withr::with_seed(1, {
+simulated_data_rng_corr_mat <- withr::with_seed(2024, {
   wwinference::generate_simulated_data(
     r_in_weeks = r_in_weeks, # nolint
     n_sites = n_sites,
@@ -274,8 +267,8 @@ simulated_data_rng_corr_mat <- withr::with_seed(1, {
     mean_reporting_freq = mean_reporting_freq,
     global_rt_sd = global_rt_sd,
     use_spatial_corr = TRUE,
-    corr_function = wwinference::custom_corr_matrix_func,
-    corr_fun_params = custom_corr_func_param,
+    corr_function = wwinference::rand_corr_matrix_func,
+    corr_fun_params = list(n_sites = n_sites, seed = 2024),
     sigma_sqrd_generalized = sigma_sqrd_generalized,
     aux_site_bool = TRUE
   )
@@ -455,6 +448,13 @@ ww_total_plot <- ggplot(ww_data_full) +
     ~model_type,
     scales = "fixed"
   ) +
+  # scale_color_manual( #nolint
+  #  breaks = c("1", "2", "3", "4"), #nolint
+  #  values = c( #nolint
+  #    "darkviolet", "darkgreen", #nolint
+  #    "darkred", "darkorange" #nolint
+  #  ) #nolint
+  # ) + #nolint
   xlab("") +
   ylab("Genome copies/mL on log scale") +
   labs(color = "Site") +
@@ -763,8 +763,8 @@ infection_feedback_pmf <- generation_interval
 
 model <- wwinference::compile_model()
 
-iter_warmup <- 100
-iter_sampling <- 200
+iter_warmup <- 250
+iter_sampling <- 500
 fit_options <- get_mcmc_options(
   iter_warmup = iter_warmup,
   iter_sampling = iter_sampling,

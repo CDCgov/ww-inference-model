@@ -1,5 +1,5 @@
 ---
-title: "Scenario 3."
+title: "Scenario 4."
 description: "Finding scenes that make IID fail."
 author: "Christian O. Bernal Zelaya"
 date: "2024-09-18"
@@ -113,10 +113,10 @@ library(ggh4x) # for facet_grid2
 <div class="fold s">
 ```{r fig.height=6, fig.width=6}
 set.seed(2024)
-n_sites <- 4
+n_sites <- 15
 fake_locs <- data.frame(
-  x = c(90, 51, 52, 15),
-  y = c(90, 51, 52, 15),
+  x = runif(n_sites, 0, 100),
+  y = runif(n_sites, 0, 100),
   ID = 1:n_sites
 )
 fake_locs_plot <- ggplot(
@@ -189,7 +189,10 @@ central_rt_curve
 # Presets ----------------------------------------------------------------------
 site <- 1:n_sites
 lab <- rep(1, n_sites)
-ww_pop_sites <- c(5e5, 7.5e5, 3.8e5, 4.5e5)
+ww_pop_sites <- c(
+  5e5, 7e5, 3.8e5, 4.5e5, 5e5, 6.5e5, 3.8e5, 4.5e5,
+  4.7e5, 7.5e5, 3.2e5, 4.3e5, 5.1e5, 7.5e5, 2.8e5
+)
 pop_size <- 2 * sum(ww_pop_sites)
 global_rt_sd <- 0
 exp_corr_param <- list(
@@ -207,17 +210,6 @@ exp_corr_param <- list(
   l = 1
 )
 sigma_sqrd_generalized <- 0.025^n_sites
-custom_corr_func_param <- list(
-  corr_matrix = matrix(
-    data = c(
-      1, .25, .25, .95,
-      .25, 1, .05, .25,
-      .25, .05, 1, .25,
-      .95, .25, .25, 1
-    ),
-    nrow = n_sites
-  )
-)
 mean_reporting_freq <- 1 / 3
 mean_obs_error_in_ww_lab_site <- 1
 # ------------------------------------------------------------------------------
@@ -274,8 +266,8 @@ simulated_data_rng_corr_mat <- withr::with_seed(1, {
     mean_reporting_freq = mean_reporting_freq,
     global_rt_sd = global_rt_sd,
     use_spatial_corr = TRUE,
-    corr_function = wwinference::custom_corr_matrix_func,
-    corr_fun_params = custom_corr_func_param,
+    corr_function = wwinference::rand_corr_matrix_func,
+    corr_fun_params = list(n_sites = n_sites, seed = 2024),
     sigma_sqrd_generalized = sigma_sqrd_generalized,
     aux_site_bool = TRUE
   )
