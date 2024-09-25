@@ -67,7 +67,7 @@ model_test_data <- list(
   generate_initial_values = generate_initial_values
 )
 
-withr::with_seed(5, {
+withr::with_seed(55, {
   fit <- do.call(
     wwinference::wwinference,
     model_test_data
