@@ -368,7 +368,7 @@ fit_model <- function(compiled_model,
 #'
 #' @description
 #' This function returns a list of MCMC settings to pass to the
-#' `cmdstanr::sample()` function to fit the model. The default settings are
+#' [`$sample()`][cmdstanr::model-method-sample] function to fit the model. The default settings are
 #' specified for production-level runs, consider adjusting to optimize
 #' for speed while iterating. All input arguments to `cmdstanr::sample()`
 #' are configurable by the user. See `cmdstanr::sample()` documentation
