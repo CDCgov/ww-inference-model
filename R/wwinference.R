@@ -368,11 +368,11 @@ fit_model <- function(compiled_model,
 #'
 #' @description
 #' This function returns a list of MCMC settings to pass to the
-#' [`$sample()`][cmdstanr::model-method-sample] function to fit the model. The default settings are
-#' specified for production-level runs, consider adjusting to optimize
-```suggestion
+#' [`$sample()`][cmdstanr::model-method-sample] function to fit the model.
+#' The default settings are specified for production-level runs.
 #' All input arguments to [`$sample()`][cmdstanr::model-method-sample]
-#' are configurable by the user. See [`$sample()`][cmdstanr::model-method-sample] documentation
+#' are configurable by the user. See
+#' [`$sample()`][cmdstanr::model-method-sample] documentation
 #' for details of the available arguments.
 #'
 #'
@@ -380,8 +380,10 @@ fit_model <- function(compiled_model,
 #' default is `750`.
 #' @param iter_sampling integer indicating the number of sampling iterations,
 #' default is `500`.
-#' @param seed set of integers indicating the random seed of the Stan sampler,
-#' default is `NULL`.
+#' @param seed integer, A seed for the (P)RNG to pass to CmdStan. In the case
+#' of multi-chain sampling the single seed will automatically be augmented by
+#' the the run (chain) ID so that each chain uses a different seed.
+#' Default is `NULL`.
 #' @param chains integer indicating the number of MCMC chains to run, default
 #' is `4`.
 #' @param adapt_delta float between 0 and 1 indicating the average acceptance

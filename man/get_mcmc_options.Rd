@@ -20,8 +20,10 @@ default is \code{750}.}
 \item{iter_sampling}{integer indicating the number of sampling iterations,
 default is \code{500}.}
 
-\item{seed}{set of integers indicating the random seed of the Stan sampler,
-default is \code{NULL}.}
+\item{seed}{integer, A seed for the (P)RNG to pass to CmdStan. In the case
+of multi-chain sampling the single seed will automatically be augmented by
+the the run (chain) ID so that each chain uses a different seed.
+Default is \code{NULL}.}
 
 \item{chains}{integer indicating the number of MCMC chains to run, default
 is \code{4}.}
@@ -38,10 +40,10 @@ arguments
 }
 \description{
 This function returns a list of MCMC settings to pass to the
-\code{cmdstanr::sample()} function to fit the model. The default settings are
-specified for production-level runs, consider adjusting to optimize
-for speed while iterating. All input arguments to \code{cmdstanr::sample()}
-are configurable by the user. See \code{cmdstanr::sample()} documentation
-https://mc-stan.org/cmdstanr/reference/model-method-sample.html for a full
-description of each argument.
+\code{\link[cmdstanr:model-method-sample]{$sample()}} function to fit the model.
+The default settings are specified for production-level runs.
+All input arguments to \code{\link[cmdstanr:model-method-sample]{$sample()}}
+are configurable by the user. See
+\code{\link[cmdstanr:model-method-sample]{$sample()}} documentation
+for details of the available arguments.
 }
