@@ -270,6 +270,16 @@ test_that(
 )
 
 test_that(
+  "Test that validate pmfs returns the expected error message.",
+  {
+    invalid_pmf <- c(0.4, 0.4, 0.4)
+    expect_error(validate_pmf(invalid_pmf),
+      regexp = "does not sum to 1"
+    )
+  }
+)
+
+test_that(
   "Test that assert dates in range function works as expected.",
   {
     dates1 <- lubridate::ymd(c("2023-01-01", "2023-01-02"))

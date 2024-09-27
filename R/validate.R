@@ -235,7 +235,7 @@ validate_pmf <- function(pmf,
                          count_data,
                          arg = "x",
                          call = rlang::caller_env()) {
-  if (!all.equal(sum(pmf), 1)) {
+  if (!isTRUE(all.equal(sum(pmf), 1))) {
     cli::cli_abort(
       c(
         "{.arg {arg}} does not sum to 1."
