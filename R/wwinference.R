@@ -222,7 +222,7 @@ wwinference <- function(ww_data,
   raw_input_data <- list(
     input_count_data = input_count_data,
     input_ww_data = input_ww_data,
-    date_time_spine = date_time_spin,
+    date_time_spine = date_time_spine,
     lab_site_site_spine = lab_site_site_spine,
     site_subpop_spine = site_subpop_spine,
   )
