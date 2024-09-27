@@ -203,7 +203,8 @@ wwinference <- function(ww_data,
     forecast_date = forecast_date,
     input_count_data = input_count_data,
     last_count_data_date = last_count_data_date,
-    forecast_horizon = forecast_horizon
+    forecast_horizon = forecast_horizon,
+    calibration_time = calibration_time
   )
 
   # Get lab_site_site_spine
@@ -214,7 +215,7 @@ wwinference <- function(ww_data,
   # Get site to subpop spine
   site_subpop_spine <- get_site_subpop_spine(
     input_ww_data = input_ww_data,
-    input_count_data = input_cout_data
+    input_count_data = input_count_data
   )
 
 
