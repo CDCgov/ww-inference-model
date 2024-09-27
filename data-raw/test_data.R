@@ -47,11 +47,12 @@ model_spec <- wwinference::get_model_spec(
   params = params
 )
 
-mcmc_options <- wwinference::get_mcmc_options(
-  seed = 55,
+mcmc_options <- list(
+  seed = 5,
   iter_warmup = 25,
   iter_sampling = 25,
-  n_chains = 1
+  chains = 1,
+  show_messages = FALSE
 )
 
 generate_initial_values <- TRUE
@@ -67,7 +68,7 @@ model_test_data <- list(
   generate_initial_values = generate_initial_values
 )
 
-withr::with_seed(5, {
+withr::with_seed(55, {
   fit <- do.call(
     wwinference::wwinference,
     model_test_data

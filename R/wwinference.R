@@ -31,13 +31,15 @@
 #' `get_model_spec()`. The default here pertains to the `forecast_date` in the
 #' example data provided by the package, but this should be specified by the
 #' user based on the date they are producing a forecast
-#' @param fit_opts The fit options, which in this case default to the
-#' MCMC parameters as defined using `get_mcmc_options()`. This includes
-#' the following arguments, which are passed to
-#' [`$sample()`][cmdstanr::model-method-sample]:
-#' the number of chains, the number of warmup
-#' and sampling iterations, the maximum tree depth, the average acceptance
-#' probability, and the stan PRNG seed
+#' @param fit_opts MCMC fitting options, as a list of keys and values.
+#' These are passed as keyword arguments to
+#' [`compiled_model$sample()`][cmdstanr::model-method-sample].
+#' Where no option is specified, [wwinference()] will fall back first on a
+#' package-specific default value given by [get_mcmc_options()], if one exists.
+#' If no package-specific default exists, [wwinference()] will fall back on
+#' the default value defined in [`$sample()`][cmdstanr::model-method-sample].
+#' See the documentation for [`$sample()`][cmdstanr::model-method-sample] for
+#' details on available options.
 #' @param generate_initial_values Boolean indicating whether or not to specify
 #' the initialization of the sampler, default is `TRUE`, meaning that
 #' initialization lists will be generated and passed as the `init` argument
@@ -124,24 +126,27 @@
 #' calibration_time <- 90
 #' forecast_horizon <- 28
 #' include_ww <- 1
-#' ww_fit <- wwinference(input_ww_data,
-#'   input_count_data,
+#'
+#' ww_fit <- wwinference(
+#'   ww_data = input_ww_data,
+#'   count_data = input_count_data,
+#'   forecast_date = forecast_date,
+#'   calibration_time = calibration_time,
+#'   forecast_horizon = forecast_horizon,
 #'   model_spec = get_model_spec(
-#'     forecast_date = forecast_date,
-#'     calibration_time = calibration_time,
-#'     forecast_horizon = forecast_horizon,
 #'     generation_interval = generation_interval,
-#'     inf_to_count_delay = inf_to_coutn_delay,
+#'     inf_to_count_delay = inf_to_count_delay,
 #'     infection_feedback_pmf = infection_feedback_pmf,
 #'     params = params
 #'   ),
-#'   fit_opts = get_mcmc_options(
+#'   fit_opts = list(
 #'     iter_warmup = 250,
 #'     iter_sampling = 250,
-#'     n_chains = 2
+#'     chains = 2
 #'   )
 #' )
 #' }
+#'
 #' @rdname wwinference
 #' @aliases wwinference_fit
 wwinference <- function(ww_data,
@@ -150,7 +155,7 @@ wwinference <- function(ww_data,
                         calibration_time = 90,
                         forecast_horizon = 28,
                         model_spec = get_model_spec(),
-                        fit_opts = get_mcmc_options(),
+                        fit_opts = list(),
                         generate_initial_values = TRUE,
                         initial_values_seed = NULL,
                         compiled_model = compile_model()) {
@@ -179,6 +184,22 @@ wwinference <- function(ww_data,
     # Check that data is compatible with specifications
     assert_no_dates_after_max(ww_data$date, forecast_date)
   }
+
+  fit_opts_use <- get_mcmc_options() # get defaults
+  # this overwrites defaults with all and only the values the user sets in
+  # `fit_opts`
+  fit_opts_use[names(fit_opts)] <- fit_opts
+
+  # Check that the fit options passed to wwinference are valid cmdstanr::sample
+  # arguments
+  checkmate::assert_names(names(fit_opts),
+    subset.of = formalArgs(compiled_model$sample)
+  )
+
+
+  # Check that data is compatible with specifications
+  assert_no_dates_after_max(ww_data$date, forecast_date)
+  assert_no_dates_after_max(count_data$date, forecast_date)
 
 
   # Check that data is compatible with specifications
@@ -253,7 +274,7 @@ wwinference <- function(ww_data,
   if (generate_initial_values) {
     withr::with_seed(initial_values_seed, {
       init_lists <- lapply(
-        1:fit_opts$n_chains,
+        1:fit_opts_use$chains,
         \(x) {
           get_inits_for_one_chain(stan_data_list)
         }
@@ -269,7 +290,7 @@ wwinference <- function(ww_data,
   fit <- safe_fit_model(
     compiled_model = compiled_model,
     stan_data_list = stan_data_list,
-    fit_opts = fit_opts,
+    fit_opts = fit_opts_use,
     init_lists = init_lists
   )
 
@@ -378,15 +399,18 @@ fit_model <- function(compiled_model,
                       stan_data_list,
                       fit_opts,
                       init_lists) {
-  fit <- compiled_model$sample(
-    data = stan_data_list,
-    init = init_lists,
-    seed = fit_opts$seed,
-    iter_sampling = fit_opts$iter_sampling,
-    iter_warmup = fit_opts$iter_warmup,
-    max_treedepth = fit_opts$max_treedepth,
-    chains = fit_opts$n_chains,
-    parallel_chains = fit_opts$n_chains
+  args_for_stan_sampling <-
+    c(
+      list(
+        data = stan_data_list,
+        init = init_lists
+      ),
+      fit_opts
+    )
+
+  fit <- do.call(
+    compiled_model$sample,
+    args_for_stan_sampling
   )
 
   return(fit)
@@ -397,42 +421,45 @@ fit_model <- function(compiled_model,
 #'
 #' @description
 #' This function returns a list of MCMC settings to pass to the
-#' `cmdstanr::sample()` function to fit the model. The default settings are
-#' specified for production-level runs, consider adjusting to optimize
-#' for speed while iterating.
+#' [`$sample()`][cmdstanr::model-method-sample] function to fit the model.
+#' The default settings are specified for production-level runs.
+#' All input arguments to [`$sample()`][cmdstanr::model-method-sample]
+#' are configurable by the user. See
+#' [`$sample()`][cmdstanr::model-method-sample] documentation
+#' for details of the available arguments.
 #'
 #'
 #' @param iter_warmup integer indicating the number of warm-up iterations,
-#' default is `750`
+#' default is `750`.
 #' @param iter_sampling integer indicating the number of sampling iterations,
-#' default is `500`
-#' @param n_chains integer indicating the number of MCMC chains to run, default
-#' is `4`
-#' @param seed set of integers indicating the random seed of the stan sampler,
-#' default is NULL
+#' default is `500`.
+#' @param seed integer, A seed for the (P)RNG to pass to CmdStan. In the case
+#' of multi-chain sampling the single seed will automatically be augmented by
+#' the the run (chain) ID so that each chain uses a different seed.
+#' Default is `NULL`.
+#' @param chains integer indicating the number of MCMC chains to run, default
+#' is `4`.
 #' @param adapt_delta float between 0 and 1 indicating the average acceptance
-#' probability, default is `0.95`
+#' probability, default is `0.95`.
 #' @param max_treedepth integer indicating the maximum tree depth of the
-#' sampler, default is 12
+#' sampler, default is 12.
 #'
-#' @return a list of mcmc settings with the values given by the  function
+#' @return A list of MCMC settings with the values given by the function.
 #' arguments
-#' @export
 #'
-#' @examples
-#' mcmc_settings <- get_mcmc_options()
+#' @export
 get_mcmc_options <- function(
     iter_warmup = 750,
     iter_sampling = 500,
-    n_chains = 4,
     seed = NULL,
+    chains = 4,
     adapt_delta = 0.95,
     max_treedepth = 12) {
   mcmc_settings <- list(
     iter_warmup = iter_warmup,
     iter_sampling = iter_sampling,
-    n_chains = n_chains,
     seed = seed,
+    chains = chains,
     adapt_delta = adapt_delta,
     max_treedepth = max_treedepth
   )
