@@ -10,7 +10,8 @@ jobs:
     strategy:
       matrix:
         r-version: ["4.1.0", "release"]
-    runs-on: ubuntu-latest
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on:  ${{matrix.os}}
     steps:
     - uses: actions/checkout@v4
     - uses: r-lib/actions/setup-r@v2
