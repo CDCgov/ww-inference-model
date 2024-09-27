@@ -17,6 +17,7 @@ vignette: >
 
 ```{r setup, echo=FALSE}
 knitr::opts_chunk$set(dev = "svg")
+options(mc.cores = 4) # This tells cmdstan to run the 4 chains in parallel
 ```
 
 # Quick start
@@ -357,7 +358,7 @@ to achieve improved model convergence and/or faster model fitting times. See the
 
 We also pass our preprocessed datasets (`ww_data_to_fit` and
 `hosp_data_preprocessed`), specify our model using `get_model_spec()`,
-set the MCMC settings using `get_mcmc_options()`, and pass in our
+set the MCMC settings by passing a list of arguments to `fit_opts` that will be passed to the `cmdstanr::sample()` function, and pass in our
 pre-compiled model(`model`) to `wwinference()` where they are combined and
 used to fit the model.
 
@@ -374,7 +375,7 @@ ww_fit <- wwinference(
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(seed = 123),
+  fit_opts = list(seed = 123),
   compiled_model = model
 )
 ```
@@ -561,7 +562,7 @@ fit_hosp_only <- wwinference(
     include_ww = FALSE,
     params = params
   ),
-  fit_opts = get_mcmc_options(seed = 123),
+  fit_opts = list(seed = 123),
   compiled_model = model
 )
 ```

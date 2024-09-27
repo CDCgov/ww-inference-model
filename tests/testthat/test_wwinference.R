@@ -59,12 +59,9 @@ test_that("wwinference model can compile", {
 test_that("Function to get mcmc options produces the expected outputs", {
   mcmc_options <- get_mcmc_options()
   expected_names <- c(
-    "iter_warmup", "iter_sampling",
-    "n_chains", "seed", "adapt_delta", "max_treedepth",
-    "compute_likelihood"
+    "iter_warmup", "iter_sampling", "seed", "adapt_delta", "max_treedepth"
   )
-  # Checkmade doesn't work here for a list, says it must be a character vector
-  expect_true(all(names(mcmc_options) %in% expected_names))
+  checkmate::expect_names(names(mcmc_options), must.include = expected_names)
 })
 
 test_that("Function to get model specs produces expected outputs", {
@@ -76,4 +73,17 @@ test_that("Function to get model specs produces expected outputs", {
   )
   # Checkmade doesn't work here for a list, says it must be a character vector
   expect_true(all(names(model_spec) %in% expected_names))
+})
+
+test_that("Passing invalid args to fit_opts throws an error ", {
+  expect_error(
+    wwinference(
+      ww_data = input_ww_data,
+      count_data = input_count_data,
+      forecast_date = forecast_date,
+      model_spec = get_model_spec,
+      fit_opts = list(not_an_arg = 4)
+    ),
+    regexp = c("Names must be a subset of ")
+  )
 })

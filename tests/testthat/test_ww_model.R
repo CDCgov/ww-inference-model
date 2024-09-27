@@ -2,12 +2,17 @@ test_that("Test the wastewater inference model on simulated data.", {
   #######
   # run model briefly on the simulated data
   #######
-  withr::with_seed(5, {
+
+  # This seed sets the initial values seed. Must be the same as the one used
+  # in generating the test data.
+  # model_test_data contains the seed that gets passed to stan
+  withr::with_seed(55, {
     fit <- do.call(
-      wwinference::wwinference,
+      silent_wwinference,
       model_test_data
     )
   })
+
 
   params <- model_test_data$model_spec$params
   obs_last_draw <- posterior::subset_draws(fit$fit$result$draws(),
