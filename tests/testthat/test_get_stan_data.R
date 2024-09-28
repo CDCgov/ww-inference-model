@@ -64,6 +64,28 @@ input_ww_data <- get_input_ww_data_for_stan(
   last_count_data_date,
   calibration_time
 )
+date_time_spine <- get_date_time_spine(
+  forecast_date = forecast_date,
+  input_count_data = input_count_data,
+  last_count_data_date = last_count_data_date,
+  forecast_horizon = forecast_horizon,
+  calibration_time = calibration_time
+)
+
+lab_site_site_spine <- get_lab_site_site_spine(
+  input_ww_data = input_ww_data
+)
+
+site_subpop_spine <- get_site_subpop_spine(
+  input_ww_data = input_ww_data,
+  input_count_data = input_count_data
+)
+
+lab_site_subpop_spine <- get_lab_site_subpop_spine(
+  lab_site_site_spine = lab_site_site_spine,
+  site_subpop_spine = site_subpop_spine
+)
+
 
 test_that(paste0(
   "Test that the number of subpopulations is correct for the",
@@ -72,6 +94,12 @@ test_that(paste0(
   stan_data <- get_stan_data(
     input_count_data,
     input_ww_data,
+    date_time_spine,
+    lab_site_site_spine,
+    site_subpop_spine,
+    lab_site_subpop_spine,
+    last_count_data_date,
+    first_count_data_date,
     forecast_date,
     forecast_horizon,
     calibration_time,
@@ -92,11 +120,26 @@ test_that(paste0(
 ), {
   input_count_data_mod <- input_count_data
   input_count_data_mod$total_pop <- sum(unique(input_ww_data$site_pop) - 100)
+  site_subpop_spine_mod <- get_site_subpop_spine(
+    input_ww_data = input_ww_data,
+    input_count_data = input_count_data_mod
+  )
+
+  lab_site_subpop_spine_mod <- get_lab_site_subpop_spine(
+    lab_site_site_spine = lab_site_site_spine,
+    site_subpop_spine = site_subpop_spine_mod
+  )
 
   expect_warning({
     stan_data_mod <- get_stan_data(
       input_count_data_mod,
       input_ww_data,
+      date_time_spine,
+      lab_site_site_spine,
+      site_subpop_spine_mod,
+      lab_site_subpop_spine_mod,
+      last_count_data_date,
+      first_count_data_date,
       forecast_date,
       forecast_horizon,
       calibration_time,
@@ -117,9 +160,27 @@ test_that(paste0(
   "Test that the model handles include_ww = 0 ",
   "appropriately by only estimating one subpopulation"
 ), {
+  # This happens upstream in wwinference
+  input_ww_data_mod <- NULL
+  site_subpop_spine_mod <- get_site_subpop_spine(
+    input_ww_data = input_ww_data_mod,
+    input_count_data = input_count_data
+  )
+
+  lab_site_subpop_spine_mod <- get_lab_site_subpop_spine(
+    lab_site_site_spine = lab_site_site_spine,
+    site_subpop_spine = site_subpop_spine_mod
+  )
+
   stan_data_ho <- get_stan_data(
     input_count_data,
-    input_ww_data,
+    input_ww_data_mod,
+    date_time_spine,
+    lab_site_site_spine,
+    site_subpop_spine_mod,
+    lab_site_subpop_spine_mod,
+    last_count_data_date,
+    first_count_data_date,
     forecast_date,
     forecast_horizon,
     calibration_time,
@@ -141,6 +202,12 @@ test_that(paste0(
   stan_data_ho <- get_stan_data(
     input_count_data,
     input_ww_data = NULL,
+    date_time_spine,
+    lab_site_site_spine,
+    site_subpop_spine_mod,
+    lab_site_subpop_spine_mod,
+    last_count_data_date,
+    first_count_data_date,
     forecast_date,
     forecast_horizon,
     calibration_time,
@@ -197,26 +264,6 @@ test_that(paste0(
 })
 
 
-test_that(paste0(
-  "Test that passing input wastewater and admissions data and ",
-  "parameters works as expected"
-), {
-  expect_no_error(
-    get_stan_data(
-      input_count_data,
-      input_ww_data,
-      forecast_date,
-      forecast_horizon,
-      calibration_time,
-      generation_interval,
-      inf_to_count_delay,
-      infection_feedback_pmf,
-      params,
-      include_ww
-    )
-  )
-})
-
 
 test_that(paste0(
   "Test that passing out of window wastewater data behaves as",
@@ -250,10 +297,38 @@ test_that(paste0(
     last_count_data_date,
     calibration_time
   )
+  date_time_spine <- get_date_time_spine(
+    forecast_date = forecast_date,
+    input_count_data = input_count_data,
+    last_count_data_date = last_count_data_date,
+    forecast_horizon = forecast_horizon,
+    calibration_time = calibration_time
+  )
+
+  lab_site_site_spine_od <- get_lab_site_site_spine(
+    input_ww_data = recent_input_ww_data_for_stan
+  )
+
+  site_subpop_spine_od <- get_site_subpop_spine(
+    input_ww_data = recent_input_ww_data_for_stan,
+    input_count_data = input_count_data
+  )
+
+  lab_site_subpop_spine_od <- get_lab_site_subpop_spine(
+    lab_site_site_spine = lab_site_site_spine,
+    site_subpop_spine = site_subpop_spine_od
+  )
+
 
   expect_error(get_stan_data(
     input_count_data,
     recent_input_ww_data_for_stan,
+    date_time_spine,
+    lab_site_site_spine_od,
+    site_subpop_spine_od,
+    lab_site_subpop_spine_od,
+    last_count_data_date,
+    first_count_data_date,
     forecast_date,
     forecast_horizon,
     calibration_time,
@@ -292,11 +367,37 @@ test_that(paste0(
     last_count_data_date,
     calibration_time
   )
+  date_time_spine <- get_date_time_spine(
+    forecast_date = forecast_date,
+    input_count_data = input_count_data,
+    last_count_data_date = last_count_data_date,
+    forecast_horizon = forecast_horizon,
+    calibration_time = calibration_time
+  )
+  lab_site_site_spine_old <- get_lab_site_site_spine(
+    input_ww_data = old_input_ww_data_for_stan
+  )
+
+  site_subpop_spine_old <- get_site_subpop_spine(
+    input_ww_data = old_input_ww_data_for_stan,
+    input_count_data = input_count_data
+  )
+
+  lab_site_subpop_spine_old <- get_lab_site_subpop_spine(
+    lab_site_site_spine = lab_site_site_spine_old,
+    site_subpop_spine = site_subpop_spine_old
+  )
 
 
   expect_error(get_stan_data(
     input_count_data,
     old_input_ww_data,
+    date_time_spine,
+    lab_site_site_spine_od,
+    site_subpop_spine_od,
+    lab_site_subpop_spine_od,
+    last_count_data_date,
+    first_count_data_date,
     forecast_date,
     forecast_horizon,
     calibration_time,
@@ -312,6 +413,12 @@ test_that("Test that pmf check works as expected", {
   expect_warning(get_stan_data(
     input_count_data,
     input_ww_data,
+    date_time_spine,
+    lab_site_site_spine,
+    site_subpop_spine,
+    lab_site_subpop_spine,
+    last_count_data_date,
+    first_count_data_date,
     forecast_date,
     forecast_horizon,
     calibration_time,
@@ -325,6 +432,12 @@ test_that("Test that pmf check works as expected", {
   expect_warning(get_stan_data(
     input_count_data,
     input_ww_data,
+    date_time_spine,
+    lab_site_site_spine,
+    site_subpop_spine,
+    lab_site_subpop_spine,
+    last_count_data_date,
+    first_count_data_date,
     forecast_date,
     forecast_horizon,
     calibration_time,
@@ -338,6 +451,12 @@ test_that("Test that pmf check works as expected", {
   expect_warning(get_stan_data(
     input_count_data,
     input_ww_data,
+    date_time_spine,
+    lab_site_site_spine,
+    site_subpop_spine,
+    lab_site_subpop_spine,
+    last_count_data_date,
+    first_count_data_date,
     forecast_date,
     forecast_horizon,
     calibration_time,
@@ -351,6 +470,12 @@ test_that("Test that pmf check works as expected", {
   expect_error(get_stan_data(
     input_count_data,
     input_ww_data,
+    date_time_spine,
+    lab_site_site_spine,
+    site_subpop_spine,
+    lab_site_subpop_spine,
+    last_count_data_date,
+    first_count_data_date,
     forecast_date,
     forecast_horizon,
     calibration_time,
