@@ -234,13 +234,14 @@ get_site_subpop_spine <- function(input_ww_data,
 #'
 get_lab_site_subpop_spine <- function(lab_site_site_spine,
                                       site_subpop_spine) {
+  ww_data_present <- !nrow(lab_site_site_spine) == 0
   # Get lab_site to subpop spine
-  if (include_ww == 1) {
+  if (ww_data_present) {
     lab_site_subpop_spine <- lab_site_site_spine |>
       dplyr::left_join(site_subpop_spine, by = "site_index") |>
       pull("subpop_index")
   } else {
-    lab_site_subpop_spine <- numeric()
+    lab_site_subpop_spine <- tibble::tibble()
   }
 
   return(lab_site_subpop_spine)

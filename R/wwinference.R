@@ -239,7 +239,7 @@ wwinference <- function(ww_data,
 
   lab_site_subpop_spine <- get_lab_site_subpop_spine(
     lab_site_site_spine = lab_site_site_spine,
-    site_subpop_spine
+    site_subpop_spine = site_subpop_spine
   )
 
 
