@@ -189,9 +189,9 @@ get_site_subpop_spine <- function(input_ww_data,
 
     if (add_auxiliary_subpop) {
       aux_subpop <- tibble::tibble(
-        site_index = NA,
-        site = NA,
-        site_pop = total_pop - sum(site_indices$site_pop)
+        "site_index" = NA,
+        "site" = NA,
+        "site_pop" = total_pop - sum(site_indices$site_pop)
       )
     } else {
       aux_subpop <- tibble::tibble()
@@ -203,7 +203,7 @@ get_site_subpop_spine <- function(input_ww_data,
         subpop_index = dplyr::row_number()
       ) |>
       dplyr::mutate(
-        subpop_name = ifelse(!is.na(site),
+        subpop_name = ifelse(!is.na(.data$site),
           glue::glue("Site: {site}"),
           "remainder of population"
         )
@@ -213,11 +213,11 @@ get_site_subpop_spine <- function(input_ww_data,
       )
   } else {
     site_subpop_spine <- tibble::tibble(
-      site_index = NA,
-      site = NA,
-      subpop_pop = total_pop,
-      subpop_index = 1,
-      subpop_name = "total population"
+      "site_index" = NA,
+      "site" = NA,
+      "subpop_pop" = total_pop,
+      "subpop_index" = 1,
+      "subpop_name" = "total population"
     )
   }
 
