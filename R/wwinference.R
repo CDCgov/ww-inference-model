@@ -159,6 +159,7 @@ wwinference <- function(ww_data,
                         generate_initial_values = TRUE,
                         initial_values_seed = NULL,
                         compiled_model = compile_model()) {
+
   include_ww <- as.integer(model_spec$include_ww)
 
   if (is.null(forecast_date)) {
@@ -185,6 +186,7 @@ wwinference <- function(ww_data,
     assert_no_dates_after_max(ww_data$date, forecast_date)
   }
 
+
   fit_opts_use <- get_mcmc_options() # get defaults
   # this overwrites defaults with all and only the values the user sets in
   # `fit_opts`
@@ -201,9 +203,6 @@ wwinference <- function(ww_data,
   assert_no_dates_after_max(ww_data$date, forecast_date)
   assert_no_dates_after_max(count_data$date, forecast_date)
 
-
-  # Check that data is compatible with specifications
-  assert_no_dates_after_max(count_data$date, forecast_date)
   # Get the input count data that will get passed directly to stan
   input_count_data <- get_input_count_data_for_stan(
     count_data,
@@ -239,6 +238,11 @@ wwinference <- function(ww_data,
     input_count_data = input_count_data
   )
 
+  # Get lab_site to subpop spine
+  lab_site_subpop_spine <- lab_site_site_spine |>
+    dplyr::left_join(site_subpop_spine, by = "site_index") |>
+    pull("subpop_index")
+
 
   raw_input_data <- list(
     input_count_data = input_count_data,
@@ -246,6 +250,7 @@ wwinference <- function(ww_data,
     date_time_spine = date_time_spine,
     lab_site_site_spine = lab_site_site_spine,
     site_subpop_spine = site_subpop_spine,
+    lab_site_subpop_spine = lab_site_subpop_spine
   )
 
   # If checks pass, create stan data object
@@ -255,6 +260,9 @@ wwinference <- function(ww_data,
     date_time_spine = date_time_spine,
     lab_site_site_spine = lab_site_site_spine,
     site_subpop_spine = site_subpop_spine,
+    lab_site_subpop_spine = lab_site_subpop_spine,
+    last_count_data_date = last_count_data_date,
+    first_count_data_date = first_count_data_date,
     forecast_date = forecast_date,
     calibration_time = calibration_time,
     forecast_horizon = forecast_horizon,
