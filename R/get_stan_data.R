@@ -238,8 +238,7 @@ get_lab_site_subpop_spine <- function(lab_site_site_spine,
   # Get lab_site to subpop spine
   if (ww_data_present) {
     lab_site_subpop_spine <- lab_site_site_spine |>
-      dplyr::left_join(site_subpop_spine, by = "site_index") |>
-      pull("subpop_index")
+      dplyr::left_join(site_subpop_spine, by = "site_index")
   } else {
     lab_site_subpop_spine <- tibble::tibble()
   }
@@ -549,7 +548,7 @@ get_stan_data <- function(input_count_data,
     ww_sampled_times = ww_vals$ww_sampled_times,
     hosp_times = count_indices$count_times,
     ww_sampled_subpops = ww_vals$ww_sampled_subpops,
-    lab_site_to_subpop_map = lab_site_subpop_spine,
+    lab_site_to_subpop_map = lab_site_subpop_spine$subpop_index,
     ww_sampled_lab_sites = ww_vals$ww_sampled_lab_sites,
     ww_log_lod = ww_vals$ww_lod,
     ww_censored = ww_vals$ww_censored,

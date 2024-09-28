@@ -50,6 +50,9 @@ get_draws.wwinference_fit <- function(x, ..., what = "all") {
   get_draws.data.frame(
     x = x$raw_input_data$input_ww_data,
     count_data = x$raw_input_data$input_count_data,
+    date_time_spine = x$raw_input_data$date_time_spine,
+    site_subpop_spine = x$raw_input_data$site_subpop_spine,
+    lab_site_subpop_spine = x$raw_input_data$lab_site_subpop_spine,
     stan_data_list = x$stan_data_list,
     fit_obj = x$fit,
     what = what
@@ -77,6 +80,9 @@ get_draws_what_ok <- c(
 #' @rdname get_draws
 #' @param count_data A dataframe of the preprocessed daily count data (e.g.
 #' hospital admissions) from the "global" population
+#' @param date_time_spine tibble mapping dates to time in days
+#' @param site_subpop_spine tibble mapping sites to subpopulations
+#' @param lab_site_subpop_spine tibble mapping lab-sites to subpopulations
 #' @param stan_data_list A list containing all the data passed to stan for
 #' fitting the model
 #' @param fit_obj a CmdStan object that is the output of fitting the model to
@@ -84,6 +90,9 @@ get_draws_what_ok <- c(
 #' @export
 get_draws.data.frame <- function(x,
                                  count_data,
+                                 date_time_spine,
+                                 site_subpop_spine,
+                                 lab_site_subpop_spine,
                                  stan_data_list,
                                  fit_obj,
                                  ...,
@@ -133,16 +142,6 @@ get_draws.data.frame <- function(x,
 
   draws <- fit_obj$result$draws()
 
-  # Get the necessary mappings needed to join draws to data
-  date_time_spine <- tibble::tibble(
-    date = seq(
-      from = min(count_data$date),
-      to = min(count_data$date) + stan_data_list$ot + stan_data_list$ht,
-      by = "days"
-    )
-  ) |>
-    dplyr::mutate(t = row_number())
-
 
   count_draws <- if (what_ok["predicted_counts"]) {
     draws |> # predicted_counts
@@ -173,16 +172,6 @@ get_draws.data.frame <- function(x,
 
 
   ww_draws <- if (what_ok["predicted_ww"]) {
-    # Lab-site index to corresponding lab, site, and site population size
-    lab_site_spine <- x |>
-      dplyr::distinct(
-        .data$site,
-        .data$lab,
-        .data$lab_site_index,
-        .data$site_pop,
-        .data$lab_site_name
-      )
-
     draws |>
       tidybayes::spread_draws(!!str2lang("pred_ww[lab_site_index, t]")) |>
       dplyr::rename("pred_value" = "pred_ww") |>
@@ -191,7 +180,7 @@ get_draws.data.frame <- function(x,
       ) |>
       dplyr::select("lab_site_index", "t", "pred_value", "draw") |>
       dplyr::left_join(date_time_spine, by = "t") |>
-      dplyr::left_join(lab_site_spine, by = "lab_site_index") |>
+      dplyr::left_join(lab_site_subpop_spine, by = "lab_site_index") |>
       dplyr::left_join(
         x |> dplyr::distinct(
           .data$log_genome_copies_per_ml,
@@ -207,7 +196,6 @@ get_draws.data.frame <- function(x,
       dplyr::ungroup() |>
       dplyr::mutate(
         observed_value = .data$log_genome_copies_per_ml,
-        subpop = glue::glue("Site: {site}")
       ) |>
       dplyr::select(
         "date",
@@ -215,8 +203,8 @@ get_draws.data.frame <- function(x,
         "pred_value",
         "draw",
         "observed_value",
-        "subpop",
-        "site_pop",
+        "subpop_name",
+        "subpop_pop",
         "site",
         "lab",
         "log_lod",
@@ -253,29 +241,6 @@ get_draws.data.frame <- function(x,
   }
 
   subpop_rt_draws <- if (what_ok["subpop_rt"]) {
-    # Site index to corresponding site and subpopulation size
-    site_spine <- x |>
-      dplyr::distinct(.data$site, .data$site_index, .data$site_pop) |>
-      dplyr::mutate(subpop = glue::glue("Site: {as.factor(.data$site)}")) |>
-      dplyr::rename(
-        "subpop_pop" = "site_pop",
-        "subpop_index" = "site_index"
-      )
-
-    # If we added an auxiliary site, we need to adjust indexing accordingly
-    if (length(stan_data_list$subpop_size) > nrow(site_spine)) {
-      subpop_spine <- site_spine |>
-        dplyr::mutate(subpop_index = .data$subpop_index + 1) |>
-        dplyr::bind_rows(tibble::tibble(
-          site = NA,
-          subpop_index = 1,
-          subpop_pop = stan_data_list$subpop_size[1],
-          subpop = "remainder of pop"
-        ))
-    } else {
-      subpop_spine <- site_spine
-    }
-
     draws |>
       tidybayes::spread_draws(!!str2lang("r_subpop_t[subpop_index, t]")) |>
       dplyr::rename("pred_value" = "r_subpop_t") |>
@@ -285,13 +250,13 @@ get_draws.data.frame <- function(x,
       ) |>
       dplyr::select("subpop_index", "t", "pred_value", "draw") |>
       dplyr::left_join(date_time_spine, by = "t") |>
-      dplyr::left_join(subpop_spine, by = "subpop_index") |>
+      dplyr::left_join(site_subpop_spine, by = "subpop_index") |>
       dplyr::ungroup() |>
       dplyr::select(
         "date",
         "pred_value",
         "draw",
-        "subpop",
+        "subpop_name",
         "subpop_pop",
         "site"
       )

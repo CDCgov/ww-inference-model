@@ -134,7 +134,7 @@ get_plot_ww_conc <- function(draws,
         dplyr::filter(.data$below_lod == 1),
       color = "blue", show.legend = FALSE, size = 0.5
     ) +
-    facet_wrap(~site_lab_name, scales = "free") +
+    facet_wrap(~lab_site_name, scales = "free") +
     geom_vline(
       xintercept = lubridate::ymd(forecast_date),
       linetype = "dashed"
@@ -261,7 +261,7 @@ get_plot_subpop_rt <- function(draws,
       linetype = "dashed",
       show.legend = FALSE
     ) +
-    facet_wrap(~subpop, scales = "free") +
+    facet_wrap(~subpop_name, scales = "free") +
     geom_hline(aes(yintercept = 1), linetype = "dashed") +
     xlab("") +
     ylab("Subpopulation R(t)") +

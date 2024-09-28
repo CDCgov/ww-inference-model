@@ -17,7 +17,17 @@ get_draws_df(x, ...)
 
 \method{get_draws}{default}(x, ..., what = "all")
 
-\method{get_draws}{data.frame}(x, count_data, stan_data_list, fit_obj, ..., what = "all")
+\method{get_draws}{data.frame}(
+  x,
+  count_data,
+  date_time_spine,
+  site_subpop_spine,
+  lab_site_subpop_spine,
+  stan_data_list,
+  fit_obj,
+  ...,
+  what = "all"
+)
 
 \method{plot}{wwinference_fit_draws}(x, y = NULL, what, ...)
 }
@@ -33,6 +43,12 @@ the function will extract all four variables.}
 
 \item{count_data}{A dataframe of the preprocessed daily count data (e.g.
 hospital admissions) from the "global" population}
+
+\item{date_time_spine}{tibble mapping dates to time in days}
+
+\item{site_subpop_spine}{tibble mapping sites to subpopulations}
+
+\item{lab_site_subpop_spine}{tibble mapping lab-sites to subpopulations}
 
 \item{stan_data_list}{A list containing all the data passed to stan for
 fitting the model}
