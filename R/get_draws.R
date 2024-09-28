@@ -386,8 +386,8 @@ new_wwinference_fit_draws <- function(
     "observed_value",
     "pred_value",
     "site",
-    "site_pop",
-    "subpop",
+    "subpop_pop",
+    "subpop_name",
     "lab_site_index"
   )
   if (length(predicted_ww)) {
@@ -408,8 +408,8 @@ new_wwinference_fit_draws <- function(
   }
 
   subpop_rt_colnames <- c(
-    "date", "draw", "pred_value", "site", "subpop_pop",
-    "subpop"
+    "date", "draw", "pred_value", "subpop_pop",
+    "subpop_name"
   )
   if (length(subpop_rt)) {
     checkmate::assert_names(
