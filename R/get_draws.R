@@ -258,7 +258,6 @@ get_draws.data.frame <- function(x,
         "draw",
         "subpop_name",
         "subpop_pop",
-        "site"
       )
   } else {
     NULL
