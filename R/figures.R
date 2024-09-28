@@ -129,6 +129,11 @@ get_plot_ww_conc <- function(draws,
     geom_point(aes(x = .data$date, y = .data$observed_value),
       color = "black", show.legend = FALSE, size = 0.5
     ) +
+    geom_point(
+      data = draws_to_plot |>
+        dplyr::filter(.data$below_lod == 1),
+      color = "blue", show.legend = FALSE, size = 0.5
+    ) +
     facet_wrap(~site_lab_name, scales = "free") +
     geom_vline(
       xintercept = lubridate::ymd(forecast_date),

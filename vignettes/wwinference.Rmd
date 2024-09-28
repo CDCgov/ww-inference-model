@@ -457,10 +457,9 @@ draws_explicit <- get_draws(
 ## Plotting the outputs
 
 We can create plots of the outputs using corresponding dataframes in the `draws`
-object and the fitting wrapper functions. Note that by default, these plots will not
-visualize data that was below the LOD (even though the fit incorporated
-them via the censored observation process.)
-
+object and the fitting wrapper functions. Note that by default, these plots
+will not include outliers that were flagged for exclusion. Data points
+that are below the LOD will be plotted in blue.
 
 ```{r generating-figures,  out.width='100%'}
 plot_hosp <- get_plot_forecasted_counts(
