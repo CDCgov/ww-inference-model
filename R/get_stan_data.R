@@ -240,7 +240,9 @@ get_lab_site_subpop_spine <- function(lab_site_site_spine,
     lab_site_subpop_spine <- lab_site_site_spine |>
       dplyr::left_join(site_subpop_spine, by = c("site_index", "site"))
   } else {
-    lab_site_subpop_spine <- tibble::tibble()
+    lab_site_subpop_spine <- tibble::tibble(
+      subpop_index = numeric()
+    )
   }
 
   return(lab_site_subpop_spine)
@@ -685,6 +687,17 @@ get_ww_data_sizes <- function(ww_data,
   return(data_sizes)
 }
 
+#' Get wastewater indices and values for stan
+#'
+#' @param input_ww_data tibble with the input wastewater data and indices
+#' needed for stan
+#' @param date_time_spine tibble mapping dates to time in days
+#' @param lab_site_site_spine tibble mapping lab-sites to sites
+#' @param site_subpop_spine tibble mapping sites to subpopulations
+#' @param lab_site_subpop_spine tibble mapping lab-sites to subpopulations
+#'
+#' @return a list of the vectors needed for stan
+#' @export
 get_ww_indices_and_values <- function(input_ww_data,
                                       date_time_spine,
                                       lab_site_site_spine,

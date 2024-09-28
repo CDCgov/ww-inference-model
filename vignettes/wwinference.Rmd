@@ -448,6 +448,9 @@ This is demonstrated below:
 draws_explicit <- get_draws(
   x = ww_fit$raw_input_data$input_ww_data,
   count_data = ww_fit$raw_input_data$input_count_data,
+  date_time_spine = ww_fit$raw_input_data$date_time_spine,
+  site_subpop_spine = ww_fit$raw_input_data$site_subpop_spine,
+  lab_site_subpop_spine = ww_fit$raw_input_data$lab_site_subpop_spine,
   stan_data_list = ww_fit$stan_data_list,
   fit_obj = ww_fit$fit
 )

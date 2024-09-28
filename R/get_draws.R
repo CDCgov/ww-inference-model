@@ -341,7 +341,7 @@ print.wwinference_fit_draws <- function(x, ...) {
       sprintf(
         " - `$subpop_rt` with %i rows across %i subpopulations\n",
         nrow(x$subpop_rt),
-        length(unique(x$subpop_rt$subpop))
+        length(unique(x$subpop_rt$subpop_name))
       )
     )
   }
@@ -408,7 +408,10 @@ new_wwinference_fit_draws <- function(
   }
 
   subpop_rt_colnames <- c(
-    "date", "draw", "pred_value", "subpop_pop",
+    "date",
+    "draw",
+    "pred_value",
+    "subpop_pop",
     "subpop_name"
   )
   if (length(subpop_rt)) {
