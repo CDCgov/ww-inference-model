@@ -130,19 +130,26 @@ get_date_time_spine <- function(forecast_date,
 #' @export
 #'
 get_lab_site_site_spine <- function(input_ww_data) {
-  lab_site_site_spine <-
-    input_ww_data |>
-    dplyr::select(
-      "lab_site_index", "site_index",
-      "site", "lab", "site_pop"
-    ) |>
-    dplyr::arrange(.data$lab_site_index) |>
-    dplyr::distinct() |>
-    dplyr::mutate(
-      "lab_site_name" = glue::glue(
-        "Site: {site}, Lab: {lab}"
+  ww_data_present <- !is.null(input_ww_data)
+
+  if (ww_data_present) {
+    lab_site_site_spine <-
+      input_ww_data |>
+      dplyr::select(
+        "lab_site_index", "site_index",
+        "site", "lab", "site_pop"
+      ) |>
+      dplyr::arrange(.data$lab_site_index) |>
+      dplyr::distinct() |>
+      dplyr::mutate(
+        "lab_site_name" = glue::glue(
+          "Site: {site}, Lab: {lab}"
+        )
       )
-    )
+  } else {
+    lab_site_site_spine <- tibble::tibble()
+  }
+
 
   return(lab_site_site_spine)
 }
@@ -163,14 +170,13 @@ get_lab_site_site_spine <- function(input_ww_data) {
 #'
 get_site_subpop_spine <- function(input_ww_data,
                                   input_count_data) {
-
-  ww_data_present <- nrow(input_ww_data) != 0
+  ww_data_present <- !is.null(input_ww_data)
 
   total_pop <- input_count_data |>
     dplyr::distinct(.data$total_pop) |>
     dplyr::pull()
 
-  if(ww_data_present){
+  if (ww_data_present) {
     add_auxiliary_subpop <- ifelse(
       total_pop > sum(unique(input_ww_data$site_pop)),
       TRUE,
@@ -198,15 +204,14 @@ get_site_subpop_spine <- function(input_ww_data,
       ) |>
       dplyr::mutate(
         subpop_name = ifelse(!is.na(site),
-                             glue::glue("Site: {site}"),
-                             "remainder of population"
+          glue::glue("Site: {site}"),
+          "remainder of population"
         )
       ) |>
       dplyr::rename(
         "subpop_pop" = "site_pop"
       )
-  }else{
-
+  } else {
     site_subpop_spine <- tibble::tibble(
       site_index = NA,
       site = NA,
@@ -219,10 +224,46 @@ get_site_subpop_spine <- function(input_ww_data,
   return(site_subpop_spine)
 }
 
+#' Get lab-site subpopulation spine
+#'
+#' @param lab_site_site_spine tibble mapping lab-sites to sites
+#' @param site_subpop_spine tibble mapping sites to subpopulations
+#'
+#' @return a tibble mapping lab-sites to subpopulations
+#' @export
+#'
+get_lab_site_subpop_spine <- function(lab_site_site_spine,
+                                      site_subpop_spine) {
+  # Get lab_site to subpop spine
+  if (include_ww == 1) {
+    lab_site_subpop_spine <- lab_site_site_spine |>
+      dplyr::left_join(site_subpop_spine, by = "site_index") |>
+      pull("subpop_index")
+  } else {
+    lab_site_subpop_spine <- numeric()
+  }
+
+  return(lab_site_subpop_spine)
+}
+
+
+
+
 
 #' Get stan data for ww + hosp model
 #'
 
+#' @param input_count_data tibble with the input count data needed for stan
+#' @param input_ww_data tibble with the input wastewater data and indices
+#' needed for stan
+#' @param date_time_spine tibble mapping dates to time in days
+#' @param lab_site_site_spine tibble mapping lab-sites to sites
+#' @param site_subpop_spine tibble mapping sites to subpopulations
+#' @param lab_site_subpop_spine tibble mapping lab-sites to subpopulations
+#' @param last_count_data_date string indicating the date of the last data
+#' point in the count dataset in ISO8601 convention e.g. YYYY-MM-DD
+#' @param first_count_data_date string indicating the date of the first data
+#' point in the count dataset in ISO8601 convention e.g. YYYY-MM-DD
 #' @param forecast_date string indicating the forecast date in ISO8601
 #'  convention e.g. YYYY-MM-DD
 #' @param forecast_horizon integer indicating the number of days to make a
@@ -308,9 +349,35 @@ get_site_subpop_spine <- function(input_ww_data,
 #'   last_count_data_date,
 #'   calibration_time
 #' )
+#' date_time_spine <- get_date_time_spine(
+#'   forecast_date = forecast_date,
+#'   input_count_data = input_count_data,
+#'   last_count_data_date = last_count_data_date,
+#'   forecast_horizon = forecast_horizon,
+#'   calibration_time = calibration_time
+#' )
+#' lab_site_site_spine <- get_lab_site_site_spine(
+#'   input_ww_data = input_ww_data
+#' )
+#' site_subpop_spine <- get_site_subpop_spine(
+#'   input_ww_data = input_ww_data,
+#'   input_count_data = input_count_data
+#' )
+#' lab_site_subpop_spine <- get_lab_site_subpop_spine(
+#'   lab_site_site_spine = lab_site_site_spine,
+#'   site_subpop_spine
+#' )
+#'
+#'
 #' stan_data_list <- get_stan_data(
 #'   input_count_data_for_stan,
 #'   input_ww_data_for_stan,
+#'   date_time_spine,
+#'   lab_site_site_spine,
+#'   site_subpop_spine,
+#'   lab_site_subpop_spine,
+#'   last_count_data_date,
+#'   first_count_data_date,
 #'   forecast_date,
 #'   forecast_horizon,
 #'   calibration_time,
@@ -394,26 +461,6 @@ get_stan_data <- function(input_count_data,
     lab_site_subpop_spine = lab_site_subpop_spine
   )
 
-  #  # Returns a list of the vectors of lod values, the site population sizes in
-  # # order of the site index, a vector of observations of the log of
-  # # the genome copies per ml
-  # ww_values <- get_ww_values(
-  #   input_ww_data
-  # )
-  # # Returns a list with the numbers of elements needed for the stan model
-  # ww_data_sizes <- get_ww_data_sizes(
-  #   input_ww_data
-  # )
-  # # Returns the vectors of indices you need to map latent variables to
-  # # observations
-  # ww_indices <- get_ww_data_indices(
-  #   input_ww_data,
-  #   first_count_data_date,
-  #   owt = ww_data_sizes$owt
-  # )
-  # # Ensure that both datasets have overlap with one another, are sufficient
-  # # in length for the specified calibration time, and have proper time indexing
-
   stopifnot(
     "Wastewater sampled times not equal to length of input ww data" =
       length(ww_vals$ww_sampled_times) == ww_data_sizes$owt
@@ -423,18 +470,6 @@ get_stan_data <- function(input_count_data,
     "Prop of population size covered by wastewater: ",
     sum(unique(input_ww_data$site_pop)) / pop
   )
-
-  # # Logic to determine the number of subpopulations to estimate R(t) for:
-  # # First determine if we need to add an additional subpopulation
-  # add_auxiliary_subpop <- ifelse(pop > sum(ww_values$pop_ww), TRUE, FALSE)
-  # # Then get the number of subpopulations, the population to normalize by
-  # # (sum of the subpopulations), and the vector of sizes of each subpopulation
-  # subpop_data <- get_subpop_data(add_auxiliary_subpop,
-  #   state_pop = pop,
-  #   pop_ww = ww_values$pop_ww,
-  #   n_ww_sites = ww_data_sizes$n_ww_sites,
-  #   include_ww = include_ww
-  # )
 
 
   # Get count data inputs-----------------------------------------------
@@ -486,24 +521,6 @@ get_stan_data <- function(input_count_data,
 
   inf_to_count_delay_max <- length(inf_to_count_delay)
 
-  # # This creates a dataframe that maps subpopulations to sample indices
-  # # by joining the site:subpop map to vector of site indices for each sample.
-  # # Then we just pull the subpop indices corresponding to each sample
-  # subpop_to_samples_map <- tibble::tibble(
-  #   site_index = ww_indices$ww_sampled_sites
-  # ) |>
-  #   dplyr::left_join(subpop_data$site_to_subpop_map, by = "site_index") |>
-  #   pull(subpop_index)
-  # # This creates a dataframe that maps subpopulations to lab_site indices
-  # # by joining the site:subpop map to lab_site indices. Then we just pull the
-  # # subpop indices corresponding to the lab_sites
-  # lab_site_to_subpop_map <- tibble::tibble(
-  #   site_index = ww_indices$lab_site_to_site_map
-  # ) |>
-  #   dplyr::left_join(subpop_data$site_to_subpop_map, by = "site_index") |>
-  #   pull(subpop_index)
-
-
   stan_data_list <- list(
     gt_max = min(length(generation_interval), params$gt_max),
     hosp_delay_max = inf_to_count_delay_max,
@@ -527,7 +544,7 @@ get_stan_data <- function(input_count_data,
     ts = 1:params$gt_max,
     state_pop = pop,
     subpop_size = ww_vals$subpop_pops,
-    norm_pop =sum(site_subpop_spine$subpop_pop),
+    norm_pop = sum(site_subpop_spine$subpop_pop),
     ww_sampled_times = ww_vals$ww_sampled_times,
     hosp_times = count_indices$count_times,
     ww_sampled_subpops = ww_vals$ww_sampled_subpops,
@@ -672,17 +689,8 @@ get_ww_indices_and_values <- function(input_ww_data,
                                       date_time_spine,
                                       lab_site_site_spine,
                                       site_subpop_spine,
-                                      lab_site_subpop_spine
-                                      ){
-
-  ww_data_joined <- input_ww_data |>
-    dplyr::left_join(date_time_spine, by = "date") |>
-    dplyr::left_join(site_subpop_spine, by = c("site_index", "site")) |>
-    dplyr::mutate("ind_rel_to_sampled_times" = dplyr::row_number())
-
-  owt <- nrow(ww_data_joined)
-
-  ww_data_present <- nrow(input_ww_data) != 0
+                                      lab_site_subpop_spine) {
+  ww_data_present <- !is.null(input_ww_data)
 
   # Get a vector of population sizes for each subpop
   subpop_pops <- site_subpop_spine |>
@@ -691,6 +699,15 @@ get_ww_indices_and_values <- function(input_ww_data,
     dplyr::pull(.data$subpop_pop)
 
   if (isTRUE(ww_data_present)) {
+    ww_data_joined <- input_ww_data |>
+      dplyr::left_join(date_time_spine, by = "date") |>
+      dplyr::left_join(site_subpop_spine, by = c("site_index", "site")) |>
+      dplyr::mutate("ind_rel_to_sampled_times" = dplyr::row_number())
+
+    owt <- nrow(ww_data_joined)
+
+
+
     # Get the vector of log LOD values corresponding to each observation
     ww_lod <- ww_data_joined |>
       dplyr::pull("log_lod")
@@ -718,7 +735,7 @@ get_ww_indices_and_values <- function(input_ww_data,
     lab_site_to_subpop_spine <- lab_site_site_spine |>
       dplyr::left_join(site_subpop_spine, by = "site_index") |>
       pull("subpop_index")
-    ww_sampled_lab_sites  <- ww_data_joined |> dplyr::pull("lab_site_index")
+    ww_sampled_lab_sites <- ww_data_joined |> dplyr::pull("lab_site_index")
 
 
 
@@ -745,7 +762,6 @@ get_ww_indices_and_values <- function(input_ww_data,
     )
   }
   return(ww_values)
-
 }
 
 
@@ -1018,7 +1034,6 @@ get_subpop_data <- function(add_auxiliary_subpop,
     norm_pop <- state_pop
     n_subpops <- 1
     subpop_size <- c(state_pop)
-
   }
 
 

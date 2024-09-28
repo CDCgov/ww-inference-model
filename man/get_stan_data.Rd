@@ -7,6 +7,12 @@
 get_stan_data(
   input_count_data,
   input_ww_data,
+  date_time_spine,
+  lab_site_site_spine,
+  site_subpop_spine,
+  lab_site_subpop_spine,
+  last_count_data_date,
+  first_count_data_date,
   forecast_date,
   forecast_horizon,
   calibration_time,
@@ -19,6 +25,25 @@ get_stan_data(
 )
 }
 \arguments{
+\item{input_count_data}{tibble with the input count data needed for stan}
+
+\item{input_ww_data}{tibble with the input wastewater data and indices
+needed for stan}
+
+\item{date_time_spine}{tibble mapping dates to time in days}
+
+\item{lab_site_site_spine}{tibble mapping lab-sites to sites}
+
+\item{site_subpop_spine}{tibble mapping sites to subpopulations}
+
+\item{lab_site_subpop_spine}{tibble mapping lab-sites to subpopulations}
+
+\item{last_count_data_date}{string indicating the date of the last data
+point in the count dataset in ISO8601 convention e.g. YYYY-MM-DD}
+
+\item{first_count_data_date}{string indicating the date of the first data
+point in the count dataset in ISO8601 convention e.g. YYYY-MM-DD}
+
 \item{forecast_date}{string indicating the forecast date in ISO8601
 convention e.g. YYYY-MM-DD}
 
@@ -115,9 +140,35 @@ input_ww_data_for_stan <- get_input_ww_data_for_stan(
   last_count_data_date,
   calibration_time
 )
+date_time_spine <- get_date_time_spine(
+  forecast_date = forecast_date,
+  input_count_data = input_count_data,
+  last_count_data_date = last_count_data_date,
+  forecast_horizon = forecast_horizon,
+  calibration_time = calibration_time
+)
+lab_site_site_spine <- get_lab_site_site_spine(
+  input_ww_data = input_ww_data
+)
+site_subpop_spine <- get_site_subpop_spine(
+  input_ww_data = input_ww_data,
+  input_count_data = input_count_data
+)
+lab_site_subpop_spine <- get_lab_site_subpop_spine(
+  lab_site_site_spine = lab_site_site_spine,
+  site_subpop_spine
+)
+
+
 stan_data_list <- get_stan_data(
   input_count_data_for_stan,
   input_ww_data_for_stan,
+  date_time_spine,
+  lab_site_site_spine,
+  site_subpop_spine,
+  lab_site_subpop_spine,
+  last_count_data_date,
+  first_count_data_date,
   forecast_date,
   forecast_horizon,
   calibration_time,

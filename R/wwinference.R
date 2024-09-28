@@ -159,7 +159,6 @@ wwinference <- function(ww_data,
                         generate_initial_values = TRUE,
                         initial_values_seed = NULL,
                         compiled_model = compile_model()) {
-
   include_ww <- as.integer(model_spec$include_ww)
 
   if (is.null(forecast_date)) {
@@ -238,10 +237,10 @@ wwinference <- function(ww_data,
     input_count_data = input_count_data
   )
 
-  # Get lab_site to subpop spine
-  lab_site_subpop_spine <- lab_site_site_spine |>
-    dplyr::left_join(site_subpop_spine, by = "site_index") |>
-    pull("subpop_index")
+  lab_site_subpop_spine <- get_lab_site_subpop_spine(
+    lab_site_site_spine = lab_site_site_spine,
+    site_subpop_spine
+  )
 
 
   raw_input_data <- list(
