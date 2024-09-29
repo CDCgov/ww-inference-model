@@ -159,12 +159,20 @@ validate_count_data <- function(count_data,
 #' been filtered and is ready to be passed into stan
 #' @param input_ww_data tibble containing the input wastewater data that has
 #' been filtered and is ready to be passed into stan
+#' @param date_time_spine tibble mapping dates to time in days
+#' @param lab_site_site_spine tibble mapping lab-sites to sites
+#' @param site_subpop_spine tibble mapping sites to subpopulations
+#' @param lab_site_subpop_spine tibble mapping lab-sites to subpopulations
 #' @param calibration_time integer indicating the calibration time
 #' @param forecast_date IS08 formatted date indicating the forecast date
 #'
 #' @return NULL, invisibly
 validate_both_datasets <- function(input_count_data,
                                    input_ww_data,
+                                   date_time_spine,
+                                   lab_site_site_spine,
+                                   site_subpop_spine,
+                                   lab_site_subpop_spine,
                                    calibration_time,
                                    forecast_date) {
   # check that you have sufficient count data for the calibration time
@@ -211,13 +219,17 @@ validate_both_datasets <- function(input_count_data,
   ww_data_sizes <- get_ww_data_sizes(
     input_ww_data
   )
-  ww_indices <- get_ww_data_indices(
-    ww_data = input_ww_data,
-    first_count_data_date = min(input_count_data$date),
-    owt = ww_data_sizes$owt
+
+  ww_vals <- get_ww_indices_and_values(
+    input_ww_data = input_ww_data,
+    date_time_spine = date_time_spine,
+    lab_site_site_spine = lab_site_site_spine,
+    site_subpop_spine = site_subpop_spine,
+    lab_site_subpop_spine = lab_site_subpop_spine
   )
+
   input_ww_data_w_t <- input_ww_data |>
-    dplyr::mutate(t = ww_indices$ww_sampled_times)
+    dplyr::mutate(t = ww_vals$ww_sampled_times)
 
   assert_equivalent_indexing(
     input_count_data,

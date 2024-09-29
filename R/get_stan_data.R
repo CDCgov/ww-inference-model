@@ -426,8 +426,12 @@ get_stan_data <- function(input_count_data,
   # Validate both datasets if both are used----------------------------------
   if (include_ww == 1) {
     validate_both_datasets(
-      input_count_data,
-      input_ww_data,
+      input_count_data = input_count_data,
+      input_ww_data = input_ww_data,
+      date_time_spine = date_time_spine,
+      lab_site_site_spine = lab_site_site_spine,
+      site_subpop_spine = site_subpop_spine,
+      lab_site_subpop_spine = lab_site_subpop_spine,
       calibration_time = calibration_time,
       forecast_date = forecast_date
     )
