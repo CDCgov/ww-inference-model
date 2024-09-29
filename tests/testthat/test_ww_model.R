@@ -6,7 +6,7 @@ test_that("Test the wastewater inference model on simulated data.", {
   # This seed sets the initial values seed. Must be the same as the one used
   # in generating the test data.
   # model_test_data contains the seed that gets passed to stan
-  withr::with_seed(55, {
+  withr::with_seed(5, {
     fit <- do.call(
       silent_wwinference,
       model_test_data
