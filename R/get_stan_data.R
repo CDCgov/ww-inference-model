@@ -353,17 +353,17 @@ get_lab_site_subpop_spine <- function(lab_site_site_spine,
 #' )
 #' date_time_spine <- get_date_time_spine(
 #'   forecast_date = forecast_date,
-#'   input_count_data = input_count_data,
+#'   input_count_data = input_count_data_for_stan,
 #'   last_count_data_date = last_count_data_date,
 #'   forecast_horizon = forecast_horizon,
 #'   calibration_time = calibration_time
 #' )
 #' lab_site_site_spine <- get_lab_site_site_spine(
-#'   input_ww_data = input_ww_data
+#'   input_ww_data = input_ww_data_for_stan
 #' )
 #' site_subpop_spine <- get_site_subpop_spine(
-#'   input_ww_data = input_ww_data,
-#'   input_count_data = input_count_data
+#'   input_ww_data = input_ww_data_for_stan,
+#'   input_count_data = input_count_data_for_stan
 #' )
 #' lab_site_subpop_spine <- get_lab_site_subpop_spine(
 #'   lab_site_site_spine = lab_site_site_spine,
