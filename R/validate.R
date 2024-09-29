@@ -269,15 +269,18 @@ validate_both_datasets <- function(input_count_data,
 #' @param calibration_time integer indicating the calibration time
 #' @param count_data tibble containing the input count data ready to be passed
 #' to stan
+#' @param tolerance numeric indicating the allowable difference between the
+#' sum of the pmf and 1, default is `1e-6`
 #' @param arg name of the argument supplying the object
 #' @param call The calling environment to be reflected in the error message
 #' @return NULL, invisibly
 validate_pmf <- function(pmf,
                          calibration_time,
                          count_data,
+                         tolerance = 1e-6,
                          arg = "x",
                          call = rlang::caller_env()) {
-  if (!all.equal(sum(pmf), 1)) {
+  if (!isTRUE(all.equal(sum(pmf), 1, tolerance = 1e-6))) {
     cli::cli_abort(
       c(
         "{.arg {arg}} does not sum to 1."
