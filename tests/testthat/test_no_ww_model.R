@@ -92,12 +92,15 @@ test_that("Test that the model runs without wastewater, include_ww=0.", {
   model_test_data_no_ww$ww_data <- tibble::tibble()
   model_test_data_no_ww$compiled_model <- compiled_site_inf_model
 
-  expect_no_error(withr::with_seed(55, {
-    fit <- do.call(
-      wwinference::wwinference,
-      model_test_data_no_ww
-    )
-  }))
+  expect_warning(
+    withr::with_seed(55, {
+      fit <- do.call(
+        wwinference::wwinference,
+        model_test_data_no_ww
+      )
+    }),
+    regex = "No wastewater data was passed to the model."
+  )
 })
 
 test_that("Test that the model runs without wastewater, include_ww=1.", {
@@ -109,10 +112,13 @@ test_that("Test that the model runs without wastewater, include_ww=1.", {
   model_test_data_no_ww$ww_data <- tibble::tibble()
   model_test_data_no_ww$compiled_model <- compiled_site_inf_model
 
-  expect_no_error(withr::with_seed(55, {
-    fit <- do.call(
-      wwinference::wwinference,
-      model_test_data_no_ww
-    )
-  }))
+  expect_warning(
+    withr::with_seed(55, {
+      fit <- do.call(
+        wwinference::wwinference,
+        model_test_data_no_ww
+      )
+    }),
+    regex = "No wastewater data was passed to the model."
+  )
 })
