@@ -283,6 +283,7 @@ print.wwinference_fit_draws <- function(x, ...) {
     ifelse(length(x$subpop_rt) > 0, max(x$subpop_rt$draw), 0)
   ) |> max()
 
+  # This calculates the number of time points in each dataframe
   timepoints <- c(
     ifelse(
       length(x$predicted_counts) > 0,
