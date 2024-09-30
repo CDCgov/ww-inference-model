@@ -180,9 +180,6 @@ wwinference <- function(ww_data,
   # If include_ww <-0, we will specify an empty dataset
   if (include_ww == 0) {
     ww_data <- NULL
-  } else {
-    # Check that data is compatible with specifications
-    assert_no_dates_after_max(ww_data$date, forecast_date)
   }
 
 
@@ -198,8 +195,10 @@ wwinference <- function(ww_data,
   )
 
 
-  # Check that data is compatible with specifications
-  assert_no_dates_after_max(ww_data$date, forecast_date)
+  ## Check that data is compatible with specifications
+  if (!is.null(ww_data)) {
+    assert_no_dates_after_max(ww_data$date, forecast_date)
+  }
   assert_no_dates_after_max(count_data$date, forecast_date)
 
   # Get the input count data that will get passed directly to stan
