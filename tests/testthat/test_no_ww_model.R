@@ -50,7 +50,7 @@ mcmc_options <- list(
   iter_sampling = 250,
   chains = 2,
   show_messages = FALSE,
-  show_exceptions = FALSE,
+  show_exceptions = FALSE
 )
 
 generate_initial_values <- TRUE
