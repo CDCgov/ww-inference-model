@@ -199,9 +199,21 @@ test_that(paste0(
   "Test that the model handles include_ww = 0 ",
   "and no data appropriately"
 ), {
+  null_ww_data <- NULL
+
+  site_subpop_spine_mod <- get_site_subpop_spine(
+    input_ww_data = null_ww_data,
+    input_count_data = input_count_data
+  )
+
+  lab_site_subpop_spine_mod <- get_lab_site_subpop_spine(
+    lab_site_site_spine = lab_site_site_spine,
+    site_subpop_spine = site_subpop_spine_mod
+  )
+
   stan_data_ho <- get_stan_data(
     input_count_data,
-    input_ww_data = NULL,
+    input_ww_data = null_ww_data,
     date_time_spine,
     lab_site_site_spine,
     site_subpop_spine_mod,
