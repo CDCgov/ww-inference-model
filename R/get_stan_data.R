@@ -42,68 +42,230 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
                                        last_count_data_date,
                                        calibration_time) {
   # Test to see if ww_data_present
-  ww_data_present <- nrow(preprocessed_ww_data) != 0
+  ww_data_present <- !is.null(preprocessed_ww_data)
   if (ww_data_present == FALSE) {
     message("No wastewater data present")
-  }
-
-  if (all(sum(preprocessed_ww_data$flag_as_ww_outlier) > sum(
-    preprocessed_ww_data$exclude
-  ))) {
-    cli::cli_warn(
-      c(
-        "Wastewater data being passed to the model has outliers flagged,",
-        "but not all have been indicated for exclusion from model fit"
+    ww_data <- NULL
+  } else {
+    if (all(sum(preprocessed_ww_data$flag_as_ww_outlier) > sum(
+      preprocessed_ww_data$exclude
+    ))) {
+      cli::cli_warn(
+        c(
+          "Wastewater data being passed to the model has outliers flagged,",
+          "but not all have been indicated for exclusion from model fit"
+        )
       )
+    }
+
+    # Test for presence of needed column names
+    assert_req_ww_cols_present(preprocessed_ww_data,
+      conc_col_name = "log_genome_copies_per_ml",
+      lod_col_name = "log_lod"
     )
+
+    # Filter out wastewater outliers, and remove extra wastewater
+    # data. Arrange data for indexing. This is what will be returned.
+    ww_data <- preprocessed_ww_data |>
+      dplyr::filter(
+        .data$exclude != 1,
+        .data$date > !!last_count_data_date -
+          lubridate::days(!!calibration_time)
+      ) |>
+      dplyr::arrange(.data$date, .data$lab_site_index)
   }
-
-  # Test for presence of needed column names
-  assert_req_ww_cols_present(preprocessed_ww_data,
-    conc_col_name = "log_genome_copies_per_ml",
-    lod_col_name = "log_lod"
-  )
-
-  # Filter out wastewater outliers, and remove extra wastewater
-  # data. Arrange data for indexing. This is what will be returned.
-  ww_data <- preprocessed_ww_data |>
-    dplyr::filter(
-      .data$exclude != 1,
-      .data$date > !!last_count_data_date -
-        lubridate::days(!!calibration_time)
-    ) |>
-    dplyr::arrange(.data$date, .data$lab_site_index)
-
-  ww_data_sizes <- get_ww_data_sizes(
-    ww_data,
-    lod_col_name = "below_lod"
-  )
-
-  ww_indices <- get_ww_data_indices(
-    ww_data,
-    first_count_data_date,
-    owt = ww_data_sizes$owt,
-    lod_col_name = "below_lod"
-  )
-
-  ww_data <- ww_data |>
-    dplyr::mutate(
-      t = ww_indices$ww_sampled_times
-    )
 
   return(ww_data)
 }
+
+#' Get date time spine to map to model output
+#'
+#' @param forecast_date a character string in ISO8601 format (YYYY-MM-DD)
+#' indicating the date that the forecast is to be made.
+#' @param input_count_data a dataframe of the count data to be passed
+#' directly to stan, , must have the following columns: date, count, total_pop
+#' @param last_count_data_date string indicating the date of the last observed
+#' count data point in 1SO8601 format (YYYY-MM-DD)
+#' @param calibration_time integer indicating the number of days to calibrate
+#' the model for, default is `90`
+#' @param forecast_horizon integer indicating the number of days, including the
+#' forecast date, to produce forecasts for, default is `28`
+#'
+#'
+#' @return a tibble containing an integer for time mapped to the corresponding
+#' date, for the entire calibration and forecast period
+#' @export
+#'
+get_date_time_spine <- function(forecast_date,
+                                input_count_data,
+                                last_count_data_date,
+                                calibration_time,
+                                forecast_horizon) {
+  nowcast_time <- as.integer(
+    lubridate::ymd(forecast_date) - last_count_data_date
+  )
+  date_time_spine <- tibble::tibble(
+    date = seq(
+      from = min(input_count_data$date),
+      to = min(input_count_data$date) +
+        calibration_time +
+        nowcast_time +
+        forecast_horizon,
+      by = "days"
+    )
+  ) |>
+    dplyr::mutate(t = row_number())
+  return(date_time_spine)
+}
+
+#' Get mapping from lab-site to site
+#'
+#' @param input_ww_data a dataframe of the wastewater data to be passed
+#' directly to stan, must have the following columns: date, site, lab,
+#' genome_copies_per_ml, site_pop, below_lod, and exclude
+#'
+#' @return a dataframe mapping the unique combinations of sites and labs
+#' to their indices in the model and the population of the site in that
+#' observation unit (lab_site)
+#' @export
+#'
+get_lab_site_site_spine <- function(input_ww_data) {
+  ww_data_present <- !is.null(input_ww_data)
+
+  if (ww_data_present) {
+    lab_site_site_spine <-
+      input_ww_data |>
+      dplyr::select(
+        "lab_site_index", "site_index",
+        "site", "lab", "site_pop"
+      ) |>
+      dplyr::arrange(.data$lab_site_index) |>
+      dplyr::distinct() |>
+      dplyr::mutate(
+        "lab_site_name" = glue::glue(
+          "Site: {site}, Lab: {lab}"
+        )
+      )
+  } else {
+    lab_site_site_spine <- tibble::tibble()
+  }
+
+
+  return(lab_site_site_spine)
+}
+
+#' Get site to subpopulation map
+#'
+#' @param input_ww_data a dataframe of the wastewater data to be passed
+#' directly to stan, must have the following columns: date, site, lab,
+#' genome_copies_per_ml, site_pop, below_lod, and exclude
+#' @param input_count_data a dataframe of the count data to be passed
+#' directly to stan, , must have the following columns: date, count, total_pop
+#'
+#' @return a dataframe mapping the sites to the corresponding subpopulation and
+#' subpopulation index, plus the population in each subpopulation. Imposes
+#' the logic to add a subpopulation if the total population is greater than
+#' the sum of the site populations in the input wastewater data
+#' @export
+#'
+get_site_subpop_spine <- function(input_ww_data,
+                                  input_count_data) {
+  ww_data_present <- !is.null(input_ww_data)
+
+  total_pop <- input_count_data |>
+    dplyr::distinct(.data$total_pop) |>
+    dplyr::pull()
+
+  if (ww_data_present) {
+    add_auxiliary_subpop <- ifelse(
+      total_pop > sum(unique(input_ww_data$site_pop)),
+      TRUE,
+      FALSE
+    )
+    site_indices <- input_ww_data |>
+      dplyr::select("site_index", "site", "site_pop") |>
+      dplyr::distinct() |>
+      dplyr::arrange(.data$site_index)
+
+    if (add_auxiliary_subpop) {
+      aux_subpop <- tibble::tibble(
+        "site_index" = NA,
+        "site" = NA,
+        "site_pop" = total_pop - sum(site_indices$site_pop)
+      )
+    } else {
+      aux_subpop <- tibble::tibble()
+    }
+
+    site_subpop_spine <- aux_subpop |>
+      dplyr::bind_rows(site_indices) |>
+      dplyr::mutate(
+        subpop_index = dplyr::row_number()
+      ) |>
+      dplyr::mutate(
+        subpop_name = ifelse(!is.na(.data$site),
+          glue::glue("Site: {site}"),
+          "remainder of population"
+        )
+      ) |>
+      dplyr::rename(
+        "subpop_pop" = "site_pop"
+      )
+  } else {
+    site_subpop_spine <- tibble::tibble(
+      "site_index" = NA,
+      "site" = NA,
+      "subpop_pop" = total_pop,
+      "subpop_index" = 1,
+      "subpop_name" = "total population"
+    )
+  }
+
+  return(site_subpop_spine)
+}
+
+#' Get lab-site subpopulation spine
+#'
+#' @param lab_site_site_spine tibble mapping lab-sites to sites
+#' @param site_subpop_spine tibble mapping sites to subpopulations
+#'
+#' @return a tibble mapping lab-sites to subpopulations
+#' @export
+#'
+get_lab_site_subpop_spine <- function(lab_site_site_spine,
+                                      site_subpop_spine) {
+  ww_data_present <- !nrow(lab_site_site_spine) == 0
+  # Get lab_site to subpop spine
+  if (ww_data_present) {
+    lab_site_subpop_spine <- lab_site_site_spine |>
+      dplyr::left_join(site_subpop_spine, by = c("site_index", "site"))
+  } else {
+    lab_site_subpop_spine <- tibble::tibble(
+      subpop_index = numeric()
+    )
+  }
+
+  return(lab_site_subpop_spine)
+}
+
 
 
 
 
 #' Get stan data for ww + hosp model
 #'
-#' @param input_count_data a dataframe of the count data to be passed
-#' directly to stan, , must have the following columns: date, count, total_pop
-#' @param input_ww_data a dataframe of the wastewater data to be passed
-#' directly to stan, must have the following columns: date, site, lab,
-#' genome_copies_per_ml, site_pop, below_lod, and exclude
+
+#' @param input_count_data tibble with the input count data needed for stan
+#' @param input_ww_data tibble with the input wastewater data and indices
+#' needed for stan
+#' @param date_time_spine tibble mapping dates to time in days
+#' @param lab_site_site_spine tibble mapping lab-sites to sites
+#' @param site_subpop_spine tibble mapping sites to subpopulations
+#' @param lab_site_subpop_spine tibble mapping lab-sites to subpopulations
+#' @param last_count_data_date string indicating the date of the last data
+#' point in the count dataset in ISO8601 convention e.g. YYYY-MM-DD
+#' @param first_count_data_date string indicating the date of the first data
+#' point in the count dataset in ISO8601 convention e.g. YYYY-MM-DD
 #' @param forecast_date string indicating the forecast date in ISO8601
 #'  convention e.g. YYYY-MM-DD
 #' @param forecast_horizon integer indicating the number of days to make a
@@ -189,9 +351,35 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #'   last_count_data_date,
 #'   calibration_time
 #' )
+#' date_time_spine <- get_date_time_spine(
+#'   forecast_date = forecast_date,
+#'   input_count_data = input_count_data_for_stan,
+#'   last_count_data_date = last_count_data_date,
+#'   forecast_horizon = forecast_horizon,
+#'   calibration_time = calibration_time
+#' )
+#' lab_site_site_spine <- get_lab_site_site_spine(
+#'   input_ww_data = input_ww_data_for_stan
+#' )
+#' site_subpop_spine <- get_site_subpop_spine(
+#'   input_ww_data = input_ww_data_for_stan,
+#'   input_count_data = input_count_data_for_stan
+#' )
+#' lab_site_subpop_spine <- get_lab_site_subpop_spine(
+#'   lab_site_site_spine = lab_site_site_spine,
+#'   site_subpop_spine
+#' )
+#'
+#'
 #' stan_data_list <- get_stan_data(
 #'   input_count_data_for_stan,
 #'   input_ww_data_for_stan,
+#'   date_time_spine,
+#'   lab_site_site_spine,
+#'   site_subpop_spine,
+#'   lab_site_subpop_spine,
+#'   last_count_data_date,
+#'   first_count_data_date,
 #'   forecast_date,
 #'   forecast_horizon,
 #'   calibration_time,
@@ -203,6 +391,12 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
 #' )
 get_stan_data <- function(input_count_data,
                           input_ww_data,
+                          date_time_spine,
+                          lab_site_site_spine,
+                          site_subpop_spine,
+                          lab_site_subpop_spine,
+                          last_count_data_date,
+                          first_count_data_date,
                           forecast_date,
                           forecast_horizon,
                           calibration_time,
@@ -212,6 +406,7 @@ get_stan_data <- function(input_count_data,
                           params,
                           include_ww,
                           compute_likelihood = 1) {
+  # Validate input pmfs----------------------------------------------------
   validate_pmf(generation_interval,
     calibration_time,
     input_count_data,
@@ -228,14 +423,21 @@ get_stan_data <- function(input_count_data,
     arg = "infection to count delay"
   )
 
-  validate_both_datasets(
-    input_count_data,
-    input_ww_data,
-    calibration_time = calibration_time,
-    forecast_date = forecast_date
-  )
+  # Validate both datasets if both are used----------------------------------
+  if (include_ww == 1) {
+    validate_both_datasets(
+      input_count_data = input_count_data,
+      input_ww_data = input_ww_data,
+      date_time_spine = date_time_spine,
+      lab_site_site_spine = lab_site_site_spine,
+      site_subpop_spine = site_subpop_spine,
+      lab_site_subpop_spine = lab_site_subpop_spine,
+      calibration_time = calibration_time,
+      forecast_date = forecast_date
+    )
+  }
 
-
+  # Define some global variables from the input data-----------------------
   # Get the total pop, coming from the larger population generating the
   # count data
   pop <- input_count_data |>
@@ -250,59 +452,33 @@ get_stan_data <- function(input_count_data,
     )
   )
 
-  last_count_data_date <- max(input_count_data$date, na.rm = TRUE)
-  first_count_data_date <- min(input_count_data$date, na.rm = TRUE)
-  # Returns a list of the vectors of lod values, the site population sizes in
-  # order of the site index, a vector of observations of the log of
-  # the genome copies per ml
-  ww_values <- get_ww_values(
-    input_ww_data
-  )
+  # Get wastewater inputs-------------------------------------------------
+
   # Returns a list with the numbers of elements needed for the stan model
   ww_data_sizes <- get_ww_data_sizes(
     input_ww_data
   )
-  # Returns the vectors of indices you need to map latent variables to
-  # observations
-  ww_indices <- get_ww_data_indices(
-    input_ww_data |> dplyr::select(-"t"),
-    first_count_data_date,
-    owt = ww_data_sizes$owt
+
+  ww_vals <- get_ww_indices_and_values(
+    input_ww_data = input_ww_data,
+    date_time_spine = date_time_spine,
+    lab_site_site_spine = lab_site_site_spine,
+    site_subpop_spine = site_subpop_spine,
+    lab_site_subpop_spine = lab_site_subpop_spine
   )
-  # Ensure that both datasets have overlap with one another, are sufficient
-  # in length for the specified calibration time, and have proper time indexing
 
   stopifnot(
     "Wastewater sampled times not equal to length of input ww data" =
-      length(ww_indices$ww_sampled_times) == ww_data_sizes$owt
+      length(ww_vals$ww_sampled_times) == ww_data_sizes$owt
   )
 
   message(
     "Prop of population size covered by wastewater: ",
-    sum(ww_values$pop_ww) / pop
+    sum(unique(input_ww_data$site_pop)) / pop
   )
 
-  if (sum(ww_values$pop_ww) / pop > 1) {
-    cli::cli_warn(c(
-      "The sum of the wastewater site catchment area populations:",
-      "is greater than the global population. While the model supports this",
-      "we advise checking your input data to ensure it is specified correctly."
-    ))
-  }
 
-
-  # Logic to determine the number of subpopulations to estimate R(t) for:
-  # First determine if we need to add an additional subpopulation
-  add_auxiliary_site <- ifelse(pop >= sum(ww_values$pop_ww), TRUE, FALSE)
-  # Then get the number of subpopulations, the population to normalize by
-  # (sum of the subpopulations), and the vector of sizes of each subpopulation
-  subpop_data <- get_subpop_data(add_auxiliary_site,
-    state_pop = pop,
-    pop_ww = ww_values$pop_ww,
-    n_ww_sites = ww_data_sizes$n_ww_sites
-  )
-
-  # Get the sizes of all the elements
+  # Get count data inputs-----------------------------------------------
   count_data_sizes <- get_count_data_sizes(
     input_count_data = input_count_data,
     forecast_date = forecast_date,
@@ -357,7 +533,7 @@ get_stan_data <- function(input_count_data,
     inf_to_hosp = inf_to_count_delay,
     mwpd = params$ml_of_ww_per_person_day,
     ot = count_data_sizes$ot,
-    n_subpops = subpop_data$n_subpops,
+    n_subpops = length(ww_vals$subpop_pops),
     n_ww_sites = ww_data_sizes$n_ww_sites,
     n_ww_lab_sites = ww_data_sizes$n_ww_lab_sites,
     owt = ww_data_sizes$owt,
@@ -373,17 +549,19 @@ get_stan_data <- function(input_count_data,
     generation_interval = generation_interval,
     ts = 1:params$gt_max,
     state_pop = pop,
-    subpop_size = subpop_data$subpop_size,
-    norm_pop = subpop_data$norm_pop,
-    ww_sampled_times = ww_indices$ww_sampled_times,
+    subpop_size = ww_vals$subpop_pops,
+    norm_pop = sum(site_subpop_spine$subpop_pop),
+    ww_sampled_times = ww_vals$ww_sampled_times,
     hosp_times = count_indices$count_times,
-    ww_sampled_lab_sites = ww_indices$ww_sampled_lab_sites,
-    ww_log_lod = ww_values$ww_lod,
-    ww_censored = ww_indices$ww_censored,
-    ww_uncensored = ww_indices$ww_uncensored,
+    ww_sampled_subpops = ww_vals$ww_sampled_subpops,
+    lab_site_to_subpop_map = lab_site_subpop_spine$subpop_index,
+    ww_sampled_lab_sites = ww_vals$ww_sampled_lab_sites,
+    ww_log_lod = ww_vals$ww_lod,
+    ww_censored = ww_vals$ww_censored,
+    ww_uncensored = ww_vals$ww_uncensored,
     hosp = count_values$counts,
     day_of_week = count_values$day_of_week,
-    log_conc = ww_values$log_conc,
+    log_conc = ww_vals$log_conc,
     compute_likelihood = compute_likelihood,
     include_ww = include_ww,
     include_hosp = 1,
@@ -393,8 +571,8 @@ get_stan_data <- function(input_count_data,
     viral_shedding_pars = viral_shedding_pars, # tpeak, viral peak, dur_shed
     autoreg_rt_a = params$autoreg_rt_a,
     autoreg_rt_b = params$autoreg_rt_b,
-    autoreg_rt_site_a = params$autoreg_rt_site_a,
-    autoreg_rt_site_b = params$autoreg_rt_site_b,
+    autoreg_rt_subpop_a = params$autoreg_rt_subpop_a,
+    autoreg_rt_subpop_b = params$autoreg_rt_subpop_b,
     autoreg_p_hosp_a = params$autoreg_p_hosp_a,
     autoreg_p_hosp_b = params$autoreg_p_hosp_b,
     inv_sqrt_phi_prior_mean = params$inv_sqrt_phi_prior_mean,
@@ -437,10 +615,17 @@ get_stan_data <- function(input_count_data,
     sigma_rt_prior = params$sigma_rt_prior,
     log_phi_g_prior_mean = params$log_phi_g_prior_mean,
     log_phi_g_prior_sd = params$log_phi_g_prior_sd,
-    ww_sampled_sites = ww_indices$ww_sampled_sites,
-    lab_site_to_site_map = ww_indices$lab_site_to_site_map
+    offset_ref_log_r_t_prior_mean = params$offset_ref_log_r_t_prior_mean,
+    offset_ref_log_r_t_prior_sd = params$offset_ref_log_r_t_prior_sd,
+    offset_ref_logit_i_first_obs_prior_mean =
+      params$offset_ref_logit_i_first_obs_prior_mean,
+    offset_ref_logit_i_first_obs_prior_sd =
+      params$offset_ref_logit_i_first_obs_prior_sd,
+    offset_ref_initial_exp_growth_rate_prior_mean =
+      params$offset_ref_initial_exp_growth_rate_prior_mean,
+    offset_ref_initial_exp_growth_rate_prior_sd =
+      params$offset_ref_initial_exp_growth_rate_prior_sd
   )
-
 
   return(stan_data_list)
 }
@@ -506,191 +691,96 @@ get_ww_data_sizes <- function(ww_data,
   return(data_sizes)
 }
 
-#' Get wastewater data indices
+#' Get wastewater indices and values for stan
 #'
-#' @param ww_data Input wastewater dataframe containing one row
-#' per observation, with outliers already removed
-#' @param first_count_data_date The earliest day with an observation in the '
-#' count dataset, in ISO8601 format YYYY-MM-DD
-#' @param owt number of wastewater observations
-#' @param lod_col_name A string representing the name of the
-#' column in the input_ww_data that provides a 0 if the data point is not above
-#' the LOD and a 1 if the data is below the LOD, default value is `below_LOD`
+#' @param input_ww_data tibble with the input wastewater data and indices
+#' needed for stan
+#' @param date_time_spine tibble mapping dates to time in days
+#' @param lab_site_site_spine tibble mapping lab-sites to sites
+#' @param site_subpop_spine tibble mapping sites to subpopulations
+#' @param lab_site_subpop_spine tibble mapping lab-sites to subpopulations
 #'
-#' @return A list containing the necessary vectors of indices that
-#' the stan model requires:
-#' ww_censored: the vector of time points that the wastewater observations are
-#' censored (below the LOD) in order of the date and the site index
-#' ww_uncensored: the vector of time points that the wastewater observations are
-#' uncensored (above the LOD) in order of the date and the site index
-#' ww_sampled_times: the vector of time points that the wastewater observations
-#' are passed in in log_conc in order of the date and the site index
-#' ww_sampled_sites: the vector of sites that correspond to the observations
-#' passed in in log_conc in order of the date and the site index
-#' ww_sampled_lab_sites: the vector of unique combinations of site and labs
-#' that correspond to the observations passed in in log_conc in order of the
-#' date and the site index
-#' lab_site_to_site_map: the vector of sites that correspond to each lab-site
+#' @return a list of the vectors needed for stan
 #' @export
-get_ww_data_indices <- function(ww_data,
-                                first_count_data_date,
-                                owt,
-                                lod_col_name = "below_lod") {
-  # Vector of indices along the list of wastewater concentrations that
-  # correspond to censored observations
-  ww_data_present <- nrow(ww_data) != 0
+get_ww_indices_and_values <- function(input_ww_data,
+                                      date_time_spine,
+                                      lab_site_site_spine,
+                                      site_subpop_spine,
+                                      lab_site_subpop_spine) {
+  ww_data_present <- !is.null(input_ww_data)
+
+  # Get a vector of population sizes for each subpop
+  subpop_pops <- site_subpop_spine |>
+    dplyr::select("subpop_index", "subpop_pop") |>
+    dplyr::arrange(.data$subpop_index, "desc") |>
+    dplyr::pull(.data$subpop_pop)
 
   if (isTRUE(ww_data_present)) {
-    ww_data_with_index <- ww_data |>
-      dplyr::mutate(ind_rel_to_sampled_times = dplyr::row_number())
-    ww_censored <- ww_data_with_index |>
-      dplyr::filter(.data[[lod_col_name]] == 1) |>
+    ww_data_joined <- input_ww_data |>
+      dplyr::left_join(date_time_spine, by = "date") |>
+      dplyr::left_join(site_subpop_spine, by = c("site_index", "site")) |>
+      dplyr::mutate("ind_rel_to_sampled_times" = dplyr::row_number())
+
+    owt <- nrow(ww_data_joined)
+
+
+
+    # Get the vector of log LOD values corresponding to each observation
+    ww_lod <- ww_data_joined |>
+      dplyr::pull("log_lod")
+
+
+    # Get the vector of log wastewater concentrations
+    log_conc <- ww_data_joined |>
+      dplyr::pull("log_genome_copies_per_ml")
+
+    # Get censored and uncensored indices, which are relative to the vector
+    # of sampled times (e.g. 1:owt)
+    ww_censored <- ww_data_joined |>
+      dplyr::filter(.data$below_lod == 1) |>
       dplyr::pull(.data$ind_rel_to_sampled_times)
-    ww_uncensored <- ww_data_with_index |>
-      dplyr::filter(.data[[lod_col_name]] == 0) |>
+    ww_uncensored <- ww_data_joined |>
+      dplyr::filter(.data$below_lod == 0) |>
       dplyr::pull(.data$ind_rel_to_sampled_times)
     stopifnot(
       "Length of censored vectors incorrect" =
         length(ww_censored) + length(ww_uncensored) == owt
     )
 
-
-    # Need to get the times of wastewater sampling, starting at the first
-    # day of hospital admissions data
-    ww_date_df <- data.frame(
-      date = seq(
-        from = first_count_data_date,
-        to = max(ww_data$date),
-        by = "days"
-      ),
-      t = 1:(as.integer(max(ww_data$date) - first_count_data_date) + 1)
-    )
-
-    # Left join the data mapped to time to the wastewater data
-    spine_ww <- ww_data |>
-      dplyr::left_join(ww_date_df, by = "date")
-
-    # Pull just the vector of times of wastewater observations
-    ww_sampled_times <- spine_ww |>
-      dplyr::pull(t)
-
-    # Pull just the indexes of the sites that correspond to the vector of
-    # sampled times
-    ww_sampled_sites <- ww_data$site_index
-
-    # Pull just the indexes of the lab-sites that correspond to the vector of
-    # sampled times
-    ww_sampled_lab_sites <- ww_data$lab_site_index
-
-    # Need a vector of indices indicating the site for each lab-site
-    lab_site_to_site_map <- ww_data |>
-      dplyr::select("lab_site_index", "site_index") |>
-      dplyr::arrange(.data$lab_site_index, "desc") |>
-      dplyr::distinct() |>
-      dplyr::pull(.data$site_index)
-
-    ww_data_indices <- list(
-      ww_censored = ww_censored,
-      ww_uncensored = ww_uncensored,
-      ww_sampled_times = ww_sampled_times,
-      ww_sampled_sites = ww_sampled_sites,
-      ww_sampled_lab_sites = ww_sampled_lab_sites,
-      lab_site_to_site_map = lab_site_to_site_map
-    )
-  } else {
-    ww_data_indices <- list(
-      ww_censored = c(),
-      ww_uncensored = c(),
-      ww_sampled_times = c(),
-      ww_sampled_sites = c(),
-      ww_sampled_lab_sites = c(),
-      lab_site_to_site_map = c()
-    )
-  }
+    ww_sampled_times <- ww_data_joined |> dplyr::pull("t")
+    ww_sampled_subpops <- ww_data_joined |> dplyr::pull("subpop_index")
+    lab_site_to_subpop_spine <- lab_site_site_spine |>
+      dplyr::left_join(site_subpop_spine, by = "site_index") |>
+      pull("subpop_index")
+    ww_sampled_lab_sites <- ww_data_joined |> dplyr::pull("lab_site_index")
 
 
-  return(ww_data_indices)
-}
-
-#' Get wastewater data values
-#'
-#' @param ww_data Input wastewater dataframe containing one row
-#' per observation, with outliers already removed
-#' @param ww_measurement_col_name A string representing the name of the column
-#' in the input_ww_data that indicates the wastewater measurement value in
-#' log scale, default is `log_genome_copies_per_ml`
-#' @param ww_lod_value_col_name A string representing the name of the column
-#' in the ww_data that indicates the value of the LOD in log scale,
-#' default is `log_lod`
-#' @param ww_site_pop_col_name A string representing the name of the column in
-#' the ww_data that indicates the number of people represented by that
-#' wastewater catchment, default is `site_pop`
-#' @param one_pop_per_site a boolean variable indicating if there should only
-#' be on catchment area population per site, default is `TRUE` because this is
-#' what the stan model expects
-#' @param padding_value an smaller numeric value to add to the the
-#' concentration measurements to ensure that log transformation will produce
-#' real numbers, default value is `1e-8`
-#'
-#' @return  A list containing the necessary vectors of values that
-#' the stan model requires:
-#' ww_lod: a vector of the LODs of the corresponding wastewater measurement
-#' pop_ww: a vector of the population sizes of the wastewater catchment areas
-#' in order of the sites by site_index
-#' log_conc: a vector of the log of the wastewater concentration observation
-#' @export
-get_ww_values <- function(ww_data,
-                          ww_measurement_col_name = "log_genome_copies_per_ml",
-                          ww_lod_value_col_name = "log_lod",
-                          ww_site_pop_col_name = "site_pop",
-                          one_pop_per_site = TRUE,
-                          padding_value = 1e-8) {
-  ww_data_present <- nrow(ww_data) != 0
-
-  if (isTRUE(ww_data_present)) {
-    # Get the vector of log LOD values corresponding to each observation
-    ww_lod <- ww_data |>
-      dplyr::pull({{ ww_lod_value_col_name }})
-
-    # Get a vector of population sizes
-    if (isTRUE(one_pop_per_site)) {
-      # Want one population per site during the model calibration period,
-      # so just take the average across the populations reported for each
-      # observation
-      pop_ww <- ww_data |>
-        dplyr::select("site_index", {{ ww_site_pop_col_name }}) |>
-        dplyr::group_by(.data$site_index) |>
-        dplyr::summarise(pop_avg = mean(.data[[ww_site_pop_col_name]])) |>
-        dplyr::arrange(.data$site_index, "desc") |>
-        dplyr::pull(.data$pop_avg)
-    } else {
-      # Want a vector of length of the number of observations, corresponding to
-      # the population at that time
-      pop_ww <- ww_data |>
-        dplyr::pull({{ ww_site_pop_col_name }})
-    }
-
-
-    # Get the vector of log wastewater concentrations
-    log_conc <- ww_data |>
-      dplyr::pull({{ ww_measurement_col_name }})
 
     ww_values <- list(
       ww_lod = ww_lod,
-      pop_ww = pop_ww,
-      log_conc = log_conc
+      subpop_pops = subpop_pops,
+      log_conc = log_conc,
+      ww_censored = ww_censored,
+      ww_uncensored = ww_uncensored,
+      ww_sampled_times = ww_sampled_times,
+      ww_sampled_subpops = ww_sampled_subpops,
+      ww_sampled_lab_sites = ww_sampled_lab_sites
     )
   } else {
     ww_values <- list(
-      ww_lod = c(),
-      pop_ww = c(),
-      log_conc = c()
+      ww_lod = numeric(),
+      subpop_pops = subpop_pops,
+      log_conc = numeric(),
+      ww_censored = numeric(),
+      ww_uncensored = numeric(),
+      ww_sampled_times = numeric(),
+      ww_sampled_subpops = numeric(),
+      ww_sampled_lab_sites = numeric()
     )
   }
-
-
   return(ww_values)
 }
+
 
 #' Add time indexing to count data
 #'
@@ -723,46 +813,6 @@ add_time_indexing <- function(input_count_data) {
   return(count_data)
 }
 
-#' Get subpopulation data
-#'
-#' @param add_auxiliary_site Boolean indicating whether to add another
-#' subpopulation in addition to the wastewater sites to estimate R(t) of
-#' @param state_pop The state population size
-#' @param pop_ww The population size in each of the wastewater sites
-#' @param n_ww_sites The number of wastewater sites
-#'
-#' @return A list containing the necessary integers and vectors that stan
-#' needs to estiamte infection dynamics for each subpopulation
-#' @export
-#'
-#' @examples subpop_data <- get_subpop_data(TRUE, 100000, c(1000, 500), 2)
-get_subpop_data <- function(add_auxiliary_site,
-                            state_pop,
-                            pop_ww,
-                            n_ww_sites) {
-  if (add_auxiliary_site) {
-    # In most cases, wastewater catchment coverage < entire state.
-    # So here we add a subpopulation that represents the population not
-    # covered by wastewater surveillance
-    norm_pop <- state_pop
-    n_subpops <- n_ww_sites + 1
-    subpop_size <- c(pop_ww, state_pop - sum(pop_ww))
-  } else {
-    message("Sum of wastewater catchment areas is greater than state pop")
-    norm_pop <- sum(pop_ww)
-    # If sum catchment areas > state pop,
-    # use sum of catchment area pop to normalize
-    n_subpops <- n_ww_sites # Only divide the state into n_site subpops
-    subpop_size <- pop_ww
-  }
-
-  subpop_data <- list(
-    norm_pop = norm_pop,
-    n_subpops = n_subpops,
-    subpop_size = subpop_size
-  )
-  return(subpop_data)
-}
 
 #' Get count data integer sizes for stan
 #'

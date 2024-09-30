@@ -50,6 +50,9 @@ get_draws.wwinference_fit <- function(x, ..., what = "all") {
   get_draws.data.frame(
     x = x$raw_input_data$input_ww_data,
     count_data = x$raw_input_data$input_count_data,
+    date_time_spine = x$raw_input_data$date_time_spine,
+    site_subpop_spine = x$raw_input_data$site_subpop_spine,
+    lab_site_subpop_spine = x$raw_input_data$lab_site_subpop_spine,
     stan_data_list = x$stan_data_list,
     fit_obj = x$fit,
     what = what
@@ -77,6 +80,9 @@ get_draws_what_ok <- c(
 #' @rdname get_draws
 #' @param count_data A dataframe of the preprocessed daily count data (e.g.
 #' hospital admissions) from the "global" population
+#' @param date_time_spine tibble mapping dates to time in days
+#' @param site_subpop_spine tibble mapping sites to subpopulations
+#' @param lab_site_subpop_spine tibble mapping lab-sites to subpopulations
 #' @param stan_data_list A list containing all the data passed to stan for
 #' fitting the model
 #' @param fit_obj a CmdStan object that is the output of fitting the model to
@@ -84,6 +90,9 @@ get_draws_what_ok <- c(
 #' @export
 get_draws.data.frame <- function(x,
                                  count_data,
+                                 date_time_spine,
+                                 site_subpop_spine,
+                                 lab_site_subpop_spine,
                                  stan_data_list,
                                  fit_obj,
                                  ...,
@@ -111,34 +120,28 @@ get_draws.data.frame <- function(x,
   } else {
     what_ok[what] <- TRUE
   }
+  if (stan_data_list$include_ww == 0) {
+    if (any(c("predicted_ww", "subpop_rt") %in% what)) {
+      cli::cli_abort(c(
+        "Predicted wastewater concentrations and subpopulation R(t)s",
+        " can not be returned because the model wasn't fit to ",
+        " site-level wastewater data"
+      ))
+    }
+    what_ok["predicted_ww"] <- FALSE
+    what_ok["subpop_rt"] <- FALSE
+    if (what == "all") {
+      warning(c(
+        "Model wasn't fit to wastewater data. ",
+        "Predicted wastewater concentrations and subpopulation R(t)s",
+        "\nestimates will not be returned in the ",
+        "`wwinference_fit_draws` object"
+      ))
+    }
+  }
 
   draws <- fit_obj$result$draws()
 
-  # Get the necessary mappings needed to join draws to data
-  date_time_spine <- tibble::tibble(
-    date = seq(
-      from = min(count_data$date),
-      to = min(count_data$date) + stan_data_list$ot + stan_data_list$ht,
-      by = "days"
-    )
-  ) |>
-    dplyr::mutate(t = row_number())
-
-  # Lab-site index to corresponding lab, site, and site population size
-  lab_site_spine <- x |>
-    dplyr::distinct(.data$site, .data$lab, .data$lab_site_index, .data$site_pop)
-
-  # Site index to corresponding site and subpopulation size
-  subpop_spine <- x |>
-    dplyr::distinct(.data$site, .data$site_index, .data$site_pop) |>
-    dplyr::mutate(site = as.factor(.data$site)) |>
-    dplyr::bind_rows(tibble::tibble(
-      site = "remainder of pop",
-      site_index = max(x$site_index) + 1,
-      site_pop = stan_data_list$subpop_size[
-        length(unique(stan_data_list$subpop_size))
-      ]
-    ))
 
   count_draws <- if (what_ok["predicted_counts"]) {
     draws |> # predicted_counts
@@ -177,37 +180,36 @@ get_draws.data.frame <- function(x,
       ) |>
       dplyr::select("lab_site_index", "t", "pred_value", "draw") |>
       dplyr::left_join(date_time_spine, by = "t") |>
-      dplyr::left_join(lab_site_spine, by = "lab_site_index") |>
+      dplyr::left_join(lab_site_subpop_spine, by = "lab_site_index") |>
       dplyr::left_join(
-        x |>
-          dplyr::select(-"t"),
+        x |> dplyr::distinct(
+          .data$log_genome_copies_per_ml,
+          .data$log_lod,
+          .data$date,
+          .data$below_lod,
+          .data$lab_site_index
+        ),
         by = c(
-          "lab_site_index", "date",
-          "lab", "site", "site_pop"
+          "lab_site_index", "date"
         )
       ) |>
       dplyr::ungroup() |>
       dplyr::mutate(
         observed_value = .data$log_genome_copies_per_ml,
-        subpop = glue::glue("Site: {site}")
       ) |>
       dplyr::select(
-        "below_lod",
         "date",
-        "draw",
-        "exclude",
-        "flag_as_ww_outlier",
-        "lab",
-        "lab_site_index",
         "lab_site_name",
-        "log_genome_copies_per_ml",
-        "log_lod",
-        "observed_value",
         "pred_value",
+        "draw",
+        "observed_value",
+        "subpop_name",
+        "subpop_pop",
         "site",
-        "site_index",
-        "site_pop",
-        "subpop"
+        "lab",
+        "log_lod",
+        "below_lod",
+        "lab_site_index"
       )
   } else {
     NULL
@@ -228,12 +230,10 @@ get_draws.data.frame <- function(x,
         by = "date"
       ) |>
       dplyr::ungroup() |>
-      dplyr::rename("observed_value" = "count") |>
       dplyr::select(
         "date",
-        "draw",
-        "observed_value",
         "pred_value",
+        "draw",
         "total_pop"
       )
   } else {
@@ -242,29 +242,22 @@ get_draws.data.frame <- function(x,
 
   subpop_rt_draws <- if (what_ok["subpop_rt"]) {
     draws |>
-      tidybayes::spread_draws(!!str2lang("r_site_t[site_index, t]")) |>
-      dplyr::rename("pred_value" = "r_site_t") |>
+      tidybayes::spread_draws(!!str2lang("r_subpop_t[subpop_index, t]")) |>
+      dplyr::rename("pred_value" = "r_subpop_t") |>
       dplyr::mutate(
         draw = .data$`.draw`,
         pred_value = .data$pred_value
       ) |>
-      dplyr::select("site_index", "t", "pred_value", "draw") |>
+      dplyr::select("subpop_index", "t", "pred_value", "draw") |>
       dplyr::left_join(date_time_spine, by = "t") |>
-      dplyr::left_join(subpop_spine, by = "site_index") |>
+      dplyr::left_join(site_subpop_spine, by = "subpop_index") |>
       dplyr::ungroup() |>
-      dplyr::mutate(
-        subpop = ifelse(.data$site != "remainder of pop",
-          glue::glue("Site: {site}"), "remainder of pop"
-        )
-      ) |>
       dplyr::select(
         "date",
-        "draw",
         "pred_value",
-        "site",
-        "site_index",
-        "site_pop",
-        "subpop"
+        "draw",
+        "subpop_name",
+        "subpop_pop",
       )
   } else {
     NULL
@@ -290,18 +283,23 @@ print.wwinference_fit_draws <- function(x, ...) {
     ifelse(length(x$subpop_rt) > 0, max(x$subpop_rt$draw), 0)
   ) |> max()
 
+  # This calculates the number of time points in each dataframe
   timepoints <- c(
     ifelse(
-      length(x$predicted_counts) > 0, diff(range(x$predicted_counts$date)), 0
+      length(x$predicted_counts) > 0,
+      diff(range(x$predicted_counts$date)) + 1, 0
     ),
     ifelse(
-      length(x$predicted_ww) > 0, diff(range(x$predicted_ww$date)), 0
+      length(x$predicted_ww) > 0,
+      diff(range(x$predicted_ww$date)) + 1, 0
     ),
     ifelse(
-      length(x$global_rt) > 0, diff(range(x$global_rt$date)), 0
+      length(x$global_rt) > 0,
+      diff(range(x$global_rt$date)) + 1, 0
     ),
     ifelse(
-      length(x$subpop_rt) > 0, diff(range(x$subpop_rt$date)), 0
+      length(x$subpop_rt) > 0,
+      diff(range(x$subpop_rt$date)) + 1, 0
     )
   ) |> max()
 
@@ -342,9 +340,9 @@ print.wwinference_fit_draws <- function(x, ...) {
   if (length(x$subpop_rt)) {
     cat(
       sprintf(
-        " - `$subpop_rt` with %i rows across %i sub-populations\n",
+        " - `$subpop_rt` with %i rows across %i subpopulations\n",
         nrow(x$subpop_rt),
-        length(unique(x$subpop_rt$subpop))
+        length(unique(x$subpop_rt$subpop_name))
       )
     )
   }
@@ -370,7 +368,7 @@ new_wwinference_fit_draws <- function(
     subpop_rt) {
   # Checking colnames: Must match all exactly
   predicted_counts_colnames <- c(
-    "date", "draw", "observed_value", "pred_value", "total_pop"
+    "date", "pred_value", "observed_value", "draw", "total_pop"
   )
   if (length(predicted_counts)) {
     checkmate::assert_names(
@@ -383,19 +381,15 @@ new_wwinference_fit_draws <- function(
     "below_lod",
     "date",
     "draw",
-    "exclude",
-    "flag_as_ww_outlier",
     "lab",
-    "lab_site_index",
     "lab_site_name",
-    "log_genome_copies_per_ml",
     "log_lod",
     "observed_value",
     "pred_value",
     "site",
-    "site_index",
-    "site_pop",
-    "subpop"
+    "subpop_pop",
+    "subpop_name",
+    "lab_site_index"
   )
   if (length(predicted_ww)) {
     checkmate::assert_names(
@@ -405,7 +399,7 @@ new_wwinference_fit_draws <- function(
   }
 
   global_rt_colnames <- c(
-    "date", "draw", "observed_value", "pred_value", "total_pop"
+    "date", "draw", "pred_value", "total_pop"
   )
   if (length(global_rt)) {
     checkmate::assert_names(
@@ -415,8 +409,11 @@ new_wwinference_fit_draws <- function(
   }
 
   subpop_rt_colnames <- c(
-    "date", "draw", "pred_value", "site", "site_index", "site_pop",
-    "subpop"
+    "date",
+    "draw",
+    "pred_value",
+    "subpop_pop",
+    "subpop_name"
   )
   if (length(subpop_rt)) {
     checkmate::assert_names(

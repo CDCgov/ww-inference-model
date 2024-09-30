@@ -46,12 +46,15 @@ preprocess_ww_data <- function(ww_data,
     lod_col_name = lod_col_name
   )
 
-
+  # Order by site population so the first site index corresponds largest pop
+  ww_data_ordered <- ww_data |>
+    dplyr::arrange(desc(.data$site_pop))
 
   # Add some columns
-  ww_data_add_cols <- ww_data |>
+  ww_data_add_cols <- ww_data_ordered |>
+    dplyr::ungroup() |>
     dplyr::left_join(
-      ww_data |>
+      ww_data_ordered |>
         dplyr::distinct(.data$lab, .data$site) |>
         dplyr::mutate(
           lab_site_index = dplyr::row_number()
@@ -59,7 +62,7 @@ preprocess_ww_data <- function(ww_data,
       by = c("lab", "site")
     ) |>
     dplyr::left_join(
-      ww_data |>
+      ww_data_ordered |>
         dplyr::distinct(.data$site) |>
         dplyr::mutate(site_index = dplyr::row_number()),
       by = "site"
@@ -183,7 +186,7 @@ flag_ww_outliers <- function(ww_data,
       .data$n_data_points > !!threshold_n_dps
     ) |>
     dplyr::group_by(.data$lab_site_index) |>
-    dplyr::arrange(.data$date, "desc") |>
+    dplyr::arrange(desc(.data$date)) |>
     dplyr::mutate(
       log_conc = .data[[conc_col_name]],
       prev_log_conc = dplyr::lag(.data$log_conc, 1),

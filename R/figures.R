@@ -111,16 +111,13 @@ get_plot_ww_conc <- function(draws,
   draws_to_plot <- draws |>
     dplyr::filter(
       .data$draw %in% !!sampled_draws
-    ) |>
-    dplyr::mutate(
-      site_lab_name = glue::glue("{subpop}, Lab: {lab}")
     )
 
   p <- ggplot(draws_to_plot) +
     geom_line(
       aes(
         x = .data$date, y = .data$pred_value,
-        color = .data$subpop,
+        color = .data$subpop_name,
         group = .data$draw
       ),
       alpha = 0.1, size = 0.2,
@@ -129,7 +126,13 @@ get_plot_ww_conc <- function(draws,
     geom_point(aes(x = .data$date, y = .data$observed_value),
       color = "black", show.legend = FALSE, size = 0.5
     ) +
-    facet_wrap(~site_lab_name, scales = "free") +
+    geom_point(
+      data = draws_to_plot |>
+        dplyr::filter(.data$below_lod == 1),
+      aes(x = .data$date, y = .data$observed_value),
+      color = "blue", show.legend = FALSE, size = 0.5
+    ) +
+    facet_wrap(~lab_site_name, scales = "free") +
     geom_vline(
       xintercept = lubridate::ymd(forecast_date),
       linetype = "dashed"
@@ -246,7 +249,7 @@ get_plot_subpop_rt <- function(draws,
     geom_step(
       aes(
         x = .data$date, y = .data$pred_value, group = .data$draw,
-        color = .data$subpop
+        color = .data$subpop_name
       ),
       alpha = 0.1, linewidth = 0.2,
       show.legend = FALSE
@@ -256,7 +259,7 @@ get_plot_subpop_rt <- function(draws,
       linetype = "dashed",
       show.legend = FALSE
     ) +
-    facet_wrap(~subpop, scales = "free") +
+    facet_wrap(~subpop_name, scales = "free") +
     geom_hline(aes(yintercept = 1), linetype = "dashed") +
     xlab("") +
     ylab("Subpopulation R(t)") +

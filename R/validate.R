@@ -80,7 +80,6 @@ validate_ww_conc_data <- function(ww_data,
   assert_non_missingness(site_pops, arg, call)
   assert_elements_non_neg(site_pops, arg, call)
 
-
   invisible()
 }
 
@@ -160,12 +159,20 @@ validate_count_data <- function(count_data,
 #' been filtered and is ready to be passed into stan
 #' @param input_ww_data tibble containing the input wastewater data that has
 #' been filtered and is ready to be passed into stan
+#' @param date_time_spine tibble mapping dates to time in days
+#' @param lab_site_site_spine tibble mapping lab-sites to sites
+#' @param site_subpop_spine tibble mapping sites to subpopulations
+#' @param lab_site_subpop_spine tibble mapping lab-sites to subpopulations
 #' @param calibration_time integer indicating the calibration time
 #' @param forecast_date IS08 formatted date indicating the forecast date
 #'
 #' @return NULL, invisibly
 validate_both_datasets <- function(input_count_data,
                                    input_ww_data,
+                                   date_time_spine,
+                                   lab_site_site_spine,
+                                   site_subpop_spine,
+                                   lab_site_subpop_spine,
                                    calibration_time,
                                    forecast_date) {
   # check that you have sufficient count data for the calibration time
@@ -209,12 +216,47 @@ validate_both_datasets <- function(input_count_data,
   )
 
   # check that the time and date indices of both datasets line up
+  ww_data_sizes <- get_ww_data_sizes(
+    input_ww_data
+  )
+
+  ww_vals <- get_ww_indices_and_values(
+    input_ww_data = input_ww_data,
+    date_time_spine = date_time_spine,
+    lab_site_site_spine = lab_site_site_spine,
+    site_subpop_spine = site_subpop_spine,
+    lab_site_subpop_spine = lab_site_subpop_spine
+  )
+
+  input_ww_data_w_t <- input_ww_data |>
+    dplyr::mutate(t = ww_vals$ww_sampled_times)
+
   assert_equivalent_indexing(
     input_count_data,
-    input_ww_data,
+    input_ww_data_w_t,
     arg1 = "count data",
     arg2 = "ww data"
   )
+
+  # Warn if sum(site pops) are greater than total pop.
+  # The package can handle this, but warn users that they may have an input
+  # data error.
+  sum_site_pops <- input_ww_data |>
+    dplyr::distinct(.data$site_pop) |>
+    sum()
+  total_pop <- input_count_data |>
+    dplyr::distinct(.data$total_pop)
+  if (sum_site_pops > total_pop) {
+    cli::cli_warn(c(
+      "The sum of the populations in the wastewater catchment areas is ",
+      "larger than the total population. While the model supports this ",
+      "we advise checking your input data to ensure it is specified ",
+      "correctly and to make sure that populations represented by the ",
+      "wastewater catchment areas are not overlapping (e.g. if both ",
+      " the larger wastewater treatment plant and the upstream manhole ",
+      "are included)."
+    ))
+  }
   invisible()
 }
 

@@ -410,21 +410,32 @@ Working with the posterior predictions alongside the input data can be useful
 to check that your model is fitting the data well and that the
 nowcasted/forecast quantities look reasonable.
 
-We will generate a dataframe that we'll call `draws_df`, that contains
-the posterior draws of the estimated, nowcasted, and forecasted expected
-observed hospital admissions and wastewater concentrations, as well as the
-latent variables of interest including the site-level $\mathcal{R}(t)$ estimates and the
-state-level $\mathcal{R}(t)$ estimate.
+We can use the `get_draws()` function to generate dataframes that contain
+the posterior draws of the estimated, nowcasted, and forecasted quantities,
+joined to the relevant data.
 
 We can generate this directly on the output of `wwinference()` using:
 ```{r extracting-draws}
-draws_df <- get_draws(ww_fit)
+draws <- get_draws(ww_fit)
 
-print(draws_df)
+print(draws)
 ```
 
-Note that by default the `get_draws()` function will return a list of class `wwinference_fit_draws` all of the posterior draws for predicted hospitalizations, wastewater concentration, global, and site $\mathcal{R}(t)$ estimates. To examine a particular variable (e.g. `"predicted counts"` for posterior
-predicted hospital admissions), access the corresponding tibble using the `$` operator.
+Note that by default the `get_draws()` function will return a list of class `wwinference_fit_draws`
+which contains separate dataframes of the posterior draws for predicted counts (`"predicted_counts"`),
+wastewater concentrations (`"predicted_ww"`), global $\mathcal{R}(t)$ (`"global_rt"`) estimates, and
+subpopulation-level $\mathcal{R}(t)$ estimates ("`subpop_rt"`).
+To examine a particular variable (e.g. `"predicted_counts"` for posterior
+predicted hospital admissions in this case), access the corresponding tibble using the `$` operator.
+
+
+You can also specify which outputs to return using the `what` argument.
+```{r example subset draws}
+hosp_draws <- get_draws(ww_fit, what = "predicted_counts")
+hosp_draws_df <- hosp_draws$predicted_counts
+head(hosp_draws_df)
+```
+
 
 
 ### Using explicit passed arguments rather than S3 methods
@@ -434,9 +445,12 @@ Rather than using S3 methods supplied for `wwinference()`, the elements in the
 This is demonstrated below:
 
 ```{r extracting-draws-explicit, eval = FALSE}
-draws_df_explicit <- get_draws(
+draws_explicit <- get_draws(
   x = ww_fit$raw_input_data$input_ww_data,
   count_data = ww_fit$raw_input_data$input_count_data,
+  date_time_spine = ww_fit$raw_input_data$date_time_spine,
+  site_subpop_spine = ww_fit$raw_input_data$site_subpop_spine,
+  lab_site_subpop_spine = ww_fit$raw_input_data$lab_site_subpop_spine,
   stan_data_list = ww_fit$stan_data_list,
   fit_obj = ww_fit$fit
 )
@@ -445,28 +459,27 @@ draws_df_explicit <- get_draws(
 
 ## Plotting the outputs
 
-We can create plots of the outputs using `draws_df` and
-the fitting wrapper functions. Note that by default, these plots will not
-visualize data that was below the LOD (even though the fit incorporated
-them via the censored observation process.)
-
+We can create plots of the outputs using corresponding dataframes in the `draws`
+object and the fitting wrapper functions. Note that by default, these plots
+will not include outliers that were flagged for exclusion. Data points
+that are below the LOD will be plotted in blue.
 
 ```{r generating-figures,  out.width='100%'}
 plot_hosp <- get_plot_forecasted_counts(
-  draws = draws_df$predicted_counts,
+  draws = draws$predicted_counts,
   count_data_eval = hosp_data_eval,
   count_data_eval_col_name = "daily_hosp_admits_for_eval",
   forecast_date = forecast_date
 )
 plot_hosp
 
-plot_ww <- get_plot_ww_conc(draws_df$predicted_ww, forecast_date)
+plot_ww <- get_plot_ww_conc(draws$predicted_ww, forecast_date)
 plot_ww
 
-plot_state_rt <- get_plot_global_rt(draws_df$global_rt, forecast_date)
+plot_state_rt <- get_plot_global_rt(draws$global_rt, forecast_date)
 plot_state_rt
 
-plot_subpop_rt <- get_plot_subpop_rt(draws_df$subpop_rt, forecast_date)
+plot_subpop_rt <- get_plot_subpop_rt(draws$subpop_rt, forecast_date)
 plot_subpop_rt
 ```
 
@@ -474,15 +487,15 @@ The previous three are equivalent to calling the `plot` method of `wwinference_f
 
 ```{r, out.width='100%'}
 plot(
-  x = draws_df,
+  x = draws,
   what = "predicted_counts",
   count_data_eval = hosp_data_eval,
   count_data_eval_col_name = "daily_hosp_admits_for_eval",
   forecast_date = forecast_date
 )
-plot(draws_df, what = "predicted_ww", forecast_date = forecast_date)
-plot(draws_df, what = "global_rt", forecast_date = forecast_date)
-plot(draws_df, what = "subpop_rt", forecast_date = forecast_date)
+plot(draws, what = "predicted_ww", forecast_date = forecast_date)
+plot(draws, what = "global_rt", forecast_date = forecast_date)
+plot(draws, what = "subpop_rt", forecast_date = forecast_date)
 ```
 
 ## Diagnostics
@@ -491,7 +504,8 @@ We strongly recommend running diagnostics as a post-processing step on the
 model outputs.
 
 This can be done by passing the output of
-`wwinference()` into the `get_model_diagnostic_flags()`,
+
+`wwinference()` into the `get_model_diagnostic_flags()`, `summary_diagnostics()`
 and `parameter_diagnostics()` functions.
 
 `get_model_diagnostic_flags()` will print out a table of any flags, if any of
@@ -500,13 +514,21 @@ We have set default thresholds on the model diagnostics for production-level
 runs, we recommend adjusting as needed (see below)
 
 To further troubleshoot, you can look at
-the diagnostic summary and the diagnostics of the individual parameters using
+the summary diagnostics using the `summary_diagnostics()` function
+and the diagnostics of the individual parameters using
 the `parameter_diagnostics()` function.
+
+For further information on troubleshooting the model diagnostics,
+we recommend the (bayesplot tutorial)[https://mc-stan.org/bayesplot/articles/visual-mcmc-diagnostics.html].
+
+You can access the CmdStan object directly using `ww_fit$fit$result`
 
 ```{r diagnostics-using-S3-methods}
 convergence_flag_df <- get_model_diagnostic_flags(ww_fit)
 print(convergence_flag_df)
-parameter_diagnostics(ww_fit)
+summary_diagnostics(ww_fit)
+param_diagnostics <- parameter_diagnostics(ww_fit)
+head(param_diagnostics)
 ```
 
 This can also be done explicitly by parsing the elements of the
@@ -568,12 +590,12 @@ fit_hosp_only <- wwinference(
 ```
 
 ```{r plot-hosp-only, out.width='100%'}
-draws_df_hosp_only <- get_draws(fit_hosp_only)
-plot_hosp_hosp_only <- get_plot_forecasted_counts(
-  draws = draws_df_hosp_only$predicted_counts,
+draws_hosp_only <- get_draws(fit_hosp_only)
+plot(draws_hosp_only,
+  what = "predicted_counts",
   count_data_eval = hosp_data_eval,
   count_data_eval_col_name = "daily_hosp_admits_for_eval",
   forecast_date = forecast_date
 )
-plot_hosp_hosp_only
+plot(draws_hosp_only, what = "global_rt", forecast_date = forecast_date)
 ```

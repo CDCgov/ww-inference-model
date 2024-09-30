@@ -16,7 +16,7 @@
 #' @param ww_data A dataframe containing the pre-processed, site-level
 #' wastewater concentration data for a model run. The dataframe must contain
 #' the following columns: `date`, `site`, `lab`, `log_genome_copies_per_ml`,
-#' `lab_site_index`, `log_lod`, `below_lod`, `site_pop` `exclude`
+#' `lab_site_index`, `log_lod`, `below_lod`, `site_pop` `exclude`.
 #' @param count_data A dataframe containing the pre-procssed, "global" (e.g.
 #' state) daily count data, pertaining to the number of events that are being
 #' counted on that day, e.g. number of daily cases or daily hospital admissions.
@@ -159,11 +159,29 @@ wwinference <- function(ww_data,
                         generate_initial_values = TRUE,
                         initial_values_seed = NULL,
                         compiled_model = compile_model()) {
+  include_ww <- as.integer(model_spec$include_ww)
+
   if (is.null(forecast_date)) {
     cli::cli_abort(
       "The user must specify a forecast date"
     )
   }
+
+  # If there is no wastewater data, set include_ww to 0
+  if (is.null(ww_data) || nrow(ww_data) == 0) {
+    cli::cli_warn(
+      c(
+        "No wastewater data was passed to the model.",
+        "The model will default to fitting only to the count data"
+      )
+    )
+    include_ww <- 0
+  }
+  # If include_ww == 0, we will specify an empty dataset
+  if (include_ww == 0) {
+    ww_data <- NULL
+  }
+
 
   fit_opts_use <- get_mcmc_options() # get defaults
   # this overwrites defaults with all and only the values the user sets in
@@ -177,31 +195,72 @@ wwinference <- function(ww_data,
   )
 
 
-  # Check that data is compatible with specifications
-  assert_no_dates_after_max(ww_data$date, forecast_date)
+  ## Check that data is compatible with specifications
+  if (!is.null(ww_data)) {
+    assert_no_dates_after_max(ww_data$date, forecast_date)
+  }
   assert_no_dates_after_max(count_data$date, forecast_date)
 
+  # Get the input count data that will get passed directly to stan
   input_count_data <- get_input_count_data_for_stan(
     count_data,
     calibration_time
   )
   last_count_data_date <- max(input_count_data$date, na.rm = TRUE)
   first_count_data_date <- min(input_count_data$date, na.rm = TRUE)
+
+  # Get the input wastewater data that will be passed directly to stan
   input_ww_data <- get_input_ww_data_for_stan(
     ww_data,
     first_count_data_date,
     last_count_data_date,
     calibration_time
   )
+  # Get the table that maps 1-indexed time to dates
+  date_time_spine <- get_date_time_spine(
+    forecast_date = forecast_date,
+    input_count_data = input_count_data,
+    last_count_data_date = last_count_data_date,
+    forecast_horizon = forecast_horizon,
+    calibration_time = calibration_time
+  )
+
+  # Get lab_site_site_spine
+  lab_site_site_spine <- get_lab_site_site_spine(
+    input_ww_data = input_ww_data
+  )
+
+  # Get site to subpop spine
+  site_subpop_spine <- get_site_subpop_spine(
+    input_ww_data = input_ww_data,
+    input_count_data = input_count_data
+  )
+
+  lab_site_subpop_spine <- get_lab_site_subpop_spine(
+    lab_site_site_spine = lab_site_site_spine,
+    site_subpop_spine = site_subpop_spine
+  )
+
+
   raw_input_data <- list(
     input_count_data = input_count_data,
-    input_ww_data = input_ww_data
+    input_ww_data = input_ww_data,
+    date_time_spine = date_time_spine,
+    lab_site_site_spine = lab_site_site_spine,
+    site_subpop_spine = site_subpop_spine,
+    lab_site_subpop_spine = lab_site_subpop_spine
   )
 
   # If checks pass, create stan data object
   stan_data_list <- get_stan_data(
     input_count_data = input_count_data,
     input_ww_data = input_ww_data,
+    date_time_spine = date_time_spine,
+    lab_site_site_spine = lab_site_site_spine,
+    site_subpop_spine = site_subpop_spine,
+    lab_site_subpop_spine = lab_site_subpop_spine,
+    last_count_data_date = last_count_data_date,
+    first_count_data_date = first_count_data_date,
     forecast_date = forecast_date,
     calibration_time = calibration_time,
     forecast_horizon = forecast_horizon,
@@ -209,7 +268,7 @@ wwinference <- function(ww_data,
     inf_to_count_delay = model_spec$inf_to_count_delay,
     infection_feedback_pmf = model_spec$infection_feedback_pmf,
     params = model_spec$params,
-    include_ww = as.integer(model_spec$include_ww),
+    include_ww = include_ww,
     compute_likelihood = as.integer(model_spec$compute_likelihood)
   )
 
@@ -311,7 +370,7 @@ print.wwinference_fit <- function(x, ...) {
   cat("wwinference_fit object\n")
   cat("N of WW sites              :", x$stan_data_list$n_ww_sites, "\n")
   cat("N of unique lab-site pairs :", x$stan_data_list$n_ww_lab_sites, "\n")
-  cat("State population           :", formatC(
+  cat("Total population           :", formatC(
     x$stan_data_list$state_pop,
     format = "d"
   ), "\n")
