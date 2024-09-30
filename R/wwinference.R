@@ -177,7 +177,7 @@ wwinference <- function(ww_data,
     )
     include_ww <- 0
   }
-  # If include_ww <-0, we will specify an empty dataset
+  # If include_ww == 0, we will specify an empty dataset
   if (include_ww == 0) {
     ww_data <- NULL
   }
