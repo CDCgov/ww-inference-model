@@ -63,7 +63,8 @@ model_test_data <- list(
   forecast_horizon = forecast_horizon,
   model_spec = model_spec,
   fit_opts = mcmc_options,
-  generate_initial_values = generate_initial_values
+  generate_initial_values = generate_initial_values,
+  compiled_model = compiled_site_inf_model
 )
 
 
@@ -73,7 +74,6 @@ test_that("Test that the model runs on simulated data when include_ww=0.", {
   #######
   model_test_data_no_ww <- model_test_data
   model_test_data_no_ww$model_spec$include_ww <- 0
-  model_test_data_no_ww$compiled_model <- compiled_site_inf_model
 
   expect_no_error(withr::with_seed(55, {
     fit <- do.call(
@@ -90,7 +90,6 @@ test_that("Test that the model runs without wastewater, include_ww=0.", {
   model_test_data_no_ww <- model_test_data
   model_test_data_no_ww$model_spec$include_ww <- 0
   model_test_data_no_ww$ww_data <- tibble::tibble()
-  model_test_data_no_ww$compiled_model <- compiled_site_inf_model
 
   expect_warning(
     withr::with_seed(55, {
@@ -110,7 +109,6 @@ test_that("Test that the model runs without wastewater, include_ww=1.", {
   model_test_data_no_ww <- model_test_data
   model_test_data_no_ww$model_spec$include_ww <- 1
   model_test_data_no_ww$ww_data <- tibble::tibble()
-  model_test_data_no_ww$compiled_model <- compiled_site_inf_model
 
   expect_warning(
     withr::with_seed(55, {
