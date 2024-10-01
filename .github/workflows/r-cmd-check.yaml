@@ -11,7 +11,7 @@ jobs:
       matrix:
         r-version: ["4.1.0", "release"]
         os: [windows-latest, ubuntu-latest]
-        rtools: ['44']
+        rtools: ['44', '44']
     runs-on:  ${{matrix.os}}
     steps:
     - uses: actions/checkout@v4
