@@ -25,7 +25,7 @@ jobs:
       with:
         needs: check
     - name: "Install cmdstan via cmdstanr"
-      uses: epinowcast/actions/install-cmdstan
+      uses: epinowcast/actions/install-cmdstan@v1.5
       with:
         cmdstan-version: "latest"
         num-cores: 2
