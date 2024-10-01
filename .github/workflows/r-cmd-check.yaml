@@ -31,7 +31,7 @@ jobs:
 
     - name: "Setting conda"
       if: runner.os == 'windows-latest'
-      uses: conda-incubator/setup-miniconda
+      uses: conda-incubator/setup-miniconda@3.0.4
       with:
         activate-environment: 'stan'
 
