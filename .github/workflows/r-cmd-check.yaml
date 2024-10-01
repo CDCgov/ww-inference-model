@@ -22,15 +22,16 @@ jobs:
         extra-repositories: "https://mc-stan.org/r-packages/"
         rtools-version: ${{ matrix.config.rtools }}
 
-    - name: Check cmdstanr toolkit
-      if: ${{ matrix.os == 'windows-latest' }}
-      run: |
-        Rscript --vanilla -e 'cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE)'
-
     - name: "Set up dependencies for wwinference"
       uses: r-lib/actions/setup-r-dependencies@v2
       with:
         needs: check
+
+
+    - name: Check cmdstanr toolkit
+      if: ${{ matrix.os == 'windows-latest' }}
+      run: |
+        Rscript --vanilla -e 'cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE)'
 
     - name: "Check wwinference package"
       uses: r-lib/actions/check-r-package@v2
