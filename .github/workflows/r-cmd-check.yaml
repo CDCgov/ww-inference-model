@@ -11,6 +11,7 @@ jobs:
       matrix:
         r-version: ["4.1.0", "release"]
         os: [windows-latest, ubuntu-latest]
+        rtools: ['44']
     runs-on:  ${{matrix.os}}
     steps:
     - uses: actions/checkout@v4
@@ -19,6 +20,7 @@ jobs:
         r-version: ${{matrix.r-version}}
         use-public-rspm: true
         extra-repositories: "https://mc-stan.org/r-packages/"
+        rtools-version: ${{ matrix.config.rtools }}
     - name: "Set up dependencies for wwinference"
       uses: r-lib/actions/setup-r-dependencies@v2
       with:
