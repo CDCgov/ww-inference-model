@@ -8,6 +8,7 @@ on:
 jobs:
   check-package:
     strategy:
+      fail-fast: false
       matrix:
         r-version: ["4.1.0", "release"]
         os: [windows-latest, ubuntu-latest]
