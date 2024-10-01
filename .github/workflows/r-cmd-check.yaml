@@ -33,6 +33,7 @@ jobs:
       if: ${{ matrix.os == 'windows-latest' }}
       run: |
         Rscript --vanilla -e 'cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE)'
+        Rscript --vanilla -e 'cmdstanr::install_cmdstan()'
 
     - name: "Check wwinference package"
       uses: r-lib/actions/check-r-package@v2
