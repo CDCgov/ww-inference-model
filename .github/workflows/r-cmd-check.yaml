@@ -19,27 +19,16 @@ jobs:
         r-version: ${{matrix.r-version}}
         use-public-rspm: true
         extra-repositories: "https://mc-stan.org/r-packages/"
+
+    - name: Check cmdstanr toolkit
+      if: ${{ matrix.os == 'windows-latest' }}
+      run: |
+        Rscript --vanilla -e 'cmdstanr::check_cmdstan_toolchain(fix = TRUE, quiet = FALSE)'
+
     - name: "Set up dependencies for wwinference"
       uses: r-lib/actions/setup-r-dependencies@v2
       with:
         needs: check
-    - name: "Install cmdstan via cmdstanr"
-      if: ${{ matrix.os != 'windows-latest' }}
-      uses: epinowcast/actions/install-cmdstan@v1
-      with:
-        cmdstan-version: "latest"
-
-    - name: "Setting conda"
-      if: ${{ matrix.os == 'windows-latest' }}
-      uses: conda-incubator/setup-miniconda@v3.0.4
-      with:
-        activate-environment: 'stan'
-
-    - name: "Installing cmdstan via conda"
-      if: ${{ matrix.os == 'windows-latest' }}
-      run: |
-        conda install -c conda-forge cmdstan
-        conda activate stan
 
     - name: "Check wwinference package"
       uses: r-lib/actions/check-r-package@v2
