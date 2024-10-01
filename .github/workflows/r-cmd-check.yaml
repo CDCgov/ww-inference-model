@@ -24,9 +24,23 @@ jobs:
       with:
         needs: check
     - name: "Install cmdstan via cmdstanr"
+      if: runner.os != 'windows-latest'
       uses: epinowcast/actions/install-cmdstan@v1
       with:
         cmdstan-version: "latest"
+
+    - name: "Setting conda"
+      if: runner.os == 'windows-latest'
+      uses: conda-incubator/setup-miniconda
+      with:
+        activate-environment: 'stan'
+
+    - name: "Installing cmdstan via conda"
+      if: runner.os == 'windows-latest'
+      run: |
+        conda install -c conda-forge cmdstan
+        conda activate stan
+
     - name: "Check wwinference package"
       uses: r-lib/actions/check-r-package@v2
       with:
