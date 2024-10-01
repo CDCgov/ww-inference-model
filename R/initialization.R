@@ -105,7 +105,7 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
   )
 
   if (stan_data$n_subpops > 1) {
-    init_list$error_subpop <- matrix(
+    init_list$error_rt_subpop <- matrix(
       stats::rnorm((n_subpops - 1) * n_weeks,
         mean = 0,
         sd = stdev
