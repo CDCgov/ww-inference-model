@@ -8,8 +8,8 @@ on:
 jobs:
   check-package:
     strategy:
+      fail-fast: false
       matrix:
-        fail-fast: false
         r-version: ["4.1.0", "release"]
         os: [windows-latest, ubuntu-latest]
     runs-on:  ${{matrix.os}}
