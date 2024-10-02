@@ -244,7 +244,8 @@ test_that(paste0(
 ), {
   result <- get_input_count_data_for_stan(
     count_data,
-    calibration_time = 80
+    calibration_time = 80,
+    forecast_date
   )
   expect_true(nrow(result) == 80)
 })
