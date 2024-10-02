@@ -80,7 +80,7 @@ library(wwinference)
 
 ## Contributing to this package
 We welcome and encourage contributions. Open an issue in the repository to request changes.
-To contribute, fork the repository locally and open a pull request into the `main` branch. 
+To contribute, fork the repository locally and open a pull request into the `main` branch.
 
 ## Public Domain Standard Notice
 This repository constitutes a work of the United States Government and is not
