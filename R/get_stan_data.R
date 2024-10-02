@@ -4,10 +4,13 @@
 #' have the following columns: date, count, total_pop
 #' @param calibration_time integer indicating the max duration in days that
 #' the model is calibrated to the count data for
-#' @return datatframe of count data passed to stan
+#' @param forecast_date a character string in ISO8601 format (YYYY-MM-DD)
+#' indicating the date that the forecast is to be made. Default is NULL
+#' @return dataframe of count data passed to stan
 #' @export
 get_input_count_data_for_stan <- function(preprocessed_count_data,
-                                          calibration_time) {
+                                          calibration_time,
+                                          forecast_date) {
   # Get the last date that there were observations of the epidemiological
   # indicator (aka cases or hospital admissions counts)
   last_count_data_date <- max(preprocessed_count_data$date, na.rm = TRUE)
@@ -16,6 +19,21 @@ get_input_count_data_for_stan <- function(preprocessed_count_data,
     dplyr::filter(
       .data$date > !!last_count_data_date - lubridate::days(!!calibration_time)
     )
+
+  if (max(lubridate::ymd(
+    input_count_data$date
+  )) > lubridate::ymd(forecast_date)) {
+    cli::cli_warn(
+      c(
+        "Count data being passed to the model has observations",
+        " beyond the forecast date. Data will be truncated to before ",
+        "the forecast date. We strongly recommend using data available ",
+        "as of the forecast date if performing retrospective evaluation."
+      )
+    )
+    input_count_data_filtered <- input_count_data_filtered |>
+      dplyr::filter(.data$date < lubridate::ymd(forecast_date))
+  }
 
   count_data <- add_time_indexing(input_count_data_filtered)
 
@@ -35,12 +53,15 @@ get_input_count_data_for_stan <- function(preprocessed_count_data,
 #' presen, in ISO8601 format (YYYY-MM-DD)
 #' @param calibration_time integer indicating the max duration in days that
 #' the model is calibrated to the count data for
+#' @param forecast_date a character string in ISO8601 format (YYYY-MM-DD)
+#' indicating the date that the forecast is to be made. Default is NULL
 #' @return dataframe of the ww data passed to stan
 #' @export
 get_input_ww_data_for_stan <- function(preprocessed_ww_data,
                                        first_count_data_date,
                                        last_count_data_date,
-                                       calibration_time) {
+                                       calibration_time,
+                                       forecast_date) {
   # Test to see if ww_data_present
   ww_data_present <- !is.null(preprocessed_ww_data)
   if (ww_data_present == FALSE) {
@@ -56,6 +77,21 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
           "but not all have been indicated for exclusion from model fit"
         )
       )
+    }
+
+    if (max(lubridate::ymd(
+      preprocessed_ww_data$date
+    )) > lubridate::ymd(forecast_date)) {
+      cli::cli_warn(
+        c(
+          "Wastewater data being passed to the model has observations",
+          " beyond the forecast date. Data will be truncated to before ",
+          "the forecast date. We strongly recommend using data available ",
+          "as of the forecast date if performing retrospective evaluation."
+        )
+      )
+      preprocessed_ww_data <- preprocessed_ww_data |>
+        dplyr::filter(.data$date < lubridate::ymd(forecast_date))
     }
 
     # Test for presence of needed column names
