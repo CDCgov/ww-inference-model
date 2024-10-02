@@ -204,7 +204,8 @@ wwinference <- function(ww_data,
   # Get the input count data that will get passed directly to stan
   input_count_data <- get_input_count_data_for_stan(
     count_data,
-    calibration_time
+    calibration_time,
+    forecast_date
   )
   last_count_data_date <- max(input_count_data$date, na.rm = TRUE)
   first_count_data_date <- min(input_count_data$date, na.rm = TRUE)
@@ -214,7 +215,8 @@ wwinference <- function(ww_data,
     ww_data,
     first_count_data_date,
     last_count_data_date,
-    calibration_time
+    calibration_time,
+    forecast_date
   )
   # Get the table that maps 1-indexed time to dates
   date_time_spine <- get_date_time_spine(

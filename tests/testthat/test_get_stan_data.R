@@ -54,7 +54,8 @@ include_ww <- 1
 
 input_count_data <- get_input_count_data_for_stan(
   count_data,
-  calibration_time
+  calibration_time,
+  forecast_date
 )
 first_count_data_date <- min(input_count_data$date, na.rm = TRUE)
 last_count_data_date <- max(input_count_data$date, na.rm = TRUE)
@@ -62,7 +63,8 @@ input_ww_data <- get_input_ww_data_for_stan(
   ww_data_filtered,
   first_count_data_date,
   last_count_data_date,
-  calibration_time
+  calibration_time,
+  forecast_date
 )
 date_time_spine <- get_date_time_spine(
   forecast_date = forecast_date,
@@ -258,7 +260,8 @@ test_that(paste0(
     ww_data_no_exclusions,
     first_count_data_date,
     last_count_data_date,
-    calibration_time
+    calibration_time,
+    forecast_date
   )
 
   expect_true(nrow(input_ww_data_ne) == nrow(input_ww_data))
@@ -269,7 +272,8 @@ test_that(paste0(
     ww_data_w_exclusions,
     first_count_data_date,
     last_count_data_date,
-    calibration_time
+    calibration_time,
+    forecast_date
   )
 
   expect_true(nrow(input_ww_data_ne) == nrow(input_ww_data_we) + 1)
@@ -307,7 +311,8 @@ test_that(paste0(
     recent_input_ww_data,
     first_count_data_date,
     last_count_data_date,
-    calibration_time
+    calibration_time,
+    forecast_date
   )
   date_time_spine <- get_date_time_spine(
     forecast_date = forecast_date,
@@ -377,7 +382,8 @@ test_that(paste0(
     old_input_ww_data,
     first_count_data_date,
     last_count_data_date,
-    calibration_time
+    calibration_time,
+    forecast_date
   )
   date_time_spine <- get_date_time_spine(
     forecast_date = forecast_date,

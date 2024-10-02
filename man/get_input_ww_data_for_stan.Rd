@@ -8,7 +8,8 @@ get_input_ww_data_for_stan(
   preprocessed_ww_data,
   first_count_data_date,
   last_count_data_date,
-  calibration_time
+  calibration_time,
+  forecast_date
 )
 }
 \arguments{
@@ -25,6 +26,9 @@ presen, in ISO8601 format (YYYY-MM-DD)}
 
 \item{calibration_time}{integer indicating the max duration in days that
 the model is calibrated to the count data for}
+
+\item{forecast_date}{a character string in ISO8601 format (YYYY-MM-DD)
+indicating the date that the forecast is to be made. Default is NULL}
 }
 \value{
 dataframe of the ww data passed to stan

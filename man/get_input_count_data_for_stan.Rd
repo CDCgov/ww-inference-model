@@ -4,7 +4,11 @@
 \alias{get_input_count_data_for_stan}
 \title{Get the input count data to pass directly to stan}
 \usage{
-get_input_count_data_for_stan(preprocessed_count_data, calibration_time)
+get_input_count_data_for_stan(
+  preprocessed_count_data,
+  calibration_time,
+  forecast_date
+)
 }
 \arguments{
 \item{preprocessed_count_data}{a dataframe with the input count data, must
@@ -12,9 +16,12 @@ have the following columns: date, count, total_pop}
 
 \item{calibration_time}{integer indicating the max duration in days that
 the model is calibrated to the count data for}
+
+\item{forecast_date}{a character string in ISO8601 format (YYYY-MM-DD)
+indicating the date that the forecast is to be made. Default is NULL}
 }
 \value{
-datatframe of count data passed to stan
+dataframe of count data passed to stan
 }
 \description{
 Get the input count data to pass directly to stan
