@@ -31,7 +31,8 @@ assert_no_dates_after_max <- function(date_vector,
       c(
         "The {.arg_dates {arg_dates}} passed in has observations after the ",
         "specified {.arg_max_date {arg_max_date}}. Check that this is the ",
-        "dataset you intended to use with the given {.arg_max_date {arg_max_date}}."
+        "dataset you intended to use with the given ",
+        "{.arg_max_date {arg_max_date}}."
       ),
       call = call,
       class = "wwinference_input_data_error"
