@@ -13,7 +13,7 @@ This project is an in-development R package, `{wwinference}` that estimates late
 In brief, our model builds upon [EpiNow2](https://github.com/epiforecasts/EpiNow2/tree/main), a widely used [R](https://www.r-project.org/) and [Stan](https://mc-stan.org/) package for Bayesian epidemiological inference.
 We modify EpiNow2 to add a model for the observed viral RNA concentration in wastewater, adding hierarchical structure to link the subpopulations represented by the observed wastewater concentrations in each wastewater catchment area.
 
-The intention is for {wwinference} to provide a user-friendly R-package interface for running forecasting models that use wastewater concentrations combined with other more traditional epidemiological signals such as cases or hospital admissions. 
+The intention is for {wwinference} to provide a user-friendly R-package interface for running forecasting models that use wastewater concentrations combined with other more traditional epidemiological signals such as cases or hospital admissions.
 It aims to be a re-implementation of the modeling components contained in the [wastewater-informed-covid-forecasting](https://github.com/CDCgov/wastewater-informed-covid-forecasting) project repository, with
 an emphasis here on making it easier for users to supply their own data.
 
@@ -79,7 +79,7 @@ library(wwinference)
 ```
 
 ## Contributing Guidelines
-We welcome and encourage cotributions. 
+We welcome and encourage cotributions.
 Anyone is encouraged to contribute to the repository by [forking](https://help.github.com/articles/fork-a-repo)
 and submitting a pull request. (If you are new to GitHub, you might start with a
 [basic tutorial](https://help.github.com/articles/set-up-git).) By contributing
