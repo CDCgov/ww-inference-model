@@ -20,7 +20,7 @@ test_that(
       regexp = "The example data passed in has observations"
     )
 
-    max_date <- "character"
+    max_date <- as.character("2024-01-02")
 
     expect_error(
       assert_no_dates_after_max(date_vector, max_date,

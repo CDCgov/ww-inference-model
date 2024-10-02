@@ -588,7 +588,10 @@ assert_dates_within_frame <- function(dates1,
   checkmate::assert_date(dates1)
   checkmate::assert_date(dates2)
   check_dates2_win_frame <- min(dates1) <= max(dates2) &
-    min(dates2) >= min(dates1)
+    min(dates2) >= min(dates1) &
+    min(dates2) <= max(dates1) &
+    min(dates1) >= min(dates2)
+
   if (!check_dates2_win_frame) {
     cli::cli_abort(
       c(
