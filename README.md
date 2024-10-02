@@ -1,17 +1,20 @@
-# `wwinference`: joint inference and forecasting <br /> from wastewater and epidemiological indicators  <a href="https://cdcgov.github.io/ww-inference-model/"><img src="man/figures/logo.svg" align="right" height="139" alt="wwinference website" /></a>
+# `wwinference`: joint inference and forecasting <br /> from wastewater and epidemiological count data  <a href="https://cdcgov.github.io/ww-inference-model/"><img src="man/figures/logo.svg" align="right" height="139" alt="wwinference website" /></a>
 
 > [!CAUTION]
-> This project is a work-in-progress. Despite this project's early stage, all development is in public as part of the Center for Forecasting and Outbreak Analytics' goals around open development. Questions and suggestions are welcome through GitHub issues or a PR.
+> This package is still in development.
+> Note the package is still flagged as in development, though the authors plan on using it for production work in the coming weeks.
+> All development is in public as part of the Center for Forecasting and Outbreak Analytics' goals around open development.
+> Questions and suggestions are welcome through GitHub issues or a PR.
 >
 
 ## Overview
 
-This project is an in-development R package, `{wwinference}` that estimates latent incident infections from wastewater concentration data and data on epidemiological indicators, with an initial assumed structure that the wastewater concentration data comes from subsets of the population contributing to the "global" epidemiological indicator data, such as hospital admissions.
+This project is an in-development R package, `{wwinference}` that estimates latent incident infections from wastewater concentration data and data on epidemiological count data, with an initial assumed structure that the wastewater concentration data comes from subsets of the population contributing to the "global" epidemiological count data, such as hospital admissions.
 In brief, our model builds upon [EpiNow2](https://github.com/epiforecasts/EpiNow2/tree/main), a widely used [R](https://www.r-project.org/) and [Stan](https://mc-stan.org/) package for Bayesian epidemiological inference.
-We modify EpiNow2 to add model for the observed viral RNA concentration in wastewater, adding hierarchical structure to link the subpopulations represented by the osberved wastewater concentrations in each wastewater catchment area.
-See our Model Definition page for a mathematical description of the generative model, and the Getting Stated vignette to see an example of how to run the inference model on simulated data.
+We modify EpiNow2 to add a model for the observed viral RNA concentration in wastewater, adding hierarchical structure to link the subpopulations represented by the observed wastewater concentrations in each wastewater catchment area.
 
-The intention is for {wwinference} to provide a user-friendly R-package interface for running forecasting models that use wastewater concentrations combined with other more traditional epidemiological signals such as cases or hospital admissions. It aims to be a re-implementation of the modeling components contained in the [wastewater-informed-covid-forecasting](https://github.com/CDCgov/wastewater-informed-covid-forecasting) project repository, with
+The intention is for {wwinference} to provide a user-friendly R-package interface for running forecasting models that use wastewater concentrations combined with other more traditional epidemiological signals such as cases or hospital admissions.
+It aims to be a re-implementation of the modeling components contained in the [wastewater-informed-covid-forecasting](https://github.com/CDCgov/wastewater-informed-covid-forecasting) project repository, with
 an emphasis here on making it easier for users to supply their own data.
 
 We recommend reading the [model definition](model_definition.md) to learn more about how the model is structured and running the ["Getting Started" vignette](vignettes/wwinference.Rmd) for an example of how to fit the model to simulated data of COVID-19 hospital admissions and wastewater concentrations.
@@ -20,13 +23,14 @@ This will help make clear the data requirements and how to structure this data t
 ## Project Admins
 - Kaitlyn Johnson (kaitejohnson)
 - Dylan Morris (dylanhmorris)
+- George Vega Yon (gvegayon)
 - Sam Abbott (seabbs)
 - Damon Bayer (damonbayer)
 
 # Installing and running code
 
 ## Install R
-To run our code, you will need a working installation of [R](https://www.r-project.org/) (version `4.3.0` or later). You can find instructions for installing R on the official [R project website](https://www.r-project.org/).
+To run our code, you will need a working installation of [R](https://www.r-project.org/) (version `4.1.0` or later). You can find instructions for installing R on the official [R project website](https://www.r-project.org/).
 
 ## Install `cmdstanr` and `CmdStan`
 We do inference from our models using [`CmdStan`](https://mc-stan.org/users/interfaces/cmdstan) (version `2.35.0` or later) via its R interface [`cmdstanr`](https://mc-stan.org/cmdstanr/) (version `0.8.0` or later).
@@ -74,6 +78,10 @@ Confirm that package installation has succeeded by running the following within 
 library(wwinference)
 ```
 
+## Contributing to this package
+We welcome and encourage contributions. Open an issue in the repository to request changes.
+To contribute, fork the repository locally and open a pull request into the `main` branch.
+
 ## Public Domain Standard Notice
 This repository constitutes a work of the United States Government and is not
 subject to domestic copyright protection under 17 USC § 105. This repository is in
@@ -82,6 +90,18 @@ the work worldwide are waived through the [CC0 1.0 Universal public domain dedic
 All contributions to this repository will be released under the CC0 dedication. By
 submitting a pull request you are agreeing to comply with this waiver of
 copyright interest.
+
+## Contributing Standard Notice
+Anyone is encouraged to contribute to the repository by [forking](https://help.github.com/articles/fork-a-repo)
+and submitting a pull request. (If you are new to GitHub, you might start with a
+[basic tutorial](https://help.github.com/articles/set-up-git).) By contributing
+to this project, you grant a world-wide, royalty-free, perpetual, irrevocable,
+non-exclusive, transferable license to all users under the terms of the
+[Apache Software License v2](http://www.apache.org/licenses/LICENSE-2.0.html) or
+later.
+
+All comments, messages, pull requests, and other submissions received through
+CDC including this GitHub page may be subject to applicable federal law, including but not limited to the Federal Records Act, and may be archived. Learn more at [http://www.cdc.gov/other/privacy.html](http://www.cdc.gov/other/privacy.html).
 
 ## License Standard Notice
 The repository utilizes code licensed under the terms of the Apache Software
@@ -106,18 +126,6 @@ information. All material and community participation is covered by the
 [Disclaimer](DISCLAIMER.md)
 and [Code of Conduct](code-of-conduct.md).
 For more information about CDC's privacy policy, please visit [http://www.cdc.gov/other/privacy.html](https://www.cdc.gov/other/privacy.html).
-
-## Contributing Standard Notice
-Anyone is encouraged to contribute to the repository by [forking](https://help.github.com/articles/fork-a-repo)
-and submitting a pull request. (If you are new to GitHub, you might start with a
-[basic tutorial](https://help.github.com/articles/set-up-git).) By contributing
-to this project, you grant a world-wide, royalty-free, perpetual, irrevocable,
-non-exclusive, transferable license to all users under the terms of the
-[Apache Software License v2](http://www.apache.org/licenses/LICENSE-2.0.html) or
-later.
-
-All comments, messages, pull requests, and other submissions received through
-CDC including this GitHub page may be subject to applicable federal law, including but not limited to the Federal Records Act, and may be archived. Learn more at [http://www.cdc.gov/other/privacy.html](http://www.cdc.gov/other/privacy.html).
 
 ## Records Management Standard Notice
 This repository is not a source of government records, but is a copy to increase
