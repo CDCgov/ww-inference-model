@@ -1,4 +1,4 @@
-# wwinference 0.0.1 (dev)
+# wwinference 0.1.0
 
 This is the first major release, focused on providing an initial version of the package.
 Note the package is still flagged as in development, though the authors plan on using it for production work in the coming weeks.
