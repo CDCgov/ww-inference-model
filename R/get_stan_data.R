@@ -21,7 +21,7 @@ get_input_count_data_for_stan <- function(preprocessed_count_data,
     )
 
   if (max(lubridate::ymd(
-    input_count_data$date
+    input_count_data_filtered$date
   )) > lubridate::ymd(forecast_date)) {
     cli::cli_warn(
       c(
