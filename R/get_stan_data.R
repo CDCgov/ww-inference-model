@@ -423,6 +423,14 @@ get_stan_data <- function(input_count_data,
     arg = "infection to count delay"
   )
 
+  # Check that count data doesn't extend beyond forecast date
+  assert_no_dates_after_max(
+    date_vector = input_count_data$date,
+    max_date = forecast_date,
+    arg_dates = "wastewater data",
+    arg_max_date = "forecast date"
+  )
+
   # Validate both datasets if both are used----------------------------------
   if (include_ww == 1) {
     validate_both_datasets(
@@ -434,6 +442,13 @@ get_stan_data <- function(input_count_data,
       lab_site_subpop_spine = lab_site_subpop_spine,
       calibration_time = calibration_time,
       forecast_date = forecast_date
+    )
+    # Check that ww data doesn't extend beyond forecast date
+    assert_no_dates_after_max(
+      date_vector = input_ww_data$date,
+      max_date = forecast_date,
+      arg_dates = "wastewater data",
+      arg_max_date = "forecast date"
     )
   }
 
