@@ -13,19 +13,26 @@
 #' @param date_vector vector of dates
 #' @param max_date string indicating the maximum date in ISO8601 convention
 #' e.g. YYYY-MM-DD
+#' @param arg_dates string to print the name of the data you are checking the
+#' dates for
+#' @param arg_max_date string to print the name of the maximum date you are
+#' checkign the data for
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
 #'
 #' @return NULL, invisibly
 assert_no_dates_after_max <- function(date_vector,
-                                      max_date, call = rlang::caller_env()) {
+                                      max_date,
+                                      arg_dates = "y",
+                                      arg_max_date = "x",
+                                      call = rlang::caller_env()) {
   if (max(date_vector) > max_date) {
     cli::cli_abort(
       c(
-        "The data passed in has observations beyond the specified",
-        "maximum date. Either this is the incorrect vintaged",
-        "data, or the data needs to be filtered to only contain",
-        "observations before the maximum date"
+        "The {.arg_dates {arg_dates}} passed in has observations after the ",
+        "specified {.arg_max_date {arg_max_date}}. Check that this is the ",
+        "dataset you intended to use with the given ",
+        "{.arg_max_date {arg_max_date}}."
       ),
       call = call,
       class = "wwinference_input_data_error"
@@ -581,9 +588,8 @@ assert_dates_within_frame <- function(dates1,
   checkmate::assert_date(dates1)
   checkmate::assert_date(dates2)
   check_dates2_win_frame <- min(dates1) <= max(dates2) &
-    min(dates2) >= min(dates1) &
-    max(dates2) <= max_date &
-    max(dates1) <= max_date
+    min(dates2) <= max(dates1)
+
   if (!check_dates2_win_frame) {
     cli::cli_abort(
       c(
@@ -597,6 +603,8 @@ assert_dates_within_frame <- function(dates1,
 
   invisible()
 }
+
+
 #' Assert that two tibbles of date and time mapping align
 #'
 #' @param first_data a tibble containing the columns `date` (with IS08601
