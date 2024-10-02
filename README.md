@@ -20,6 +20,7 @@ This will help make clear the data requirements and how to structure this data t
 ## Project Admins
 - Kaitlyn Johnson (kaitejohnson)
 - Dylan Morris (dylanhmorris)
+- George Vega Yon (gvegayon)
 - Sam Abbott (seabbs)
 - Damon Bayer (damonbayer)
 
