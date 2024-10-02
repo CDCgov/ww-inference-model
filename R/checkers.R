@@ -587,7 +587,8 @@ assert_dates_within_frame <- function(dates1,
   if (!check_dates2_win_frame) {
     cli::cli_abort(
       c(
-        "The two vectors of dates do not overlap",
+        "The two vectors of dates do not overlap or the data is outside ",
+        "the forecast period",
         add_err_msg
       ),
       call = call,
