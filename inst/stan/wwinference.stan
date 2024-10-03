@@ -152,7 +152,7 @@ parameters {
   // individual subpopulation-level initial exponential growth rates
 
   real<lower=1/sqrt(5000)> inv_sqrt_phi_h;
-  real mode_sigma_ww_site; // mode of site level wastewater
+  real<lower=0> mode_sigma_ww_site; // mode of site level wastewater
   // observation error standard deviations
   real<lower=0> sd_log_sigma_ww_site; // sd of the log site level
   // wastewater observation error standard deviations
