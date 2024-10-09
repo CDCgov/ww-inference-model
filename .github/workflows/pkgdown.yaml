@@ -35,6 +35,9 @@ jobs:
       pages: write
     steps:
 
+      - uses: actions/checkout@v4
+        name: Checking out for gh CLI access
+
       ##########################################################################
       # Identifying the latest and corresponding tag/sha to download
       #########################################################################
@@ -42,6 +45,7 @@ jobs:
         id: commit
         run: |
 
+          echo -n "This job is running on tag/sha:"
           if [ "${{ matrix.version }}" = "release" ]; then
             gh release list -L1 -O'desc' \
               --exclude-drafts --exclude-pre-releases \
@@ -49,11 +53,11 @@ jobs:
               --jq '.[].tagName' --json tagName |> \
               latest_release-${{ github.sha }}
 
+            cat latest_release-${{ github.sha }}
             echo "tag=$(cat latest_release-${{ github.sha }})" >> $GITHUB_OUTPUT
-            echo "This job is running on tag/sha: $(cat latest_release-${{ github.sha }})"
           else
             echo "tag=${{ github.sha }}" >> $GITHUB_OUTPUT
-            echo "This job is running on tag/sha: ${{ github.sha }}"
+            echo ${{ github.sha }}
           fi
 
       - name: Checking if the release is cached
