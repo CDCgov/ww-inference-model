@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     # Only restrict concurrency for non-PR jobs
     concurrency:
-      group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}
+      group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}-${{ matrix.version }}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     permissions:
@@ -148,7 +148,7 @@ jobs:
   post-page-artifact:
     # only comment on PRs
     if: ${{ github.event_name == 'pull_request' }}
-    needs: build
+    needs: combine
     runs-on: ubuntu-latest
     permissions:
         contents: read
