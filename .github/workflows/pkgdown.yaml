@@ -45,7 +45,11 @@ jobs:
         id: commit
         run: |
 
-          echo -n "This job is running on tag/sha:"
+          gh release list -L1 -O'desc' \
+            --exclude-drafts --exclude-pre-releases \
+            -R ${{ github.repository }} | cat
+
+          echo -n "This job is running on tag/sha: "
           if [ "${{ matrix.version }}" = "release" ]; then
             gh release list -L1 -O'desc' \
               --exclude-drafts --exclude-pre-releases \
