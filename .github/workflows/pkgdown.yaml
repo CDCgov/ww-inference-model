@@ -62,7 +62,7 @@ jobs:
         id: cache-hit
         uses: actions/cache@v3
         with:
-          key: ${{ matrix.version }}-${{ steps.commit.outputs.tag }}
+          key: pkgdown_site-${{ matrix.version }}-${{ steps.commit.outputs.tag }}
           path: './docs/'
 
       # These steps only happen if the cache is not hit

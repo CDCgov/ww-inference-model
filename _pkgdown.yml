@@ -3,6 +3,9 @@ template:
   bootstrap: 5
   math-rendering: mathjax
 
+development:
+  mode: auto
+
 navbar:
   structure:
     right: [search, github, lightswitch, dev]
