@@ -37,6 +37,8 @@ jobs:
 
       - uses: actions/checkout@v4
         name: Checking out for gh CLI access
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
       ##########################################################################
       # Identifying the latest and corresponding tag/sha to download
