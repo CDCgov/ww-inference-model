@@ -35,11 +35,6 @@ jobs:
       pages: write
     steps:
 
-      - uses: actions/checkout@v4
-        name: Checking out for gh CLI access
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-
       ##########################################################################
       # Identifying the latest and corresponding tag/sha to download
       #########################################################################
@@ -52,6 +47,8 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
             /repos/CDCgov/ww-inference-model/releases/latest |> \
             latest_release-${{ github.sha }}
+
+          cat latest_release-${{ github.sha }}
 
           echo -n "This job is running on tag/sha: "
           if [ "${{ matrix.version }}" = "release" ]; then
