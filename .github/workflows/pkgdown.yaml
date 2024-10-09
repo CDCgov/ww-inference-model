@@ -28,6 +28,7 @@ jobs:
       group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}-${{ matrix.version }}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     permissions:
       contents: write
       id-token: write
@@ -49,8 +50,10 @@ jobs:
               latest_release-${{ github.sha }}
 
             echo "tag=$(cat latest_release-${{ github.sha }})" >> $GITHUB_OUTPUT
+            echo "This job is running on tag/sha: $(cat latest_release-${{ github.sha }})"
           else
             echo "tag=${{ github.sha }}" >> $GITHUB_OUTPUT
+            echo "This job is running on tag/sha: ${{ github.sha }}"
           fi
 
       - name: Checking if the release is cached
