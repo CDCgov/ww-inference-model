@@ -48,16 +48,11 @@ jobs:
           gh release list -L1 -O'desc' \
             --exclude-drafts --exclude-pre-releases \
             -R ${{ github.repository }}  \
-              --jq '.[].tagName' --json tagName | cat
-
-          echo -n "This job is running on tag/sha: "
-          if [ "${{ matrix.version }}" = "release" ]; then
-            gh release list -L1 -O'desc' \
-              --exclude-drafts --exclude-pre-releases \
-              -R ${{ github.repository }} \
               --jq '.[].tagName' --json tagName |> \
               latest_release-${{ github.sha }}
 
+          echo -n "This job is running on tag/sha: "
+          if [ "${{ matrix.version }}" = "release" ]; then
             cat latest_release-${{ github.sha }}
             echo "tag=$(cat latest_release-${{ github.sha }})" >> $GITHUB_OUTPUT
           else
