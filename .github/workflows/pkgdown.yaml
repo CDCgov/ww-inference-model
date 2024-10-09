@@ -48,8 +48,6 @@ jobs:
             /repos/CDCgov/ww-inference-model/releases/latest > \
             latest_release
 
-          cat latest_release
-
           echo -n "This job is running on tag/sha: "
           if [ "${{ matrix.version }}" = "release" ]; then
             echo $(jq -r '.tag_name' latest_release)
@@ -69,24 +67,24 @@ jobs:
 
       # These steps only happen if the cache is not hit
       - uses: actions/checkout@v4
-        if: ${{ matrix.version != 'release' && steps.cache-hit.outputs.cache-hit != 'true' }}
+        if: ${{ matrix.version != 'release' || steps.cache-hit.outputs.cache-hit != 'true' }}
         with:
           ref: ${{ steps.commit.outputs.tag }}
 
       - uses: r-lib/actions/setup-pandoc@v2
-        if: ${{ matrix.version != 'release' && steps.cache-hit.outputs.cache-hit != 'true' }}
+        if: ${{ matrix.version != 'release' || steps.cache-hit.outputs.cache-hit != 'true' }}
         with:
           pandoc-version: "2.19.2"
 
       - uses: r-lib/actions/setup-r@v2
-        if: ${{ matrix.version != 'release' && steps.cache-hit.outputs.cache-hit != 'true' }}
+        if: ${{ matrix.version != 'release' || steps.cache-hit.outputs.cache-hit != 'true' }}
         with:
           r-version: "release"
           use-public-rspm: true
           install-r: false
           extra-repositories: "https://mc-stan.org/r-packages/"
       - uses: r-lib/actions/setup-r-dependencies@v2
-        if: ${{ matrix.version != 'release' && steps.cache-hit.outputs.cache-hit != 'true' }}
+        if: ${{ matrix.version != 'release' || steps.cache-hit.outputs.cache-hit != 'true' }}
         with:
           pak-version: rc
           extra-packages: any::pkgdown local::.
@@ -94,12 +92,12 @@ jobs:
 
       - name: "Install cmdstan via cmdstanr"
         uses: epinowcast/actions/install-cmdstan@v1
-        if: ${{ matrix.version != 'release' && steps.cache-hit.outputs.cache-hit != 'true' }}
+        if: ${{ matrix.version != 'release' || steps.cache-hit.outputs.cache-hit != 'true' }}
         with:
           cmdstan-version: "latest"
 
       - name: Build site
-        if: ${{ matrix.version != 'release' && steps.cache-hit.outputs.cache-hit != 'true' }}
+        if: ${{ matrix.version != 'release' || steps.cache-hit.outputs.cache-hit != 'true' }}
         run: "pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)"
         shell: Rscript {0}
 
