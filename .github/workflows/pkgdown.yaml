@@ -43,7 +43,7 @@ jobs:
 
           if [ "${{ matrix.version }}" = "release" ]; then
             gh release list -L1 -O'desc' \
-              --exclude-drafts --exclude-prereleases \
+              --exclude-drafts --exclude-pre-releases \
               -R ${{ github.repository }} \
               --jq '.[].tagName' --json tagName |> \
               latest_release-${{ github.sha }}
