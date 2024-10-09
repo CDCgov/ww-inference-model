@@ -35,13 +35,13 @@ jobs:
     steps:
 
       ##########################################################################
-      # Identifying the latest release
+      # Identifying the latest and corresponding tag/sha to download
       #########################################################################
       - name: Check the repo to download
         id: commit
         run: |
 
-          if ['${{ matrix.version}}' = 'release']; then
+          if [ "${{ matrix.version }}" = "release" ]; then
             gh release list -L1 -O'desc' \
               --exclude-drafts --exclude-prereleases \
               -R ${{ github.repository }} \
