@@ -47,7 +47,8 @@ jobs:
 
           gh release list -L1 -O'desc' \
             --exclude-drafts --exclude-pre-releases \
-            -R ${{ github.repository }} | cat
+            -R ${{ github.repository }}  \
+              --jq '.[].tagName' --json tagName | cat
 
           echo -n "This job is running on tag/sha: "
           if [ "${{ matrix.version }}" = "release" ]; then
