@@ -13,6 +13,15 @@ name: pkgdown
 
 jobs:
   build:
+
+    strategy:
+      matrix:
+        version:
+          - 'release'
+          - 'devel'
+
+    name: pkgdown site build (${{ matrix.version }})
+
     runs-on: ubuntu-latest
     # Only restrict concurrency for non-PR jobs
     concurrency:
@@ -23,22 +32,54 @@ jobs:
       contents: write
       id-token: write
       pages: write
-    outputs:
-      page_artifact_id: ${{ steps.upload-artifact.outputs.artifact_id }}
     steps:
+
+      ##########################################################################
+      # Identifying the latest release
+      #########################################################################
+      - name: Check the repo to download
+        id: commit
+        run: |
+
+          if ['${{ matrix.version}}' = 'release']; then
+            gh release list -L1 -O'desc' \
+              --exclude-drafts --exclude-prereleases \
+              -R ${{ github.repository }} \
+              --jq '.[].tagName' --json tagName |> \
+              latest_release-${{ github.sha }}
+
+            echo "tag=$(cat latest_release-${{ github.sha }})" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.sha }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checking if the release is cached
+        id: cache-hit
+        uses: actions/cache@v3
+        with:
+          key: ${{ matrix.version }}-${{ steps.commit.outputs.tag }}
+          path: './docs/'
+
+      # These steps only happen if the cache is not hit
       - uses: actions/checkout@v4
+        if: steps.cache-hit.outputs.cache-hit != 'true'
+        with:
+          ref: ${{ steps.commit.outputs.tag }}
 
       - uses: r-lib/actions/setup-pandoc@v2
+        if: steps.cache-hit.outputs.cache-hit != 'true'
         with:
           pandoc-version: "2.19.2"
 
       - uses: r-lib/actions/setup-r@v2
+        if: steps.cache-hit.outputs.cache-hit != 'true'
         with:
           r-version: "release"
           use-public-rspm: true
           install-r: false
           extra-repositories: "https://mc-stan.org/r-packages/"
       - uses: r-lib/actions/setup-r-dependencies@v2
+        if: steps.cache-hit.outputs.cache-hit != 'true'
         with:
           pak-version: rc
           extra-packages: any::pkgdown local::.
@@ -46,23 +87,51 @@ jobs:
 
       - name: "Install cmdstan via cmdstanr"
         uses: epinowcast/actions/install-cmdstan@v1
+        if: steps.cache-hit.outputs.cache-hit != 'true'
         with:
           cmdstan-version: "latest"
 
       - name: Build site
+        if: steps.cache-hit.outputs.cache-hit != 'true'
         run: "pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)"
         shell: Rscript {0}
 
       - name: Upload artifact for GH pages deployment
         id: upload-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: "./docs/"
+          name: pkgdown-site-${{ matrix.version }}
+
+  combine:
+    outputs:
+      page_artifact_id: ${{ steps.upload-artifact.outputs.artifact_id }}
+
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pkgdown-site-release
+          path: ./docs/
+
+      - name: Download dev artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pkgdown-site-devel
+          path: ./docs/dev/
+
+      - name: Upload pages artifact
+        id: upload-artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "docs/"
+          path: ./docs/
 
   deploy:
     # check builds on PRs but only deploy when main changes
     if: ${{ github.event_name != 'pull_request' }}
-    needs: build
+    needs: combine
     runs-on: ubuntu-latest
     permissions:
       pages: write
