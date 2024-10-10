@@ -1,6 +1,6 @@
 Package: wwinference
 Title: Jointly infers infection dynamics from wastewater data and epidemiological indicators
-Version: 0.1.0
+Version: 0.1.0.99
 Authors@R: c(
     person(given = "Kaitlyn",
            family = "Johnson",
