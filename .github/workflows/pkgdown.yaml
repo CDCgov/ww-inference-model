@@ -110,8 +110,20 @@ jobs:
 
       - name: Build site
         if: ${{ matrix.version != 'release' || steps.cache-hit.outputs.cache-hit != 'true' }}
-        run: "pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)"
-        shell: Rscript {0}
+        run: |
+          # Changing the URL if it is a development build
+          if [ "${{ matrix.version }}" = "devel" ]; then
+            sed -i '' 's|url: https://cdcgov.github.io/ww-inference-model/|url: https://cdcgov.github.io/ww-inference-model/dev|' _pkgdown.yml
+            export PKGDOWN_DEV_MODE="devel"
+          else
+            export PKGDOWN_DEV_MODE="release"
+          fi
+          Rscript --vanilla -e \
+            "pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)"
+
+          if [ "${{ matrix.version }}" = "devel" ]; then
+            mv docs/dev docs
+          fi
 
       - name: Upload artifact for GH pages deployment
         id: upload-artifact
