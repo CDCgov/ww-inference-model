@@ -61,7 +61,7 @@ jobs:
           fi
 
           # Hash of the _pkgdown.yml file
-          echo "pkgdown-hash=${{ hashFiles( './_pkgdown.yaml' ) }}" >> $GITHUB_OUTPUT
+          echo "pkgdown-hash=${{ hashFiles( './_pkgdown.yml' ) }}" >> $GITHUB_OUTPUT
 
       - uses: actions/checkout@v4
         with:
