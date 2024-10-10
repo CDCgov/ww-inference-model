@@ -122,7 +122,9 @@ jobs:
             "pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)"
 
           if [ "${{ matrix.version }}" = "devel" ]; then
-            mv docs/dev docs
+            mv docs docs-tmp
+            mkdir docs
+            mv docs-tmp/dev/* docs
           fi
 
       - name: Upload artifact for GH pages deployment
