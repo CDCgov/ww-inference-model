@@ -14,3 +14,10 @@ navbar:
       icon: fa-person-digging
       href: https://cdcgov.github.io/ww-inference-model/dev
       aria-label: Dev site
+
+home:
+  links:
+    - text: Release site
+      href: https://cdcgov.github.io/ww-inference-model/
+    - text: Dev site
+      href: https://cdcgov.github.io/ww-inference-model/dev

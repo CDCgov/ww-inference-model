@@ -57,19 +57,23 @@ jobs:
             echo ${{ github.sha }}
           fi
 
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.commit.outputs.tag }}
+
+      - name: Fetch the _pkgdown.yml file
+        run: |
+          git checkout ${{ github.sha}} -- _pkgdown.yml
+
       - name: Checking if the release is cached
         if: ${{ matrix.version == 'release' }}
         id: cache-hit
         uses: actions/cache@v3
         with:
-          key: pkgdown_site-${{ matrix.version }}-${{ steps.commit.outputs.tag }}
+          key: pkgdown_site-${{ matrix.version }}-${{ steps.commit.outputs.tag }}-${{ hashFiles( './_pkgdown.yml' ) }}
           path: './docs/'
 
       # These steps only happen if the cache is not hit
-      - uses: actions/checkout@v4
-        if: ${{ matrix.version != 'release' || steps.cache-hit.outputs.cache-hit != 'true' }}
-        with:
-          ref: ${{ steps.commit.outputs.tag }}
 
       - uses: r-lib/actions/setup-pandoc@v2
         if: ${{ matrix.version != 'release' || steps.cache-hit.outputs.cache-hit != 'true' }}
