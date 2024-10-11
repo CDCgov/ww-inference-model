@@ -8,16 +8,16 @@ development:
 
 navbar:
   structure:
-    right: [search, github, lightswitch, dev]
+    right: [search, github, lightswitch, ver]
   components:
-    dev:
-      icon: fa-person-digging
-      href: https://cdcgov.github.io/ww-inference-model/dev
-      aria-label: Dev site
+    ver:
+      href: https://cdcgov.github.io/ww-inference-model/release
+      icon: fa-toggle-on
+      text: (switch to release)
 
 home:
   links:
     - text: Release site
-      href: https://cdcgov.github.io/ww-inference-model/
+      href: https://cdcgov.github.io/ww-inference-model/release/
     - text: Dev site
-      href: https://cdcgov.github.io/ww-inference-model/dev
+      href: https://cdcgov.github.io/ww-inference-model/

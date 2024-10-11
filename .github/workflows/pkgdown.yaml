@@ -113,9 +113,21 @@ jobs:
         run: |
           # Changing the URL if it is a development build
           if [ "${{ matrix.version }}" = "devel" ]; then
-            sed -i'' 's|url: https://cdcgov.github.io/ww-inference-model/|url: https://cdcgov.github.io/ww-inference-model/dev|' _pkgdown.yml
+            # Forcing the development mode
             export PKGDOWN_DEV_MODE="devel"
           else
+
+            # Setting the url
+            sed -i'' 's|url: https://cdcgov.github.io/ww-inference-model/|url: https://cdcgov.github.io/ww-inference-model/release/|' _pkgdown.yml
+
+            # Changing the navbar
+            sed -i'' 's|href: https://cdcgov.github.io/ww-inference-model/release|href: https://cdcgov.github.io/ww-inference-model/|' _pkgdown.yml
+
+            sed -i'' 's|text: (switch to release)|text: (switch to dev)|' _pkgdown.yml
+
+            sed -i'' 's|icon: fa-toggle-on|icon: fa-toggle-off|' _pkgdown.yml
+
+            # Forcing the release mode
             export PKGDOWN_DEV_MODE="release"
           fi
           Rscript --vanilla -e \
@@ -141,17 +153,18 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Download release artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: pkgdown-site-release
-          path: ./docs/
 
       - name: Download dev artifact
         uses: actions/download-artifact@v4
         with:
           name: pkgdown-site-devel
-          path: ./docs/dev/
+          path: ./docs/
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pkgdown-site-release
+          path: ./docs/release
 
       - name: Upload pages artifact
         id: upload-artifact
