@@ -2,3 +2,22 @@ url: https://cdcgov.github.io/ww-inference-model/
 template:
   bootstrap: 5
   math-rendering: mathjax
+
+development:
+  mode: auto
+
+navbar:
+  structure:
+    right: [search, github, lightswitch, ver]
+  components:
+    ver:
+      href: https://cdcgov.github.io/ww-inference-model/release
+      icon: fa-toggle-on
+      text: (switch to release)
+
+home:
+  links:
+    - text: Release site
+      href: https://cdcgov.github.io/ww-inference-model/release/
+    - text: Dev site
+      href: https://cdcgov.github.io/ww-inference-model/
