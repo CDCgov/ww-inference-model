@@ -328,6 +328,19 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     uot + ot + ht
   )[(uot + 1):(uot + ot + ht)]
 
+  # Also compute per capita hosps for each subpopulation
+  model_hosp_subpop_over_n <- matrix(
+    nrow = n_subpops,
+    ncol = (ot + ht)
+  )
+  for (i in 1:n_subpops) {
+    model_hosp_subpop_over_n[i, ] <- model$functions$convolve_dot_product(
+      p_hosp_days * new_i_over_n_site[i, ],
+      rev(inf_to_hosp),
+      uot + ot + ht
+    )[(uot + 1):(uot + ot + ht)]
+  }
+
 
   ## Add weekday effect on hospital admissions-------------------------------
   pred_hosp <- pop_size * model$functions$day_of_week_effect(
@@ -335,12 +348,38 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     day_of_week_vector,
     hosp_wday_effect
   )
+
+  pred_hosp_subpop <- matrix(
+    nrow = n_subpops,
+    ncol = (ot + ht)
+  )
+  for (i in 1:n_subpops) {
+    pred_hosp_subpop[i, ] <- pop_fraction[i] * pop_size *
+      model$functions$day_of_week_effect(
+        model_hosp_subpop_over_n[i, ],
+        day_of_week_vector,
+        hosp_wday_effect
+      )
+  }
+
+
   ## Add observation error---------------------------------------------------
   # This is negative binomial but could swap out for a different obs error
   pred_obs_hosp <- rnbinom(
     n = length(pred_hosp), mu = pred_hosp,
     size = 1 / ((params$inv_sqrt_phi_prior_mean)^2)
   )
+
+  pred_obs_hosp_subpop <- matrix(
+    nrow = n_subpops,
+    ncol = (ot + ht)
+  )
+  for (i in 1:n_subpops) {
+    pred_obs_hosp_subpop[i, ] <- rnbinom(
+      n = length(pred_hosp_subpop[i, ]), mu = pred_hosp_subpop[i, ],
+      size = 1 / ((params$inv_sqrt_phi_prior_mean)^2)
+    )
+  }
 
 
 
@@ -381,6 +420,18 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     lab_site_reporting_latency = lab_site_reporting_latency
   )
 
+  # Create evaluation data with same reporting freq but go through the entire
+  # time period
+  log_obs_conc_lab_site_eval <- downsample_ww_obs(
+    log_conc_lab_site = log_conc_lab_site,
+    n_lab_sites = n_lab_sites,
+    ot = ot + ht,
+    ht = 0,
+    nt = 0,
+    lab_site_reporting_freq = lab_site_reporting_freq,
+    lab_site_reporting_latency = rep(0, n_lab_sites)
+  )
+
 
 
   # Global adjusted R(t) --------------------------------------------------
@@ -406,6 +457,15 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     lod_lab_site = lod_lab_site
   )
 
+  ww_data_eval <- format_ww_data(
+    log_obs_conc_lab_site = log_obs_conc_lab_site_eval,
+    ot = ot + ht,
+    ht = 0,
+    date_df = date_df,
+    site_lab_map = site_lab_map,
+    lod_lab_site = lod_lab_site
+  )
+
   # Artificially add values below the LOD----------------------------------
   # Replace it with an NA, will be used as an example of how to format data
   # properly.
@@ -419,18 +479,59 @@ generate_simulated_data <- function(r_in_weeks = # nolint
           TRUE ~ .data$log_genome_copies_per_ml
         )
     )
+  ww_data_eval <- ww_data_eval |>
+    dplyr::mutate(
+      "log_genome_copies_per_ml" =
+        dplyr::case_when(
+          .data$log_genome_copies_per_ml ==
+            !!min_ww_val ~ 0.5 * .data$log_lod,
+          TRUE ~ .data$log_genome_copies_per_ml
+        )
+    )
 
 
   # Make a hospital admissions dataframe for model calibration
-  hosp_data <- format_hosp_data(pred_obs_hosp,
+  hosp_data <- format_hosp_data(
+    pred_obs_hosp = pred_obs_hosp,
     dur_obs = ot,
     pop_size = pop_size,
     date_df = date_df
   )
 
-  hosp_data_eval <- format_hosp_data(pred_obs_hosp,
+  hosp_data_eval <- format_hosp_data(
+    pred_obs_hosp = pred_obs_hosp,
     dur_obs = (ot + ht),
     pop_size = pop_size,
+    date_df = date_df
+  ) |>
+    dplyr::rename(
+      "daily_hosp_admits_for_eval" = "daily_hosp_admits"
+    )
+
+  # Make a subpopulation level hospital admissions data
+  # For now this will only be used for evaluation, eventually, can add
+  # feature to use this in calibration
+  subpop_map <- tibble::tibble(
+    subpop_index = as.character(1:n_subpops),
+    subpop_pop = pop_size * pop_fraction,
+    subpop_name = c(1:n_sites, NA)
+  ) |>
+    dplyr::mutate(subpop_name = ifelse(!is.na(subpop_name),
+      glue::glue("Site: {subpop_name}"),
+      "remainder of population"
+    ))
+
+  subpop_hosp_data <- format_subpop_hosp_data(
+    pred_obs_hosp_subpop = pred_obs_hosp_subpop,
+    dur_obs = ot,
+    subpop_map = subpop_map,
+    date_df = date_df
+  )
+
+  subpop_hosp_data_eval <- format_subpop_hosp_data(
+    pred_obs_hosp_subpop = pred_obs_hosp_subpop,
+    dur_obs = (ot + ht),
+    subpop_map = subpop_map,
     date_df = date_df
   ) |>
     dplyr::rename(
@@ -453,8 +554,11 @@ generate_simulated_data <- function(r_in_weeks = # nolint
 
   example_data <- list(
     ww_data = ww_data,
+    ww_data_eval = ww_data_eval,
     hosp_data = hosp_data,
     hosp_data_eval = hosp_data_eval,
+    subpop_hosp_data = subpop_hosp_data,
+    subpop_hosp_data_eval = subpop_hosp_data_eval,
     true_global_rt = true_rt
   )
 
