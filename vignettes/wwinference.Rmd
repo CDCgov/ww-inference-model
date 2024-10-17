@@ -465,13 +465,14 @@ will not include outliers that were flagged for exclusion. Data points
 that are below the LOD will be plotted in blue.
 
 ```{r generating-figures,  out.width='100%'}
-plot_hosp <- get_plot_forecasted_counts(
+plot_hosp_with_eval <- get_plot_forecasted_counts(
   draws = draws$predicted_counts,
+  forecast_date = forecast_date,
   count_data_eval = hosp_data_eval,
-  count_data_eval_col_name = "daily_hosp_admits_for_eval",
-  forecast_date = forecast_date
+  count_data_eval_col_name = "daily_hosp_admits_for_eval"
 )
-plot_hosp
+plot_hosp_with_eval
+
 
 plot_ww <- get_plot_ww_conc(draws$predicted_ww, forecast_date)
 plot_ww
@@ -481,6 +482,16 @@ plot_state_rt
 
 plot_subpop_rt <- get_plot_subpop_rt(draws$subpop_rt, forecast_date)
 plot_subpop_rt
+```
+
+To plot the forecasts without the retrospectively observed hospital admissions,
+simply don't pass them to the plotting function.
+```{r plot-only-count-forecasts, out.width='100%'}
+plot_hosp <- get_plot_forecasted_counts(
+  draws = draws$predicted_counts,
+  forecast_date = forecast_date
+)
+plot_hosp
 ```
 
 The previous three are equivalent to calling the `plot` method of `wwinference_fit_draws` using the `what` argument:

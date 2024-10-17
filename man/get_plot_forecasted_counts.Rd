@@ -6,9 +6,9 @@
 \usage{
 get_plot_forecasted_counts(
   draws,
-  count_data_eval,
-  count_data_eval_col_name,
   forecast_date,
+  count_data_eval = NULL,
+  count_data_eval_col_name = NULL,
   count_type = "hospital admissions",
   n_draws_to_plot = 100
 )
@@ -19,16 +19,18 @@ to it. This is the \code{draws_df} output of a call to \code{\link[=wwinference]
 expects the following column names: \code{date}, \code{pred_value}, \code{draw},
 and \code{name}}
 
+\item{forecast_date}{A string indicating the date we made the forecast, for
+plotting, in ISO8601 format YYYY-MM-DD}
+
 \item{count_data_eval}{A dataframe containing the count data we will
 evaluate the forecasts against. Must contain the columns \code{date} and
 a column indicating the count data to evaluate against, with the name
-of that column specified as the \code{count_data_eval_col_name}}
+of that column specified as the \code{count_data_eval_col_name}. Default is
+NULL, which will result in no evaluation data being plotted.}
 
 \item{count_data_eval_col_name}{string indicating the name of the count
-data to evaluate against the forecasted count data}
-
-\item{forecast_date}{A string indicating the date we made the forecast, for
-plotting, in ISO8601 format YYYY-MM-DD}
+data to evaluate against the forecasted count data. Default is NULL,
+corresponding to no evaluation data being plotted.}
 
 \item{count_type}{A string indicating what data the counts refer to,
 default is \verb{hospital admissions}}
