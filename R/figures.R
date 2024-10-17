@@ -138,7 +138,7 @@ get_plot_ww_conc <- function(draws,
       aes(x = .data$date, y = .data$observed_value),
       color = "blue", show.legend = FALSE, size = 0.5
     ) +
-    facet_wrap(~lab_site_name, scales = "free") +
+    facet_wrap(~lab_site_name, scales = "free_y") +
     geom_vline(
       xintercept = lubridate::ymd(forecast_date),
       linetype = "dashed"
