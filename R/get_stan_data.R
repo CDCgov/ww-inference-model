@@ -433,7 +433,7 @@ get_stan_data <- function(input_count_data,
 
   # Validate both datasets if both are used----------------------------------
   if (include_ww == 1) {
-    validate_both_datasets(
+    validate_data_jointly(
       input_count_data = input_count_data,
       input_ww_data = input_ww_data,
       date_time_spine = date_time_spine,
