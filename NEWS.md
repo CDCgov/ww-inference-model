@@ -1,3 +1,7 @@
+#wwinference dev
+
+- Modify `plot_forecasted_counts()` so that it does not require an evaluation dataset ([#218](https://github.com/CDCgov/ww-inference-model/pull/218))
+
 # wwinference 0.1.0
 
 This is the first major release, focused on providing an initial version of the package.
