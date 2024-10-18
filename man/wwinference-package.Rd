@@ -24,6 +24,7 @@ Authors:
   \item Dylan Morris \email{dylan@dylanhmorris.com} (\href{https://orcid.org/0000-0002-3655-406X}{ORCID})
   \item Sam Abbott \email{contact@samabbott.co.uk} (\href{https://orcid.org/0000-0001-8057-8037}{ORCID})
   \item Christian Bernal Zelaya \email{xuk0@cdc.gov}
+  \item George Vega Yon \email{g.vegayon@gmail.com} (\href{https://orcid.org/0000-0002-3171-0844}{ORCID})
   \item Damon Bayer \email{xum8@cdc.gov}
   \item Andrew Magee \email{rzg0@cdc.gov}
   \item Scott Olesen \email{ulp7@cdc.gov}
@@ -31,7 +32,10 @@ Authors:
 
 Other contributors:
 \itemize{
-  \item George Vega Yon \email{g.vegayon@gmail.com} (\href{https://orcid.org/0000-0002-3171-0844}{ORCID}) [contributor]
+  \item Adam Howes \email{adamthowes@gmail.com} (\href{https://orcid.org/0000-0003-2386-4031}{ORCID}) [contributor]
+  \item Chirag Kumar \email{kzs9@cdc.gov} [contributor]
+  \item Alexander Keyel \email{alexander.keyel@health.ny.gov} (\href{https://orcid.org/000-0001-5256-6274}{ORCID}) [contributor]
+  \item Hannah Cohen \email{llg4@cdc.gov} [contributor]
 }
 
 }
