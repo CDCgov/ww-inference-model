@@ -16,7 +16,7 @@
 #' @param ww_data A dataframe containing the pre-processed, site-level
 #' wastewater concentration data for a model run. The dataframe must contain
 #' the following columns: `date`, `site`, `lab`, `log_genome_copies_per_ml`,
-#' `lab_site_index`, `log_lod`, `below_lod`, `site_pop` `exclude`
+#' `lab_site_index`, `log_lod`, `below_lod`, `site_pop` `exclude`.
 #' @param count_data A dataframe containing the pre-procssed, "global" (e.g.
 #' state) daily count data, pertaining to the number of events that are being
 #' counted on that day, e.g. number of daily cases or daily hospital admissions.
@@ -31,13 +31,15 @@
 #' `get_model_spec()`. The default here pertains to the `forecast_date` in the
 #' example data provided by the package, but this should be specified by the
 #' user based on the date they are producing a forecast
-#' @param fit_opts The fit options, which in this case default to the
-#' MCMC parameters as defined using `get_mcmc_options()`. This includes
-#' the following arguments, which are passed to
-#' [`$sample()`][cmdstanr::model-method-sample]:
-#' the number of chains, the number of warmup
-#' and sampling iterations, the maximum tree depth, the average acceptance
-#' probability, and the stan PRNG seed
+#' @param fit_opts MCMC fitting options, as a list of keys and values.
+#' These are passed as keyword arguments to
+#' [`compiled_model$sample()`][cmdstanr::model-method-sample].
+#' Where no option is specified, [wwinference()] will fall back first on a
+#' package-specific default value given by [get_mcmc_options()], if one exists.
+#' If no package-specific default exists, [wwinference()] will fall back on
+#' the default value defined in [`$sample()`][cmdstanr::model-method-sample].
+#' See the documentation for [`$sample()`][cmdstanr::model-method-sample] for
+#' details on available options.
 #' @param generate_initial_values Boolean indicating whether or not to specify
 #' the initialization of the sampler, default is `TRUE`, meaning that
 #' initialization lists will be generated and passed as the `init` argument
@@ -132,24 +134,27 @@
 #' calibration_time <- 90
 #' forecast_horizon <- 28
 #' include_ww <- 1
-#' ww_fit <- wwinference(input_ww_data,
-#'   input_count_data,
+#'
+#' ww_fit <- wwinference(
+#'   ww_data = input_ww_data,
+#'   count_data = input_count_data,
+#'   forecast_date = forecast_date,
+#'   calibration_time = calibration_time,
+#'   forecast_horizon = forecast_horizon,
 #'   model_spec = get_model_spec(
-#'     forecast_date = forecast_date,
-#'     calibration_time = calibration_time,
-#'     forecast_horizon = forecast_horizon,
 #'     generation_interval = generation_interval,
-#'     inf_to_count_delay = inf_to_coutn_delay,
+#'     inf_to_count_delay = inf_to_count_delay,
 #'     infection_feedback_pmf = infection_feedback_pmf,
 #'     params = params
 #'   ),
-#'   fit_opts = get_mcmc_options(
+#'   fit_opts = list(
 #'     iter_warmup = 250,
 #'     iter_sampling = 250,
-#'     n_chains = 2
+#'     chains = 2
 #'   )
 #' )
 #' }
+#'
 #' @rdname wwinference
 #' @aliases wwinference_fit
 wwinference <- function(ww_data,
@@ -158,36 +163,80 @@ wwinference <- function(ww_data,
                         calibration_time = 90,
                         forecast_horizon = 28,
                         model_spec = get_model_spec(),
-                        fit_opts = get_mcmc_options(),
+                        fit_opts = list(),
                         generate_initial_values = TRUE,
                         initial_values_seed = NULL,
                         compiled_model = compile_model(),
                         dist_matrix = NULL,
                         corr_structure_switch = 0) {
+  include_ww <- as.integer(model_spec$include_ww)
+
   if (is.null(forecast_date)) {
     cli::cli_abort(
       "The user must specify a forecast date"
     )
   }
 
-  # Check that data is compatible with specifications
-  assert_no_dates_after_max(ww_data$date, forecast_date)
+  # If there is no wastewater data, set include_ww to 0
+  if (is.null(ww_data) || nrow(ww_data) == 0) {
+    cli::cli_warn(
+      c(
+        "No wastewater data was passed to the model.",
+        "The model will default to fitting only to the count data"
+      )
+    )
+    include_ww <- 0
+  }
+  # If include_ww == 0, we will specify an empty dataset
+  if (include_ww == 0) {
+    ww_data <- NULL
+  }
+
+
+  fit_opts_use <- get_mcmc_options() # get defaults
+  # this overwrites defaults with all and only the values the user sets in
+  # `fit_opts`
+  fit_opts_use[names(fit_opts)] <- fit_opts
+
+  # Check that the fit options passed to wwinference are valid cmdstanr::sample
+  # arguments
+  checkmate::assert_names(names(fit_opts),
+    subset.of = formalArgs(compiled_model$sample)
+  )
+
+
+  ## Check that data is compatible with specifications
+  if (!is.null(ww_data)) {
+    assert_no_dates_after_max(ww_data$date, forecast_date)
+  }
   assert_no_dates_after_max(count_data$date, forecast_date)
 
+  # Get the input count data that will get passed directly to stan
   input_count_data <- get_input_count_data_for_stan(
     count_data,
     calibration_time
   )
   last_count_data_date <- max(input_count_data$date, na.rm = TRUE)
   first_count_data_date <- min(input_count_data$date, na.rm = TRUE)
+
+  # Get the input wastewater data that will be passed directly to stan
   input_ww_data <- get_input_ww_data_for_stan(
     ww_data,
     first_count_data_date,
     last_count_data_date,
     calibration_time
   )
-  raw_input_data <- list(
+  # Get the table that maps 1-indexed time to dates
+  date_time_spine <- get_date_time_spine(
+    forecast_date = forecast_date,
     input_count_data = input_count_data,
+    last_count_data_date = last_count_data_date,
+    forecast_horizon = forecast_horizon,
+    calibration_time = calibration_time
+  )
+
+  # Get lab_site_site_spine
+  lab_site_site_spine <- get_lab_site_site_spine(
     input_ww_data = input_ww_data
   )
 
@@ -198,11 +247,37 @@ wwinference <- function(ww_data,
     )
   }
 
+  # Get site to subpop spine
+  site_subpop_spine <- get_site_subpop_spine(
+    input_ww_data = input_ww_data,
+    input_count_data = input_count_data
+  )
+
+  lab_site_subpop_spine <- get_lab_site_subpop_spine(
+    lab_site_site_spine = lab_site_site_spine,
+    site_subpop_spine = site_subpop_spine
+  )
+
+
+  raw_input_data <- list(
+    input_count_data = input_count_data,
+    input_ww_data = input_ww_data,
+    date_time_spine = date_time_spine,
+    lab_site_site_spine = lab_site_site_spine,
+    site_subpop_spine = site_subpop_spine,
+    lab_site_subpop_spine = lab_site_subpop_spine
+  )
 
   # If checks pass, create stan data object
   stan_data_list <- get_stan_data(
     input_count_data = input_count_data,
     input_ww_data = input_ww_data,
+    date_time_spine = date_time_spine,
+    lab_site_site_spine = lab_site_site_spine,
+    site_subpop_spine = site_subpop_spine,
+    lab_site_subpop_spine = lab_site_subpop_spine,
+    last_count_data_date = last_count_data_date,
+    first_count_data_date = first_count_data_date,
     forecast_date = forecast_date,
     calibration_time = calibration_time,
     forecast_horizon = forecast_horizon,
@@ -210,7 +285,7 @@ wwinference <- function(ww_data,
     inf_to_count_delay = model_spec$inf_to_count_delay,
     infection_feedback_pmf = model_spec$infection_feedback_pmf,
     params = model_spec$params,
-    include_ww = as.numeric(model_spec$include_ww),
+    include_ww = include_ww,
     compute_likelihood = as.integer(model_spec$compute_likelihood),
     dist_matrix = dist_matrix,
     corr_structure_switch = corr_structure_switch
@@ -224,7 +299,7 @@ wwinference <- function(ww_data,
   if (generate_initial_values) {
     withr::with_seed(initial_values_seed, {
       init_lists <- lapply(
-        1:fit_opts$n_chains,
+        1:fit_opts_use$chains,
         \(x) {
           get_inits_for_one_chain(stan_data_list)
         }
@@ -240,7 +315,7 @@ wwinference <- function(ww_data,
   fit <- safe_fit_model(
     compiled_model = compiled_model,
     stan_data_list = stan_data_list,
-    fit_opts = fit_opts,
+    fit_opts = fit_opts_use,
     init_lists = init_lists
   )
 
@@ -314,7 +389,7 @@ print.wwinference_fit <- function(x, ...) {
   cat("wwinference_fit object\n")
   cat("N of WW sites              :", x$stan_data_list$n_ww_sites, "\n")
   cat("N of unique lab-site pairs :", x$stan_data_list$n_ww_lab_sites, "\n")
-  cat("State population           :", formatC(
+  cat("Total population           :", formatC(
     x$stan_data_list$state_pop,
     format = "d"
   ), "\n")
@@ -349,15 +424,18 @@ fit_model <- function(compiled_model,
                       stan_data_list,
                       fit_opts,
                       init_lists) {
-  fit <- compiled_model$sample(
-    data = stan_data_list,
-    init = init_lists,
-    seed = fit_opts$seed,
-    iter_sampling = fit_opts$iter_sampling,
-    iter_warmup = fit_opts$iter_warmup,
-    max_treedepth = fit_opts$max_treedepth,
-    chains = fit_opts$n_chains,
-    parallel_chains = fit_opts$n_chains
+  args_for_stan_sampling <-
+    c(
+      list(
+        data = stan_data_list,
+        init = init_lists
+      ),
+      fit_opts
+    )
+
+  fit <- do.call(
+    compiled_model$sample,
+    args_for_stan_sampling
   )
 
   return(fit)
@@ -368,42 +446,45 @@ fit_model <- function(compiled_model,
 #'
 #' @description
 #' This function returns a list of MCMC settings to pass to the
-#' `cmdstanr::sample()` function to fit the model. The default settings are
-#' specified for production-level runs, consider adjusting to optimize
-#' for speed while iterating.
+#' [`$sample()`][cmdstanr::model-method-sample] function to fit the model.
+#' The default settings are specified for production-level runs.
+#' All input arguments to [`$sample()`][cmdstanr::model-method-sample]
+#' are configurable by the user. See
+#' [`$sample()`][cmdstanr::model-method-sample] documentation
+#' for details of the available arguments.
 #'
 #'
 #' @param iter_warmup integer indicating the number of warm-up iterations,
-#' default is `750`
+#' default is `750`.
 #' @param iter_sampling integer indicating the number of sampling iterations,
-#' default is `500`
-#' @param n_chains integer indicating the number of MCMC chains to run, default
-#' is `4`
-#' @param seed set of integers indicating the random seed of the stan sampler,
-#' default is NULL
+#' default is `500`.
+#' @param seed integer, A seed for the (P)RNG to pass to CmdStan. In the case
+#' of multi-chain sampling the single seed will automatically be augmented by
+#' the the run (chain) ID so that each chain uses a different seed.
+#' Default is `NULL`.
+#' @param chains integer indicating the number of MCMC chains to run, default
+#' is `4`.
 #' @param adapt_delta float between 0 and 1 indicating the average acceptance
-#' probability, default is `0.95`
+#' probability, default is `0.95`.
 #' @param max_treedepth integer indicating the maximum tree depth of the
-#' sampler, default is 12
+#' sampler, default is 12.
 #'
-#' @return a list of mcmc settings with the values given by the  function
+#' @return A list of MCMC settings with the values given by the function.
 #' arguments
-#' @export
 #'
-#' @examples
-#' mcmc_settings <- get_mcmc_options()
+#' @export
 get_mcmc_options <- function(
     iter_warmup = 750,
     iter_sampling = 500,
-    n_chains = 4,
     seed = NULL,
+    chains = 4,
     adapt_delta = 0.95,
     max_treedepth = 12) {
   mcmc_settings <- list(
     iter_warmup = iter_warmup,
     iter_sampling = iter_sampling,
-    n_chains = n_chains,
     seed = seed,
+    chains = chains,
     adapt_delta = adapt_delta,
     max_treedepth = max_treedepth
   )

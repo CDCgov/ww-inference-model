@@ -1,6 +1,6 @@
 Package: wwinference
 Title: Jointly infers infection dynamics from wastewater data and epidemiological indicators
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: c(
     person(given = "Kaitlyn",
            family = "Johnson",
@@ -23,7 +23,7 @@ Authors@R: c(
            email = "xuk0@cdc.gov"),
     person(given = "George",
            family = "Vega Yon",
-           role = c("ctb"),
+           role = c("aut"),
            email = "g.vegayon@gmail.com",
            comment = c(ORCID = "0000-0002-3171-0844")),
     person(given = "Damon",
@@ -37,7 +37,25 @@ Authors@R: c(
     person(given = "Scott",
            family = "Olesen",
            role = c("aut"),
-           email = "ulp7@cdc.gov")
+           email = "ulp7@cdc.gov"),
+    person(given = "Adam",
+           family = "Howes",
+           role = c("ctb"),
+           email = "adamthowes@gmail.com",
+           comment = c(ORCID = "0000-0003-2386-4031")),
+    person(given = "Chirag",
+           family = "Kumar",
+           role = c("ctb"),
+           email = "kzs9@cdc.gov"),
+    person(given = "Alexander",
+           family = "Keyel",
+           role = c("ctb"),
+           email = "alexander.keyel@health.ny.gov",
+           comment = c(ORCID = "000-0001-5256-6274")),
+    person(given = "Hannah",
+           family = "Cohen",
+           role = c("ctb"),
+           email = "llg4@cdc.gov")
 	)
 Description: An implementation of a hierarchical semi-mechanistic renewal
     approach jointly calibrating to multiple wastewater concentrations datasets from
@@ -54,7 +72,7 @@ License: Apache License (>= 2)
 URL: https://github.com/cdcgov/ww-inference-model/, https://cdcgov.github.io/ww-inference-model/
 BugReports: https://github.com/cdcgov/ww-inference-model/issues/
 Depends:
-    R (>= 4.3.0)
+    R (>= 4.1.0)
 SystemRequirements: CmdStan (>=2.35.0)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

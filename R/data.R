@@ -42,12 +42,13 @@
 #' Example wastewater dataset with independent site correlations.
 #'
 #' A dataset containing the simulated wastewater concentrations
-#' (labeled here as `genome_copies_per_ml`) by sample collection date (`date`),
-#' the site where the sample was collected (`site`) and the lab where the
-#' samples were processed (`lab`). Additional columns that are required
-#' attributes needed for the model are the limit of detection for that lab on
-#' each day (labeled here as `lod`) and the population size of the wastewater
-#' catchment area represented by the wastewater concentrations in each `site`.
+#' (labeled here as `log_genome_copies_per_ml`) by sample collection date
+#' (`date`), the site where the sample was collected (`site`) and the lab
+#' where the samples were processed (`lab`). Additional columns that are
+#' required attributes needed for the model are the limit of detection for
+#' that lab on each day (labeled here as `log_lod`) and the population size of
+#' the wastewater catchment area represented by the wastewater concentrations
+#' in each `site`.
 #'
 #' This data is generated via the default values in the
 #'  `generate_simulated_data()` function. They represent the bare minumum
@@ -63,15 +64,18 @@
 #'   YYYY-MM-DD}
 #'   \item{site}{The wastewater treatment plant where the sample was collected}
 #'   \item{lab}{The lab where the sample was processed}
-#'   \item{genome_copies_per_ml}{The wastewater concentration measured on the
-#'   date specified, collected in the site specified, and processed in the lab
-#'   specified. The default parameters assume that this quantity is reported
-#'   as the genome copies per mL, on a natural scale.}
-#'   \item{lod}{The limit of detection in the site and lab on a particular day
-#'   of the quantification device (e.g. PCR). This is also by default reported
-#'   in terms of the genome copies per mL.}
+#'   \item{log_genome_copies_per_ml}{The natural log of the wastewater
+#'   concentration measured on the date specified, collected in the site
+#'   specified, and processed in the lab specified. The package expects
+#'   this quantity in units of log estimated genome copies per mL.}
+#'   \item{log_lod}{The log of the limit of detection in the site and lab on a
+#'   particular day of the quantification device (e.g. PCR).  This should be in
+#'    units of log estimated genome copies per mL.}
 #'   \item{site_pop}{The population size of the wastewater catchment area
 #'   represented by the site variable}
+#'   \item{location}{ A string indicating the location that all of the
+#'   data is coming from. This is not a necessary column, but instead is
+#'   included to more realistically mirror a typical workflow}
 #'   }
 #' @source vignette_data.R
 "ww_data_ind"
@@ -106,6 +110,9 @@
 #'   hospital on that date, available as of the forecast date}
 #'   \item{state_pop}{The number of people contributing to the daily hospital
 #'   admissions}
+#'   \item{location}{ A string indicating the location that all of the
+#'   data is coming from. This is not a necessary column, but instead is
+#'   included to more realistically mirror a typical workflow}
 #'   }
 #' @source vignette_data.R
 "hosp_data"

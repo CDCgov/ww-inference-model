@@ -7,41 +7,43 @@
 get_mcmc_options(
   iter_warmup = 750,
   iter_sampling = 500,
-  n_chains = 4,
   seed = NULL,
+  chains = 4,
   adapt_delta = 0.95,
   max_treedepth = 12
 )
 }
 \arguments{
 \item{iter_warmup}{integer indicating the number of warm-up iterations,
-default is \code{750}}
+default is \code{750}.}
 
 \item{iter_sampling}{integer indicating the number of sampling iterations,
-default is \code{500}}
+default is \code{500}.}
 
-\item{n_chains}{integer indicating the number of MCMC chains to run, default
-is \code{4}}
+\item{seed}{integer, A seed for the (P)RNG to pass to CmdStan. In the case
+of multi-chain sampling the single seed will automatically be augmented by
+the the run (chain) ID so that each chain uses a different seed.
+Default is \code{NULL}.}
 
-\item{seed}{set of integers indicating the random seed of the stan sampler,
-default is NULL}
+\item{chains}{integer indicating the number of MCMC chains to run, default
+is \code{4}.}
 
 \item{adapt_delta}{float between 0 and 1 indicating the average acceptance
-probability, default is \code{0.95}}
+probability, default is \code{0.95}.}
 
 \item{max_treedepth}{integer indicating the maximum tree depth of the
-sampler, default is 12}
+sampler, default is 12.}
 }
 \value{
-a list of mcmc settings with the values given by the  function
+A list of MCMC settings with the values given by the function.
 arguments
 }
 \description{
 This function returns a list of MCMC settings to pass to the
-\code{cmdstanr::sample()} function to fit the model. The default settings are
-specified for production-level runs, consider adjusting to optimize
-for speed while iterating.
-}
-\examples{
-mcmc_settings <- get_mcmc_options()
+\code{\link[cmdstanr:model-method-sample]{$sample()}} function to fit the model.
+The default settings are specified for production-level runs.
+All input arguments to \code{\link[cmdstanr:model-method-sample]{$sample()}}
+are configurable by the user. See
+\code{\link[cmdstanr:model-method-sample]{$sample()}} documentation
+for details of the available arguments.
 }
