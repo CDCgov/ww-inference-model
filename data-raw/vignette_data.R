@@ -23,6 +23,7 @@ simulated_data_ind <- wwinference::generate_simulated_data(
   use_spatial_corr = FALSE,
   aux_site_bool = FALSE
 )
+
 hosp_data_ind <- simulated_data_ind$hosp_data
 ww_data_ind <- simulated_data_ind$ww_data
 hosp_data_eval_ind <- simulated_data_ind$hosp_data_eval
