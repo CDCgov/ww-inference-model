@@ -15,7 +15,7 @@ wwinference(
   calibration_time = 90,
   forecast_horizon = 28,
   model_spec = get_model_spec(),
-  fit_opts = get_mcmc_options(),
+  fit_opts = list(),
   generate_initial_values = TRUE,
   initial_values_seed = NULL,
   compiled_model = compile_model(),
@@ -31,7 +31,7 @@ wwinference(
 \item{ww_data}{A dataframe containing the pre-processed, site-level
 wastewater concentration data for a model run. The dataframe must contain
 the following columns: \code{date}, \code{site}, \code{lab}, \code{log_genome_copies_per_ml},
-\code{lab_site_index}, \code{log_lod}, \code{below_lod}, \code{site_pop} \code{exclude}}
+\code{lab_site_index}, \code{log_lod}, \code{below_lod}, \code{site_pop} \code{exclude}.}
 
 \item{count_data}{A dataframe containing the pre-procssed, "global" (e.g.
 state) daily count data, pertaining to the number of events that are being
@@ -52,13 +52,15 @@ forecast date, to produce forecasts for, default is \code{28}}
 example data provided by the package, but this should be specified by the
 user based on the date they are producing a forecast}
 
-\item{fit_opts}{The fit options, which in this case default to the
-MCMC parameters as defined using \code{get_mcmc_options()}. This includes
-the following arguments, which are passed to
-\code{\link[cmdstanr:model-method-sample]{$sample()}}:
-the number of chains, the number of warmup
-and sampling iterations, the maximum tree depth, the average acceptance
-probability, and the stan PRNG seed}
+\item{fit_opts}{MCMC fitting options, as a list of keys and values.
+These are passed as keyword arguments to
+\code{\link[cmdstanr:model-method-sample]{compiled_model$sample()}}.
+Where no option is specified, \code{\link[=wwinference]{wwinference()}} will fall back first on a
+package-specific default value given by \code{\link[=get_mcmc_options]{get_mcmc_options()}}, if one exists.
+If no package-specific default exists, \code{\link[=wwinference]{wwinference()}} will fall back on
+the default value defined in \code{\link[cmdstanr:model-method-sample]{$sample()}}.
+See the documentation for \code{\link[cmdstanr:model-method-sample]{$sample()}} for
+details on available options.}
 
 \item{generate_initial_values}{Boolean indicating whether or not to specify
 the initialization of the sampler, default is \code{TRUE}, meaning that
@@ -182,28 +184,32 @@ forecast_date <- "2023-11-06"
 calibration_time <- 90
 forecast_horizon <- 28
 include_ww <- 1
-ww_fit <- wwinference(input_ww_data,
-  input_count_data,
+
+ww_fit <- wwinference(
+  ww_data = input_ww_data,
+  count_data = input_count_data,
+  forecast_date = forecast_date,
+  calibration_time = calibration_time,
+  forecast_horizon = forecast_horizon,
   model_spec = get_model_spec(
-    forecast_date = forecast_date,
-    calibration_time = calibration_time,
-    forecast_horizon = forecast_horizon,
     generation_interval = generation_interval,
-    inf_to_count_delay = inf_to_coutn_delay,
+    inf_to_count_delay = inf_to_count_delay,
     infection_feedback_pmf = infection_feedback_pmf,
     params = params
   ),
-  fit_opts = get_mcmc_options(
+  fit_opts = list(
     iter_warmup = 250,
     iter_sampling = 250,
-    n_chains = 2
+    chains = 2
   )
 )
 }
+
 }
 \seealso{
 Other diagnostics:
 \code{\link{get_model_diagnostic_flags}()},
-\code{\link{parameter_diagnostics}()}
+\code{\link{parameter_diagnostics}()},
+\code{\link{summary_diagnostics}()}
 }
 \concept{diagnostics}

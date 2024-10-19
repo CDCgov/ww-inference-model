@@ -191,13 +191,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   assert_ww_site_pops_lt_total(pop_size, ww_pop_sites)
   assert_site_lab_indices_align(site, lab)
 
-
-  # Spatial bool check, if no spatial use ind. corr. func. with n+1 sites.
-  if (!use_spatial_corr) {
-    corr_function <- independence_corr_func
-    corr_fun_params <- list(num_sites = n_sites + 1)
-  }
-
   # Expose the stan functions into the global environment--------------------
   model <- cmdstanr::cmdstan_model(
     stan_file = system.file(
@@ -219,6 +212,12 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     force_recompile = TRUE
   )
   spatial_fxns$expose_functions(global = TRUE)
+
+  # Spatial bool check, if no spatial use ind. corr. func. with n+1 sites.
+  if (!use_spatial_corr) {
+    corr_function <- independence_corr_func_r
+    corr_fun_params <- list(num_sites = n_sites + 1)
+  }
 
   # Get other variables needed for forward simulation ------------------------
   params <- get_params(input_params_path) # load in parameters

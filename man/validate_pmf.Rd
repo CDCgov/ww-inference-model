@@ -10,6 +10,7 @@ validate_pmf(
   pmf,
   calibration_time,
   count_data,
+  tolerance = 1e-06,
   arg = "x",
   call = rlang::caller_env()
 )
@@ -22,6 +23,9 @@ each day}
 
 \item{count_data}{tibble containing the input count data ready to be passed
 to stan}
+
+\item{tolerance}{numeric indicating the allowable difference between the
+sum of the pmf and 1, default is \code{1e-6}}
 
 \item{arg}{name of the argument supplying the object}
 

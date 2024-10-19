@@ -8,6 +8,10 @@ compatible with one another and the the user-specified parameters}
 validate_both_datasets(
   input_count_data,
   input_ww_data,
+  date_time_spine,
+  lab_site_site_spine,
+  site_subpop_spine,
+  lab_site_subpop_spine,
   calibration_time,
   forecast_date
 )
@@ -18,6 +22,14 @@ been filtered and is ready to be passed into stan}
 
 \item{input_ww_data}{tibble containing the input wastewater data that has
 been filtered and is ready to be passed into stan}
+
+\item{date_time_spine}{tibble mapping dates to time in days}
+
+\item{lab_site_site_spine}{tibble mapping lab-sites to sites}
+
+\item{site_subpop_spine}{tibble mapping sites to subpopulations}
+
+\item{lab_site_subpop_spine}{tibble mapping lab-sites to subpopulations}
 
 \item{calibration_time}{integer indicating the calibration time}
 

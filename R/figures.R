@@ -30,10 +30,23 @@ get_plot_forecasted_counts <- function(draws,
                                        forecast_date,
                                        count_type = "hospital admissions",
                                        n_draws_to_plot = 100) {
-  sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
+  n_draws_available <- max(draws$draw)
+  if (n_draws_available < n_draws_to_plot) {
+    stop(
+      sprintf(
+        "The number of draws to plot (%i) should be less or equal to ",
+        n_draws_to_plot
+      ),
+      sprintf(
+        "the number of draws in the data (%i).",
+        n_draws_available
+      )
+    )
+  }
+
+  sampled_draws <- sample.int(n_draws_available, n_draws_to_plot)
 
   draws_to_plot <- draws |> dplyr::filter(
-    .data$name == "predicted counts",
     .data$draw %in% !!sampled_draws
   )
 
@@ -97,34 +110,36 @@ get_plot_ww_conc <- function(draws,
 
   draws_to_plot <- draws |>
     dplyr::filter(
-      .data$name == "predicted wastewater",
       .data$draw %in% !!sampled_draws
-    ) |>
-    dplyr::mutate(
-      site_lab_name = glue::glue("{subpop}, Lab: {lab}")
     )
 
   p <- ggplot(draws_to_plot) +
     geom_line(
       aes(
         x = .data$date, y = .data$pred_value,
-        color = .data$subpop,
+        color = .data$subpop_name,
         group = .data$draw
       ),
-      alpha = 0.1, linewidth = 0.2,
+      alpha = 0.1, size = 0.2,
       show.legend = FALSE
     ) +
     geom_point(aes(x = .data$date, y = .data$observed_value),
-      color = "black", show.legend = FALSE
+      color = "black", show.legend = FALSE, size = 0.5
     ) +
-    facet_wrap(~site_lab_name, scales = "free") +
+    geom_point(
+      data = draws_to_plot |>
+        dplyr::filter(.data$below_lod == 1),
+      aes(x = .data$date, y = .data$observed_value),
+      color = "blue", show.legend = FALSE, size = 0.5
+    ) +
+    facet_wrap(~lab_site_name, scales = "free") +
     geom_vline(
       xintercept = lubridate::ymd(forecast_date),
       linetype = "dashed"
     ) +
     xlab("") +
     ylab("Log genome copies/mL") +
-    ggtitle("Lab-site level wastewater concentration") +
+    ggtitle("Lab-site level wastewater concentrations") +
     scale_x_date(
       date_breaks = "2 weeks",
       labels = scales::date_format("%Y-%m-%d")
@@ -132,11 +147,13 @@ get_plot_ww_conc <- function(draws,
     theme_bw() +
     theme(
       axis.text.x = element_text(
-        size = 8, vjust = 1,
+        size = 5, vjust = 1,
         hjust = 1, angle = 45
       ),
       axis.title.x = element_text(size = 12),
+      axis.text.y = element_text(size = 5),
       axis.title.y = element_text(size = 12),
+      strip.text = element_text(size = 6),
       plot.title = element_text(
         size = 10,
         vjust = 0.5, hjust = 0.5
@@ -163,10 +180,9 @@ get_plot_ww_conc <- function(draws,
 get_plot_global_rt <- function(draws,
                                forecast_date,
                                n_draws_to_plot = 100) {
-  sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
+  sampled_draws <- sample.int(max(draws$draw), n_draws_to_plot)
 
   draws_to_plot <- draws |> dplyr::filter(
-    .data$name == "global R(t)",
     .data$draw %in% !!sampled_draws
   )
 
@@ -191,10 +207,11 @@ get_plot_global_rt <- function(draws,
     theme_bw() +
     theme(
       axis.text.x = element_text(
-        size = 8, vjust = 1,
+        size = 5, vjust = 1,
         hjust = 1, angle = 45
       ),
       axis.title.x = element_text(size = 12),
+      axis.text.y = element_text(size = 5),
       axis.title.y = element_text(size = 12),
       plot.title = element_text(
         size = 10,
@@ -222,10 +239,9 @@ get_plot_global_rt <- function(draws,
 get_plot_subpop_rt <- function(draws,
                                forecast_date,
                                n_draws_to_plot = 100) {
-  sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
+  sampled_draws <- sample.int(max(draws$draw), n_draws_to_plot)
 
   draws_to_plot <- draws |> dplyr::filter(
-    .data$name == "subpopulation R(t)",
     .data$draw %in% !!sampled_draws
   )
 
@@ -233,7 +249,7 @@ get_plot_subpop_rt <- function(draws,
     geom_step(
       aes(
         x = .data$date, y = .data$pred_value, group = .data$draw,
-        color = .data$subpop
+        color = .data$subpop_name
       ),
       alpha = 0.1, linewidth = 0.2,
       show.legend = FALSE
@@ -243,7 +259,7 @@ get_plot_subpop_rt <- function(draws,
       linetype = "dashed",
       show.legend = FALSE
     ) +
-    facet_wrap(~subpop, scales = "free") +
+    facet_wrap(~subpop_name, scales = "free") +
     geom_hline(aes(yintercept = 1), linetype = "dashed") +
     xlab("") +
     ylab("Subpopulation R(t)") +
@@ -255,11 +271,13 @@ get_plot_subpop_rt <- function(draws,
     theme_bw() +
     theme(
       axis.text.x = element_text(
-        size = 8, vjust = 1,
+        size = 5, vjust = 1,
         hjust = 1, angle = 45
       ),
+      axis.text.y = element_text(size = 5),
       axis.title.x = element_text(size = 12),
       axis.title.y = element_text(size = 12),
+      strip.text = element_text(size = 6),
       plot.title = element_text(
         size = 10,
         vjust = 0.5, hjust = 0.5

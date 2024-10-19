@@ -4,13 +4,25 @@
 \alias{assert_no_dates_after_max}
 \title{Check that all dates in dataframe passed in are before a specified date}
 \usage{
-assert_no_dates_after_max(date_vector, max_date, call = rlang::caller_env())
+assert_no_dates_after_max(
+  date_vector,
+  max_date,
+  arg_dates = "y",
+  arg_max_date = "x",
+  call = rlang::caller_env()
+)
 }
 \arguments{
 \item{date_vector}{vector of dates}
 
 \item{max_date}{string indicating the maximum date in ISO8601 convention
 e.g. YYYY-MM-DD}
+
+\item{arg_dates}{string to print the name of the data you are checking the
+dates for}
+
+\item{arg_max_date}{string to print the name of the maximum date you are
+checkign the data for}
 
 \item{call}{Calling environment to be passed to \code{\link[cli:cli_abort]{cli::cli_abort()}} for
 traceback.}

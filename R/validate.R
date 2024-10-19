@@ -31,6 +31,20 @@ validate_ww_conc_data <- function(ww_data,
   )
   checkmate::assert_vector(ww_conc)
 
+  # Check for repeated wastewater observations within a site and lab
+  assert_cols_det_unique_row(
+    df = ww_data,
+    unique_key_columns = c("date", "site", "lab"),
+    arg = "lab-site-day",
+    add_err_msg =
+      c(
+        "Package expects either at most one ",
+        "wastewater observation per a given a site, lab, ",
+        "and sample collection date. Got date(s) with ",
+        "more than one observation for a given site and lab."
+      )
+  )
+
   ww_lod <- ww_data |> dplyr::pull({
     lod_col_name
   })
@@ -65,7 +79,6 @@ validate_ww_conc_data <- function(ww_data,
   checkmate::assert_integerish(site_pops)
   assert_non_missingness(site_pops, arg, call)
   assert_elements_non_neg(site_pops, arg, call)
-
 
   invisible()
 }
@@ -146,18 +159,31 @@ validate_count_data <- function(count_data,
 #' been filtered and is ready to be passed into stan
 #' @param input_ww_data tibble containing the input wastewater data that has
 #' been filtered and is ready to be passed into stan
+#' @param date_time_spine tibble mapping dates to time in days
+#' @param lab_site_site_spine tibble mapping lab-sites to sites
+#' @param site_subpop_spine tibble mapping sites to subpopulations
+#' @param lab_site_subpop_spine tibble mapping lab-sites to subpopulations
 #' @param calibration_time integer indicating the calibration time
 #' @param forecast_date IS08 formatted date indicating the forecast date
 #'
 #' @return NULL, invisibly
 validate_both_datasets <- function(input_count_data,
                                    input_ww_data,
+                                   date_time_spine,
+                                   lab_site_site_spine,
+                                   site_subpop_spine,
+                                   lab_site_subpop_spine,
                                    calibration_time,
                                    forecast_date) {
   # check that you have sufficient count data for the calibration time
   assert_sufficient_days_of_data(
     input_count_data$date,
-    calibration_time
+    data_name = "input count data",
+    calibration_time,
+    add_err_msg = c(
+      "Check that the count data supplied has sufficient values",
+      " before the forecast date"
+    )
   )
 
   assert_elements_non_neg(calibration_time,
@@ -190,12 +216,47 @@ validate_both_datasets <- function(input_count_data,
   )
 
   # check that the time and date indices of both datasets line up
+  ww_data_sizes <- get_ww_data_sizes(
+    input_ww_data
+  )
+
+  ww_vals <- get_ww_indices_and_values(
+    input_ww_data = input_ww_data,
+    date_time_spine = date_time_spine,
+    lab_site_site_spine = lab_site_site_spine,
+    site_subpop_spine = site_subpop_spine,
+    lab_site_subpop_spine = lab_site_subpop_spine
+  )
+
+  input_ww_data_w_t <- input_ww_data |>
+    dplyr::mutate(t = ww_vals$ww_sampled_times)
+
   assert_equivalent_indexing(
     input_count_data,
-    input_ww_data,
+    input_ww_data_w_t,
     arg1 = "count data",
     arg2 = "ww data"
   )
+
+  # Warn if sum(site pops) are greater than total pop.
+  # The package can handle this, but warn users that they may have an input
+  # data error.
+  sum_site_pops <- input_ww_data |>
+    dplyr::distinct(.data$site_pop) |>
+    sum()
+  total_pop <- input_count_data |>
+    dplyr::distinct(.data$total_pop)
+  if (sum_site_pops > total_pop) {
+    cli::cli_warn(c(
+      "The sum of the populations in the wastewater catchment areas is ",
+      "larger than the total population. While the model supports this ",
+      "we advise checking your input data to ensure it is specified ",
+      "correctly and to make sure that populations represented by the ",
+      "wastewater catchment areas are not overlapping (e.g. if both ",
+      " the larger wastewater treatment plant and the upstream manhole ",
+      "are included)."
+    ))
+  }
   invisible()
 }
 
@@ -208,15 +269,18 @@ validate_both_datasets <- function(input_count_data,
 #' @param calibration_time integer indicating the calibration time
 #' @param count_data tibble containing the input count data ready to be passed
 #' to stan
+#' @param tolerance numeric indicating the allowable difference between the
+#' sum of the pmf and 1, default is `1e-6`
 #' @param arg name of the argument supplying the object
 #' @param call The calling environment to be reflected in the error message
 #' @return NULL, invisibly
 validate_pmf <- function(pmf,
                          calibration_time,
                          count_data,
+                         tolerance = 1e-6,
                          arg = "x",
                          call = rlang::caller_env()) {
-  if (!all.equal(sum(pmf), 1)) {
+  if (!isTRUE(all.equal(sum(pmf), 1, tolerance = 1e-6))) {
     cli::cli_abort(
       c(
         "{.arg {arg}} does not sum to 1."
