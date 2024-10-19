@@ -250,8 +250,6 @@ transformed parameters {
   // Shedding kinetics trajectory
   s = get_vl_trajectory(t_peak, viral_peak, dur_shed, gt_max);
 
-<<<<<<< HEAD
-
   // Site level spatial Rt------------------------------------------------------
   if (corr_structure_switch == 0){
     // If no dist matrix given, use n_sites + 1 = n_subpops were all ind.
