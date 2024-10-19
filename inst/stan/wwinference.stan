@@ -223,9 +223,9 @@ transformed parameters {
   vector[ot + uot + ht] state_inf_per_capita = rep_vector(0, uot + ot + ht); // state level incident infections per capita
   matrix[n_subpops, ot + ht] model_log_v_ot; // expected observed viral genomes/mL at all observed and forecasted times
   real<lower=0> g = pow(log10_g, 10); // Estimated genomes shed per infected individual
-  vector<lower=0, upper=1>[n_subpops] i_first_obs_over_n_site;
+  vector<lower=0, upper=1>[n_subpops] i_first_obs_over_n_subpop;
   // per capita infection incidence at the first observed time
-  vector[n_subpops] initial_exp_growth_rate_site;
+  vector[n_subpops] initial_exp_growth_rate_subpop;
      // site level unobserved period growth rate
 
   // Site spatial trans params--------------------------------------------------
@@ -272,15 +272,15 @@ transformed parameters {
     spatial_dev_ns_mat[,i] = cholesky_decompose(sigma_mat) * non_cent_spatial_dev_ns_mat[,i];
   }
   log_r_site_t_in_weeks_matrix = construct_spatial_rt(
-    log_r_mu_t_in_weeks,
-    autoreg_rt_site,
+    log_r_t_in_weeks,
+    autoreg_rt_subpop,
     spatial_dev_ns_mat
   );
   //----------------------------------------------------------------------------
   // AUX site Rt----------------------------------------------------------------
   log_r_aux_site_t_in_weeks = construct_aux_rt(
-    log_r_mu_t_in_weeks,
-    autoreg_rt_site,
+    log_r_t_in_weeks,
+    autoreg_rt_subpop,
     scaling_factor,
     sqrt(sigma_generalized),
     norm_vec_aux_site,
