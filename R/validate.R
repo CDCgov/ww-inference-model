@@ -87,17 +87,19 @@ validate_ww_conc_data <- function(ww_data,
     dplyr::group_by(.data$site) |>
     dplyr::summarize(n = n())
 
-  checkmate::assert_true(
-    all(records_per_site_per_pop$n == 1),
-    add_err_msg =
-      c(
-        "Package expects that there is only one site population",
-        "per site.", "Got site(s) with more than one population: ",
-        paste0(records_per_site_per_pop$site[
-          records_per_site_per_pop$n > 1
-        ], collapse = ", ")
+  if (any(records_per_site_per_pop$n != 1)) {
+    stop(
+      "Package expects that there is only one site population per site.",
+      " Got site(s) with more than one population: ",
+      paste0(
+        records_per_site_per_pop$site[records_per_site_per_pop$n > 1],
+        " (",
+        records_per_site_per_pop$n[records_per_site_per_pop$n > 1],
+        " records)",
+        collapse = ", "
       )
-  )
+    )
+  }
 
 
   invisible()
