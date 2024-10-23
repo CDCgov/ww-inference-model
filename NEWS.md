@@ -1,5 +1,9 @@
 # wwinference 0.1.0.99 (dev)
 
+## User-visible changes
+
+- `wwinference` now checks whether `site_pop` is unique per site (see issue [#223](https://github.com/CDCgov/ww-inference-model/issues/226) and reported by [@akeyel](https://github.com/akeyel)).
+
 ## Internal changes
 
 - Updated the workflow for posting the pages artifact to PRs (issue [#229](https://github.com/CDCgov/ww-inference-model/issues/229)).
