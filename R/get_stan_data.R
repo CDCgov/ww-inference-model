@@ -431,9 +431,10 @@ get_stan_data <- function(input_count_data,
     arg_max_date = "forecast date"
   )
 
-  # Validate both datasets if both are used----------------------------------
+  # if both datasets are used, validate that that they are
+  # compatible and consistent with each other
   if (include_ww == 1) {
-    validate_both_datasets(
+    validate_data_jointly(
       input_count_data = input_count_data,
       input_ww_data = input_ww_data,
       date_time_spine = date_time_spine,

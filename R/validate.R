@@ -187,14 +187,14 @@ validate_count_data <- function(count_data,
 #' @param forecast_date IS08 formatted date indicating the forecast date
 #'
 #' @return NULL, invisibly
-validate_both_datasets <- function(input_count_data,
-                                   input_ww_data,
-                                   date_time_spine,
-                                   lab_site_site_spine,
-                                   site_subpop_spine,
-                                   lab_site_subpop_spine,
-                                   calibration_time,
-                                   forecast_date) {
+validate_data_jointly <- function(input_count_data,
+                                  input_ww_data,
+                                  date_time_spine,
+                                  lab_site_site_spine,
+                                  site_subpop_spine,
+                                  lab_site_subpop_spine,
+                                  calibration_time,
+                                  forecast_date) {
   # check that you have sufficient count data for the calibration time
   assert_sufficient_days_of_data(
     input_count_data$date,
