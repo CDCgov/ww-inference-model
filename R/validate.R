@@ -80,6 +80,26 @@ validate_ww_conc_data <- function(ww_data,
   assert_non_missingness(site_pops, arg, call)
   assert_elements_non_neg(site_pops, arg, call)
 
+  # Check that there are no repeated site populations
+  records_per_site_per_pop <- ww_data |>
+    dplyr::select("site", "site_pop") |>
+    unique() |>
+    dplyr::group_by(.data$site) |>
+    dplyr::summarize(n = n())
+
+  checkmate::assert_true(
+    all(records_per_site_per_pop$n == 1),
+    add_err_msg =
+      c(
+        "Package expects that there is only one site population",
+        "per site.", "Got site(s) with more than one population: ",
+        paste0(records_per_site_per_pop$site[
+          records_per_site_per_pop$n > 1
+        ], collapse = ", ")
+      )
+  )
+
+
   invisible()
 }
 
