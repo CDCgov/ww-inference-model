@@ -171,6 +171,8 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./docs/
+          name: github-pages
+          retention-days: 7
 
   deploy:
     # check builds on PRs but only deploy when main changes
@@ -190,31 +192,22 @@ jobs:
         uses: actions/deploy-pages@v4
 
   post-page-artifact:
-    # only comment on PRs
-    if: ${{ github.event_name == 'pull_request' }}
-    needs: combine
     runs-on: ubuntu-latest
-    permissions:
-        contents: read
-        pull-requests: write
-    env:
-      GH_TOKEN: ${{ github.token }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Find Comment
-        uses: peter-evans/find-comment@v3
-        id: fc
-        with:
-           issue-number: ${{ github.event.pull_request.number }}
-           comment-author: 'github-actions[bot]'
-           body-includes: Your page is ready to preview
 
-      - name: Create or update comment
-        uses: peter-evans/create-or-update-comment@v4
+    # This job depends on the `build` job
+    needs: combine
+
+    # Required permissions
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      # Post the artifact pulling the id from the `readme` step.
+      # The msg will refer to the arfitact as 'README file'.
+      - name: Post the artifact
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: CDCgov/cfa-actions/post-artifact@v1.0.0
         with:
-          comment-id: ${{ steps.fc.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            Thank you for your contribution, @${{ github.triggering_actor }} :rocket:! Your page is ready to preview [here](https://github.com/${{github.repository}}/actions/runs/${{ github.run_id }}/artifacts/${{ needs.build.outputs.page_artifact_id }})
-          edit-mode: replace
+          artifact-name: github-pages
+          gh-token: ${{ secrets.GITHUB_TOKEN }}

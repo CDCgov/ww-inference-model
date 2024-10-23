@@ -1,3 +1,9 @@
+# wwinference 0.1.0.99 (dev)
+
+## Internal changes
+
+- Updated the workflow for posting the pages artifact to PRs (issue [#229](https://github.com/CDCgov/ww-inference-model/issues/229)).
+
 # wwinference 0.1.0
 
 This is the first major release, focused on providing an initial version of the package.
