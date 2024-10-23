@@ -1,5 +1,8 @@
-# wwinference dev
+# wwinference 0.1.0.99 (dev)
 
+## Internal changes
+
+- Updated the workflow for posting the pages artifact to PRs (issue [#229](https://github.com/CDCgov/ww-inference-model/issues/229)).
 - Modify `plot_forecasted_counts()` so that it does not require an evaluation dataset ([#218](https://github.com/CDCgov/ww-inference-model/pull/218))
 
 # wwinference 0.1.0
