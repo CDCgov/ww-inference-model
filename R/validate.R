@@ -85,7 +85,7 @@ validate_ww_conc_data <- function(ww_data,
     dplyr::select("site", "site_pop") |>
     unique() |>
     dplyr::group_by(.data$site) |>
-    dplyr::summarize(n = n())
+    dplyr::summarize(n = dplyr::n())
 
   if (any(records_per_site_per_pop$n != 1)) {
     stop(
