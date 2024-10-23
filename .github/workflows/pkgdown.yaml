@@ -193,6 +193,8 @@ jobs:
 
   post-page-artifact:
     runs-on: ubuntu-latest
+    
+    if: ${{ github.event_name == 'pull_request' }}
 
     # This job depends on the `build` job
     needs: combine
@@ -206,7 +208,6 @@ jobs:
       # Post the artifact pulling the id from the `readme` step.
       # The msg will refer to the arfitact as 'README file'.
       - name: Post the artifact
-        if: ${{ github.event_name == 'pull_request' }}
         uses: CDCgov/cfa-actions/post-artifact@v1.0.0
         with:
           artifact-name: github-pages
