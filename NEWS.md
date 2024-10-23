@@ -1,3 +1,7 @@
+# wwinference dev
+- Add wastewater data into the forecast period to output in `generate_simulated_data()` function and as package data. Also adds subpopulation-level
+hospital admissions to output of function and package data. ([#184](https://github.com/CDCgov/ww-inference-model/issues/184))
+
 # wwinference 0.1.0
 
 This is the first major release, focused on providing an initial version of the package.
