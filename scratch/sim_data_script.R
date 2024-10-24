@@ -37,6 +37,7 @@ global_rt_sd <- 0.03
 sigma_eps <- 0.05
 sd_i0_over_n <- 0.5
 infection_feedback <- TRUE
+subpop_phi <- c(25, 50, 70, 40, 100)
 input_params_path <-
   fs::path_package("extdata",
     "example_params.toml",
