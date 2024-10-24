@@ -18,21 +18,20 @@ A dataset containing the simulated daily hospital admissions
 (labeled here as \code{daily_hosp_admits}) by date of admission (\code{date}) in
 each subpopulation observed retrospectively.
 Additional columns that are required are the population size of the
-population contributing to the hospital admissions. It is assumed that
-the wastewater sites are subsets of this larger population, which
-is in the package data assumed to be from a hypothetical US state.
-The data generated are daily hospital admissions but they could be any other
-epidemiological count dataset e.g. cases. This data should only contain
-hospital admissions that would have been available as of the date that
-the forecast was made. We recommend that users try to format their data
-to match this format.
-}
-\details{
+population contributing to the hospital admissions. In this instance,
+the subpopulations here are each of the wastewater catchment areas plus
+an additional subpopulation for the portion of the population not captured
+by wastewater surveillance. The data generated are daily hospital
+admissions but they could be any other epidemiological count dataset e.g.
+cases.This data should contain hospital admissions retrospectively beyond
+the forecast date in order to evaluate the forecasts.
+
 This data is generated via the default values in the
 \code{generate_simulated_data()} function. They represent the bare minimumum
 required fields needed to pass to the model, and we recommend that users
 try to format their own data to match this format.
-
+}
+\details{
 The variables are as follows:
 \describe{
 \item{date}{Date the hospital admissions occurred, formatted in ISO8601
