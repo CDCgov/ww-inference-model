@@ -98,7 +98,7 @@
 #'  to match this format.
 #'
 #' This data is generated via the default values in the
-#'  `generate_simulated_data()` function. They represent the bare minimumum
+#'  `generate_simulated_data()` function. They represent the bare minimum
 #'  required fields needed to pass to the model, and we recommend that users
 #'  try to format their own data to match this format.
 #'
