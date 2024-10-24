@@ -59,6 +59,9 @@
 #' infection feedback into the infection process, default is `FALSE`, which
 #' sets the strength of the infection feedback to 0.
 #' If `TRUE`, this will apply an infection feedback drawn from the prior.
+#' @param subpop_phi Vector of numeric values indicating the overdispersion
+#' parameter phi in the hospital admissions observation process in each
+#' subpopulation
 #' @param input_params_path path to the toml file with the parameters to use
 #' to generate the simulated data
 #'
@@ -121,6 +124,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                     sigma_eps = 0.05,
                                     sd_i0_over_n = 0.5,
                                     if_feedback = FALSE,
+                                    subpop_phi = c(25, 50, 70, 40, 100),
                                     input_params_path =
                                       fs::path_package("extdata",
                                         "example_params.toml",
@@ -341,6 +345,10 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     )[(uot + 1):(uot + ot + ht)]
   }
 
+  if (rowSums(model_hosp_subpop_over_n) != model_hosp_subpop_over_n) {
+    cli::cli_abort("Sum of convolutions not equal to convolution of sums")
+  }
+
 
   ## Add weekday effect on hospital admissions-------------------------------
   pred_hosp <- pop_size * model$functions$day_of_week_effect(
@@ -365,10 +373,10 @@ generate_simulated_data <- function(r_in_weeks = # nolint
 
   ## Add observation error---------------------------------------------------
   # This is negative binomial but could swap out for a different obs error
-  pred_obs_hosp <- rnbinom(
-    n = length(pred_hosp), mu = pred_hosp,
-    size = 1 / ((params$inv_sqrt_phi_prior_mean)^2)
-  )
+  # pred_obs_hosp <- rnbinom(
+  #   n = length(pred_hosp), mu = pred_hosp,
+  #   size = 1 / ((params$inv_sqrt_phi_prior_mean)^2)
+  # )
 
   pred_obs_hosp_subpop <- matrix(
     nrow = n_subpops,
@@ -377,9 +385,10 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   for (i in 1:n_subpops) {
     pred_obs_hosp_subpop[i, ] <- rnbinom(
       n = length(pred_hosp_subpop[i, ]), mu = pred_hosp_subpop[i, ],
-      size = 1 / ((params$inv_sqrt_phi_prior_mean)^2)
+      size = subpop_phi[i]
     )
   }
+  pred_obs_hosp <- rowSums(pred_obs_hosp_subpop)
 
 
 
