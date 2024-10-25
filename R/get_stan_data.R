@@ -559,8 +559,8 @@ get_stan_data <- function(input_count_data,
     # This dist_matrix will not be used, only needed for stan data specs.
     dist_matrix <- matrix(
       0,
-      nrow = subpop_data$n_subpops - 1,
-      ncol = subpop_data$n_subpops - 1
+      nrow = length(ww_vals$subpop_pops) - 1,
+      ncol = length(ww_vals$subpop_pops) - 1
     )
   }
   if (!(corr_structure_switch %in% c(0, 1, 2))) {
