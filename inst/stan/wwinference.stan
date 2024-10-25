@@ -195,7 +195,7 @@ parameters {
   real log_sigma_generalized;
   real log_phi;
   real log_scaling_factor;
-  matrix[n_subpops-1,n_weeks] non_cent_spatial_dev_ns_mat;
+  matrix[n_subpops-1, n_subpops > 1 ? n_weeks: 0] non_cent_spatial_dev_ns_mat;
   vector[n_weeks] norm_vec_aux_site;
   cholesky_factor_corr[corr_structure_switch == 2 ? n_subpops-1 : 2] L_Omega;
   //----------------------------------------------------------------------------
