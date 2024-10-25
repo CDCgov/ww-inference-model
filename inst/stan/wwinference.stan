@@ -236,10 +236,8 @@ transformed parameters {
   matrix[n_subpops-1,n_subpops-1] norm_omega;
   matrix[n_subpops-1,n_subpops-1] sigma_mat;
   matrix[n_subpops-1,n_weeks] spatial_dev_ns_mat;
-  matrix[n_subpops-1,n_weeks] log_r_site_t_in_weeks_matrix;
-  vector[n_weeks] log_r_aux_site_t_in_weeks;
-  matrix[n_subpops, n_weeks] combined_log_r_site_t_in_weeks;
-  vector[n_weeks] log_r_site_t_in_weeks_vector;
+  matrix[n_subpops-1,n_weeks] log_r_subpop_t_in_weeks_matrix;
+
   //----------------------------------------------------------------------------
 
   // AR(1) process on first differences in "global"
@@ -267,28 +265,20 @@ transformed parameters {
   else {
     reject("Model should not reach this point. Invalid corr_structure_switch value. Check model code");
   }
-  sigma_mat = pow(sigma_generalized, 1.0 / (n_subpops - 1)) * norm_omega;
-  for (i in 1:n_weeks) {
-    spatial_dev_ns_mat[,i] = cholesky_decompose(sigma_mat) * non_cent_spatial_dev_ns_mat[,i];
+
+  if(n_subpops > 1){
+    sigma_mat = pow(sigma_generalized, 1.0 / (n_subpops - 1)) * norm_omega;
+    for (i in 1:n_weeks) {
+      spatial_dev_ns_mat[,i] = cholesky_decompose(sigma_mat) * non_cent_spatial_dev_ns_mat[,i];
+    }
+
+    log_r_subpop_t_in_weeks_matrix = construct_spatial_rt(
+      log_r_t_in_weeks,
+      autoreg_rt_subpop,
+      spatial_dev_ns_mat
+    );
   }
-  log_r_site_t_in_weeks_matrix = construct_spatial_rt(
-    log_r_t_in_weeks,
-    autoreg_rt_subpop,
-    spatial_dev_ns_mat
-  );
-  //----------------------------------------------------------------------------
-  // AUX site Rt----------------------------------------------------------------
-  log_r_aux_site_t_in_weeks = construct_aux_rt(
-    log_r_t_in_weeks,
-    autoreg_rt_subpop,
-    scaling_factor,
-    sqrt(sigma_generalized),
-    norm_vec_aux_site,
-    0
-  );
-  //----------------------------------------------------------------------------
-  // Site Comb with AUX---------------------------------------------------------
-  combined_log_r_site_t_in_weeks = append_row(log_r_site_t_in_weeks_matrix, log_r_aux_site_t_in_weeks');
+
   //----------------------------------------------------------------------------
   // Site level disease dynamics
   // initial conditions
@@ -313,12 +303,9 @@ transformed parameters {
       log_r_subpop_t_in_weeks = log_r_t_in_weeks +
          (n_subpops > 1 ? offset_ref_log_r_t[1] : 0);
     } else {
-    log_r_subpop_t_in_weeks = ar1(log_r_t_in_weeks,
-                                  autoreg_rt_subpop,
-				  sigma_rt,
-                                  to_vector(error_rt_subpop[i - 1]),
-                                  1);
+    log_r_subpop_t_in_weeks = to_vector(log_r_subpop_t_in_weeks_matrix[i-1, :]);
     }
+
      //convert from weekly to daily
      unadj_r_subpop_t = exp(to_row_vector(ind_m*(log_r_subpop_t_in_weeks)));
 
