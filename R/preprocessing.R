@@ -200,7 +200,7 @@ flag_ww_outliers <- function(ww_data,
 
   # Combine stats with ww data
   ww_rho <- ww_data |>
-    left_join(ww_stats, by = c("lab_site_index", "date"))
+    dplyr::left_join(ww_stats, by = c("lab_site_index", "date"))
 
   # compute z scores and flag
   ww_z_scored <- ww_rho |>
