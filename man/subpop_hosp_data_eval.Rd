@@ -25,13 +25,13 @@ by wastewater surveillance. The data generated are daily hospital
 admissions but they could be any other epidemiological count dataset e.g.
 cases.This data should contain hospital admissions retrospectively beyond
 the forecast date in order to evaluate the forecasts.
-
+}
+\details{
 This data is generated via the default values in the
 \code{generate_simulated_data()} function. They represent the bare minimumum
 required fields needed to pass to the model, and we recommend that users
 try to format their own data to match this format.
-}
-\details{
+
 The variables are as follows:
 \describe{
 \item{date}{Date the hospital admissions occurred, formatted in ISO8601

@@ -30,6 +30,7 @@ generate_simulated_data(
   sigma_eps = 0.05,
   sd_i0_over_n = 0.5,
   if_feedback = FALSE,
+  subpop_phi = c(25, 50, 70, 40, 100),
   input_params_path = fs::path_package("extdata", "example_params.toml", package =
     "wwinference")
 )
@@ -114,6 +115,10 @@ initial infections per capita, default is \code{0.5}}
 infection feedback into the infection process, default is \code{FALSE}, which
 sets the strength of the infection feedback to 0.
 If \code{TRUE}, this will apply an infection feedback drawn from the prior.}
+
+\item{subpop_phi}{Vector of numeric values indicating the overdispersion
+parameter phi in the hospital admissions observation process in each
+subpopulation}
 
 \item{input_params_path}{path to the toml file with the parameters to use
 to generate the simulated data}
