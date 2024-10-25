@@ -2,7 +2,7 @@
 
 ## User-visible changes
 
-- `wwinference` now checks whether `site_pop` is unique per site (see issue [#223](https://github.com/CDCgov/ww-inference-model/issues/226) and reported by [@akeyel](https://github.com/akeyel)).
+- `wwinference` now checks whether `site_pop` is fixed per site (see issue [#223](https://github.com/CDCgov/ww-inference-model/issues/226) and reported by [@akeyel](https://github.com/akeyel)).
 
 ## Internal changes
 
