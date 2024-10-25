@@ -326,6 +326,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   )
 
   ## Latent per capita admissions--------------------------------------------
+  # This won't be used other than for the unit test
   model_hosp_over_n <- model$functions$convolve_dot_product(
     p_hosp_days * new_i_over_n, # individuals who will be hospitalized
     rev(inf_to_hosp),
@@ -345,7 +346,12 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     )[(uot + 1):(uot + ot + ht)]
   }
 
-  if (rowSums(model_hosp_subpop_over_n) != model_hosp_subpop_over_n) {
+  # unit test to make sure these are equivalent
+  if (!all.equal(
+    colSums(model_hosp_subpop_over_n * pop_fraction),
+    model_hosp_over_n,
+    tolerance = 1e-8
+  )) {
     cli::cli_abort("Sum of convolutions not equal to convolution of sums")
   }
 
@@ -372,12 +378,9 @@ generate_simulated_data <- function(r_in_weeks = # nolint
 
 
   ## Add observation error---------------------------------------------------
-  # This is negative binomial but could swap out for a different obs error
-  # pred_obs_hosp <- rnbinom(
-  #   n = length(pred_hosp), mu = pred_hosp,
-  #   size = 1 / ((params$inv_sqrt_phi_prior_mean)^2)
-  # )
-
+  # Use negative binomial but could swap out for a different obs error.
+  # Each subpopulation has its own dispersion parameter, then we sum
+  # the observations to get the population total
   pred_obs_hosp_subpop <- matrix(
     nrow = n_subpops,
     ncol = (ot + ht)
@@ -388,7 +391,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
       size = subpop_phi[i]
     )
   }
-  pred_obs_hosp <- rowSums(pred_obs_hosp_subpop)
+  pred_obs_hosp <- colSums(pred_obs_hosp_subpop)
 
 
 
