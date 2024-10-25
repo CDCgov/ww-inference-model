@@ -379,3 +379,17 @@ test_that("Function handles LOD values equal to concentration values", {
   # Check if below_lod is set to 1 when concentration equals LOD
   expect_equal(processed_edge_case$below_lod, rep(1, nrow(edge_case_ww_data)))
 })
+
+test_that("Constant population per site", {
+  wrong_pop <- ww_data
+  ww_data$site_pop <- sample(ww_data$site_pop)
+
+  expect_error(
+    preprocess_ww_data(
+      ww_data,
+      conc_col_name = "conc",
+      lod_col_name = "lod"
+    ),
+    regexp = "constant population size per site"
+  )
+})

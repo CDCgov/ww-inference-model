@@ -89,8 +89,8 @@ validate_ww_conc_data <- function(ww_data,
 
   if (any(records_per_site_per_pop$n != 1)) {
     stop(
-      "Package expects that there is only one site population per site.",
-      " Got site(s) with more than one population: ",
+      "The package expects constant population size per site.",
+      "The data contains at least one site with varying population size: ",
       paste0(
         records_per_site_per_pop$site[records_per_site_per_pop$n > 1],
         " (",
