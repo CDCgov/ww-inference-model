@@ -106,7 +106,9 @@ test_that(paste0(
     inf_to_count_delay,
     infection_feedback_pmf,
     params,
-    include_ww
+    include_ww,
+    dist_matrix = NULL,
+    corr_structure_switch = 0
   )
 
   expect_equal(stan_data$n_subpop, (stan_data$n_ww_sites + 1))
@@ -146,7 +148,9 @@ test_that(paste0(
       inf_to_count_delay,
       infection_feedback_pmf,
       params,
-      include_ww
+      include_ww,
+      dist_matrix = NULL,
+      corr_structure_switch = 0
     )
   })
 
@@ -187,7 +191,9 @@ test_that(paste0(
     inf_to_count_delay,
     infection_feedback_pmf,
     params,
-    include_ww = 0
+    include_ww = 0,
+    dist_matrix = NULL,
+    corr_structure_switch = 0
   )
 
   expect_equal(stan_data_ho$n_subpops, 1)
@@ -226,7 +232,9 @@ test_that(paste0(
     inf_to_count_delay,
     infection_feedback_pmf,
     params,
-    include_ww = 0
+    include_ww = 0,
+    dist_matrix = NULL,
+    corr_structure_switch = 0
   )
 
   expect_equal(stan_data_ho$n_subpops, 1)
