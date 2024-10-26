@@ -335,14 +335,8 @@ compile the model. This can be done using the `compile_model()` function
 
 ```{r compile-model}
 # temporarily compile from local to make troubleshooting faster/easier
-model <- wwinference::compile_model(
-  model_filepath = here::here(file.path(
-    "inst", "stan", "wwinference.stan"
-  )),
-  include_paths = here::here(file.path(
-    "inst", "stan"
-  ))
-)
+model <- wwinference::compile_model()
+```
 ```
 
 # Fitting the model
