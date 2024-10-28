@@ -1071,20 +1071,29 @@ data generation model and inference model was used.
 <div class="fold s">
 ```{r}
 set.seed(2024)
-draws_to_keep <- sample(1:max(get_draws_df(fit_iid_to_iid)$draw), 100)
+draws_to_keep <- sample(1:max(get_draws(
+  fit_iid_to_iid,
+  what = "predicted_counts"
+)$predicted_counts), 100)
 # IID data ---------------------------------------------------------------------
 iid_pred_draws_df <- rbind(
-  get_draws_df(fit_iid_to_iid) %>%
+  get_draws(fit_iid_to_iid,
+    what = "predicted_counts"
+  )$predicted_counts %>%
     filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "IID"
     ),
-  get_draws_df(fit_iid_to_exp) %>%
+  get_draws(fit_iid_to_exp,
+    what = "predicted_counts"
+  )$predicted_counts %>%
     filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "Exponential"
     ),
-  get_draws_df(fit_iid_to_unstruct) %>%
+  get_draws(fit_iid_to_unstruct,
+    what = "predicted_counts"
+  )$predicted_counts %>%
     filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "Unstructured"
@@ -1096,17 +1105,23 @@ iid_pred_draws_df <- rbind(
 # ------------------------------------------------------------------------------
 # Exponential data -------------------------------------------------------------
 exp_pred_draws_df <- rbind(
-  get_draws_df(fit_exp_to_iid) %>%
+  get_draws(fit_exp_to_iid,
+    what = "predicted_counts"
+  )$predicted_counts %>%
     filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "IID"
     ),
-  get_draws_df(fit_exp_to_exp) %>%
+  get_draws(fit_exp_to_exp,
+    what = "predicted_counts"
+  )$predicted_counts %>%
     filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "Exponential"
     ),
-  get_draws_df(fit_exp_to_unstruct) %>%
+  get_draws_df(fit_exp_to_unstruct,
+    what = "predicted_counts"
+  )$predicted_counts %>%
     filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "Unstructured"
@@ -1118,17 +1133,23 @@ exp_pred_draws_df <- rbind(
 # ------------------------------------------------------------------------------
 # Rand. Corr. Matrix data ------------------------------------------------------
 rand_pred_draws_df <- rbind(
-  get_draws_df(fit_rand_to_iid) %>%
+  get_draws(fit_rand_to_iid,
+    what = "predicted_counts"
+  )$predicted_counts %>%
     filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "IID"
     ),
-  get_draws_df(fit_rand_to_exp) %>%
+  get_draws_df(fit_rand_to_exp,
+    what = "predicted_counts"
+  )$predicted_counts %>%
     filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "Exponential"
     ),
-  get_draws_df(fit_rand_to_unstruct) %>%
+  get_draws_df(fit_rand_to_unstruct,
+    what = "predicted_counts"
+  )$predicted_counts %>%
     filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "Unstructured"
