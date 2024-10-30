@@ -1119,7 +1119,7 @@ exp_pred_draws_df <- rbind(
     mutate(
       inf_model_type = "Exponential"
     ),
-  get_draws_df(fit_exp_to_unstruct,
+  get_draws(fit_exp_to_unstruct,
     what = "predicted_counts"
   )$predicted_counts %>%
     filter(draw %in% draws_to_keep) %>%
