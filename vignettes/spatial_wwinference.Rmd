@@ -1470,9 +1470,6 @@ evaluation metrics will be used to quantify forecast performance.
 ```{r warning=FALSE}
 # Hospital admissions results --------------------------------------------------
 hosp_ribbon_data <- all_pred_draws_df %>%
-  filter(
-    name == "predicted counts"
-  ) %>%
   group_by(
     date,
     inf_model_type,
@@ -1485,10 +1482,7 @@ hosp_ribbon_data <- all_pred_draws_df %>%
     .groups = "drop"
   )
 hosp_result_plot <- ggplot(
-  all_pred_draws_df %>%
-    filter(
-      name == "predicted counts"
-    )
+  all_pred_draws_df
 ) +
   geom_ribbon(
     data = hosp_ribbon_data,
@@ -1533,6 +1527,8 @@ hosp_result_plot <- ggplot(
   ) +
   theme_bw()
 # ------------------------------------------------------------------------------
+```
+```{r visualizing ww}
 # Wastewater results -----------------------------------------------------------
 ww_ribbon_data <- all_pred_draws_df %>%
   filter(
