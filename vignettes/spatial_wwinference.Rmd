@@ -1074,7 +1074,7 @@ set.seed(2024)
 draws_to_keep <- sample(1:max(get_draws(
   fit_iid_to_iid,
   what = "predicted_counts"
-)$predicted_counts), 100)
+)$predicted_counts$draw), 100)
 # IID data ---------------------------------------------------------------------
 iid_pred_draws_df <- rbind(
   get_draws(fit_iid_to_iid,
