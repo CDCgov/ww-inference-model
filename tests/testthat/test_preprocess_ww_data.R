@@ -381,10 +381,8 @@ test_that("Function handles LOD values equal to concentration values", {
 })
 
 test_that("Constant population per site", {
-  wrong_pop <- cbind(
-    ww_data,
-    ww_data |> dplyr::mutate(site = "wrong pop")
-  )
+  wrong_pop <- ww_data
+
   wrong_pop$site_pop <- 1e6 + seq_len(nrow(ww_data))
 
   expect_error(
