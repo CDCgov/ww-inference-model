@@ -382,7 +382,7 @@ test_that("Function handles LOD values equal to concentration values", {
 
 test_that("Constant population per site", {
   wrong_pop <- ww_data
-  wrong_pop <- sample(ww_data$site_pop)
+  wrong_pop$site_pop[1] <- ww_data$site_pop[1] + 1000
 
   expect_error(
     preprocess_ww_data(
