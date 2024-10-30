@@ -32,8 +32,9 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
     w = stats::rnorm(n_weeks - 1, 0, stdev),
     offset_ref_log_r_t = stats::rnorm(
       stan_data$n_subpops > 1,
-      stan_data$offset_ref_log_r_t_prior_mean,
-      stdev
+      n = n_weeks,
+      mean = stan_data$offset_ref_log_r_t_prior_mean,
+      sd = stdev
     ),
     offset_ref_logit_i_first_obs = stats::rnorm(
       stan_data$n_subpops > 1,
