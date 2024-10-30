@@ -234,7 +234,7 @@ transformed parameters {
     // log(R(t)subpop) ~ log(R(t)sref) + autoreg*(log(R(t)ref-log(R(t)subpop)) + eta_subpop
     if(i == 1) {
       log_r_subpop_t_in_weeks = log_r_t_in_weeks +
-         (n_subpops > 1 ? offset_ref_log_r_t : 0);
+         (n_subpops > 1 ? offset_ref_log_r_t : rep_vector(0, n_weeks));
     } else {
     log_r_subpop_t_in_weeks = ar1(log_r_t_in_weeks,
                                   autoreg_rt_subpop,
