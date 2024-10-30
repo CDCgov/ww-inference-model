@@ -17,7 +17,7 @@ test_that("Function returns site indices in order of largest site pop", {
     lod_col_name = "lod"
   )
 
-  spine <- processed |> distinct(site_pop, site_index)
+  spine <- processed |> dplyr::distinct(site_pop, site_index)
 
 
   expect_true(spine$site_pop[spine$site_index == 1] == max(spine$site_pop))
@@ -174,7 +174,7 @@ test_that("lab_site_index and site_index are created correctly", {
     lab = c(1, 2, 3, 4),
     conc = c(345.2, 784.1, 401.5, 681.8),
     lod = c(20, 20, 15, 15),
-    site_pop = c(rep(1e6, 2), rep(3e5, 2))
+    site_pop = c(rep(1e6, 2), 3e5, 1e6)
   )
 
   processed <- preprocess_ww_data(test_ww_data,
@@ -378,4 +378,18 @@ test_that("Function handles LOD values equal to concentration values", {
 
   # Check if below_lod is set to 1 when concentration equals LOD
   expect_equal(processed_edge_case$below_lod, rep(1, nrow(edge_case_ww_data)))
+})
+
+test_that("Constant population per site", {
+  wrong_pop <- ww_data
+  ww_data$site_pop <- sample(ww_data$site_pop)
+
+  expect_error(
+    preprocess_ww_data(
+      ww_data,
+      conc_col_name = "conc",
+      lod_col_name = "lod"
+    ),
+    regexp = "constant population size per site"
+  )
 })
