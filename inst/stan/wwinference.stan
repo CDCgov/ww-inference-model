@@ -85,6 +85,7 @@ data {
   real sd_log_sigma_ww_site_prior_mode;
   real<lower=0> sd_log_sigma_ww_site_prior_sd;
   real<lower=0> eta_sd_sd;
+  real<lower=0> eta_sd_mean;
   real p_hosp_prior_mean;
   real<lower=0> p_hosp_sd_logit;
   real<lower=0> p_hosp_w_sd_sd;
@@ -325,7 +326,7 @@ model {
                                         offset_ref_logit_i_first_obs_prior_sd);
   offset_ref_initial_exp_growth_rate ~ normal(offset_ref_initial_exp_growth_rate_prior_mean,
                                               offset_ref_initial_exp_growth_rate_prior_sd);
-  eta_sd ~ normal(0, eta_sd_sd);
+  eta_sd ~ normal(eta_sd_mean, eta_sd_sd);
   autoreg_rt_subpop ~ beta(autoreg_rt_subpop_a, autoreg_rt_subpop_b);
 
   autoreg_rt ~ beta(autoreg_rt_a, autoreg_rt_b);
