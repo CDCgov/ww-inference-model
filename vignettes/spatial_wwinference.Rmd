@@ -1140,14 +1140,14 @@ rand_pred_draws_df <- rbind(
     mutate(
       inf_model_type = "IID"
     ),
-  get_draws_df(fit_rand_to_exp,
+  get_draws(fit_rand_to_exp,
     what = "predicted_counts"
   )$predicted_counts %>%
     filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "Exponential"
     ),
-  get_draws_df(fit_rand_to_unstruct,
+  get_draws(fit_rand_to_unstruct,
     what = "predicted_counts"
   )$predicted_counts %>%
     filter(draw %in% draws_to_keep) %>%
