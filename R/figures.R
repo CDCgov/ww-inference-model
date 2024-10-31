@@ -57,7 +57,6 @@ get_plot_forecasted_counts <- function(draws,
       aes(x = .data$date, y = .data$pred_value, group = .data$draw),
       color = "red4", alpha = 0.1, linewidth = 0.2
     ) +
-    geom_point(aes(x = .data$date, y = .data$observed_value)) +
     geom_vline(
       xintercept = lubridate::ymd(forecast_date),
       linetype = "dashed"
@@ -91,7 +90,10 @@ get_plot_forecasted_counts <- function(draws,
         shape = 21, color = "black", fill = "white"
       )
   }
-  return(p)
+  # Add calibration data as final step, this should be plotted on top of
+  # the eval data(if present) and draws
+  p <- p + geom_point(aes(x = .data$date, y = .data$observed_value)) +
+    return(p)
 }
 
 #' Get plot of fit and forecasted wastewater concentrations
