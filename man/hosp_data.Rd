@@ -28,9 +28,9 @@ to match this format.
 }
 \details{
 This data is generated via the default values in the
-\code{generate_simulated_data()} function. They represent the bare minumum
+\code{generate_simulated_data()} function. They represent the bare minimum
 required fields needed to pass to the model, and we recommend that users
-try to format their own data to match this formate.
+try to format their own data to match this format.
 
 The variables are as follows:
 \describe{

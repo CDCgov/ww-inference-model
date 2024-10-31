@@ -422,6 +422,52 @@ format_hosp_data <- function(pred_obs_hosp,
   return(hosp_data)
 }
 
+
+#' Format the subpopulation-level hospital admissions data into a tidy
+#' dataframe
+#'
+#' @param pred_obs_hosp_subpop matrix of non-negative integers indicating the
+#' number of hospital admissions on each day in each subpopulation. Rows are
+#' subpopulations, columns are time points
+#' @param dur_obs integer indicating the number of days we want the
+#' observations for
+#' @param subpop_map tibble mapping the numbered subpopulations to the
+#' wastewater sites, must contain columns "subpop_index" and "subpop_name"
+#' @param date_df tibble of columns `date` and `t` that map time in days to
+#' dates
+#'
+#' @return a tidy dataframe containing counts of admissions by date alongside
+#' population size for each subpopulation
+format_subpop_hosp_data <- function(pred_obs_hosp_subpop,
+                                    dur_obs,
+                                    subpop_map,
+                                    date_df) {
+  subpop_hosp_data <- as.data.frame(t(pred_obs_hosp_subpop)) |>
+    dplyr::mutate(t = seq_len(ncol(pred_obs_hosp_subpop))) |>
+    dplyr::filter(t <= dur_obs) |>
+    tidyr::pivot_longer(!t,
+      names_to = "subpop_index",
+      names_prefix = "V",
+      values_to = "daily_hosp_admits"
+    ) |>
+    dplyr::left_join(
+      date_df,
+      by = "t"
+    ) |>
+    dplyr::left_join(
+      subpop_map,
+      by = "subpop_index"
+    ) |>
+    dplyr::select(
+      "date",
+      "subpop_name",
+      "daily_hosp_admits",
+      "subpop_pop"
+    )
+  return(subpop_hosp_data)
+}
+
+
 #' Back- calculate R(t) from incident infections and the generation interval
 #'
 #' @description
