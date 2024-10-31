@@ -1182,6 +1182,331 @@ all_pred_draws_df <- rbind(
       )
     )
   )
+
+# Wastewater draws------------------------------
+iid_ww_draws_df <- rbind(
+  get_draws(fit_iid_to_iid,
+    what = "predicted_ww"
+  )$predicted_ww %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "IID"
+    ),
+  get_draws(fit_iid_to_exp,
+    what = "predicted_ww"
+  )$predicted_ww %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "Exponential"
+    ),
+  get_draws(fit_iid_to_unstruct,
+    what = "predicted_ww"
+  )$predicted_ww %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "Unstructured"
+    )
+) %>%
+  mutate(
+    gen_model_type = "IID"
+  )
+# ------------------------------------------------------------------------------
+# Exponential data -------------------------------------------------------------
+exp_ww_draws_df <- rbind(
+  get_draws(fit_exp_to_iid,
+    what = "predicted_ww"
+  )$predicted_ww %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "IID"
+    ),
+  get_draws(fit_exp_to_exp,
+    what = "predicted_ww"
+  )$predicted_ww %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "Exponential"
+    ),
+  get_draws(fit_exp_to_unstruct,
+    what = "predicted_ww"
+  )$predicted_ww %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "Unstructured"
+    )
+) %>%
+  mutate(
+    gen_model_type = "Exponential"
+  )
+# ------------------------------------------------------------------------------
+# Rand. Corr. Matrix data ------------------------------------------------------
+rand_ww_draws_df <- rbind(
+  get_draws(fit_rand_to_iid,
+    what = "predicted_ww"
+  )$predicted_ww %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "IID"
+    ),
+  get_draws(fit_rand_to_exp,
+    what = "predicted_ww"
+  )$predicted_ww %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "Exponential"
+    ),
+  get_draws(fit_rand_to_unstruct,
+    what = "predicted_ww"
+  )$predicted_ww %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "Unstructured"
+    )
+) %>%
+  mutate(
+    gen_model_type = "Rand. Corr. Matrix"
+  )
+
+all_ww_draws_df <- rbind(
+  iid_ww_draws_df,
+  exp_ww_draws_df,
+  rand_ww_draws_df
+) %>%
+  mutate(
+    inf_model_type = factor(
+      inf_model_type,
+      levels = c(
+        "Exponential",
+        "Unstructured",
+        "IID"
+      )
+    ),
+    gen_model_type = factor(
+      gen_model_type,
+      levels = c(
+        "IID",
+        "Exponential",
+        "Rand. Corr. Matrix"
+      )
+    )
+  )
+
+# Global R(t) draws-------------------------------------------
+iid_rt_draws_df <- rbind(
+  get_draws(fit_iid_to_iid,
+    what = "global_rt"
+  )$global_rt %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "IID"
+    ),
+  get_draws(fit_iid_to_exp,
+    what = "global_rt"
+  )$global_rt %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "Exponential"
+    ),
+  get_draws(fit_iid_to_unstruct,
+    what = "global_rt"
+  )$global_rt %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "Unstructured"
+    )
+) %>%
+  mutate(
+    gen_model_type = "IID"
+  )
+# ------------------------------------------------------------------------------
+# Exponential data -------------------------------------------------------------
+exp_rt_draws_df <- rbind(
+  get_draws(fit_exp_to_iid,
+    what = "global_rt"
+  )$global_rt %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "IID"
+    ),
+  get_draws(fit_exp_to_exp,
+    what = "global_rt"
+  )$global_rt %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "Exponential"
+    ),
+  get_draws(fit_exp_to_unstruct,
+    what = "global_rt"
+  )$global_rt %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "Unstructured"
+    )
+) %>%
+  mutate(
+    gen_model_type = "Exponential"
+  )
+# ------------------------------------------------------------------------------
+# Rand. Corr. Matrix data ------------------------------------------------------
+rand_rt_draws_df <- rbind(
+  get_draws(fit_rand_to_iid,
+    what = "global_rt"
+  )$global_rt %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "IID"
+    ),
+  get_draws(fit_rand_to_exp,
+    what = "global_rt"
+  )$global_rt %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "Exponential"
+    ),
+  get_draws(fit_rand_to_unstruct,
+    what = "global_rt"
+  )$global_rt %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "Unstructured"
+    )
+) %>%
+  mutate(
+    gen_model_type = "Rand. Corr. Matrix"
+  )
+
+all_rt_draws_df <- rbind(
+  iid_rt_draws_df,
+  exp_rt_draws_df,
+  rand_rt_draws_df
+) %>%
+  mutate(
+    inf_model_type = factor(
+      inf_model_type,
+      levels = c(
+        "Exponential",
+        "Unstructured",
+        "IID"
+      )
+    ),
+    gen_model_type = factor(
+      gen_model_type,
+      levels = c(
+        "IID",
+        "Exponential",
+        "Rand. Corr. Matrix"
+      )
+    )
+  )
+
+# Subpop R(t) ---------------------------
+
+iid_subpop_rt_draws_df <- rbind(
+  get_draws(fit_iid_to_iid,
+    what = "subpop_rt"
+  )$subpop_rt %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "IID"
+    ),
+  get_draws(fit_iid_to_exp,
+    what = "subpop_rt"
+  )$subpop_rt %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "Exponential"
+    ),
+  get_draws(fit_iid_to_unstruct,
+    what = "subpop_rt"
+  )$subpop_rt %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "Unstructured"
+    )
+) %>%
+  mutate(
+    gen_model_type = "IID"
+  )
+# ------------------------------------------------------------------------------
+# Exponential data -------------------------------------------------------------
+exp_subpop_rt_draws_df <- rbind(
+  get_draws(fit_exp_to_iid,
+    what = "subpop_rt"
+  )$subpop_rt %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "IID"
+    ),
+  get_draws(fit_exp_to_exp,
+    what = "subpop_rt"
+  )$subpop_rt %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "Exponential"
+    ),
+  get_draws(fit_exp_to_unstruct,
+    what = "subpop_rt"
+  )$subpop_rt %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "Unstructured"
+    )
+) %>%
+  mutate(
+    gen_model_type = "Exponential"
+  )
+# ------------------------------------------------------------------------------
+# Rand. Corr. Matrix data ------------------------------------------------------
+rand_subpop_rt_draws_df <- rbind(
+  get_draws(fit_rand_to_iid,
+    what = "subpop_rt"
+  )$subpop_rt %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "IID"
+    ),
+  get_draws(fit_rand_to_exp,
+    what = "subpop_rt"
+  )$subpop_rt %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "Exponential"
+    ),
+  get_draws(fit_rand_to_unstruct,
+    what = "subpop_rt"
+  )$subpop_rt %>%
+    filter(draw %in% draws_to_keep) %>%
+    mutate(
+      inf_model_type = "Unstructured"
+    )
+) %>%
+  mutate(
+    gen_model_type = "Rand. Corr. Matrix"
+  )
+
+all_subpop_rt_draws_df <- rbind(
+  iid_subpop_rt_draws_df,
+  exp_subpop_rt_draws_df,
+  rand_subpop_rt_draws_df
+) %>%
+  mutate(
+    inf_model_type = factor(
+      inf_model_type,
+      levels = c(
+        "Exponential",
+        "Unstructured",
+        "IID"
+      )
+    ),
+    gen_model_type = factor(
+      gen_model_type,
+      levels = c(
+        "IID",
+        "Exponential",
+        "Rand. Corr. Matrix"
+      )
+    )
+  )
 ```
 
 
@@ -1526,20 +1851,13 @@ hosp_result_plot <- ggplot(
     values = c("darkviolet", "deeppink3", "darksalmon")
   ) +
   theme_bw()
-# ------------------------------------------------------------------------------
-```
-```{r visualizing ww}
+
+
 # Wastewater results -----------------------------------------------------------
-ww_ribbon_data <- all_pred_draws_df %>%
-  filter(
-    name == "predicted wastewater"
-  ) %>%
-  mutate(
-    site_lab_name = glue::glue("{subpop}, Lab: {lab}")
-  ) %>%
+ww_ribbon_data <- all_ww_draws_df %>%
   group_by(
     date,
-    subpop,
+    site,
     inf_model_type,
     gen_model_type
   ) %>%
@@ -1550,10 +1868,7 @@ ww_ribbon_data <- all_pred_draws_df %>%
     .groups = "drop"
   )
 ww_result_plot <- ggplot(
-  all_pred_draws_df %>%
-    filter(
-      name == "predicted wastewater"
-    )
+  all_ww_draws_df
 ) +
   geom_ribbon(
     data = ww_ribbon_data,
@@ -1573,7 +1888,7 @@ ww_result_plot <- ggplot(
   ) +
   xlab("") +
   ylab("Genome copies/mL on Log Scale") +
-  facet_grid(subpop ~ gen_model_type, scales = "free_y") +
+  facet_grid(site ~ gen_model_type, scales = "free_y") +
   guides(
     fill = guide_legend(
       title = "Assumed Corr. Structure"
@@ -1614,10 +1929,9 @@ partially or not at all informed by recent data.
 <div class="fold s">
 ```{r}
 # Global Rt results ------------------------------------------------------------
-global_rt_ribbon_data <- all_pred_draws_df %>%
-  filter(
-    name == "global R(t)"
-  ) %>%
+
+
+global_rt_ribbon_data <- all_rt_draws_df %>%
   group_by(
     date,
     inf_model_type,
@@ -1630,10 +1944,7 @@ global_rt_ribbon_data <- all_pred_draws_df %>%
     .groups = "drop"
   )
 global_rt_result_plot <- ggplot(
-  all_pred_draws_df %>%
-    filter(
-      name == "global R(t)"
-    )
+  all_pred_draws_df
 ) +
   geom_ribbon(
     data = global_rt_ribbon_data,
@@ -1684,13 +1995,10 @@ global_rt_result_plot <- ggplot(
   theme_bw()
 # ------------------------------------------------------------------------------
 # Site Rt results --------------------------------------------------------------
-site_rt_ribbon_data <- all_pred_draws_df %>%
-  filter(
-    name == "subpopulation R(t)"
-  ) %>%
+site_rt_ribbon_data <- all_subpop_rt_draws_df %>%
   group_by(
     date,
-    subpop,
+    subpop_name,
     inf_model_type,
     gen_model_type
   ) %>%
@@ -1699,20 +2007,6 @@ site_rt_ribbon_data <- all_pred_draws_df %>%
     median = median(pred_value),
     upper = quantile(pred_value, 0.975, na.rm = TRUE),
     .groups = "drop"
-  ) %>%
-  mutate(
-    subpop = sub(
-      pattern = "Site: (\\d+)",
-      replacement = "Site \\1",
-      x = subpop,
-      ignore.case = "remainder of pop"
-    )
-  ) %>%
-  mutate(
-    subpop = case_when(
-      subpop == "remainder of pop" ~ "Aux",
-      .default = subpop
-    )
   )
 site_rt_result_plot <- ggplot() +
   geom_ribbon(
@@ -1744,7 +2038,7 @@ site_rt_result_plot <- ggplot() +
   ) +
   xlab("") +
   ylab("Site Rt") +
-  facet_grid(subpop ~ gen_model_type, scales = "free_y") +
+  facet_grid(subpop_name ~ gen_model_type, scales = "free_y") +
   guides(
     fill = guide_legend(
       title = "Assumed Corr. Structure"
@@ -2060,7 +2354,6 @@ period.
 ```{r}
 hosp_obj_for_eval_forcast <- all_pred_draws_df %>%
   filter(
-    name == "predicted counts",
     date > forecast_date
   ) %>%
   inner_join(
@@ -2258,7 +2551,6 @@ make two plots one for metrics by date, and another across all dates.
 ```{r}
 hosp_obj_for_eval_nowcast <- all_pred_draws_df %>%
   filter(
-    name == "predicted counts",
     date > max(hosp_data$date),
     date <= forecast_date
   ) %>%
