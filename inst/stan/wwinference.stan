@@ -230,7 +230,6 @@ transformed parameters {
 
   // Site spatial trans params--------------------------------------------------
   real phi = exp(log_phi);
-  real sigma_generalized = exp(log_sigma_generalized);
   real scaling_factor = exp(log_scaling_factor);
   matrix[n_subpops-1,n_subpops-1] non_norm_omega;
   matrix[n_subpops-1,n_subpops-1] norm_omega;
