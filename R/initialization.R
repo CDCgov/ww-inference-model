@@ -103,7 +103,6 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
     )),
     infection_feedback = abs(stats::rnorm(1, 500, 20)),
     # Spatial inits
-    log_sigma_generalized = stats::rnorm(1, log(0.05^(n_subpops - 1)), 0.5),
     log_phi = stats::rnorm(1, log(0.25), 0.1),
     log_scaling_factor = stats::rnorm(1, log(1), 0.1),
     norm_vec_aux_site = stats::rnorm(n_weeks, 0, stdev),

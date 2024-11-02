@@ -102,8 +102,8 @@ data {
   real log_phi_mu_prior;
   real log_phi_sd_prior;
   real l;
-  real log_sigma_generalized_mu_prior;
-  real log_sigma_generalized_sd_prior;
+  //real log_sigma_generalized_mu_prior;
+  //real log_sigma_generalized_sd_prior;
   real log_scaling_factor_mu_prior;
   real log_scaling_factor_sd_prior;
   matrix[n_subpops-1, n_subpops-1] dist_matrix;
@@ -192,7 +192,7 @@ parameters {
 
   // Site spatial params--------------------------------------------------------
   //matrix[n_subpops, n_subpops] non_norm_omega;
-  real log_sigma_generalized;
+  //real log_sigma_generalized;
   real log_phi;
   real log_scaling_factor;
   matrix[n_subpops-1, n_subpops > 1 ? n_weeks: 0] non_cent_spatial_dev_ns_mat;
@@ -267,7 +267,7 @@ transformed parameters {
   }
 
   if(n_subpops > 1){
-    sigma_mat = pow(sigma_generalized, 1.0 / (n_subpops - 1)) * norm_omega;
+    sigma_mat = pow(sigma_rt, 1.0 / (n_subpops - 1)) * norm_omega;
     for (i in 1:n_weeks) {
       spatial_dev_ns_mat[,i] = cholesky_decompose(sigma_mat) * non_cent_spatial_dev_ns_mat[,i];
     }
@@ -387,7 +387,7 @@ model {
     // for spatial--------------------------------------------------------------
     to_vector(non_cent_spatial_dev_ns_mat) ~ std_normal();
     norm_vec_aux_site ~ std_normal();
-    log_sigma_generalized ~ normal(log_sigma_generalized_mu_prior, log_sigma_generalized_sd_prior);
+    //log_sigma_generalized ~ normal(log_sigma_generalized_mu_prior, log_sigma_generalized_sd_prior);
     log_phi ~ normal(log_phi_mu_prior, log_phi_sd_prior);
     log_scaling_factor ~ normal(log_scaling_factor_mu_prior, log_scaling_factor_sd_prior);
     if (corr_structure_switch == 2){
