@@ -40,6 +40,9 @@ standatds as YYYY-MM-DD}
 hospital on that date, available as of the forecast date}
 \item{state_pop}{The number of people contributing to the daily hospital
 admissions}
+\item{location}{ A string indicating the location that all of the
+data is coming from. This is not a necessary column, but instead is
+included to more realistically mirror a typical workflow}
 }
 }
 \keyword{datasets}

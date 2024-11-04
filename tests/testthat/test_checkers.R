@@ -12,11 +12,23 @@ test_that(
 
     max_date <- lubridate::ymd("2024-01-02")
 
-    expect_error(assert_no_dates_after_max(date_vector, max_date))
+    expect_error(
+      assert_no_dates_after_max(date_vector, max_date,
+        arg_dates = "example data",
+        arg_max_date = "maximum date"
+      ),
+      regexp = "The example data passed in has observations"
+    )
 
-    max_date <- "character"
+    max_date <- as.character("2024-01-02")
 
-    expect_error(assert_no_dates_after_max(date_vector, max_date))
+    expect_error(
+      assert_no_dates_after_max(date_vector, max_date,
+        arg_dates = "example data",
+        arg_max_date = "maximum date"
+      ),
+      regexp = "The example data passed in has observations"
+    )
   }
 )
 
@@ -176,7 +188,7 @@ test_that(
     )
     count_col_name <- "hosp"
     pop_size_col_name <- "pop"
-    expect_no_error(check_req_count_cols_present(
+    expect_no_error(assert_req_count_cols_present(
       x,
       count_col_name,
       pop_size_col_name
@@ -190,7 +202,7 @@ test_that(
     )
     count_col_name <- "count"
     pop_size_col_name <- "pop"
-    expect_error(check_req_hosp_columns_present(
+    expect_error(assert_req_count_columns_present(
       x,
       count_col_name,
       pop_size_col_name
@@ -204,7 +216,7 @@ test_that(
     )
     count_col_name <- "hosp"
     pop_size_col_name <- "pop"
-    expect_error(check_req_hosp_columns_present(
+    expect_error(assert_req_count_columns_present(
       x,
       count_col_name,
       pop_size_col_name
@@ -270,43 +282,30 @@ test_that(
 )
 
 test_that(
+  "Test that validate pmfs returns the expected error message.",
+  {
+    invalid_pmf <- c(0.4, 0.4, 0.4)
+    expect_error(validate_pmf(invalid_pmf),
+      regexp = "does not sum to 1"
+    )
+  }
+)
+
+test_that(
   "Test that assert dates in range function works as expected.",
   {
     dates1 <- lubridate::ymd(c("2023-01-01", "2023-01-02"))
     dates2 <- lubridate::ymd(c("2023-01-01", "2023-01-04"))
-    max_date <- "2023-01-05"
     expect_no_error(assert_dates_within_frame(
       dates1,
-      dates2,
-      max_date
-    ))
-
-
-    dates1 <- lubridate::ymd(c("2023-01-01", "2023-01-02"))
-    dates2 <- lubridate::ymd(c("2023-01-03", "2023-01-04"))
-    max_date <- "2023-01-05"
-    expect_no_error(assert_dates_within_frame(
-      dates1,
-      dates2,
-      max_date
+      dates2
     ))
 
     dates1 <- lubridate::ymd(c("2023-01-01", "2023-01-02"))
     dates2 <- lubridate::ymd(c("2024-01-03", "2024-01-04"))
-    max_date <- "2023-01-05"
     expect_error(assert_dates_within_frame(
       dates1,
-      dates2,
-      max_date
-    ))
-
-    dates1 <- lubridate::ymd(c("2023-01-01", "2023-01-02"))
-    dates2 <- lubridate::ymd(c("2023-01-03", "2023-01-04"))
-    max_date <- "2022-01-05"
-    expect_error(assert_dates_within_frame(
-      dates1,
-      dates2,
-      max_date
+      dates2
     ))
   }
 )

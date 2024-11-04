@@ -13,19 +13,26 @@
 #' @param date_vector vector of dates
 #' @param max_date string indicating the maximum date in ISO8601 convention
 #' e.g. YYYY-MM-DD
+#' @param arg_dates string to print the name of the data you are checking the
+#' dates for
+#' @param arg_max_date string to print the name of the maximum date you are
+#' checkign the data for
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
 #' traceback.
 #'
 #' @return NULL, invisibly
 assert_no_dates_after_max <- function(date_vector,
-                                      max_date, call = rlang::caller_env()) {
+                                      max_date,
+                                      arg_dates = "y",
+                                      arg_max_date = "x",
+                                      call = rlang::caller_env()) {
   if (max(date_vector) > max_date) {
     cli::cli_abort(
       c(
-        "The data passed in has observations beyond the specified",
-        "maximum date. Either this is the incorrect vintaged",
-        "data, or the data needs to be filtered to only contain",
-        "observations before the maximum date"
+        "The {.arg_dates {arg_dates}} passed in has observations after the ",
+        "specified {.arg_max_date {arg_max_date}}. Check that this is the ",
+        "dataset you intended to use with the given ",
+        "{.arg_max_date {arg_max_date}}."
       ),
       call = call,
       class = "wwinference_input_data_error"
@@ -211,6 +218,46 @@ assert_no_repeated_elements <- function(x, arg = "x",
   invisible()
 }
 
+#' Check a set of columns in a data frame uniquely identify
+#' data frame rows.
+#'
+#' @description
+#' Equivalently, this checks that when grouping by the columns in question,
+#' each group has a single entry
+#'
+#' @param df the dataframe to check
+#' @param unique_key_columns Columns that, taken together, should
+#' uniquely identify a row in the data frame.
+#' @param arg the name of the unique grouping to check
+#' @param call Calling environment to be passed to [cli::cli_abort()] for
+#' traceback.
+#' @param add_err_msg string containing an additional error message,
+#' default is the empty string (`""`)
+#'
+#' @return NULL, invisibly
+assert_cols_det_unique_row <- function(df,
+                                       unique_key_columns,
+                                       arg = "x",
+                                       call = rlang::caller_env(),
+                                       add_err_msg = "") {
+  duplicated_rows <- df |> dplyr::filter(dplyr::n() > 1,
+    .by = {{ unique_key_columns }}
+  )
+
+  if (nrow(duplicated_rows) != 0) {
+    cli::cli_abort(
+      c("The data has more than one observation per {.arg {arg}}",
+        add_err_msg,
+        "i" = "Multiple observations in a {.arg {arg}} are not",
+        "currently supported."
+      ),
+      call = call,
+      class = "wwinference_input_data_error"
+    )
+  }
+  invisible()
+}
+
 
 
 #' Assert that a vector is either of a vector of integers or a vector of
@@ -347,19 +394,15 @@ assert_req_ww_cols_present <- function(ww_data,
 #' traceback.
 #'
 #' @return NULL, invisibly
-check_req_count_cols_present <- function(count_data,
-                                         count_col_name,
-                                         pop_size_col_name,
-                                         add_req_col_names = c("date"),
-                                         call = rlang::caller_env()) {
+assert_req_count_cols_present <- function(count_data,
+                                          count_col_name,
+                                          pop_size_col_name,
+                                          add_req_col_names = c("date"),
+                                          call = rlang::caller_env()) {
   column_names <- colnames(count_data)
   expected_col_names <- c(
-    {
-      count_col_name
-    },
-    {
-      pop_size_col_name
-    },
+    count_col_name,
+    pop_size_col_name,
     add_req_col_names
   )
 
@@ -491,6 +534,9 @@ assert_daily_data <- function(dates,
 #' calibration time
 #'
 #' @param date_vector the vector of dates to check, must be of Date type
+#' @param data_name What data correspond to the dates in `date_vector`.
+#' Used to make the error message informative (e.g.
+#' "hospital admissions data")
 #' @param calibration_time integer indicating the number of days that
 #' the dates must span
 #' @param call Calling environment to be passed to [cli::cli_abort()] for
@@ -500,6 +546,7 @@ assert_daily_data <- function(dates,
 #'
 #' @return NULL invisible
 assert_sufficient_days_of_data <- function(date_vector,
+                                           data_name,
                                            calibration_time,
                                            call = rlang::caller_env(),
                                            add_err_msg = "") {
@@ -511,7 +558,8 @@ assert_sufficient_days_of_data <- function(date_vector,
   if (!check_sufficient_data) {
     cli::cli_abort(
       c(
-        "Insufficient data for specified calibration time"
+        "Insufficient {.arg {data_name}} for the specified calibration time. ",
+        add_err_msg
       ),
       call = call,
       class = "wwinference_specification_error"
@@ -540,9 +588,8 @@ assert_dates_within_frame <- function(dates1,
   checkmate::assert_date(dates1)
   checkmate::assert_date(dates2)
   check_dates2_win_frame <- min(dates1) <= max(dates2) &
-    min(dates2) >= min(dates1) &
-    max(dates2) <= max_date &
-    max(dates1) <= max_date
+    min(dates2) <= max(dates1)
+
   if (!check_dates2_win_frame) {
     cli::cli_abort(
       c(
@@ -556,6 +603,8 @@ assert_dates_within_frame <- function(dates1,
 
   invisible()
 }
+
+
 #' Assert that two tibbles of date and time mapping align
 #'
 #' @param first_data a tibble containing the columns `date` (with IS08601

@@ -30,10 +30,24 @@ sigma_initial_exp_growth_rate_prior_sd = 0.05
 autoreg_rt_a = 2 # shape1 parameter of autoreg term on Rt trend
 autoreg_rt_b = 40 # shape2 parameter of autoreg on Rt trend
   # mean = a/(a+b) = 0.05, stdv = sqrt(a)/b = sqrt(2)/40 = 0.035
-autoreg_rt_site_a = 1 # shape1 parameter of autoreg term on difference between
-  # R(t) state and R(t) site
-autoreg_rt_site_b = 4 # shape2 parameter of autoreg term on difference between
-# R(t) state and R(t) site
+autoreg_rt_subpop_a = 1 # shape1 parameter of autoreg term on difference between
+  # R(t) ref and R(t) subpop
+autoreg_rt_subpop_b = 4 # shape2 parameter of autoreg term on difference between
+# R(t) ref and R(t) subpop
+
+# Normal prior on fixed offset between central log scale R(t) and reference pop
+offset_ref_log_r_t_prior_mean = 0
+offset_ref_log_r_t_prior_sd = 0.2
+
+# Normal prior on fixed offset between central logit scale i_first_obs/n and reference pop i_first_obs/n
+offset_ref_logit_i_first_obs_prior_mean = 0
+offset_ref_logit_i_first_obs_prior_sd = 0.25
+
+# Normal prior on fixed offset between central initial exponential growth rate
+# and reference population initial exponential growth rate
+offset_ref_initial_exp_growth_rate_prior_mean = 0
+offset_ref_initial_exp_growth_rate_prior_sd = 0.025
+
 autoreg_p_hosp_a = 1 # shape1 parameter of autoreg term on IHR(t) trend
 autoreg_p_hosp_b = 100 # shape2 parameter of autoreg term on IHR(t) trend
 eta_sd_sd = 0.01

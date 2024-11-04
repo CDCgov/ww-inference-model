@@ -30,10 +30,25 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
 
   init_list <- list(
     w = stats::rnorm(n_weeks - 1, 0, stdev),
+    offset_ref_log_r_t = stats::rnorm(
+      stan_data$n_subpops > 1,
+      stan_data$offset_ref_log_r_t_prior_mean,
+      stdev
+    ),
+    offset_ref_logit_i_first_obs = stats::rnorm(
+      stan_data$n_subpops > 1,
+      stan_data$offset_ref_logit_i_first_obs_prior_mean,
+      stdev
+    ),
+    offset_ref_initial_exp_growth_rate = stats::rnorm(
+      stan_data$n_subpops > 1,
+      stan_data$offset_ref_initial_exp_growth_rate_prior_mean,
+      stdev
+    ),
     eta_sd = abs(stats::rnorm(1, 0, stdev)),
-    eta_i_first_obs = abs(stats::rnorm(n_subpops, 0, stdev)),
+    eta_i_first_obs = abs(stats::rnorm((n_subpops - 1), 0, stdev)),
     sigma_i_first_obs = abs(stats::rnorm(1, 0, stdev)),
-    eta_initial_exp_growth_rate = abs(stats::rnorm(n_subpops, 0, stdev)),
+    eta_initial_exp_growth_rate = abs(stats::rnorm((n_subpops - 1), 0, stdev)),
     sigma_initial_exp_growth_rate = abs(stats::rnorm(1, 0, stdev)),
     autoreg_rt = abs(stats::rnorm(
       1,
@@ -41,20 +56,12 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
         (stan_data$autoreg_rt_a + stan_data$autoreg_rt_b),
       0.05
     )),
-    log_r_mu_intercept = stats::rnorm(
+    log_r_t_first_obs = stats::rnorm(
       1,
       convert_to_logmean(1, stdev),
       convert_to_logsd(1, stdev)
     ),
-    error_site = matrix(
-      stats::rnorm(n_subpops * n_weeks,
-        mean = 0,
-        sd = stdev
-      ),
-      n_subpops,
-      n_weeks
-    ),
-    autoreg_rt_site = abs(stats::rnorm(1, 0.5, 0.05)),
+    autoreg_rt_subpop = abs(stats::rnorm(1, 0.5, 0.05)),
     autoreg_p_hosp = abs(stats::rnorm(1, 1 / 100, 0.001)),
     sigma_rt = abs(stats::rnorm(1, 0, stdev)),
     i_first_obs_over_n =
@@ -99,22 +106,31 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
     log_sigma_generalized = stats::rnorm(1, log(0.05^(n_subpops - 1)), 0.5),
     log_phi = stats::rnorm(1, log(0.25), 0.1),
     log_scaling_factor = stats::rnorm(1, log(1), 0.1),
-    non_cent_spatial_dev_ns_mat = matrix(
+    norm_vec_aux_site = stats::rnorm(n_weeks, 0, stdev),
+    # Initialize the cholesky decomposition matrix if inferring
+    # unstructured correlation matrix
+    L_Omega = as.matrix(diag(2))
+  )
+  if (stan_data$corr_structure_switch == 2) {
+    init_list$L_Omega <- diag((n_subpops - 1))
+  }
+  if (stan_data$n_subpops > 1) {
+    init_list$error_rt_subpop <- matrix(
       stats::rnorm((n_subpops - 1) * n_weeks,
         mean = 0,
         sd = stdev
       ),
       (n_subpops - 1),
       n_weeks
-    ),
-    norm_vec_aux_site = stats::rnorm(n_weeks, 0, stdev),
-    # Initialize the cholesky decomposition matrix if inferring
-    # unstructured correlation matrix
-    L_Omega = as.matrix(diag(2))
-  )
-
-  if (stan_data$corr_structure_switch == 2) {
-    init_list$L_Omega <- diag((n_subpops - 1))
+    )
+    init_list$non_cent_spatial_dev_ns_mat <- matrix(
+      stats::rnorm((n_subpops - 1) * n_weeks,
+        mean = 0,
+        sd = stdev
+      ),
+      (n_subpops - 1),
+      n_weeks
+    )
   }
 
   return(init_list)

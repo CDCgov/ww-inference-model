@@ -131,3 +131,10 @@ diff_ar1_from_z_scores_alt <- function(x0, ar, sd, z, stationary = FALSE) {
 
   return(x)
 }
+
+silent_wwinference <- function(...) {
+  utils::capture.output(
+    fit <- suppressMessages(wwinference(...))
+  )
+  return(fit)
+}
