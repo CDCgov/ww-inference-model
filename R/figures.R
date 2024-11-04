@@ -92,8 +92,9 @@ get_plot_forecasted_counts <- function(draws,
   }
   # Add calibration data as final step, this should be plotted on top of
   # the eval data(if present) and draws
-  p <- p + geom_point(aes(x = .data$date, y = .data$observed_value)) +
-    return(p)
+  p_final <- p + geom_point(aes(x = .data$date, y = .data$observed_value))
+
+  return(p_final)
 }
 
 #' Get plot of fit and forecasted wastewater concentrations
