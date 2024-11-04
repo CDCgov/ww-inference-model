@@ -110,5 +110,6 @@ Imports:
     ggh4x
 Remotes:
     stan-dev/cmdstanr
+    epiforecasts/scoringutils@v1.2.0
 VignetteBuilder:
     knitr
