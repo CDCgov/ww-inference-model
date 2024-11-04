@@ -106,7 +106,7 @@ Imports:
     expm,
     checkmate,
     patchwork,
-    scoringutils (>=2.0.0),
+    scoringutils (>= 2.0.0),
     ggh4x
 Remotes:
     stan-dev/cmdstanr
