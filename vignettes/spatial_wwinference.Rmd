@@ -2373,20 +2373,26 @@ hosp_obj_for_eval_forcast <- all_pred_draws_df %>%
     by = c("date", "gen_model_type")
   ) %>%
   mutate(
-    prediction = pred_value,
-    sample = draw,
+    predicted = pred_value,
+    observed = true_value,
+    sample_id = draw,
     model = inf_model_type
   ) %>%
   select(
-    prediction,
-    true_value,
-    sample,
+    predicted,
+    observed,
+    sample_id,
     date,
     model,
     gen_model_type
   )
 
 hosp_scores_forecast <- hosp_obj_for_eval_forcast %>%
+  as_forecast_sample(
+    forecast_unit = c(
+      "date", "model", "gen_model_type"
+    )
+  ) |>
   score(metrics = c(
     "log_score",
     "crps",
