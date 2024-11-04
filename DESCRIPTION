@@ -109,7 +109,7 @@ Imports:
     scoringutils,
     ggh4x
 Remotes:
-    stan-dev/cmdstanr
+    stan-dev/cmdstanr,
     scoringutils=epiforecasts/scoringutils@v1.2.0
 VignetteBuilder:
     knitr
