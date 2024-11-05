@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, prod]
   pull_request:
-    branches: [spatial-main, main, prod]
+    branches: [main, prod]
   release:
     types: [published]
   workflow_dispatch:
@@ -33,8 +33,6 @@ jobs:
       contents: write
       id-token: write
       pages: write
-    outputs:
-      page_artifact_id: ${{ steps.upload-artifact.outputs.artifact_id }}
     steps:
 
       ##########################################################################
