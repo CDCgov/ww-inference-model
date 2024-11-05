@@ -39,48 +39,6 @@
 #' @source vignette_data.R
 "ww_data"
 
-#' Example evaluation wastewater dataset.
-#'
-#' A dataset containing the simulated retrospective wastewater concentrations
-#' (labeled here as `log_genome_copies_per_ml_eval`) by sample collection date
-#' (`date`), the site where the sample was collected (`site`) and the lab
-#' where the samples were processed (`lab`). Additional columns that are
-#' required attributes needed for the model are the limit of detection for
-#' that lab on each day (labeled here as `log_lod`) and the population size of
-#' the wastewater catchment area represented by the wastewater concentrations
-#' in each `site`.
-#'
-#' This data is generated via the default values in the
-#'  `generate_simulated_data()` function. They represent the bare minumum
-#'  required fields needed to pass to the model, and we recommend that users
-#'  try to format their own data to match this format.
-#'
-#' The variables are as follows:
-#'
-#' @format ## ww_data_eval
-#' A tibble with 126 rows and 6 columns
-#' \describe{
-#'   \item{date}{Sample collection date, formatted in ISO8601 standards as
-#'   YYYY-MM-DD}
-#'   \item{site}{The wastewater treatment plant where the sample was collected}
-#'   \item{lab}{The lab where the sample was processed}
-#'   \item{log_genome_copies_per_ml_eval}{The natural log of the wastewater
-#'   concentration measured on the date specified, collected in the site
-#'   specified, and processed in the lab specified. The package expects
-#'   this quantity in units of log estimated genome copies per mL.}
-#'   \item{log_lod}{The log of the limit of detection in the site and lab on a
-#'   particular day of the quantification device (e.g. PCR).  This should be in
-#'    units of log estimated genome copies per mL.}
-#'   \item{site_pop}{The population size of the wastewater catchment area
-#'   represented by the site variable}
-#'   \item{location}{ A string indicating the location that all of the
-#'   data is coming from. This is not a necessary column, but instead is
-#'   included to more realistically mirror a typical workflow}
-#'   }
-#' @source vignette_data.R
-"ww_data_eval"
-
-
 
 
 #' Example wastewater dataset with independent site correlations.
@@ -346,53 +304,6 @@
 "rt_site_data"
 
 
-#'   \item{date}{Date the hospital admissions occurred, formatted in ISO8601
-#'   standards as YYYY-MM-DD}
-#'   \item{subpop_name}{A string indicating the subpopulation the hospital
-#'   admissiosn corresponds to. This is either a wastewater site, or the
-#'   remainder of the population}
-#'   \item{daily_hosp_admits}{The number of individuals admitted to the
-#'   hospital on that date, available as of the forecast date}
-#'   \item{subpop_pop}{The number of people contributing to the daily hospital
-#'   admissions in each subpopulation}
-#'   }
-#' @source vignette_data.R
-"subpop_hosp_data"
-
-
-#' Example subpopulation level retrospective hospital admissions dataset
-#'
-#'  A dataset containing the simulated daily hospital admissions
-#' (labeled here as `daily_hosp_admits`) by date of admission (`date`) in
-#'  each subpopulation observed retrospectively.
-#'  Additional columns that are required are the population size of the
-#'  population contributing to the hospital admissions. In this instance,
-#'  the subpopulations here are each of the wastewater catchment areas plus
-#'  an additional subpopulation for the portion of the population not captured
-#'  by wastewater surveillance. The data generated are daily hospital
-#'  admissions but they could be any other epidemiological count dataset e.g.
-#'  cases.This data should contain hospital admissions retrospectively beyond
-#'  the forecast date in order to evaluate the forecasts.
-#'
-#'  This data is generated via the default values in the
-#'  `generate_simulated_data()` function. They represent the bare minimumum
-#'  required fields needed to pass to the model, and we recommend that users
-#'  try to format their own data to match this format.
-#'
-#' The variables are as follows:
-#' \describe{
-#'   \item{date}{Date the hospital admissions occurred, formatted in ISO8601
-#'   standards as YYYY-MM-DD}
-#'   \item{subpop_name}{A string indicating the subpopulation the hospital
-#'   admissions corresponds to. This is either a wastewater site, or the
-#'   remainder of the population}
-#'   \item{daily_hosp_admits_for_eval}{The number of individuals admitted to the
-#'   hospital on that date, available as of the forecast date}
-#'   \item{subpop_pop}{The number of people contributing to the daily hospital
-#'   admissions in each subpopulation}
-#'   }
-#' @source vignette_data.R
-"subpop_hosp_data_eval"
 
 
 #' COVID-19 post-Omicron generation interval probability mass function
