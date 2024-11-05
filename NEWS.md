@@ -4,6 +4,7 @@
 - Add wastewater data into the forecast period to output in `generate_simulated_data()` function and as package data. Also adds subpopulation-level
 hospital admissions to output of function and package data. ([#184](https://github.com/CDCgov/ww-inference-model/issues/184))
 - `wwinference` now checks whether `site_pop` is fixed per site (see issue [#223](https://github.com/CDCgov/ww-inference-model/issues/226) reported by [@akeyel](https://github.com/akeyel)).
+- Add package workflow diagram to readme ([#248](https://github.com/CDCgov/ww-inference-model/issues/248))
 
 ## Internal changes
 - Updated the workflow for posting the pages artifact to PRs (issue [#229](https://github.com/CDCgov/ww-inference-model/issues/229)).
