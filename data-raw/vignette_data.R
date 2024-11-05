@@ -30,13 +30,12 @@ hosp_data_eval_ind <- simulated_data_ind$hosp_data_eval
 rt_site_data_ind <- simulated_data_ind$rt_site_data
 rt_global_data_ind <- simulated_data_ind$rt_global_data
 
+
 usethis::use_data(hosp_data, overwrite = TRUE)
 usethis::use_data(hosp_data_eval, overwrite = TRUE)
 usethis::use_data(ww_data, overwrite = TRUE)
 usethis::use_data(rt_site_data, overwrite = TRUE)
 usethis::use_data(rt_global_data, overwrite = TRUE)
-
-
 usethis::use_data(hosp_data_ind, overwrite = TRUE)
 usethis::use_data(hosp_data_eval_ind, overwrite = TRUE)
 usethis::use_data(ww_data_ind, overwrite = TRUE)

@@ -73,8 +73,8 @@ by the hospital admissions data, in this case, the size of the theoretical state
 Additionally, we provide the `hosp_data_eval` dataset which contains the
 simulated hospital admissions 28 days ahead of the forecast date, which can be
 used to evaluate the model.
-
-For the wastewater data, the expcted format is a table of observations with the following columns. The wastewater data should not contain `NA` values for days with
+For the wastewater data, the expcted format is a table of observations with the
+following columns. The wastewater data should not contain `NA` values for days with
 missing observations, instead these should be excluded:
 - a date (column `date`): the date the sample was collected
 - a site indicator (column `site`): the unique identifier for the wastewater treatment plant
@@ -156,6 +156,8 @@ ww_data_preprocessed <- preprocess_ww_data(
 Note that this function assumes that there are no missing values in the
 concentration column. The package expects observations below the LOD will
 be replaced with a numeric value below the LOD. If there are NAs in your dataset when observations are below the LOD, we suggest replacing them with a value
+be replaced with a numeric value below the LOD. If there are NAs in your dataset
+when observations are below the LOD, we suggest replacing them with a value
 below the LOD in upstream pre-processing.
 
 ## Hospital admissions data pre-processing
@@ -330,13 +332,10 @@ along with the other specified parameters above.
 # Precompiling the model
 
 As `wwinference` uses `cmdstan` to fit its models, it is necessary to first
-compile the model. This can be done using the `compile_model()` function
-
+compile the model. This can be done using the `compile_model()` function.
 
 ```{r compile-model}
-# temporarily compile from local to make troubleshooting faster/easier
 model <- wwinference::compile_model()
-```
 ```
 
 # Fitting the model
@@ -465,13 +464,14 @@ will not include outliers that were flagged for exclusion. Data points
 that are below the LOD will be plotted in blue.
 
 ```{r generating-figures,  out.width='100%'}
-plot_hosp <- get_plot_forecasted_counts(
+plot_hosp_with_eval <- get_plot_forecasted_counts(
   draws = draws$predicted_counts,
+  forecast_date = forecast_date,
   count_data_eval = hosp_data_eval,
-  count_data_eval_col_name = "daily_hosp_admits_for_eval",
-  forecast_date = forecast_date
+  count_data_eval_col_name = "daily_hosp_admits_for_eval"
 )
-plot_hosp
+plot_hosp_with_eval
+
 
 plot_ww <- get_plot_ww_conc(draws$predicted_ww, forecast_date)
 plot_ww
@@ -481,6 +481,16 @@ plot_state_rt
 
 plot_subpop_rt <- get_plot_subpop_rt(draws$subpop_rt, forecast_date)
 plot_subpop_rt
+```
+
+To plot the forecasts without the retrospectively observed hospital admissions,
+simply don't pass them to the plotting function.
+```{r plot-only-count-forecasts, out.width='100%'}
+plot_hosp <- get_plot_forecasted_counts(
+  draws = draws$predicted_counts,
+  forecast_date = forecast_date
+)
+plot_hosp
 ```
 
 The previous three are equivalent to calling the `plot` method of `wwinference_fit_draws` using the `what` argument:

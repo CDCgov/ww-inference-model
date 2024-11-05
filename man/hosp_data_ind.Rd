@@ -28,9 +28,9 @@ to match this format.
 }
 \details{
 This data is generated via the default values in the
-\code{generate_simulated_data()} function. They represent the bare minumum
+\code{generate_simulated_data()} function. They represent the bare minimum
 required fields needed to pass to the model, and we recommend that users
-try to format their own data to match this formate.
+try to format their own data to match this format.
 
 The variables are as follows:
 \describe{
@@ -40,6 +40,9 @@ standatds as YYYY-MM-DD}
 hospital on that date, available as of the forecast date}
 \item{state_pop}{The number of people contributing to the daily hospital
 admissions}
+\item{location}{ A string indicating the location that all of the
+data is coming from. This is not a necessary column, but instead is
+included to more realistically mirror a typical workflow}
 }
 }
 \keyword{datasets}

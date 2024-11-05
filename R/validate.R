@@ -80,6 +80,27 @@ validate_ww_conc_data <- function(ww_data,
   assert_non_missingness(site_pops, arg, call)
   assert_elements_non_neg(site_pops, arg, call)
 
+  # Check that there are no repeated site populations
+  records_per_site_per_pop <- ww_data |>
+    dplyr::select("site", "site_pop") |>
+    unique() |>
+    dplyr::group_by(.data$site) |>
+    dplyr::summarize(n = dplyr::n())
+
+  if (any(records_per_site_per_pop$n != 1)) {
+    stop(
+      "The package expects constant population size per site.",
+      "The data contains at least one site with varying population size: ",
+      paste0(
+        records_per_site_per_pop$site[records_per_site_per_pop$n > 1],
+        " (",
+        records_per_site_per_pop$n[records_per_site_per_pop$n > 1],
+        " records)",
+        collapse = ", "
+      )
+    )
+  }
+
   invisible()
 }
 
@@ -167,14 +188,14 @@ validate_count_data <- function(count_data,
 #' @param forecast_date IS08 formatted date indicating the forecast date
 #'
 #' @return NULL, invisibly
-validate_both_datasets <- function(input_count_data,
-                                   input_ww_data,
-                                   date_time_spine,
-                                   lab_site_site_spine,
-                                   site_subpop_spine,
-                                   lab_site_subpop_spine,
-                                   calibration_time,
-                                   forecast_date) {
+validate_data_jointly <- function(input_count_data,
+                                  input_ww_data,
+                                  date_time_spine,
+                                  lab_site_site_spine,
+                                  site_subpop_spine,
+                                  lab_site_subpop_spine,
+                                  calibration_time,
+                                  forecast_date) {
   # check that you have sufficient count data for the calibration time
   assert_sufficient_days_of_data(
     input_count_data$date,

@@ -1,3 +1,15 @@
+
+# wwinference 0.1.0.99 (dev)
+
+## User-visible changes
+- Add wastewater data into the forecast period to output in `generate_simulated_data()` function and as package data. Also adds subpopulation-level
+hospital admissions to output of function and package data. ([#184](https://github.com/CDCgov/ww-inference-model/issues/184))
+- `wwinference` now checks whether `site_pop` is fixed per site (see issue [#223](https://github.com/CDCgov/ww-inference-model/issues/226) reported by [@akeyel](https://github.com/akeyel)).
+
+## Internal changes
+- Updated the workflow for posting the pages artifact to PRs (issue [#229](https://github.com/CDCgov/ww-inference-model/issues/229)).
+- Modify `plot_forecasted_counts()` so that it does not require an evaluation dataset ([#218](https://github.com/CDCgov/ww-inference-model/pull/218))
+
 # wwinference 0.1.0
 
 This is the first major release, focused on providing an initial version of the package.
@@ -10,4 +22,7 @@ As it's written, the package is intended to allow users to do the following:
 - Validate input data validation with informative error messaging ([#37](https://github.com/CDCgov/ww-inference-model/issues/37), [#54](https://github.com/CDCgov/ww-inference-model/issues/54))
 - Provide a wrapper function to generate forward simulated data with user-specified variables. It calls a number of functions to perform specific model components ([#27](https://github.com/CDCgov/ww-inference-model/issues/27))
 - Contains S3 class methods applied to the output of the main model wrapper function, the `wwinference_fit` class object ([#58](https://github.com/CDCgov/ww-inference-model/issues/58)).
+<<<<<<< HEAD
 - Wastewater concentration data is expected to be in log scale ([#122](https://onetakeda.box.com/s/pju273g5khx3y3cwoae2zwv3e7vu03x3)).
+=======
+- Wastewater concentration data is expected to be in log scale ([#122](https://github.com/CDCgov/ww-inference-model/pull/122)).

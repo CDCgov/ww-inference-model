@@ -7,9 +7,11 @@
 #' @param count_data_eval A dataframe containing the count data we will
 #' evaluate the forecasts against. Must contain the columns `date` and
 #' a column indicating the count data to evaluate against, with the name
-#' of that column specified as the `count_data_eval_col_name`
+#' of that column specified as the `count_data_eval_col_name`. Default is
+#' NULL, which will result in no evaluation data being plotted.
 #' @param count_data_eval_col_name string indicating the name of the count
-#' data to evaluate against the forecasted count data
+#' data to evaluate against the forecasted count data. Default is NULL,
+#' corresponding to no evaluation data being plotted.
 #' @param forecast_date A string indicating the date we made the forecast, for
 #' plotting, in ISO8601 format YYYY-MM-DD
 #' @param count_type A string indicating what data the counts refer to,
@@ -25,9 +27,9 @@
 #' @export
 #'
 get_plot_forecasted_counts <- function(draws,
-                                       count_data_eval,
-                                       count_data_eval_col_name,
                                        forecast_date,
+                                       count_data_eval = NULL,
+                                       count_data_eval_col_name = NULL,
                                        count_type = "hospital admissions",
                                        n_draws_to_plot = 100) {
   n_draws_available <- max(draws$draw)
@@ -55,12 +57,6 @@ get_plot_forecasted_counts <- function(draws,
       aes(x = .data$date, y = .data$pred_value, group = .data$draw),
       color = "red4", alpha = 0.1, linewidth = 0.2
     ) +
-    geom_point(
-      data = count_data_eval,
-      aes(x = .data$date, y = .data[[count_data_eval_col_name]]),
-      shape = 21, color = "black", fill = "white"
-    ) +
-    geom_point(aes(x = .data$date, y = .data$observed_value)) +
     geom_vline(
       xintercept = lubridate::ymd(forecast_date),
       linetype = "dashed"
@@ -85,7 +81,20 @@ get_plot_forecasted_counts <- function(draws,
         vjust = 0.5, hjust = 0.5
       )
     )
-  return(p)
+
+  if (!is.null(count_data_eval)) {
+    p <- p +
+      geom_point(
+        data = count_data_eval,
+        aes(x = .data$date, y = .data[[count_data_eval_col_name]]),
+        shape = 21, color = "black", fill = "white"
+      )
+  }
+  # Add calibration data as final step, this should be plotted on top of
+  # the eval data(if present) and draws
+  p_final <- p + geom_point(aes(x = .data$date, y = .data$observed_value))
+
+  return(p_final)
 }
 
 #' Get plot of fit and forecasted wastewater concentrations
@@ -132,7 +141,7 @@ get_plot_ww_conc <- function(draws,
       aes(x = .data$date, y = .data$observed_value),
       color = "blue", show.legend = FALSE, size = 0.5
     ) +
-    facet_wrap(~lab_site_name, scales = "free") +
+    facet_wrap(~lab_site_name, scales = "free_y") +
     geom_vline(
       xintercept = lubridate::ymd(forecast_date),
       linetype = "dashed"

@@ -3,7 +3,7 @@
 \docType{data}
 \name{hosp_data_eval_ind}
 \alias{hosp_data_eval_ind}
-\title{Example hospital admissions dataset for evaluation spatially ind. sites.}
+\title{Example subpopulation level hospital admissions dataset}
 \format{
 An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 127 rows and 3 columns.
 }
@@ -14,11 +14,17 @@ vignette_data.R
 hosp_data_eval_ind
 }
 \description{
-A dataset containing the simulated daily hospital admissions that the model
-will be evaluated against (labeled here as \code{daily_hosp_admits_for_eval})
-by date of admission (\code{date}). This data is not needed to fit the model,
-but is used in the Getting Started vignette to demonstrate the forecasted
-hospital admissions compared to those later observed.
+A dataset containing the simulated daily hospital admissions
+(labeled here as \code{daily_hosp_admits}) by date of admission (\code{date}) in
+each subpopulation.
+Additional columns that are the population size of the
+population contributing to the hospital admissions. In this instance,
+the subpopulations here are each of the wastewater catchment areas plus
+an additional subpopulation for the portion of the population not captured
+by wastewater surveillance. The data generated are daily hospital
+admissions but they could be any other epidemiological count dataset e.g.
+cases. This data should only contain hospital admissions that would have
+been available as of the date that the forecast was made.
 }
 \details{
 This data is generated via the default values in the
