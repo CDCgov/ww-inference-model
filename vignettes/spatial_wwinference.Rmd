@@ -2455,10 +2455,12 @@ hosp_by_date_eval_forecast_plot <- ggplot( # nolint
   ylab("Score") +
   xlab("Date") +
   theme_bw()
+# Remove the new scores added to new scoringutils, stick with originals
+hosp_scores_forecast <- hosp_scores_forecast |>
+  dplyr::select(-underprediction, overprediction, dispersion)
 
 attr(hosp_scores_forecast, "metrics") <- c(
-  "bias", "dss", "crps", "overprediction",
-  "underprediction", "dispersion", "log_score",
+  "bias", "dss", "crps", "log_score",
   "mad", "ae_median", "se_mean"
 )
 
@@ -2579,13 +2581,13 @@ hosp_obj_for_eval_nowcast <- all_pred_draws_df %>%
   mutate(
     predicted = pred_value,
     observed = true_value,
-    sample = draw,
+    sample_id = draw,
     model = inf_model_type
   ) %>%
   select(
     predicted,
     observed,
-    sample,
+    sample_id,
     date,
     model,
     gen_model_type
@@ -2660,9 +2662,11 @@ hosp_by_date_eval_nowcast_plot <- ggplot(
   xlab("Date") +
   theme_bw()
 
+hosp_scores_nowcast <- hosp_scores_nowcast %>%
+  dplyr::select(-underprediction, -overprediction, -dispersion)
+
 attr(hosp_scores_nowcast, "metrics") <- c(
-  "bias", "dss", "crps", "overprediction",
-  "underprediction", "dispersion", "log_score",
+  "bias", "dss", "crps", "log_score",
   "mad", "ae_median", "se_mean"
 )
 hosp_eval_nowcast_plot <- ggplot(
