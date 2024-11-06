@@ -29,7 +29,7 @@ This will help make clear the data requirements and how to structure this data t
 
 # Package workflow
 The following depicts the suggested workflow for fitting the wastewater-informed forecasting model. See the ["Getting Started" vignette](vignettes/wwinference.Rmd) for a full example.
-![](./man/figures/wwinference_package_workflow.svg)
+![](./man/figures/wwinference_workflow.png)
 
 # Installing and running code
 
