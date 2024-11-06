@@ -28,7 +28,7 @@ This will help make clear the data requirements and how to structure this data t
 - Damon Bayer (damonbayer)
 
 # Package workflow
-The following depicts the suggested workflow for fitting the wastewater-informed forecasting model. See the ["Getting Started" vignette](vignettes/wwinference.Rmd) for a full example.
+The following depicts the suggested workflow for fitting the wastewater-informed forecasting model. See the ["Getting Started" vignette](https://cdcgov.github.io/ww-inference-model/articles/wwinference.html) for a full example.
 ![](./man/figures/wwinference_workflow.png)
 
 # Installing and running code
