@@ -2373,28 +2373,27 @@ hosp_obj_for_eval_forcast <- all_pred_draws_df %>%
     by = c("date", "gen_model_type")
   ) %>%
   mutate(
-    prediction = pred_value,
-    sample = draw,
+    predicted = pred_value,
+    observed = true_value,
+    sample_id = draw,
     model = inf_model_type
   ) %>%
   select(
-    prediction,
-    true_value,
-    sample,
+    predicted,
+    observed,
+    sample_id,
     date,
     model,
     gen_model_type
   )
 
 hosp_scores_forecast <- hosp_obj_for_eval_forcast %>%
-  score(metrics = c(
-    "log_score",
-    "crps",
-    "dss",
-    "ae_median",
-    "se_mean",
-    "bias"
-  )) %>%
+  as_forecast_sample(
+    forecast_unit = c(
+      "date", "model", "gen_model_type"
+    )
+  ) |>
+  score() %>%
   inner_join(
     ess_per_sec_df,
     by = c("model", "gen_model_type")
@@ -2456,6 +2455,14 @@ hosp_by_date_eval_forecast_plot <- ggplot( # nolint
   ylab("Score") +
   xlab("Date") +
   theme_bw()
+# Remove the new scores added to new scoringutils, stick with originals
+hosp_scores_forecast <- hosp_scores_forecast |>
+  dplyr::select(-underprediction, overprediction, dispersion)
+
+attr(hosp_scores_forecast, "metrics") <- c(
+  "bias", "dss", "crps", "log_score",
+  "mad", "ae_median", "se_mean"
+)
 
 
 hosp_eval_forecast_plot <- ggplot(
@@ -2572,28 +2579,27 @@ hosp_obj_for_eval_nowcast <- all_pred_draws_df %>%
     by = c("date", "gen_model_type")
   ) %>%
   mutate(
-    prediction = pred_value,
-    sample = draw,
+    predicted = pred_value,
+    observed = true_value,
+    sample_id = draw,
     model = inf_model_type
   ) %>%
   select(
-    prediction,
-    true_value,
-    sample,
+    predicted,
+    observed,
+    sample_id,
     date,
     model,
     gen_model_type
   )
 
 hosp_scores_nowcast <- hosp_obj_for_eval_nowcast %>%
-  score(metrics = c(
-    "log_score",
-    "crps",
-    "dss",
-    "ae_median",
-    "se_mean",
-    "bias"
-  )) %>%
+  as_forecast_sample(
+    forecast_unit = c(
+      "date", "model", "gen_model_type"
+    )
+  ) %>%
+  score() %>%
   inner_join(
     ess_per_sec_df,
     by = c("model", "gen_model_type")
@@ -2656,7 +2662,13 @@ hosp_by_date_eval_nowcast_plot <- ggplot(
   xlab("Date") +
   theme_bw()
 
+hosp_scores_nowcast <- hosp_scores_nowcast %>%
+  dplyr::select(-underprediction, -overprediction, -dispersion)
 
+attr(hosp_scores_nowcast, "metrics") <- c(
+  "bias", "dss", "crps", "log_score",
+  "mad", "ae_median", "se_mean"
+)
 hosp_eval_nowcast_plot <- ggplot(
   hosp_scores_nowcast %>%
     summarize_scores(by = c("model", "gen_model_type")) %>%
