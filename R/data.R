@@ -32,10 +32,12 @@
 #'    units of log estimated genome copies per mL.}
 #'   \item{site_pop}{The population size of the wastewater catchment area
 #'   represented by the site variable}
+#'   \item{location}{ A string indicating the location that all of the
+#'   data is coming from. This is not a necessary column, but instead is
+#'   included to more realistically mirror a typical workflow}
 #'   }
 #' @source vignette_data.R
 "ww_data"
-
 
 
 
@@ -135,9 +137,9 @@
 #'  to match this format.
 #'
 #' This data is generated via the default values in the
-#'  `generate_simulated_data()` function. They represent the bare minumum
+#'  `generate_simulated_data()` function. They represent the bare minimum
 #'  required fields needed to pass to the model, and we recommend that users
-#'  try to format their own data to match this formate.
+#'  try to format their own data to match this format.
 #'
 #' The variables are as follows:
 #' \describe{
@@ -147,6 +149,9 @@
 #'   hospital on that date, available as of the forecast date}
 #'   \item{state_pop}{The number of people contributing to the daily hospital
 #'   admissions}
+#'   \item{location}{ A string indicating the location that all of the
+#'   data is coming from. This is not a necessary column, but instead is
+#'   included to more realistically mirror a typical workflow}
 #'   }
 #' @source vignette_data.R
 "hosp_data_ind"
@@ -214,13 +219,19 @@
 
 
 
-#' Example hospital admissions dataset for evaluation spatially ind. sites.
+#' Example subpopulation level hospital admissions dataset
 #'
-#'  A dataset containing the simulated daily hospital admissions that the model
-#'  will be evaluated against (labeled here as `daily_hosp_admits_for_eval`)
-#'  by date of admission (`date`). This data is not needed to fit the model,
-#'  but is used in the Getting Started vignette to demonstrate the forecasted
-#'  hospital admissions compared to those later observed.
+#'  A dataset containing the simulated daily hospital admissions
+#' (labeled here as `daily_hosp_admits`) by date of admission (`date`) in
+#'  each subpopulation.
+#'  Additional columns that are the population size of the
+#'  population contributing to the hospital admissions. In this instance,
+#'  the subpopulations here are each of the wastewater catchment areas plus
+#'  an additional subpopulation for the portion of the population not captured
+#'  by wastewater surveillance. The data generated are daily hospital
+#'  admissions but they could be any other epidemiological count dataset e.g.
+#'  cases. This data should only contain hospital admissions that would have
+#'  been available as of the date that the forecast was made.
 #'
 #' This data is generated via the default values in the
 #'  `generate_simulated_data()` function.

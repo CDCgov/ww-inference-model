@@ -306,6 +306,7 @@ transformed parameters {
     log_r_subpop_t_in_weeks = to_vector(log_r_subpop_t_in_weeks_matrix[i-1, :]);
     }
 
+
      //convert from weekly to daily
      unadj_r_subpop_t = exp(to_row_vector(ind_m*(log_r_subpop_t_in_weeks)));
 

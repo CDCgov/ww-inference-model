@@ -114,6 +114,7 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
   if (stan_data$corr_structure_switch == 2) {
     init_list$L_Omega <- diag((n_subpops - 1))
   }
+
   if (stan_data$n_subpops > 1) {
     init_list$error_rt_subpop <- matrix(
       stats::rnorm((n_subpops - 1) * n_weeks,

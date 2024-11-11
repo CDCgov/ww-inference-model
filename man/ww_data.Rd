@@ -22,6 +22,9 @@ particular day of the quantification device (e.g. PCR).  This should be in
 units of log estimated genome copies per mL.}
 \item{site_pop}{The population size of the wastewater catchment area
 represented by the site variable}
+\item{location}{ A string indicating the location that all of the
+data is coming from. This is not a necessary column, but instead is
+included to more realistically mirror a typical workflow}
 }
 }
 }
