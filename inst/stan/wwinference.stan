@@ -168,10 +168,6 @@ parameters {
   // subpopulation level initial exponential growth rates
   vector[n_subpops - 1] eta_initial_exp_growth_rate; // z scores of
   // individual subpopulation-level initial exponential growth rates
-<<<<<<< HEAD
-=======
-
->>>>>>> main
   real<lower=1/sqrt(5000)> inv_sqrt_phi_h;
   real<lower=0> mode_sigma_ww_site; // mode of site level wastewater
   // observation error standard deviations
@@ -233,7 +229,6 @@ transformed parameters {
   vector[n_subpops] initial_exp_growth_rate_subpop;
      // site level unobserved period growth rate
 
-<<<<<<< HEAD
   // Site spatial trans params--------------------------------------------------
   real phi = exp(log_phi);
   real sigma_generalized = exp(log_sigma_generalized);
@@ -246,8 +241,6 @@ transformed parameters {
 
   //----------------------------------------------------------------------------
 
-=======
->>>>>>> main
   // AR(1) process on first differences in "global"
   // (central) R(t)
   log_r_t_in_weeks = diff_ar1(log_r_t_first_obs,
@@ -256,7 +249,6 @@ transformed parameters {
   // Shedding kinetics trajectory
   s = get_vl_trajectory(t_peak, viral_peak, dur_shed, gt_max);
 
-<<<<<<< HEAD
   // Site level spatial Rt------------------------------------------------------
   if (corr_structure_switch == 0){
     // If no dist matrix given, use n_sites + 1 = n_subpops were all ind.
@@ -290,10 +282,6 @@ transformed parameters {
 
   //----------------------------------------------------------------------------
   // Site level disease dynamics
-=======
-  // Site level disease dynamics
-
->>>>>>> main
   // initial conditions
   i_first_obs_over_n_subpop[1] = inv_logit(logit(i_first_obs_over_n) +
      (n_subpops > 1 ? offset_ref_logit_i_first_obs[1] : 0));
@@ -316,19 +304,10 @@ transformed parameters {
       log_r_subpop_t_in_weeks = log_r_t_in_weeks +
          (n_subpops > 1 ? offset_ref_log_r_t[1] : 0);
     } else {
-<<<<<<< HEAD
+
     log_r_subpop_t_in_weeks = to_vector(log_r_subpop_t_in_weeks_matrix[i-1, :]);
     }
 
-
-=======
-    log_r_subpop_t_in_weeks = ar1(log_r_t_in_weeks,
-                                  autoreg_rt_subpop,
-				  sigma_rt,
-                                  to_vector(error_rt_subpop[i - 1]),
-                                  1);
-    }
->>>>>>> main
      //convert from weekly to daily
      unadj_r_subpop_t = exp(to_row_vector(ind_m*(log_r_subpop_t_in_weeks)));
 
@@ -424,11 +403,7 @@ model {
                                         offset_ref_logit_i_first_obs_prior_sd);
   offset_ref_initial_exp_growth_rate ~ normal(offset_ref_initial_exp_growth_rate_prior_mean,
                                               offset_ref_initial_exp_growth_rate_prior_sd);
-<<<<<<< HEAD
-  eta_sd ~ normal(0, eta_sd_sd);
-=======
   eta_sd ~ normal(eta_sd_mean, eta_sd_sd);
->>>>>>> main
   autoreg_rt_subpop ~ beta(autoreg_rt_subpop_a, autoreg_rt_subpop_b);
 
   autoreg_rt ~ beta(autoreg_rt_a, autoreg_rt_b);
