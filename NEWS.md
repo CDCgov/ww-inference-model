@@ -6,7 +6,7 @@ hospital admissions to output of function and package data. ([#184](https://gith
 - `wwinference` now checks whether `site_pop` is fixed per site (see issue [#223](https://github.com/CDCgov/ww-inference-model/issues/226) reported by [@akeyel](https://github.com/akeyel)).
 
 ## Internal changes
-- Modified the priors on the infection feedback term and the step size of the weekly random walk in the effective reproductive number (issue [#227](https://github.com/CDCgov/ww-inference-model/issues/227)), based on benchmarking results from the evaluation pipeline described in the [PR](https://github.com/CDCgov/ww-inference-model/pull/236) corresponding to this change. 
+- Modified the priors on the infection feedback term and the step size of the weekly random walk in the effective reproductive number (issue [#227](https://github.com/CDCgov/ww-inference-model/issues/227)), based on benchmarking results from the evaluation pipeline described in the [PR](https://github.com/CDCgov/ww-inference-model/pull/236) corresponding to this change.
 - Updated the workflow for posting the pages artifact to PRs (issue [#229](https://github.com/CDCgov/ww-inference-model/issues/229)(https://github.com/CDCgov/ww-inference-model/issues/229)).
 - Modify `plot_forecasted_counts()` so that it does not require an evaluation dataset ([#218](https://github.com/CDCgov/ww-inference-model/pull/218))
 
