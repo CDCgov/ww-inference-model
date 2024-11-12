@@ -1,4 +1,7 @@
-# wwinference 0.1.0.99 (dev)
+# wwinference 0.1.1.99 (dev)
+
+# wwinference 0.1.1
+This release introduces minor changes to the user functionality to improve plotting and pre-processing. It also includes a major change to the default model priors, where we previously had a strong prior on a high degree of infection feedback, this new release reduces the magnitude of that prior. 
 
 ## User-visible changes
 - Add wastewater data into the forecast period to output in `generate_simulated_data()` function and as package data. Also adds subpopulation-level
