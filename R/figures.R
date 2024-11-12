@@ -268,7 +268,7 @@ get_plot_subpop_rt <- function(draws,
       linetype = "dashed",
       show.legend = FALSE
     ) +
-    facet_wrap(~subpop_name, scales = "free") +
+    facet_wrap(~subpop_name) +
     geom_hline(aes(yintercept = 1), linetype = "dashed") +
     xlab("") +
     ylab("Subpopulation R(t)") +

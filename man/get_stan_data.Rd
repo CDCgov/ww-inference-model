@@ -170,6 +170,11 @@ lab_site_subpop_spine <- get_lab_site_subpop_spine(
   lab_site_site_spine = lab_site_site_spine,
   site_subpop_spine
 )
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> main
 stan_data_list <- get_stan_data(
   input_count_data_for_stan,
   input_ww_data_for_stan,

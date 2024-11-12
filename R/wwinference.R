@@ -247,6 +247,7 @@ wwinference <- function(ww_data,
     )
   }
 
+
   # Get site to subpop spine
   site_subpop_spine <- get_site_subpop_spine(
     input_ww_data = input_ww_data,

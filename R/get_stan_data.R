@@ -74,6 +74,7 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
       ) |>
       dplyr::arrange(.data$date, .data$lab_site_index)
   }
+
   return(ww_data)
 }
 
@@ -418,6 +419,7 @@ get_stan_data <- function(input_count_data,
   # Get the last date that there were observations of the epidemiological
   # indicator (aka cases or hospital admissions counts)
   last_count_data_date <- max(input_count_data$date, na.rm = TRUE)
+
   # Validate input pmfs----------------------------------------------------
   validate_pmf(generation_interval,
     calibration_time,
@@ -651,6 +653,7 @@ get_stan_data <- function(input_count_data,
     sd_log_sigma_ww_site_prior_sd =
       params$sd_log_sigma_ww_site_prior_sd,
     eta_sd_sd = params$eta_sd_sd,
+    eta_sd_mean = params$eta_sd_mean,
     sigma_i_first_obs_prior_mode = params$sigma_i_first_obs_prior_mode,
     sigma_i_first_obs_prior_sd = params$sigma_i_first_obs_prior_sd,
     p_hosp_prior_mean = params$p_hosp_mean,
@@ -682,6 +685,7 @@ get_stan_data <- function(input_count_data,
     offset_ref_initial_exp_growth_rate_prior_sd =
       params$offset_ref_initial_exp_growth_rate_prior_sd
   )
+
   return(stan_data_list)
 }
 
@@ -797,6 +801,7 @@ get_ww_indices_and_values <- function(input_ww_data,
       "Length of censored vectors incorrect" =
         length(ww_censored) + length(ww_uncensored) == owt
     )
+
     ww_sampled_times <- ww_data_joined |> dplyr::pull("t")
     ww_sampled_subpops <- ww_data_joined |> dplyr::pull("subpop_index")
     lab_site_to_subpop_spine <- lab_site_site_spine |>

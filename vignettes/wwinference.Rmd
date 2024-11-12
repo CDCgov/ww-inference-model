@@ -73,7 +73,8 @@ by the hospital admissions data, in this case, the size of the theoretical state
 Additionally, we provide the `hosp_data_eval` dataset which contains the
 simulated hospital admissions 28 days ahead of the forecast date, which can be
 used to evaluate the model.
-For the wastewater data, the expcted format is a table of observations with the
+
+For the wastewater data, the expected format is a table of observations with the
 following columns. The wastewater data should not contain `NA` values for days with
 missing observations, instead these should be excluded:
 - a date (column `date`): the date the sample was collected
@@ -155,7 +156,6 @@ ww_data_preprocessed <- preprocess_ww_data(
 ```
 Note that this function assumes that there are no missing values in the
 concentration column. The package expects observations below the LOD will
-be replaced with a numeric value below the LOD. If there are NAs in your dataset when observations are below the LOD, we suggest replacing them with a value
 be replaced with a numeric value below the LOD. If there are NAs in your dataset
 when observations are below the LOD, we suggest replacing them with a value
 below the LOD in upstream pre-processing.
