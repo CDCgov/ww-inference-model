@@ -620,6 +620,7 @@ get_stan_data <- function(input_count_data,
     sd_log_sigma_ww_site_prior_sd =
       params$sd_log_sigma_ww_site_prior_sd,
     eta_sd_sd = params$eta_sd_sd,
+    eta_sd_mean = params$eta_sd_mean,
     sigma_i_first_obs_prior_mode = params$sigma_i_first_obs_prior_mode,
     sigma_i_first_obs_prior_sd = params$sigma_i_first_obs_prior_sd,
     p_hosp_prior_mean = params$p_hosp_mean,

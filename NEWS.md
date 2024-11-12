@@ -8,7 +8,8 @@ hospital admissions to output of function and package data. ([#184](https://gith
 - `get_plot_subpop_rt()` now uses a shared y-axis to facilitate comparison of R(t) estimates) ([#245](https://github.com/CDCgov/ww-inference-model/issues/245))
 
 ## Internal changes
-- Updated the workflow for posting the pages artifact to PRs (issue [#229](https://github.com/CDCgov/ww-inference-model/issues/229)).
+- Modified the priors on the infection feedback term and the step size of the weekly random walk in the effective reproductive number (issue [#227](https://github.com/CDCgov/ww-inference-model/issues/227)), based on benchmarking results from the evaluation pipeline described in the [PR](https://github.com/CDCgov/ww-inference-model/pull/236) corresponding to this change.
+- Updated the workflow for posting the pages artifact to PRs (issue [#229](https://github.com/CDCgov/ww-inference-model/issues/229)(https://github.com/CDCgov/ww-inference-model/issues/229)).
 - Modify `plot_forecasted_counts()` so that it does not require an evaluation dataset ([#218](https://github.com/CDCgov/ww-inference-model/pull/218))
 
 # wwinference 0.1.0
