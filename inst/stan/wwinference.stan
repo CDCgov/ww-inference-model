@@ -85,6 +85,7 @@ data {
   real sd_log_sigma_ww_site_prior_mode;
   real<lower=0> sd_log_sigma_ww_site_prior_sd;
   real<lower=0> eta_sd_sd;
+  real<lower=0> eta_sd_mean;
   real p_hosp_prior_mean;
   real<lower=0> p_hosp_sd_logit;
   real<lower=0> p_hosp_w_sd_sd;
@@ -120,7 +121,7 @@ parameters {
   vector[n_weeks-1] w; // Normal(0,1) noise for the weekly random
   // walk on reference subpopulation log R(t)
   real<lower=0> eta_sd;
-  vector[n_subpops > 1 ? 1 : 0] offset_ref_log_r_t;
+  vector[n_subpops > 1 ? n_weeks : 0] offset_ref_log_r_t;
   // offset of reference population log R(t) from central dynamic
   vector[n_subpops > 1 ? 1 : 0] offset_ref_logit_i_first_obs;
   // offset of reference population per capita infections
@@ -233,7 +234,7 @@ transformed parameters {
     // log(R(t)subpop) ~ log(R(t)sref) + autoreg*(log(R(t)ref-log(R(t)subpop)) + eta_subpop
     if(i == 1) {
       log_r_subpop_t_in_weeks = log_r_t_in_weeks +
-         (n_subpops > 1 ? offset_ref_log_r_t[1] : 0);
+         (n_subpops > 1 ? offset_ref_log_r_t : rep_vector(0, n_weeks));
     } else {
     log_r_subpop_t_in_weeks = ar1(log_r_t_in_weeks,
                                   autoreg_rt_subpop,
@@ -325,7 +326,7 @@ model {
                                         offset_ref_logit_i_first_obs_prior_sd);
   offset_ref_initial_exp_growth_rate ~ normal(offset_ref_initial_exp_growth_rate_prior_mean,
                                               offset_ref_initial_exp_growth_rate_prior_sd);
-  eta_sd ~ normal(0, eta_sd_sd);
+  eta_sd ~ normal(eta_sd_mean, eta_sd_sd);
   autoreg_rt_subpop ~ beta(autoreg_rt_subpop_a, autoreg_rt_subpop_b);
 
   autoreg_rt ~ beta(autoreg_rt_a, autoreg_rt_b);
