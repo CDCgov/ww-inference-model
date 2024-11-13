@@ -18,13 +18,9 @@ wwinference(
   fit_opts = list(),
   generate_initial_values = TRUE,
   initial_values_seed = NULL,
-<<<<<<< HEAD
   compiled_model = compile_model(),
   dist_matrix = NULL,
   corr_structure_switch = 0
-=======
-  compiled_model = compile_model()
->>>>>>> main
 )
 
 \method{print}{wwinference_fit}(x, ...)
@@ -78,7 +74,6 @@ the R sampler of the initial values, default is \code{NULL}}
 \item{compiled_model}{The pre-compiled model as defined using
 \code{compile_model()}}
 
-<<<<<<< HEAD
 \item{dist_matrix}{Distance matrix, n_sites x n_sites, passed to a
 distance-based correlation function for epsilon. If NULL, use an independence
 correlation function, for current implementation (i.e. all sites' epsilon
@@ -89,8 +84,6 @@ correlation matrix structure used.  Input 0 for an iid correlation structure,
 1 for an exponential correlation structure based off distance matrix, and 2
 to use an unstructured, lkj, correlation matrix.}
 
-=======
->>>>>>> main
 \item{x, object}{Object of class \code{wwinference_fit}}
 
 \item{...}{Additional parameters passed to the corresponding method}
