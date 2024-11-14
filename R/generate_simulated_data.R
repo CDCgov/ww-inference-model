@@ -575,7 +575,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
 
 
 
-
   # Global adjusted R(t) --------------------------------------------------
   # I(t)/convolve(I(t), g(t)) #nolint
   # This is not used directly, but we want to have it for comparing to the
@@ -598,6 +597,41 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     site_lab_map = site_lab_map,
     lod_lab_site = lod_lab_site
   )
+
+  ww_data_eval <- format_ww_data(
+    log_obs_conc_lab_site = log_obs_conc_lab_site_eval,
+    ot = ot + ht,
+    ht = 0,
+    date_df = date_df,
+    site_lab_map = site_lab_map,
+    lod_lab_site = lod_lab_site
+  ) |>
+    dplyr::rename(
+      "log_genome_copies_per_ml_eval" = "log_genome_copies_per_ml"
+    )
+
+  # Artificially add values below the LOD----------------------------------
+  # Replace it with an NA, will be used as an example of how to format data
+  # properly.
+  min_ww_val <- min(ww_data$log_genome_copies_per_ml)
+  ww_data <- ww_data |>
+    dplyr::mutate(
+      "log_genome_copies_per_ml" =
+        dplyr::case_when(
+          .data$log_genome_copies_per_ml ==
+            !!min_ww_val ~ 0.5 * .data$log_lod,
+          TRUE ~ .data$log_genome_copies_per_ml
+        )
+    )
+  ww_data_eval <- ww_data_eval |>
+    dplyr::mutate(
+      "log_genome_copies_per_ml_eval" =
+        dplyr::case_when(
+          .data$log_genome_copies_per_ml_eval ==
+            !!min_ww_val ~ 0.5 * .data$log_lod,
+          TRUE ~ .data$log_genome_copies_per_ml_eval
+        )
+    )
 
 
   ww_data_eval <- format_ww_data(
