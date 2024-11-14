@@ -87,7 +87,7 @@ We model the subpopulations as having infection dynamics that are _similar_ to o
 
 We represent this with a hierarchical model where we estimate the reference subpopulation's un-damped effective reproductive number $\mathcal{R}^\mathrm{u}_ {0}(t)$ and then estimate the individual subpopulations $k$ deviations from the reference value, $\mathcal{R}^\mathrm{u}_{k}(t)$
 
-The refrence value for the undamped instantaneous reproductive number $\mathcal{R}^\mathrm{u}(t)$ follows the time-evolution described above.
+The reference value for the undamped instantaneous reproductive number $\mathcal{R}^\mathrm{u}(t)$ follows the time-evolution described above.
 Subpopulation deviations from the reference reproduction number are modeled via a log-scale AR(1) process. Specifically, for subpopulation $k$:
 
 $$
