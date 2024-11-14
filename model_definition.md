@@ -116,7 +116,7 @@ From $\mathcal{R}_{k}(t)$, we generate values of the supopulation-level _expecte
 To obtain the number of infections per capita $I(t)$ in the total population as a whole, we sum the $K_\mathrm{total}$ subpopulation per capita infection counts $I_k(t)$ weighted by their population sizes:
 
 ```math
-I(t) = \frac{1}{\sum\nolimits_{k=1}^{K_\mathrm{total}} n_k} \sum_{k=1}^{K_\mathrm{total}} n_k I_k(t)
+I(t) = \frac{1}{\sum\nolimits_{k=0}^{K_\mathrm{total}-1} n_k} \sum_{k=0}^{K_\mathrm{total}-1} n_k I_k(t)
 ```
 
 We infer the site level initial per capita incidence $I_k(0)$ hierarchically. Specifically, we treat $\mathrm{logit}[I_k(0)]$ as Normally distributed about the corresponding jurisdiction-level value $\mathrm{logit}[I(0)]$, with an estimated standard deviation $\sigma_{i0}$:
