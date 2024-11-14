@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-
-# wwinference 0.1.0.99 (dev)
-
-=======
 # wwinference 0.1.0.99 (dev)
 
 ## User-visible changes
