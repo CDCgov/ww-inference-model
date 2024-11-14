@@ -63,7 +63,6 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
     ),
     autoreg_rt_subpop = abs(stats::rnorm(1, 0.5, 0.05)),
     autoreg_p_hosp = abs(stats::rnorm(1, 1 / 100, 0.001)),
-    sigma_rt = abs(stats::rnorm(1, 0, stdev)),
     i_first_obs_over_n =
       stats::plogis(stats::rnorm(1, logit_i_frac_est), 0.05),
     mean_initial_exp_growth_rate = stats::rnorm(1, 0, stdev),

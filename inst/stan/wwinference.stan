@@ -94,7 +94,6 @@ data {
   real<lower=0> p_hosp_sd_logit;
   real<lower=0> p_hosp_w_sd_sd;
   real<lower=0> ww_site_mod_sd_sd;
-  real<lower=0> sigma_rt_prior;
   real log_phi_g_prior_mean;
   real<lower=0> log_phi_g_prior_sd;
   real inf_feedback_prior_logmean;
@@ -150,8 +149,6 @@ parameters {
   // AR process on first differences in log R(t)
   real log_r_t_first_obs; // central log R(t) at the time of
   // the first observation
-  real<lower=0> sigma_rt; // magnitude of subpopulation level
-  // R(t) heterogeneity
   real<lower=0, upper=1> autoreg_rt_subpop;
   real<lower=0, upper=1> autoreg_p_hosp;
   matrix[n_subpops-1, n_subpops > 1 ? n_weeks : 0] error_rt_subpop;
@@ -410,7 +407,6 @@ model {
   autoreg_p_hosp ~ beta(autoreg_p_hosp_a, autoreg_p_hosp_b);
   log_r_t_first_obs ~ normal(r_logmean, r_logsd);
   to_vector(error_rt_subpop) ~ std_normal();
-  sigma_rt ~ normal(0, sigma_rt_prior);
   i_first_obs_over_n ~ beta(i_first_obs_over_n_prior_a,
                              i_first_obs_over_n_prior_b);
   sigma_i_first_obs ~ normal(sigma_i_first_obs_prior_mode,
