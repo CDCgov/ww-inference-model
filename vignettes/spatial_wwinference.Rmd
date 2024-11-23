@@ -2340,7 +2340,7 @@ for (i in 1:9) {
 # ------------------------------------------------------------------------------
 ```
 
-## Hospital admissions
+## Hospital admissions evaluations
 Here we prepare the evaluation metric plots.  The general form will be a plot
 that is by date, and another tile plot where the darker the color, the higher
 the value.  For most of the metrics, smaller is better, but for ess/sec, higher
@@ -2764,3 +2764,6 @@ Here we showcase the evaluation metric scores.
   plot_layout(guides = "collect") &
   theme(legend.position = "bottom")
 ```
+
+
+## Wastewater evaluations
