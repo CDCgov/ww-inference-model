@@ -41,8 +41,7 @@ generate_simulated_data(
   sigma_sqrd_generalized = 0.005^4,
   scaling_factor = 1,
   aux_site_bool = TRUE,
-  init_stat = TRUE,
-  seed = 123
+  init_stat = TRUE
 )
 }
 \arguments{
@@ -157,10 +156,6 @@ from the process's stationary distribution (\code{TRUE}) or from the process's
 conditional error distribution (\code{FALSE})? Note that the process only has
 a defined stationary distribution if \code{phi_rt} < 1.
 Default \code{TRUE}.}
-
-\item{seed}{integer indicating the random number generator seed to ensure
-that both the eval and calibration wastewater data are the same in the
-calibration period. default is \code{123}}
 }
 \value{
 a list containing three dataframes. hosp_data is a dataframe

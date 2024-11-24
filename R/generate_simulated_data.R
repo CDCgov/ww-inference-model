@@ -81,9 +81,6 @@
 #' conditional error distribution (`FALSE`)? Note that the process only has
 #' a defined stationary distribution if `phi_rt` < 1.
 #' Default `TRUE`.
-#' @param seed integer indicating the random number generator seed to ensure
-#' that both the eval and calibration wastewater data are the same in the
-#' calibration period. default is `123`
 #'
 #' @return a list containing three dataframes. hosp_data is a dataframe
 #' containing the number of daily hospital admissions by day for a theoretical
@@ -192,8 +189,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                     sigma_sqrd_generalized = 0.005^4,
                                     scaling_factor = 1,
                                     aux_site_bool = TRUE,
-                                    init_stat = TRUE,
-                                    seed = 123) {
+                                    init_stat = TRUE) {
   # Some quick checks to make sure the inputs work as expected-----------------
   assert_rt_correct_length(r_in_weeks, ot, nt, forecast_horizon)
   assert_ww_site_pops_lt_total(pop_size, ww_pop_sites)
@@ -554,33 +550,25 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   )
 
   ## Downsample to simulate reporting/collection process---------------------
-
-  log_obs_conc_lab_site <- withr::with_seed(
-    seed,
-    downsample_ww_obs(
-      log_conc_lab_site = log_conc_lab_site,
-      n_lab_sites = n_lab_sites,
-      ot = ot,
-      ht = ht,
-      nt = nt,
-      lab_site_reporting_freq = lab_site_reporting_freq,
-      lab_site_reporting_latency = lab_site_reporting_latency
-    )
-  )
-
   # Create evaluation data with same reporting freq but go through the entire
   # time period
-  log_obs_conc_lab_site_eval <- withr::with_seed(
-    seed,
-    downsample_ww_obs(
-      log_conc_lab_site = log_conc_lab_site,
-      n_lab_sites = n_lab_sites,
-      ot = ot + ht,
-      ht = 0,
-      nt = 0,
-      lab_site_reporting_freq = lab_site_reporting_freq,
-      lab_site_reporting_latency = rep(0, n_lab_sites)
-    )
+  log_obs_conc_lab_site_eval <- downsample_for_frequency(
+    log_conc_lab_site = log_conc_lab_site,
+    n_lab_sites = n_lab_sites,
+    ht = ht,
+    ot = ot,
+    nt = nt,
+    lab_site_reporting_freq = lab_site_reporting_freq
+  )
+
+
+  log_obs_conc_lab_site <- truncate_for_latency(
+    log_conc_lab_site = log_obs_conc_lab_site_eval,
+    n_lab_sites = n_lab_sites,
+    ot = ot,
+    ht = ht,
+    nt = nt,
+    lab_site_reporting_latency = lab_site_reporting_latency
   )
 
 

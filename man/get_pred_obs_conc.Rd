@@ -22,7 +22,8 @@ labs and sites in the dataset.}
 \item{ot}{integer indicating the number of days we will have observed data
 for in the calibration period}
 
-\item{ht}{integer indicating the time after the last observed time to}
+\item{ht}{integer indicating the time after the last observed time to
+the end of the forecast time}
 
 \item{log_g_over_n_site}{matrix of n_site rows and ot + ht columns indicating
 the genomes per person each day in each site}
