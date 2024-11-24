@@ -11,7 +11,6 @@ truncate_for_latency(
   ot,
   ht,
   nt,
-  lab_site_reporting_freq,
   lab_site_reporting_latency
 )
 }
@@ -32,8 +31,8 @@ the end of the forecast time}
 and before the forecast date, of which there can still be wastewater
 observations}
 
-\item{lab_site_reporting_freq}{vector indicating the mean frequency of
-wastewater measurements in each site per day (e.g. 1/7 is once per week)}
+\item{lab_site_reporting_latency}{vector indicating the number of days
+from the forecast date of the last possible observation}
 }
 \value{
 A sparse matrix of \code{n_lab_sites} rows and \code{ot} + \code{ht} columns of

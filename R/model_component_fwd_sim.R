@@ -333,8 +333,8 @@ downsample_for_frequency <- function(log_conc_lab_site,
 #' @param nt integer indicating the time after the last observed epi indicator
 #'  and before the forecast date, of which there can still be wastewater
 #'  observations
-#' @param lab_site_reporting_freq vector indicating the mean frequency of
-#' wastewater measurements in each site per day (e.g. 1/7 is once per week)
+#' @param lab_site_reporting_latency vector indicating the number of days
+#' from the forecast date of the last possible observation
 
 #' @return A sparse matrix of `n_lab_sites` rows and `ot` + `ht` columns of
 #' but with NAs for when observations are not measured/reported.
@@ -343,7 +343,6 @@ truncate_for_latency <- function(log_conc_lab_site,
                                  ot,
                                  ht,
                                  nt,
-                                 lab_site_reporting_freq,
                                  lab_site_reporting_latency) {
   log_obs_conc_lab_site <- log_conc_lab_site
   for (i in 1:n_lab_sites) {
