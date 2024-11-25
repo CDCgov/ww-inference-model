@@ -422,26 +422,25 @@ generate_simulated_data <- function(r_in_weeks = # nolint
 
   ## Downsample to simulate reporting/collection process---------------------
 
-  log_obs_conc_lab_site <- downsample_ww_obs(
+  # Create evaluation data with same reporting freq but go through the entire
+  # time period
+  log_obs_conc_lab_site_eval <- downsample_for_frequency(
     log_conc_lab_site = log_conc_lab_site,
+    n_lab_sites = n_lab_sites,
+    ht = ht,
+    ot = ot,
+    nt = nt,
+    lab_site_reporting_freq = lab_site_reporting_freq
+  )
+
+
+  log_obs_conc_lab_site <- truncate_for_latency(
+    log_conc_lab_site = log_obs_conc_lab_site_eval,
     n_lab_sites = n_lab_sites,
     ot = ot,
     ht = ht,
     nt = nt,
-    lab_site_reporting_freq = lab_site_reporting_freq,
     lab_site_reporting_latency = lab_site_reporting_latency
-  )
-
-  # Create evaluation data with same reporting freq but go through the entire
-  # time period
-  log_obs_conc_lab_site_eval <- downsample_ww_obs(
-    log_conc_lab_site = log_conc_lab_site,
-    n_lab_sites = n_lab_sites,
-    ot = ot + ht,
-    ht = 0,
-    nt = 0,
-    lab_site_reporting_freq = lab_site_reporting_freq,
-    lab_site_reporting_latency = rep(0, n_lab_sites)
   )
 
 
