@@ -62,10 +62,10 @@ We model infection dynamics in these subpopulations hierarchically: subpopulatio
 #### Subpopulation definition
 The total population consists of $K_\mathrm{total}$ subpopulations $k$ with corresponding population sizes $n_k$. We associate one subpopulation to each of the $K_\mathrm{sites}$ wastewater sampling sites in the jurisdiction and assign that subpopulation a population size $n_k$ equal to the population size reported for that wastewater catchment area.
 
-Whenever the sum of the wastewater catchment population sizes $\sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k$ is less than the total population size $n$, we use an additional subpopulation of size $n - \sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k$ to model individuals in the population who are not covered by wastewater sampling. 
-In this case, we refer to the subpopulation not covered by wastewater as the reference subpopulation, denoted by $k=0$. 
+Whenever the sum of the wastewater catchment population sizes $\sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k$ is less than the total population size $n$, we use an additional subpopulation of size $n - \sum\nolimits_{k=1}^{K_\mathrm{sites}} n_k$ to model individuals in the population who are not covered by wastewater sampling.
+In this case, we refer to the subpopulation not covered by wastewater as the reference subpopulation, denoted by $k=0$.
 
-The total number of subpopulations is then $K_\mathrm{total} = K_\mathrm{sites} + 1$: the subpopulation to account for individuals not covered by wastewater sampling plus the $K_\mathrm{sites}$ subpopulations with sampled wastewater. 
+The total number of subpopulations is then $K_\mathrm{total} = K_\mathrm{sites} + 1$: the subpopulation to account for individuals not covered by wastewater sampling plus the $K_\mathrm{sites}$ subpopulations with sampled wastewater.
 
 The model without wastewater (hospital admissions only model) is therefore a special case of the model where $K_\mathrm{sites} = 0$ and $K_\mathrm{total} = 1$, with subpopulation size $n_k = n$, the total population.
 
