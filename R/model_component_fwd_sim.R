@@ -282,8 +282,9 @@ get_pred_obs_conc <- function(n_lab_sites,
   return(log_conc_lab_site)
 }
 
+
 #' Downsample the predicted wastewater concentrations based on the
-#' lab site reporting frequency and lab site reporting latencyy
+#' lab site reporting frequency
 #'
 #' @param log_conc_lab_site The matrix of n_lab_sites by n time points
 #' indicating the underlying expected  observed concentrations
@@ -292,35 +293,68 @@ get_pred_obs_conc <- function(n_lab_sites,
 #' @param ot integer indicating the number of days we will have observed data
 #' for in the calibration period
 #' @param ht integer indicating the time after the last observed time to
+#' the end of the forecast time
 #' @param nt integer indicating the time after the last observed epi indicator
 #'  and before the forecast date, of which there can still be wastewater
 #'  observations
 #' @param lab_site_reporting_freq vector indicating the mean frequency of
 #' wastewater measurements in each site per day (e.g. 1/7 is once per week)
-#' @param lab_site_reporting_latency vector indicating the time from
-#'  forecast date to last wastewater sample collection date in each lab-site
-#'
+
 #' @return A sparse matrix of `n_lab_sites` rows and `ot` + `ht` columns of
 #' but with NAs for when observations are not measured/reported.
-downsample_ww_obs <- function(log_conc_lab_site,
-                              n_lab_sites,
-                              ot,
-                              ht,
-                              nt,
-                              lab_site_reporting_freq,
-                              lab_site_reporting_latency) {
+downsample_for_frequency <- function(log_conc_lab_site,
+                                     n_lab_sites,
+                                     ot,
+                                     ht,
+                                     nt,
+                                     lab_site_reporting_freq) {
   log_obs_conc_lab_site <- matrix(nrow = n_lab_sites, ncol = ot + ht)
   for (i in 1:n_lab_sites) {
     # Get the indices where we observe concentrations
     st <- sample(1:(ot + nt), round((ot + nt) * lab_site_reporting_freq[i]))
-    # cut off end based on latency
-    stl <- pmin((ot + nt - lab_site_reporting_latency[i]), st)
     # Calculate log concentration for the days that we have observations
-    log_obs_conc_lab_site[i, stl] <- log_conc_lab_site[i, stl]
+    log_obs_conc_lab_site[i, st] <- log_conc_lab_site[i, st]
   }
 
   return(log_obs_conc_lab_site)
 }
+
+#' Truncate the predicted wastewater concentrations based on the
+#' lab site reporting latency and the observed time and horizon time
+#'
+#' @param log_conc_lab_site The matrix of n_lab_sites by n time points
+#' indicating the underlying expected  observed concentrations
+#' @param n_lab_sites Integer indicating the number of unique lab-site
+#' combinations
+#' @param ot integer indicating the number of days we will have observed data
+#' for in the calibration period
+#' @param ht integer indicating the time after the last observed time to
+#' the end of the forecast time
+#' @param nt integer indicating the time after the last observed epi indicator
+#'  and before the forecast date, of which there can still be wastewater
+#'  observations
+#' @param lab_site_reporting_latency vector indicating the number of days
+#' from the forecast date of the last possible observation
+
+#' @return A sparse matrix of `n_lab_sites` rows and `ot` + `ht` columns of
+#' but with NAs for when observations are not measured/reported.
+truncate_for_latency <- function(log_conc_lab_site,
+                                 n_lab_sites,
+                                 ot,
+                                 ht,
+                                 nt,
+                                 lab_site_reporting_latency) {
+  log_obs_conc_lab_site <- log_conc_lab_site
+  for (i in 1:n_lab_sites) {
+    # Get the last day there can be none NAs
+    last_index_day <- ot + nt - lab_site_reporting_latency[i]
+    # Replace with NAs behond last index day
+    log_obs_conc_lab_site[i, last_index_day:(ot + ht)] <- NA
+  }
+
+  return(log_obs_conc_lab_site)
+}
+
 
 #' Format the wastewater data as a tidy data frame
 #'

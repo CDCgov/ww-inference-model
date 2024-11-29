@@ -1,4 +1,6 @@
 # wwinference 0.1.1.99 (dev)
+- Fixes the way the wastewater calibration and evaluation datasets are created
+to ensure that the dates align properly. ([#256](https://github.com/CDCgov/ww-inference-model/issues/256))
 
 # wwinference 0.1.1
 This release includes a change to the default model priors. The previous release had an informative prior on a high magnitude of infection feedback. This release reduces the prior mode and also decreases the degree of prior certainty. This release also includes minor changes to plotting and pre-processing functions designed to make outputs more comprehensive and interpretable.
