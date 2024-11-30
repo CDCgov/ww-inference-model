@@ -444,7 +444,32 @@ ww_data_full <- rbind(
       )
     )
   )
+ww_data_eval_full <- rbind(
+  simulated_data_iid$ww_data_eval %>%
+    mutate(model_type = "IID"),
+  simulated_data_exp$ww_data_eval %>%
+    mutate(model_type = "Exponential"),
+  simulated_data_rng_corr_mat$ww_data_eval %>%
+    mutate(model_type = "Rand. Corr. Matrix")
+) %>%
+  mutate(
+    model_type = factor(
+      model_type,
+      levels = c(
+        "IID",
+        "Exponential",
+        "Rand. Corr. Matrix"
+      )
+    )
+  )
 ww_data_plot <- ggplot(ww_data_full) +
+  geom_point(
+    data = ww_data_eval_full, aes(
+      x = date,
+      y = log_genome_copies_per_ml_eval
+    ),
+    shape = 21, color = "black", fill = "white"
+  ) +
   geom_point(
     aes(
       x = date, y = log_genome_copies_per_ml
