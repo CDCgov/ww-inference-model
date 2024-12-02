@@ -294,9 +294,6 @@ get_pred_obs_conc <- function(n_lab_sites,
 #' for in the calibration period
 #' @param ht integer indicating the time after the last observed time to
 #' the end of the forecast time
-#' @param nt integer indicating the time after the last observed epi indicator
-#'  and before the forecast date, of which there can still be wastewater
-#'  observations
 #' @param lab_site_reporting_freq vector indicating the mean frequency of
 #' wastewater measurements in each site per day (e.g. 1/7 is once per week)
 
@@ -306,12 +303,11 @@ downsample_for_frequency <- function(log_conc_lab_site,
                                      n_lab_sites,
                                      ot,
                                      ht,
-                                     nt,
                                      lab_site_reporting_freq) {
   log_obs_conc_lab_site <- matrix(nrow = n_lab_sites, ncol = ot + ht)
   for (i in 1:n_lab_sites) {
     # Get the indices where we observe concentrations
-    st <- sample(1:(ot + nt), round((ot + nt) * lab_site_reporting_freq[i]))
+    st <- sample(1:(ot + ht), round((ot + ht) * lab_site_reporting_freq[i]))
     # Calculate log concentration for the days that we have observations
     log_obs_conc_lab_site[i, st] <- log_conc_lab_site[i, st]
   }
@@ -381,7 +377,7 @@ format_ww_data <- function(log_obs_conc_lab_site,
                            site_lab_map,
                            lod_lab_site) {
   n_lab_sites <- nrow(site_lab_map)
-  ww_data <- as.data.frame(t(log_obs_conc_lab_site)) |>
+  ww_data <- as.data.frame(t(log_obs_conc_lab_site_eval)) |>
     dplyr::mutate(t = 1:(ot + ht)) |>
     tidyr::pivot_longer(!t,
       names_to = "lab_site",
