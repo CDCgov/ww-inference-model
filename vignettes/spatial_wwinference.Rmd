@@ -257,6 +257,7 @@ simulated_data_iid <- withr::with_seed(1, {
     lab = lab,
     ww_pop_sites = ww_pop_sites,
     pop_size = pop_size,
+    mean_reporting_freq = 1 / 3,
     global_rt_sd = global_rt_sd,
     use_spatial_corr = TRUE,
     corr_function = wwinference::independence_corr_func_r,
@@ -275,6 +276,7 @@ simulated_data_exp <- withr::with_seed(1, {
     lab = lab,
     ww_pop_sites = ww_pop_sites,
     pop_size = pop_size,
+    mean_reporting_freq = 1 / 3,
     global_rt_sd = global_rt_sd,
     use_spatial_corr = TRUE,
     corr_function = exponential_decay_corr_func_r,
@@ -293,6 +295,7 @@ simulated_data_rng_corr_mat <- withr::with_seed(1, {
     lab = lab,
     ww_pop_sites = ww_pop_sites,
     pop_size = pop_size,
+    mean_reporting_freq = 1 / 3,
     global_rt_sd = global_rt_sd,
     use_spatial_corr = TRUE,
     corr_function = wwinference::rand_corr_matrix_func,
@@ -499,6 +502,21 @@ together in the fake locations plot should have similar trends.
 ```{r}
 ww_total_plot <- ggplot(ww_data_full) +
   geom_line(
+    data = ww_data_eval_full, aes(
+      x = date,
+      y = log_genome_copies_per_ml_eval,
+      colour = factor(site)
+    )
+  ) +
+  geom_point(
+    data = ww_data_eval_full, aes(
+      x = date,
+      y = log_genome_copies_per_ml_eval,
+      colour = factor(site)
+    ),
+    shape = 21
+  ) +
+  geom_line(
     aes(
       x = date, y = log_genome_copies_per_ml,
       colour = factor(site)
@@ -508,7 +526,8 @@ ww_total_plot <- ggplot(ww_data_full) +
     aes(
       x = date, y = log_genome_copies_per_ml,
       colour = factor(site)
-    )
+    ),
+    show.legend = FALSE
   ) +
   geom_hline(
     aes(yintercept = log_lod, colour = factor(site)),
