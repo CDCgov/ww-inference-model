@@ -377,7 +377,7 @@ format_ww_data <- function(log_obs_conc_lab_site,
                            site_lab_map,
                            lod_lab_site) {
   n_lab_sites <- nrow(site_lab_map)
-  ww_data <- as.data.frame(t(log_obs_conc_lab_site_eval)) |>
+  ww_data <- as.data.frame(t(log_obs_conc_lab_site)) |>
     dplyr::mutate(t = 1:(ot + ht)) |>
     tidyr::pivot_longer(!t,
       names_to = "lab_site",
