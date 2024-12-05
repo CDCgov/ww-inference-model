@@ -10,7 +10,6 @@ downsample_for_frequency(
   n_lab_sites,
   ot,
   ht,
-  nt,
   lab_site_reporting_freq
 )
 }
@@ -26,10 +25,6 @@ for in the calibration period}
 
 \item{ht}{integer indicating the time after the last observed time to
 the end of the forecast time}
-
-\item{nt}{integer indicating the time after the last observed epi indicator
-and before the forecast date, of which there can still be wastewater
-observations}
 
 \item{lab_site_reporting_freq}{vector indicating the mean frequency of
 wastewater measurements in each site per day (e.g. 1/7 is once per week)}
