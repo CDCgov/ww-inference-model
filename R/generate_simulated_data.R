@@ -557,7 +557,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     n_lab_sites = n_lab_sites,
     ht = ht,
     ot = ot,
-    nt = nt,
     lab_site_reporting_freq = lab_site_reporting_freq
   )
 
