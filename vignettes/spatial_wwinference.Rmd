@@ -243,7 +243,7 @@ exp_corr_param <- list(
       upper = TRUE
     )
   ),
-  phi = 0.4,
+  phi = 1.2,
   l = 1
 )
 sigma_sqrd_generalized <- 0.01^n_sites
