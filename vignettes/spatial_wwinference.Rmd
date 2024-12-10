@@ -247,6 +247,7 @@ exp_corr_param <- list(
   l = 1
 )
 sigma_sqrd_generalized <- 0.01^n_sites
+mean_report_freq <- 3 / 7
 # ------------------------------------------------------------------------------
 # IID Simulated Data -----------------------------------------------------------
 simulated_data_iid <- withr::with_seed(1, {
@@ -257,6 +258,7 @@ simulated_data_iid <- withr::with_seed(1, {
     lab = lab,
     ww_pop_sites = ww_pop_sites,
     pop_size = pop_size,
+    mean_reporting_freq = mean_report_freq,
     global_rt_sd = global_rt_sd,
     use_spatial_corr = TRUE,
     corr_function = wwinference::independence_corr_func_r,
@@ -275,6 +277,7 @@ simulated_data_exp <- withr::with_seed(1, {
     lab = lab,
     ww_pop_sites = ww_pop_sites,
     pop_size = pop_size,
+    mean_reporting_freq = mean_report_freq,
     global_rt_sd = global_rt_sd,
     use_spatial_corr = TRUE,
     corr_function = exponential_decay_corr_func_r,
@@ -293,6 +296,7 @@ simulated_data_rng_corr_mat <- withr::with_seed(1, {
     lab = lab,
     ww_pop_sites = ww_pop_sites,
     pop_size = pop_size,
+    mean_reporting_freq = mean_report_freq,
     global_rt_sd = global_rt_sd,
     use_spatial_corr = TRUE,
     corr_function = wwinference::rand_corr_matrix_func,
@@ -444,7 +448,32 @@ ww_data_full <- rbind(
       )
     )
   )
+ww_data_eval_full <- rbind(
+  simulated_data_iid$ww_data_eval %>%
+    mutate(model_type = "IID"),
+  simulated_data_exp$ww_data_eval %>%
+    mutate(model_type = "Exponential"),
+  simulated_data_rng_corr_mat$ww_data_eval %>%
+    mutate(model_type = "Rand. Corr. Matrix")
+) %>%
+  mutate(
+    model_type = factor(
+      model_type,
+      levels = c(
+        "IID",
+        "Exponential",
+        "Rand. Corr. Matrix"
+      )
+    )
+  )
 ww_data_plot <- ggplot(ww_data_full) +
+  geom_point(
+    data = ww_data_eval_full, aes(
+      x = date,
+      y = log_genome_copies_per_ml_eval
+    ),
+    shape = 21, color = "black", fill = "white"
+  ) +
   geom_point(
     aes(
       x = date, y = log_genome_copies_per_ml
@@ -474,6 +503,21 @@ together in the fake locations plot should have similar trends.
 ```{r}
 ww_total_plot <- ggplot(ww_data_full) +
   geom_line(
+    data = ww_data_eval_full, aes(
+      x = date,
+      y = log_genome_copies_per_ml_eval,
+      colour = factor(site)
+    )
+  ) +
+  geom_point(
+    data = ww_data_eval_full, aes(
+      x = date,
+      y = log_genome_copies_per_ml_eval,
+      colour = factor(site)
+    ),
+    shape = 21
+  ) +
+  geom_line(
     aes(
       x = date, y = log_genome_copies_per_ml,
       colour = factor(site)
@@ -483,7 +527,8 @@ ww_total_plot <- ggplot(ww_data_full) +
     aes(
       x = date, y = log_genome_copies_per_ml,
       colour = factor(site)
-    )
+    ),
+    show.legend = FALSE
   ) +
   geom_hline(
     aes(yintercept = log_lod, colour = factor(site)),
@@ -1881,6 +1926,12 @@ ww_result_plot <- ggplot(
     size = 1,
   ) +
   geom_point(
+    data = ww_data_eval_full %>%
+      mutate(gen_model_type = model_type),
+    aes(x = date, y = log_genome_copies_per_ml_eval),
+    shape = 21, color = "black", fill = "white"
+  ) +
+  geom_point(
     aes(x = date, y = observed_value)
   ) +
   geom_vline(aes(xintercept = lubridate::ymd(forecast_date)),
@@ -2340,7 +2391,7 @@ for (i in 1:9) {
 # ------------------------------------------------------------------------------
 ```
 
-## Hospital admissions
+## Hospital admissions evaluations
 Here we prepare the evaluation metric plots.  The general form will be a plot
 that is by date, and another tile plot where the darker the color, the higher
 the value.  For most of the metrics, smaller is better, but for ess/sec, higher
@@ -2764,3 +2815,6 @@ Here we showcase the evaluation metric scores.
   plot_layout(guides = "collect") &
   theme(legend.position = "bottom")
 ```
+
+
+## Wastewater evaluations
