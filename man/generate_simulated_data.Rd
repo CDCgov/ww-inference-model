@@ -14,7 +14,7 @@ generate_simulated_data(
   ot = 90,
   nt = 9,
   forecast_horizon = 28,
-  sim_start_date = lubridate::ymd("2023-09-01"),
+  sim_start_date = lubridate::ymd("2023-09-03"),
   hosp_wday_effect = c(0.95, 1.01, 1.02, 1.02, 1.01, 1, 0.99)/7,
   i0_over_n = 5e-04,
   initial_growth = 1e-04,

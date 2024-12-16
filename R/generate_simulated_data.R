@@ -103,7 +103,7 @@ generate_simulated_data <- function(r_in_weeks = # nolint
                                     nt = 9,
                                     forecast_horizon = 28,
                                     sim_start_date = lubridate::ymd(
-                                      "2023-09-01"
+                                      "2023-09-03"
                                     ),
                                     hosp_wday_effect = c(
                                       0.95, 1.01, 1.02,
@@ -512,6 +512,11 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     date_df = date_df
   )
 
+  weekly_hosp_data <- make_weekly_data(
+    hosp_data = hosp_data,
+    day_of_week_to_sum = "Saturday"
+  )
+
   hosp_data_eval <- format_hosp_data(
     pred_obs_hosp = pred_obs_hosp,
     dur_obs = (ot + ht),
@@ -521,6 +526,12 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     dplyr::rename(
       "daily_hosp_admits_for_eval" = "daily_hosp_admits"
     )
+
+  weekly_hosp_data_eval <- make_weekly_data(
+    hosp_data = hosp_data_eval,
+    count_col_name = "daily_hosp_admits_for_eval",
+    day_of_week_to_sum = "Saturday"
+  )
 
   # Make a subpopulation level hospital admissions data
   # For now this will only be used for evaluation, eventually, can add
@@ -571,6 +582,8 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     ww_data_eval = ww_data_eval,
     hosp_data = hosp_data,
     hosp_data_eval = hosp_data_eval,
+    weekly_hosp_data = weekly_hosp_data,
+    weekly_hosp_data_eval = weekly_hosp_data_eval,
     subpop_hosp_data = subpop_hosp_data,
     subpop_hosp_data_eval = subpop_hosp_data_eval,
     true_global_rt = true_rt
