@@ -6,8 +6,8 @@ uot = 50
 log_phi_mu_prior = 0 # log(1)
 log_phi_sd_prior = 0.4
 l = 1
-log_sigma_generalized_mu_prior = -5.298317 # log(0.05^4)
-log_sigma_generalized_sd_prior = 0.5
+log_sigma_generalized_mu_prior = -15.64809 # log(0.02^4)
+log_sigma_generalized_sd_prior = 1.25
 log_scaling_factor_mu_prior = 0 # log(1.1)
 log_scaling_factor_sd_prior = 0.5
 

@@ -390,7 +390,7 @@ model {
     log_phi ~ normal(log_phi_mu_prior, log_phi_sd_prior);
     log_scaling_factor ~ normal(log_scaling_factor_mu_prior, log_scaling_factor_sd_prior);
     if (corr_structure_switch == 2){
-      L_Omega ~ lkj_corr_cholesky(2.0);
+      L_Omega ~ lkj_corr_cholesky(0.25);
     }
     //--------------------------------------------------------------------------
 
