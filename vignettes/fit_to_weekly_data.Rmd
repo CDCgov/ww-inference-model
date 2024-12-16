@@ -1,0 +1,110 @@
+---
+title: "Fit to weekly instead of daily count data"
+description: "An extension of the getting started vignette showing how to fit to a weekly count dataset"
+author: "Kaitlyn Johnson"
+date: "2024-12-16"
+output:
+  bookdown::html_vignette2:
+  fig_caption: yes
+code_folding: show
+pkgdown:
+  as_is: true
+vignette: >
+  %\VignetteIndexEntry{Getting started with wwinference}
+%\VignetteEngine{knitr::rmarkdown}
+%\VignetteEncoding{UTF-8}
+---
+
+```{r setup, echo=FALSE}
+knitr::opts_chunk$set(dev = "svg")
+options(mc.cores = 4) # This tells cmdstan to run the 4 chains in parallel
+```
+
+
+# Load packages
+```{r load-pkgs, warning=FALSE, message=FALSE}
+library(wwinference)
+library(dplyr)
+library(ggplot2)
+library(tidybayes)
+```
+
+# Weekly data
+
+- a date (column `date`): the date of the observation, in this case, the date
+the hospital admissions occurred
+- a weekly count (column `weekly_hosp_admits`): the number of hospital admissions
+observed in the precvious 7 days
+- a population size (column `state_pop`): the population size covered
+by the hospital admissions data, in this case, the size of the theoretical state.
+
+
+For the wastewater data, the expcted format is a table of observations, as
+provided in the package data
+
+
+```{r load-data}
+weekly_hosp_data <- wwinference::weekly_hosp_data
+ww_data <- wwinference::ww_data
+
+head(ww_data)
+head(weekly_hosp_data)
+```
+
+```{r get-params}
+params <- get_params(
+  system.file("extdata", "example_params.toml",
+    package = "wwinference"
+  )
+)
+```
+
+```{r preprocess-ww-data}
+ww_data_preprocessed <- preprocess_ww_data(
+  ww_data,
+  conc_col_name = "log_genome_copies_per_ml",
+  lod_col_name = "log_lod"
+)
+```
+
+```{r preprocess-hosp-data}
+hosp_data_preprocessed <- preprocess_count_data(
+  weekly_hosp_data,
+  count_col_name = "daily_hosp_admits",
+  pop_size_col_name = "state_pop"
+)
+```
+
+```{ r plot weekly data}
+ggplot(hosp_data_preprocessed) +
+  # Plot the hospital admissions data that we will evaluate against in white
+  geom_point(
+    data = hosp_data_eval, aes(
+      x = date,
+      y = daily_hosp_admits_for_eval
+    ),
+    shape = 21, color = "black", fill = "white"
+  ) +
+  # Plot the data we will calibrate to
+  geom_point(aes(x = date, y = count)) +
+  scale_x_date(
+    date_breaks = "2 weeks",
+    labels = scales::date_format("%Y-%m-%d")
+  ) +
+  xlab("") +
+  ylab("Daily hospital admissions") +
+  ggtitle("State level hospital admissions") +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(
+      size = 8, vjust = 1,
+      hjust = 1, angle = 45
+    ),
+    axis.title.x = element_text(size = 12),
+    axis.title.y = element_text(size = 12),
+    plot.title = element_text(
+      size = 10,
+      vjust = 0.5, hjust = 0.5
+    )
+  )
+```
