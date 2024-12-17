@@ -265,11 +265,11 @@ We use informative priors for parameters that have been well characterized in th
 | Total genomes shed per infected individual | $\log_{10}[G] \sim \mathrm{Normal}(9, 2)$ | Watson et al 2023[^Watson]   |
 | Initial infections per capita $I_0$ | $I_0 \sim \mathrm{Beta}(1 + k i_\mathrm{est}, 1 + k (1-i_\mathrm{est}))$ | where $i_\mathrm{est}$ is the sum of the last 7 days of hospital admissions, divided by jurisdiction population, and divided by the prior mode for $p_\mathrm{hosp}$, and $k = 5$ is a parameter governing the informativeness ("certainty") of the Beta distribution |
 | Initial exponential growth rate | $r \sim \mathrm{Normal}(0, 0.01)$ | Chosen to assume flat dynamics prior to observations |
-| Infection feedback term | $\gamma \sim \mathrm{logNormal}(6.37, 0.4)$ | Weakly informative prior chosen to have a mode of 500 in natural scale, based on posterior estimates of peaks from prior seasons in a few jurisdictions |
+| Infection feedback term | $\gamma \sim \mathrm{logNormal}(4.50, 0.64)$ | Weakly informative prior chosen to have a mode of 90 in natural scale, based on posterior estimates of the infection feedback from model fits from March 2023 to March 2024 in a Alaska, Massachsuettes, New Jersey, New Hampshire, and Washington |
 | Day of the week effects | $\frac{\vec{\omega}}{7} \sim \mathrm{Dirichlet}(5, 5, 5, 5, 5, 5, 5)$ | Weakly informative prior with a mode at even daily reporting (no effects) |
 | Standard deviation of the log of the site-lab level multiplier $M_{ij}$ | $\sigma_m \sim \mathrm{Normal}(0, 0.25) $ | Weakly informative prior chosen to allow average magnitude of concentrations to be either similar or different among individual sites, depending on data |
 | Modal site-level observation standard deviation | $\hat{\sigma}\_c \sim \mathrm{Normal}(1,1)$ | Weakly informative prior chosen to allow the mode to be either small or large |
-| Standard deviation of the Normal distribution of individual log observation standard deviations $\log(\sigma\_{cij})$ (site-lab combination specific, with an inferred modal s.d. $\hat{\sigma}\_c$) | $\sigma\_{\log \sigma\_c} \sim \mathrm{Normal}(0, \log(2))$ | Weakly informative prior which allows for individual s.d.s to be either clustered around the mode or more dispersed |
+| Standard deviation of the Normal distribution of individual log observation standard deviations $\log(\sigma\_{cij})$ (site-lab combination specific, with an inferred modal standard deviation $\hat{\sigma}\_c$) | $\sigma\_{\log \sigma\_c} \sim \mathrm{Normal}(0, \log(2))$ | Weakly informative prior which allows for individual standard deviations to be either clustered around the modal standard deviation or more dispersed |
 
 ### Scalar parameters
 
