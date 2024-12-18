@@ -101,7 +101,8 @@ Imports:
     scales,
     ggplot2,
     posterior,
-    checkmate
+    checkmate,
+    zoo
 Remotes:
     stan-dev/cmdstanr
 VignetteBuilder:
