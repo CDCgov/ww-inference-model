@@ -112,11 +112,12 @@ We start by generating the data that our models require, using the
 spatial components are `use_spatial_corr = TRUE` and `aux_site_bool = TRUE`.
 We also require that if `use_spatial_corr = TRUE`, the user must specify a
 correlation function in the `corr_function` and the necessary parameters of the
-function in `corr_fun_params`.  Currently we have three built in functions for
+function in `corr_fun_params`.  Currently we have four built in functions for
 correlation types : `independence_corr_func_r()`,
-`exponential_decay_corr_func_r()`, and `rand_corr_matrix_func()`.  The default
-used is `exponential_decay_corr_func_r()` correlation function based of the
-following fake locations.
+`exponential_decay_corr_func_r()`, `custom_corr_matrix()`, and
+`rand_corr_matrix_func()`.  The default used is
+`exponential_decay_corr_func_r()` correlation function based of the following
+fake locations.
 
 ## Fake locations
 Since we want to explore the usefulness of including spatial information into
@@ -146,8 +147,8 @@ fake_locs_plot <- ggplot(
     vjust = -1
   ) +
   coord_cartesian(
-    xlim = c(min(fake_locs$x) - 2, max(fake_locs$x) + 2),
-    ylim = c(min(fake_locs$y) - 2, max(fake_locs$y) + 2)
+    xlim = c(min(fake_locs$x) - 5, max(fake_locs$x) + 5),
+    ylim = c(min(fake_locs$y) - 5, max(fake_locs$y) + 5)
   ) +
   labs(
     title = "Fake Locations",
@@ -204,7 +205,7 @@ central_rt_curve
 Now we simulate the data with three different data generation models.  The
 difference between these will be the correlation structure that is used for
 site to site correlations.  We will have an iid (imposes no correlations),
-exponential decay correlation function based off distance matrix, and a random
+exponential decay correlation function based off distance matrix, and a preset
 correlation matrix structure (site to site correlations, but based off
 something we are not aware of).  We also set the necessary presets for our
 simulations.  These presets include site names, lab names, wastewater treatment
@@ -213,11 +214,11 @@ deviation (we set this to zero to ensure central $\mathcal{R}(t)$ is used
 without any deviations), and necessary correlation function parameters.  The
 type of correlation structure can be changed by setting `corr_function` to one
 of three functions included in the package : `independence_corr_func_r`,
-`exponential_decay_corr_func_r()`, and `rand_corr_matrix_func()`.  Each
-correlation matrix function, built in or user created, expects a set of
-parameters `corr_fun_params` that are specific to that function.  See each built
-in function's documentation for details on how to set these parameters.  Under
-the hood, the correlation matrix is created by calling
+`exponential_decay_corr_func_r()`, `custom_corr_matrix_func()`, and
+`rand_corr_matrix_func()`.  Each correlation matrix function, built in or user
+created, expects a set of parameters `corr_fun_params` that are specific to that
+function.  See each built in function's documentation for details on how to set
+these parameters.  Under the hood, the correlation matrix is created by calling
 `corr_function(corr_fun_params)`.  So, `corr_function` and `corr_fun_params`
 need to be set to work in sync.  The object that comes out of
 `generate_simulated_data()` will have hospital admission data, hospital
@@ -246,11 +247,23 @@ exp_corr_param <- list(
   phi = 1.2,
   l = 1
 )
-sigma_sqrd_generalized <- 0.01^n_sites
+sigma_sqrd_generalized <- 0.0095^n_sites
 mean_report_freq <- 3 / 7
+custom_corr_matrix <- matrix(
+  c(
+    1, 0.10, 0.25, 0.15,
+    0.1, 1, 0.2, 0.96,
+    0.25, 0.2, 1, 0.25,
+    0.15, 0.96, 0.25, 1
+  ),
+  ncol = 4
+)
+custom_corr_params <- list(
+  corr_matrix = custom_corr_matrix
+)
 # ------------------------------------------------------------------------------
 # IID Simulated Data -----------------------------------------------------------
-simulated_data_iid <- withr::with_seed(1, {
+simulated_data_iid <- withr::with_seed(2024, {
   wwinference::generate_simulated_data(
     r_in_weeks = r_in_weeks, # nolint
     n_sites = n_sites,
@@ -287,8 +300,8 @@ simulated_data_exp <- withr::with_seed(1, {
   )
 })
 # ------------------------------------------------------------------------------
-# Rand. Corr. Matrix Simulated Data --------------------------------------------
-simulated_data_rng_corr_mat <- withr::with_seed(1, {
+# Pre-set Matrix Simulated Data ------------------------------------------------
+simulated_data_set_corr_mat <- withr::with_seed(1, {
   wwinference::generate_simulated_data(
     r_in_weeks = r_in_weeks, # nolint
     n_sites = n_sites,
@@ -299,8 +312,8 @@ simulated_data_rng_corr_mat <- withr::with_seed(1, {
     mean_reporting_freq = mean_report_freq,
     global_rt_sd = global_rt_sd,
     use_spatial_corr = TRUE,
-    corr_function = wwinference::rand_corr_matrix_func,
-    corr_fun_params = list(n_sites = n_sites, seed = 2024),
+    corr_function = custom_corr_matrix_func,
+    corr_fun_params = custom_corr_params,
     sigma_sqrd_generalized = sigma_sqrd_generalized,
     aux_site_bool = TRUE
   )
@@ -344,17 +357,17 @@ ww_data_to_fit_exp <- wwinference::indicate_ww_exclusions(
   remove_outliers = TRUE
 )
 
-# rand corr mat case
-hosp_data_proc_rng_corr_mat <- wwinference::preprocess_count_data(
-  simulated_data_rng_corr_mat$hosp_data,
+# Pre-set corr mat case
+hosp_data_proc_set_corr_mat <- wwinference::preprocess_count_data(
+  simulated_data_set_corr_mat$hosp_data,
   count_col_name = "daily_hosp_admits",
   pop_size_col_name = "state_pop"
 )
-ww_data_proc_rng_corr_mat <- wwinference::preprocess_ww_data(
-  simulated_data_rng_corr_mat$ww_data
+ww_data_proc_set_corr_mat <- wwinference::preprocess_ww_data(
+  simulated_data_set_corr_mat$ww_data
 )
-ww_data_to_fit_rng_corr_mat <- wwinference::indicate_ww_exclusions(
-  ww_data_proc_rng_corr_mat,
+ww_data_to_fit_set_corr_mat <- wwinference::indicate_ww_exclusions(
+  ww_data_proc_set_corr_mat,
   outlier_col_name = "flag_as_ww_outlier",
   remove_outliers = TRUE
 )
@@ -382,8 +395,8 @@ hosp_data_full <- rbind(
     mutate(model_type = "IID"),
   hosp_data_preprocessed_exp %>%
     mutate(model_type = "Exponential"),
-  hosp_data_proc_rng_corr_mat %>%
-    mutate(model_type = "Rand. Corr. Matrix")
+  hosp_data_proc_set_corr_mat %>%
+    mutate(model_type = "Pre-set Corr. Matrix")
 ) %>%
   mutate(
     model_type = factor(
@@ -391,7 +404,7 @@ hosp_data_full <- rbind(
       levels = c(
         "IID",
         "Exponential",
-        "Rand. Corr. Matrix"
+        "Pre-set Corr. Matrix"
       )
     )
   )
@@ -400,8 +413,8 @@ hosp_data_eval_full <- rbind(
     mutate(model_type = "IID"),
   simulated_data_exp$hosp_data_eval %>%
     mutate(model_type = "Exponential"),
-  simulated_data_rng_corr_mat$hosp_data_eval %>%
-    mutate(model_type = "Rand. Corr. Matrix")
+  simulated_data_set_corr_mat$hosp_data_eval %>%
+    mutate(model_type = "Pre-set Corr. Matrix")
 ) %>%
   mutate(
     model_type = factor(
@@ -409,7 +422,7 @@ hosp_data_eval_full <- rbind(
       levels = c(
         "IID",
         "Exponential",
-        "Rand. Corr. Matrix"
+        "Pre-set Corr. Matrix"
       )
     )
   )
@@ -435,8 +448,8 @@ ww_data_full <- rbind(
     mutate(model_type = "IID"),
   ww_data_preprocessed_exp %>%
     mutate(model_type = "Exponential"),
-  ww_data_proc_rng_corr_mat %>%
-    mutate(model_type = "Rand. Corr. Matrix")
+  ww_data_proc_set_corr_mat %>%
+    mutate(model_type = "Pre-set Corr. Matrix")
 ) %>%
   mutate(
     model_type = factor(
@@ -444,7 +457,7 @@ ww_data_full <- rbind(
       levels = c(
         "IID",
         "Exponential",
-        "Rand. Corr. Matrix"
+        "Pre-set Corr. Matrix"
       )
     )
   )
@@ -453,8 +466,8 @@ ww_data_eval_full <- rbind(
     mutate(model_type = "IID"),
   simulated_data_exp$ww_data_eval %>%
     mutate(model_type = "Exponential"),
-  simulated_data_rng_corr_mat$ww_data_eval %>%
-    mutate(model_type = "Rand. Corr. Matrix")
+  simulated_data_set_corr_mat$ww_data_eval %>%
+    mutate(model_type = "Pre-set Corr. Matrix")
 ) %>%
   mutate(
     model_type = factor(
@@ -462,7 +475,7 @@ ww_data_eval_full <- rbind(
       levels = c(
         "IID",
         "Exponential",
-        "Rand. Corr. Matrix"
+        "Pre-set Corr. Matrix"
       )
     )
   )
@@ -580,12 +593,12 @@ rt_global_data_full <- rbind(
       model_type = "Exponential",
       date = simulated_data_exp$hosp_data_eval$date
     ),
-  simulated_data_rng_corr_mat$rt_global_data %>%
+  simulated_data_set_corr_mat$rt_global_data %>%
     as.data.frame() %>%
     `colnames<-`(c("global_rt")) %>%
     mutate(
-      model_type = "Rand. Corr. Matrix",
-      date = simulated_data_rng_corr_mat$hosp_data_eval$date
+      model_type = "Pre-set Corr. Matrix",
+      date = simulated_data_set_corr_mat$hosp_data_eval$date
     )
 ) %>%
   mutate(
@@ -594,7 +607,7 @@ rt_global_data_full <- rbind(
       levels = c(
         "IID",
         "Exponential",
-        "Rand. Corr. Matrix"
+        "Pre-set Corr. Matrix"
       )
     )
   )
@@ -654,10 +667,10 @@ site_rt_data_full <- rbind(
     mutate(
       model_type = "Exponential"
     ),
-  simulated_data_rng_corr_mat$rt_site_data %>%
+  simulated_data_set_corr_mat$rt_site_data %>%
     t() %>%
     as.data.frame() %>%
-    mutate(date = simulated_data_rng_corr_mat$hosp_data_eval$date) %>%
+    mutate(date = simulated_data_set_corr_mat$hosp_data_eval$date) %>%
     `colnames<-`(c(
       paste0("Site ", 1:n_sites),
       "Aux",
@@ -670,7 +683,7 @@ site_rt_data_full <- rbind(
       "value"
     )) %>%
     mutate(
-      model_type = "Rand. Corr. Matrix"
+      model_type = "Pre-set Corr. Matrix"
     )
 ) %>%
   mutate(
@@ -679,11 +692,19 @@ site_rt_data_full <- rbind(
       levels = c(
         "IID",
         "Exponential",
-        "Rand. Corr. Matrix"
+        "Pre-set Corr. Matrix"
       )
     )
   )
-site_rt_data_plot <- ggplot(site_rt_data_full) +
+site_rt_data_plot <- ggplot(
+  site_rt_data_full %>%
+    mutate(
+      subpop = case_when(
+        subpop == "Aux" ~ "Remainder of population",
+        .default = subpop
+      )
+    )
+) +
   geom_hline(
     yintercept = 1,
     color = "blue",
@@ -795,7 +816,7 @@ corr_matrix_df <- rbind(
     mutate(
       model_type = "Exponential"
     ),
-  simulated_data_rng_corr_mat$corr_matrix %>%
+  simulated_data_set_corr_mat$corr_matrix %>%
     as.data.frame() %>%
     `colnames<-`(c(
       paste0("Site ", 1:n_sites)
@@ -810,7 +831,7 @@ corr_matrix_df <- rbind(
       values_to = "value"
     ) %>%
     mutate(
-      model_type = "Rand. Corr. Matrix"
+      model_type = "Pre-set Corr. Matrix"
     )
 ) %>%
   mutate(
@@ -819,7 +840,7 @@ corr_matrix_df <- rbind(
       levels = c(
         "IID",
         "Exponential",
-        "Rand. Corr. Matrix"
+        "Pre-set Corr. Matrix"
       )
     )
   ) %>%
@@ -1038,17 +1059,17 @@ fit_exp_to_unstruct <- wwinference::wwinference(
 )
 ```
 
-## Fitting rand. corr. matrix data
-Finally, we fit the rand. corr. matrix data generation model to all three of the
+## Fitting pre-set corr. matrix data
+Finally, we fit the pre-set corr. matrix data generation model to all three of the
 inference models.  Again, the inference models only differ by their assumed
 site to site correlation structures.
 
 <div class="fold s o">
 ```{r warning=FALSE, message=FALSE}
-# Rand. Corr. Matrix data to IID model -----------------------------------------
-fit_rand_to_iid <- wwinference::wwinference(
-  ww_data = ww_data_to_fit_rng_corr_mat,
-  count_data = hosp_data_proc_rng_corr_mat,
+# Pre-set Corr. Matrix data to IID model ---------------------------------------
+fit_set_to_iid <- wwinference::wwinference(
+  ww_data = ww_data_to_fit_set_corr_mat,
+  count_data = hosp_data_proc_set_corr_mat,
   forecast_date = forecast_date,
   calibration_time = calibration_time,
   forecast_horizon = forecast_horizon,
@@ -1064,10 +1085,10 @@ fit_rand_to_iid <- wwinference::wwinference(
   corr_structure_switch = 0
 )
 # ------------------------------------------------------------------------------
-# Rand. Corr. Matrix data to Exponential model ---------------------------------
-fit_rand_to_exp <- wwinference::wwinference(
-  ww_data = ww_data_to_fit_rng_corr_mat,
-  count_data = hosp_data_proc_rng_corr_mat,
+# Pre-set Corr. Matrix data to Exponential model -------------------------------
+fit_set_to_exp <- wwinference::wwinference(
+  ww_data = ww_data_to_fit_set_corr_mat,
+  count_data = hosp_data_proc_set_corr_mat,
   forecast_date = forecast_date,
   calibration_time = calibration_time,
   forecast_horizon = forecast_horizon,
@@ -1083,10 +1104,10 @@ fit_rand_to_exp <- wwinference::wwinference(
   corr_structure_switch = 1
 )
 # ------------------------------------------------------------------------------
-# Rand. Corr. Matrix data to Unstructured model --------------------------------
-fit_rand_to_unstruct <- wwinference::wwinference(
-  ww_data = ww_data_to_fit_rng_corr_mat,
-  count_data = hosp_data_proc_rng_corr_mat,
+# Pre-set Corr. Matrix data to Unstructured model ------------------------------
+fit_set_to_unstruct <- wwinference::wwinference(
+  ww_data = ww_data_to_fit_set_corr_mat,
+  count_data = hosp_data_proc_set_corr_mat,
   forecast_date = forecast_date,
   calibration_time = calibration_time,
   forecast_horizon = forecast_horizon,
@@ -1176,23 +1197,23 @@ exp_pred_draws_df <- rbind(
     gen_model_type = "Exponential"
   )
 # ------------------------------------------------------------------------------
-# Rand. Corr. Matrix data ------------------------------------------------------
-rand_pred_draws_df <- rbind(
-  get_draws(fit_rand_to_iid,
+# Pre-set Corr. Matrix data ----------------------------------------------------
+set_pred_draws_df <- rbind(
+  get_draws(fit_set_to_iid,
     what = "predicted_counts"
   )$predicted_counts %>%
     filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "IID"
     ),
-  get_draws(fit_rand_to_exp,
+  get_draws(fit_set_to_exp,
     what = "predicted_counts"
   )$predicted_counts %>%
     filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "Exponential"
     ),
-  get_draws(fit_rand_to_unstruct,
+  get_draws(fit_set_to_unstruct,
     what = "predicted_counts"
   )$predicted_counts %>%
     filter(draw %in% draws_to_keep) %>%
@@ -1201,13 +1222,13 @@ rand_pred_draws_df <- rbind(
     )
 ) %>%
   mutate(
-    gen_model_type = "Rand. Corr. Matrix"
+    gen_model_type = "Pre-set Corr. Matrix"
   )
 # ------------------------------------------------------------------------------
 all_pred_draws_df <- rbind(
   iid_pred_draws_df,
   exp_pred_draws_df,
-  rand_pred_draws_df
+  set_pred_draws_df
 ) %>%
   mutate(
     inf_model_type = factor(
@@ -1223,7 +1244,7 @@ all_pred_draws_df <- rbind(
       levels = c(
         "IID",
         "Exponential",
-        "Rand. Corr. Matrix"
+        "Pre-set Corr. Matrix"
       )
     )
   )
@@ -1284,23 +1305,23 @@ exp_ww_draws_df <- rbind(
     gen_model_type = "Exponential"
   )
 # ------------------------------------------------------------------------------
-# Rand. Corr. Matrix data ------------------------------------------------------
-rand_ww_draws_df <- rbind(
-  get_draws(fit_rand_to_iid,
+# Pre-set Corr. Matrix data ----------------------------------------------------
+set_ww_draws_df <- rbind(
+  get_draws(fit_set_to_iid,
     what = "predicted_ww"
   )$predicted_ww %>%
     filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "IID"
     ),
-  get_draws(fit_rand_to_exp,
+  get_draws(fit_set_to_exp,
     what = "predicted_ww"
   )$predicted_ww %>%
     filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "Exponential"
     ),
-  get_draws(fit_rand_to_unstruct,
+  get_draws(fit_set_to_unstruct,
     what = "predicted_ww"
   )$predicted_ww %>%
     filter(draw %in% draws_to_keep) %>%
@@ -1309,13 +1330,13 @@ rand_ww_draws_df <- rbind(
     )
 ) %>%
   mutate(
-    gen_model_type = "Rand. Corr. Matrix"
+    gen_model_type = "Pre-set Corr. Matrix"
   )
 
 all_ww_draws_df <- rbind(
   iid_ww_draws_df,
   exp_ww_draws_df,
-  rand_ww_draws_df
+  set_ww_draws_df
 ) %>%
   mutate(
     inf_model_type = factor(
@@ -1331,7 +1352,7 @@ all_ww_draws_df <- rbind(
       levels = c(
         "IID",
         "Exponential",
-        "Rand. Corr. Matrix"
+        "Pre-set Corr. Matrix"
       )
     )
   )
@@ -1392,23 +1413,23 @@ exp_rt_draws_df <- rbind(
     gen_model_type = "Exponential"
   )
 # ------------------------------------------------------------------------------
-# Rand. Corr. Matrix data ------------------------------------------------------
-rand_rt_draws_df <- rbind(
-  get_draws(fit_rand_to_iid,
+# Pre-set Corr. Matrix data ----------------------------------------------------
+set_rt_draws_df <- rbind(
+  get_draws(fit_set_to_iid,
     what = "global_rt"
   )$global_rt %>%
     filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "IID"
     ),
-  get_draws(fit_rand_to_exp,
+  get_draws(fit_set_to_exp,
     what = "global_rt"
   )$global_rt %>%
     filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "Exponential"
     ),
-  get_draws(fit_rand_to_unstruct,
+  get_draws(fit_set_to_unstruct,
     what = "global_rt"
   )$global_rt %>%
     filter(draw %in% draws_to_keep) %>%
@@ -1417,13 +1438,13 @@ rand_rt_draws_df <- rbind(
     )
 ) %>%
   mutate(
-    gen_model_type = "Rand. Corr. Matrix"
+    gen_model_type = "Pre-set Corr. Matrix"
   )
 
 all_rt_draws_df <- rbind(
   iid_rt_draws_df,
   exp_rt_draws_df,
-  rand_rt_draws_df
+  set_rt_draws_df
 ) %>%
   mutate(
     inf_model_type = factor(
@@ -1439,7 +1460,7 @@ all_rt_draws_df <- rbind(
       levels = c(
         "IID",
         "Exponential",
-        "Rand. Corr. Matrix"
+        "Pre-set Corr. Matrix"
       )
     )
   )
@@ -1501,23 +1522,23 @@ exp_subpop_rt_draws_df <- rbind(
     gen_model_type = "Exponential"
   )
 # ------------------------------------------------------------------------------
-# Rand. Corr. Matrix data ------------------------------------------------------
-rand_subpop_rt_draws_df <- rbind(
-  get_draws(fit_rand_to_iid,
+# Pre-set Corr. Matrix data ----------------------------------------------------
+set_subpop_rt_draws_df <- rbind(
+  get_draws(fit_set_to_iid,
     what = "subpop_rt"
   )$subpop_rt %>%
     filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "IID"
     ),
-  get_draws(fit_rand_to_exp,
+  get_draws(fit_set_to_exp,
     what = "subpop_rt"
   )$subpop_rt %>%
     filter(draw %in% draws_to_keep) %>%
     mutate(
       inf_model_type = "Exponential"
     ),
-  get_draws(fit_rand_to_unstruct,
+  get_draws(fit_set_to_unstruct,
     what = "subpop_rt"
   )$subpop_rt %>%
     filter(draw %in% draws_to_keep) %>%
@@ -1526,13 +1547,13 @@ rand_subpop_rt_draws_df <- rbind(
     )
 ) %>%
   mutate(
-    gen_model_type = "Rand. Corr. Matrix"
+    gen_model_type = "Pre-set Corr. Matrix"
   )
 
 all_subpop_rt_draws_df <- rbind(
   iid_subpop_rt_draws_df,
   exp_subpop_rt_draws_df,
-  rand_subpop_rt_draws_df
+  set_subpop_rt_draws_df
 ) %>%
   mutate(
     inf_model_type = factor(
@@ -1548,7 +1569,7 @@ all_subpop_rt_draws_df <- rbind(
       levels = c(
         "IID",
         "Exponential",
-        "Rand. Corr. Matrix"
+        "Pre-set Corr. Matrix"
       )
     )
   )
@@ -1717,9 +1738,9 @@ exp_corr_matrix_draws_df <- rbind(
     gen_model_type = "Exponential"
   )
 # ------------------------------------------------------------------------------
-# Rand. Corr. Matrix data ------------------------------------------------------
-rand_corr_matrix_draws_df <- rbind(
-  fit_rand_to_iid$fit$result$draws(
+# Pre-set Corr. Matrix data ----------------------------------------------------
+set_corr_matrix_draws_df <- rbind(
+  fit_set_to_iid$fit$result$draws(
     variables = "non_norm_omega",
     format = "draws_array"
   ) %>%
@@ -1741,7 +1762,7 @@ rand_corr_matrix_draws_df <- rbind(
     select(
       -variable
     ),
-  fit_rand_to_exp$fit$result$draws(
+  fit_set_to_exp$fit$result$draws(
     variables = "non_norm_omega",
     format = "draws_array"
   ) %>%
@@ -1763,7 +1784,7 @@ rand_corr_matrix_draws_df <- rbind(
     select(
       -variable
     ),
-  fit_iid_to_unstruct$fit$result$draws(
+  fit_set_to_unstruct$fit$result$draws(
     variables = "non_norm_omega",
     format = "draws_array"
   ) %>%
@@ -1787,13 +1808,13 @@ rand_corr_matrix_draws_df <- rbind(
     )
 ) %>%
   mutate(
-    gen_model_type = "Rand. Corr. Matrix"
+    gen_model_type = "Pre-set Corr. Matrix"
   )
 # ------------------------------------------------------------------------------
 all_corr_matrix_draws_df <- rbind(
   iid_corr_matrix_draws_df,
   exp_corr_matrix_draws_df,
-  rand_corr_matrix_draws_df
+  set_corr_matrix_draws_df
 ) %>%
   mutate(
     inf_model_type = factor(
@@ -1809,7 +1830,7 @@ all_corr_matrix_draws_df <- rbind(
       levels = c(
         "IID",
         "Exponential",
-        "Rand. Corr. Matrix"
+        "Pre-set Corr. Matrix"
       )
     )
   )
@@ -2059,6 +2080,19 @@ site_rt_ribbon_data <- all_subpop_rt_draws_df %>%
     upper = quantile(pred_value, 0.975, na.rm = TRUE),
     .groups = "drop"
   )
+site_rt_data_full <- site_rt_data_full %>%
+  mutate(
+    gen_model_type = model_type,
+    subpop = case_when(
+      subpop == "Site 1" ~ "Site: 1",
+      subpop == "Site 2" ~ "Site: 2",
+      subpop == "Site 3" ~ "Site: 3",
+      subpop == "Site 4" ~ "Site: 4",
+      subpop == "Aux" ~ "remainder of population",
+      .default = subpop
+    ),
+    subpop_name = subpop
+  )
 site_rt_result_plot <- ggplot() +
   geom_ribbon(
     data = site_rt_ribbon_data,
@@ -2070,18 +2104,17 @@ site_rt_result_plot <- ggplot() +
     aes(x = date, y = median, color = inf_model_type),
     size = 1.25,
   ) +
+  geom_line(
+    data = site_rt_data_full,
+    aes(x = date, y = value),
+    size = 1.25
+  ) +
   geom_hline(
     yintercept = 1,
     color = "blue",
     alpha = .7,
     size = 1,
     linetype = "dashed"
-  ) +
-  geom_line(
-    data = site_rt_data_full %>%
-      mutate(gen_model_type = model_type),
-    aes(x = date, y = value),
-    size = 1.25
   ) +
   geom_vline(
     xintercept = lubridate::ymd(forecast_date),
@@ -2280,7 +2313,7 @@ rand_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
     .groups = "drop"
   ) %>%
   filter(
-    gen_model_type == "Rand. Corr. Matrix",
+    gen_model_type == "Pre-set Corr. Matrix",
     inf_model_type != "IID"
   )) +
   geom_point(
@@ -2301,7 +2334,7 @@ rand_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
   ) +
   geom_vline(
     data = corr_matrix_df %>%
-      filter(model_type == "Rand. Corr. Matrix") %>%
+      filter(model_type == "Pre-set Corr. Matrix") %>%
       mutate(
         Row = Var1,
         Column = Var2
@@ -2322,7 +2355,7 @@ rand_corr_matrix_result_plot <- ggplot(all_corr_matrix_draws_df %>%
   ) +
   ylab("") +
   xlab("Correlation Drawed") +
-  ggtitle("Data Generation Model : Rand. Corr. Matrix") +
+  ggtitle("Data Generation Model : Pre-set Corr. Matrix") +
   labs(
     color = "Assumed Corr. Structure",
     fill = "Assumed Corr. Structure"
@@ -2485,6 +2518,9 @@ hosp_by_date_eval_forecast_plot <- ggplot( # nolint
           "Rand. Corr. Matrix"
         )
       )
+    ) %>%
+    filter(
+      `Evaluation Score` %in% c("CRPS", "Bias")
     )
 ) +
   geom_point(
@@ -2561,6 +2597,9 @@ hosp_eval_forecast_plot <- ggplot(
           "Rand. Corr. Matrix"
         )
       )
+    ) %>%
+    filter(
+      `Evaluation Score` %in% c("CRPS", "Bias", "ess/sec")
     )
 ) +
   geom_tile(
@@ -2691,6 +2730,9 @@ hosp_by_date_eval_nowcast_plot <- ggplot(
           "Rand. Corr. Matrix"
         )
       )
+    ) %>%
+    filter(
+      `Evaluation Score` %in% c("CRPS", "Bias")
     )
 ) +
   geom_point(
@@ -2765,6 +2807,9 @@ hosp_eval_nowcast_plot <- ggplot(
           "Rand. Corr. Matrix"
         )
       )
+    ) %>%
+    filter(
+      `Evaluation Score` %in% c("CRPS", "Bias", "ess/sec")
     )
 ) +
   geom_tile(
@@ -2817,4 +2862,776 @@ Here we showcase the evaluation metric scores.
 ```
 
 
-## Wastewater evaluations
+## Wastewater concentration evaluations
+Here we prepare the evaluation metric plots for the wastewater concentrations.
+We show these metrics for the nowcast and forecast for different viewing
+windows.  We look at it by date, by site, by date/site, and averaged across
+both date and site.  We also show quantile-quantile plots.
+
+
+### Wastewater Concentrations at forecast & nowcast period evaluation scores
+Again, here we prepare evaluation metric datasets for plotting.
+```{r}
+ww_obj_for_eval_forecast <- all_ww_draws_df %>%
+  filter(
+    date > max(hosp_data$date)
+  ) %>%
+  inner_join(
+    ww_data_eval_full %>%
+      filter(
+        date > max(hosp_data$date)
+      ) %>%
+      mutate(
+        gen_model_type = model_type,
+        true_value = log_genome_copies_per_ml_eval,
+        subpop_name = case_when(
+          site == 1 ~ "Site: 1",
+          site == 2 ~ "Site: 2",
+          site == 3 ~ "Site: 3",
+          site == 4 ~ "Site: 4"
+        )
+      ) %>%
+      select(
+        date,
+        true_value,
+        subpop_name,
+        gen_model_type
+      ),
+    by = c("date", "subpop_name", "gen_model_type")
+  ) %>%
+  mutate(
+    predicted = pred_value,
+    observed = true_value,
+    sample_id = draw,
+    model = inf_model_type
+  ) %>%
+  select(
+    predicted,
+    observed,
+    sample_id,
+    date,
+    subpop_name,
+    model,
+    gen_model_type
+  )
+ww_scores <- ww_obj_for_eval_forecast %>%
+  as_forecast_sample(
+    forecast_unit = c(
+      "date", "subpop_name", "model", "gen_model_type"
+    )
+  ) %>%
+  score() %>%
+  select(
+    date, subpop_name, model, gen_model_type, bias, crps
+  )
+ww_score_by_date_site <- rbind(
+  ww_scores %>%
+    filter(
+      gen_model_type == "IID"
+    ) %>%
+    group_by(
+      date, subpop_name
+    ) %>%
+    mutate(
+      `Relative CRPS` = crps / crps[which(model == "IID")]
+    ),
+  ww_scores %>%
+    filter(
+      gen_model_type == "Exponential"
+    ) %>%
+    group_by(
+      date, subpop_name
+    ) %>%
+    mutate(
+      `Relative CRPS` = crps / crps[which(model == "IID")]
+    ),
+  ww_scores %>%
+    filter(
+      gen_model_type == "Pre-set Corr. Matrix"
+    ) %>%
+    group_by(
+      date, subpop_name
+    ) %>%
+    mutate(
+      `Relative CRPS` = crps / crps[which(model == "IID")]
+    )
+) %>%
+  mutate(
+    Bias = bias,
+    CRPS = crps
+  ) %>%
+  select(
+    -c(bias, crps)
+  ) %>%
+  pivot_longer(
+    -c(date, model, gen_model_type, subpop_name),
+    names_to = "Metric",
+    values_to = "Value"
+  )
+ww_score_by_date_site_wovall <- rbind(
+  ww_score_by_date_site,
+  ww_score_by_date_site %>%
+    group_by(date, model, gen_model_type, Metric) %>%
+    summarize(
+      subpop_name = "Overall",
+      Value = mean(Value, na.rm = TRUE),
+      .groups = "drop"
+    )
+) %>%
+  mutate(
+    subpop_name = factor(subpop_name)
+  )
+
+ww_obj_for_eval_forecast <- ww_obj_for_eval_forecast %>%
+  as_forecast_sample(
+    forecast_unit = c(
+      "date", "subpop_name", "model", "gen_model_type"
+    )
+  )
+ww_obj_for_quant_eval <- as_forecast_quantile(
+  ww_obj_for_eval_forecast,
+  probs = c(0.01, 0.025, seq(0.05, 0.95, 0.05), 0.975, 0.99),
+  type = 7,
+  forecast_unit = c(
+    "date", "subpop_name", "model", "gen_model_type"
+  )
+)
+ww_coverage_obj_by_site <- ww_obj_for_quant_eval %>%
+  get_coverage(
+    by = c(
+      "subpop_name", "model", "gen_model_type"
+    )
+  )
+ww_coverage_obj <- ww_obj_for_quant_eval %>%
+  get_coverage(
+    by = c(
+      "model", "gen_model_type"
+    )
+  )
+```
+
+### Wastewater concentrations at forecast & nowcast period plots
+Here we make the actual plots.
+```{r}
+# By Site
+ww_eval_by_site_rel_crps <- ggplot(
+  ww_score_by_date_site_wovall %>%
+    group_by(
+      subpop_name, model, gen_model_type, Metric
+    ) %>%
+    summarise(
+      Value = mean(Value),
+      .groups = "drop"
+    ) %>%
+    filter(
+      Metric == "Relative CRPS",
+      model != "IID"
+    ) %>%
+    mutate(
+      subpop_name = factor(
+        subpop_name,
+        levels = c("Site: 4", "Site: 3", "Site: 2", "Site: 1", "Overall")
+      )
+    )
+) +
+  geom_vline(
+    xintercept = 1,
+    linetype = "dashed"
+  ) +
+  geom_point(
+    aes(
+      x = Value,
+      y = subpop_name,
+      shape = model,
+      colour = model
+    ),
+    size = 2.25
+  ) +
+  scale_x_continuous(
+    trans = "log10",
+    breaks = c(0.5, 0.7, 1, 1.5, 2)
+  ) +
+  coord_cartesian(
+    xlim = c(0.4, 2.5)
+  ) +
+  scale_colour_manual(
+    breaks = c("IID", "Exponential", "Unstructured"),
+    values = c("darksalmon", "darkviolet", "deeppink3")
+  ) +
+  scale_shape_manual(
+    breaks = c("IID", "Exponential", "Unstructured"),
+    values = c(6, 0, 8)
+  ) +
+  facet_grid2(
+    Metric ~ gen_model_type,
+    scales = "free",
+    independent = "x"
+  ) +
+  labs(
+    shape = "Assumed Correlation Structure",
+    color = "Assumed Correlation Structure",
+    x = "Relative CRPS"
+  ) +
+  guides(
+    shape = "none",
+    color = "none"
+  ) +
+  theme_bw() +
+  theme(
+    axis.title.y = element_blank()
+  )
+ww_eval_by_site_crps <- ggplot(
+  ww_score_by_date_site_wovall %>%
+    group_by(
+      subpop_name, model, gen_model_type, Metric
+    ) %>%
+    summarise(
+      Value = mean(Value),
+      .groups = "drop"
+    ) %>%
+    filter(
+      Metric == "CRPS"
+    ) %>%
+    mutate(
+      subpop_name = factor(
+        subpop_name,
+        levels = c("Site: 4", "Site: 3", "Site: 2", "Site: 1", "Overall")
+      )
+    )
+) +
+  geom_point(
+    aes(
+      x = Value,
+      y = subpop_name,
+      shape = model,
+      colour = model
+    ),
+    size = 2.25
+  ) +
+  scale_colour_manual(
+    breaks = c("IID", "Exponential", "Unstructured"),
+    values = c("darksalmon", "darkviolet", "deeppink3")
+  ) +
+  scale_shape_manual(
+    breaks = c("IID", "Exponential", "Unstructured"),
+    values = c(6, 0, 8)
+  ) +
+  facet_grid2(
+    Metric ~ gen_model_type
+  ) +
+  labs(
+    shape = "Assumed Correlation Structure",
+    color = "Assumed Correlation Structure",
+    x = "CRPS"
+  ) +
+  guides(
+    shape = "none",
+    color = "none"
+  ) +
+  theme_bw() +
+  theme(
+    axis.title.y = element_blank()
+  )
+ww_eval_by_site_bias <- ggplot(
+  ww_score_by_date_site_wovall %>%
+    group_by(
+      subpop_name, model, gen_model_type, Metric
+    ) %>%
+    summarise(
+      Value = mean(Value),
+      .groups = "drop"
+    ) %>%
+    filter(
+      Metric == "Bias"
+    ) %>%
+    mutate(
+      subpop_name = factor(
+        subpop_name,
+        levels = c("Site: 4", "Site: 3", "Site: 2", "Site: 1", "Overall")
+      )
+    )
+) +
+  geom_vline(
+    xintercept = 0,
+    linetype = "dashed"
+  ) +
+  geom_point(
+    aes(
+      x = Value,
+      y = subpop_name,
+      shape = model,
+      colour = model
+    ),
+    size = 2.25
+  ) +
+  scale_colour_manual(
+    breaks = c("IID", "Exponential", "Unstructured"),
+    values = c("darksalmon", "darkviolet", "deeppink3")
+  ) +
+  scale_shape_manual(
+    breaks = c("IID", "Exponential", "Unstructured"),
+    values = c(6, 0, 8)
+  ) +
+  facet_grid2(
+    Metric ~ gen_model_type
+  ) +
+  labs(
+    shape = "Assumed Correlation Structure",
+    color = "Assumed Correlation Structure",
+    x = "Bias"
+  ) +
+  theme_bw() +
+  theme(
+    axis.title.y = element_blank(),
+    legend.position = "bottom"
+  )
+ww_eval_by_site <- ww_eval_by_site_crps /
+  ww_eval_by_site_rel_crps /
+  ww_eval_by_site_bias +
+  plot_annotation(
+    tag_levels = "A"
+  )
+
+# By Date
+ww_eval_by_date_rel_crps <- ggplot(
+  ww_score_by_date_site %>%
+    group_by(
+      date, model, gen_model_type, Metric
+    ) %>%
+    summarise(
+      Value = mean(Value)
+    ) %>%
+    filter(
+      Metric == "Relative CRPS",
+      model != "IID"
+    )
+) +
+  geom_hline(
+    yintercept = 1,
+    linetype = "dashed"
+  ) +
+  geom_vline(
+    xintercept = as.Date(forecast_date)
+  ) +
+  geom_line(
+    aes(
+      x = date,
+      y = Value,
+      colour = model
+    )
+  ) +
+  geom_point(
+    aes(
+      x = date,
+      y = Value,
+      colour = model,
+      shape = model
+    ),
+    size = 2.25
+  ) +
+  scale_y_continuous(
+    trans = "log10",
+    breaks = c(0.5, 0.7, 1, 1.5, 2)
+  ) +
+  coord_cartesian(
+    ylim = c(0.5, 2)
+  ) +
+  scale_shape_manual(
+    breaks = c("IID", "Exponential", "Unstructured"),
+    values = c(6, 0, 8)
+  ) +
+  scale_colour_manual(
+    breaks = c("Exponential", "Unstructured", "IID"),
+    values = c("darkviolet", "deeppink3", "darksalmon")
+  ) +
+  facet_grid2(
+    Metric ~ gen_model_type,
+    scales = "free",
+    independent = "y"
+  ) +
+  labs(
+    color = "Assumed Correlation Structure",
+    shape = "Assumed Correlation Structure",
+    y = "Relative CRPS",
+    x = "Date"
+  ) +
+  guides(
+    shape = "none",
+    color = "none"
+  ) +
+  theme_bw() +
+  theme(
+    legend.position = "bottom"
+  )
+ww_eval_by_date_crps <- ggplot(
+  ww_score_by_date_site %>%
+    group_by(
+      date, model, gen_model_type, Metric
+    ) %>%
+    summarise(
+      Value = mean(Value)
+    ) %>%
+    filter(
+      Metric == "CRPS"
+    )
+) +
+  geom_vline(
+    xintercept = as.Date(forecast_date)
+  ) +
+  geom_line(
+    aes(
+      x = date,
+      y = Value,
+      colour = model
+    )
+  ) +
+  geom_point(
+    aes(
+      x = date,
+      y = Value,
+      colour = model,
+      shape = model
+    ),
+    size = 2.25
+  ) +
+  scale_shape_manual(
+    breaks = c("IID", "Exponential", "Unstructured"),
+    values = c(6, 0, 8)
+  ) +
+  scale_colour_manual(
+    breaks = c("Exponential", "Unstructured", "IID"),
+    values = c("darkviolet", "deeppink3", "darksalmon")
+  ) +
+  facet_grid2(
+    Metric ~ gen_model_type
+  ) +
+  labs(
+    color = "Assumed Correlation Structure",
+    shape = "Assumed Correlation Structure",
+    y = "CRPS",
+    x = "Date"
+  ) +
+  guides(
+    shape = "none",
+    color = "none"
+  ) +
+  theme_bw() +
+  theme(
+    legend.position = "bottom"
+  )
+ww_eval_by_date_bias <- ggplot(
+  ww_score_by_date_site %>%
+    group_by(
+      date, model, gen_model_type, Metric
+    ) %>%
+    summarise(
+      Value = mean(Value)
+    ) %>%
+    filter(
+      Metric == "Bias"
+    )
+) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed"
+  ) +
+  geom_vline(
+    xintercept = as.Date(forecast_date)
+  ) +
+  geom_line(
+    aes(
+      x = date,
+      y = Value,
+      colour = model
+    )
+  ) +
+  geom_point(
+    aes(
+      x = date,
+      y = Value,
+      colour = model,
+      shape = model
+    ),
+    size = 2.25
+  ) +
+  scale_shape_manual(
+    breaks = c("IID", "Exponential", "Unstructured"),
+    values = c(6, 0, 8)
+  ) +
+  scale_colour_manual(
+    breaks = c("IID", "Exponential", "Unstructured"),
+    values = c("darksalmon", "darkviolet", "deeppink3")
+  ) +
+  facet_grid2(
+    Metric ~ gen_model_type
+  ) +
+  labs(
+    color = "Assumed Correlation Structure",
+    shape = "Assumed Correlation Structure",
+    y = "Bias",
+    x = "Date"
+  ) +
+  theme_bw() +
+  theme(
+    legend.position = "bottom"
+  )
+ww_eval_by_date <- ww_eval_by_date_crps /
+  ww_eval_by_date_rel_crps /
+  ww_eval_by_date_bias +
+  plot_annotation(
+    tag_levels = "A"
+  )
+
+
+# Averaged Across Everything
+ww_eval_by_site_date_rel_crps <- ggplot(
+  ww_score_by_date_site_wovall %>%
+    filter(
+      Metric == "Relative CRPS",
+      model != "IID"
+    )
+) +
+  geom_hline(
+    yintercept = 1,
+    linetype = "dashed"
+  ) +
+  geom_vline(
+    xintercept = as.Date(forecast_date)
+  ) +
+  geom_line(
+    aes(
+      x = date,
+      y = Value,
+      colour = subpop_name,
+      linetype = model
+    )
+  ) +
+  geom_point(
+    aes(
+      x = date,
+      y = Value,
+      colour = subpop_name,
+      shape = model
+    ),
+    size = 2.25
+  ) +
+  facet_grid2(
+    Metric ~ gen_model_type,
+    scales = "free",
+    independent = "y"
+  ) +
+  scale_y_continuous(
+    trans = "log10",
+    breaks = c(0.5, 0.7, 1, 1.5, 2)
+  ) +
+  coord_cartesian(
+    ylim = c(1 / 2.75, 2.75)
+  ) +
+  scale_shape_manual(
+    breaks = c("Exponential", "Unstructured", "IID"),
+    values = c(0, 8, 6)
+  ) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(
+    colour = "Site",
+    linetype = "Assumed Correlation Structure",
+    shape = "Assumed Correlation Structure",
+    y = "Relative CRPS",
+    x = "Date"
+  ) +
+  guides(
+    color = "none",
+    linetype = "none",
+    shape = "none"
+  ) +
+  theme_bw() +
+  theme(
+    legend.position = "bottom"
+  )
+ww_eval_by_site_date_crps <- ggplot(
+  ww_score_by_date_site_wovall %>%
+    filter(
+      Metric == "CRPS"
+    )
+) +
+  geom_vline(
+    xintercept = as.Date(forecast_date)
+  ) +
+  geom_line(
+    aes(
+      x = date,
+      y = Value,
+      colour = subpop_name,
+      linetype = model
+    )
+  ) +
+  geom_point(
+    aes(
+      x = date,
+      y = Value,
+      colour = subpop_name,
+      shape = model
+    ),
+    size = 2.25
+  ) +
+  facet_grid2(
+    Metric ~ gen_model_type
+  ) +
+  scale_shape_manual(
+    breaks = c("Exponential", "Unstructured", "IID"),
+    values = c(0, 8, 6)
+  ) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(
+    colour = "Site",
+    linetype = "Assumed Correlation Structure",
+    shape = "Assumed Correlation Structure",
+    y = "CRPS",
+    x = "Date"
+  ) +
+  guides(
+    color = "none",
+    linetype = "none",
+    shape = "none"
+  ) +
+  theme_bw() +
+  theme(
+    legend.position = "bottom"
+  )
+ww_eval_by_site_date_bias <- ggplot(
+  ww_score_by_date_site_wovall %>%
+    filter(
+      Metric == "Bias"
+    )
+) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed"
+  ) +
+  geom_vline(
+    xintercept = as.Date(forecast_date)
+  ) +
+  geom_line(
+    aes(
+      x = date,
+      y = Value,
+      colour = subpop_name,
+      linetype = model
+    )
+  ) +
+  geom_point(
+    aes(
+      x = date,
+      y = Value,
+      colour = subpop_name,
+      shape = model
+    ),
+    size = 2.25
+  ) +
+  facet_grid2(
+    Metric ~ gen_model_type
+  ) +
+  scale_shape_manual(
+    breaks = c("Exponential", "Unstructured", "IID"),
+    values = c(0, 8, 6)
+  ) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(
+    colour = "Site",
+    linetype = "Assumed Correlation Structure",
+    shape = "Assumed Correlation Structure",
+    y = "Bias",
+    x = "Date"
+  ) +
+  theme_bw() +
+  theme(
+    legend.position = "bottom"
+  )
+ww_eval_by_site_date <- ww_eval_by_site_date_crps /
+  ww_eval_by_site_date_rel_crps /
+  ww_eval_by_site_date_bias +
+  plot_annotation(
+    tag_levels = "A"
+  )
+
+# Coverage
+ww_coverage_by_site <- ggplot(
+  ww_coverage_obj_by_site
+) +
+  geom_abline(
+    intercept = 0,
+    slope = 1,
+    linetype = "dashed"
+  ) +
+  geom_line(
+    aes(
+      x = quantile_level,
+      y = quantile_coverage,
+      colour = model
+    )
+  ) +
+  scale_colour_manual(
+    breaks = c("IID", "Exponential", "Unstructured"),
+    values = c("darksalmon", "darkviolet", "deeppink3")
+  ) +
+  facet_grid2(subpop_name ~ gen_model_type) +
+  labs(
+    color = "Assumed Correlation Structure",
+    y = "% Obs below quantile level",
+    x = "Quantile level"
+  ) +
+  theme_bw() +
+  theme(
+    legend.position = "bottom"
+  )
+ww_coverage <- ggplot(
+  ww_coverage_obj
+) +
+  geom_abline(
+    intercept = 0,
+    slope = 1,
+    linetype = "dashed"
+  ) +
+  geom_line(
+    aes(
+      x = quantile_level,
+      y = quantile_coverage,
+      colour = model
+    )
+  ) +
+  scale_colour_manual(
+    breaks = c("IID", "Exponential", "Unstructured"),
+    values = c("darksalmon", "darkviolet", "deeppink3")
+  ) +
+  facet_grid2(~gen_model_type) +
+  labs(
+    color = "Assumed Correlation Structure",
+    y = "% Obs below quantile level",
+    x = "Quantile level"
+  ) +
+  theme_bw() +
+  theme(
+    legend.position = "bottom"
+  )
+```
+
+```{r}
+# by site
+ww_eval_by_site
+```
+```{r}
+# by date
+ww_eval_by_date
+```
+```{r}
+# by date and site
+ww_eval_by_site_date
+```
+```{r}
+# quantile-quantile
+ww_coverage_by_site
+```
+```{r}
+# quantile-quantile
+ww_coverage
+```
