@@ -20,9 +20,9 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
   n_ww_lab_sites <- as.numeric(stan_data$n_ww_lab_sites)
   # Estimate of number of initial infections
   i_first_obs_est <- (
-    max(1, mean(stan_data$hosp[1:7], 
-         na.rm = TRUE) / stan_data$p_hosp_prior_mean
-)) # ensure guess of prevalence at time of first obs is least 1 / population (at least one infection)
+    max(1, mean(stan_data$hosp[1:7],
+      na.rm = TRUE
+    ) / stan_data$p_hosp_prior_mean)) # ensure guess of prevalence at time of first obs is least 1 / population (at least one infection)
 
   logit_i_frac_est <- stats::qlogis(i_first_obs_est / pop)
 
