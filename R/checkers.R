@@ -132,7 +132,6 @@ assert_site_lab_indices_align <- function(site,
 }
 
 
-
 #' Assert that all elements of a vector are non-negative
 #'
 #' @param x vector of arguments to check for negativity
@@ -257,7 +256,6 @@ assert_cols_det_unique_row <- function(df,
   }
   invisible()
 }
-
 
 
 #' Assert that a vector is either of a vector of integers or a vector of

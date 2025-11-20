@@ -2,7 +2,7 @@ repos:
 #####
 # Basic file cleanliness
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
     -   id: check-added-large-files
     -   id: check-yaml
@@ -10,29 +10,10 @@ repos:
     -   id: end-of-file-fixer
     -   id: mixed-line-ending
     -   id: trailing-whitespace
-#####
-# Python
--   repo: https://github.com/psf/black
-    rev: 24.4.2
-    hooks:
-        # if you have ipython notebooks, consider using
-        # `black-jupyter` hook instead
-    -   id: black
-        args: ['--line-length', '79']
--   repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
-    hooks:
-    -   id: isort
-        args: ['--profile', 'black',
-               '--line-length', '79']
-- repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.5.0
-  hooks:
-    - id: ruff
-#####
+
 # R
 -   repo: https://github.com/lorenzwalthert/precommit
-    rev: v0.4.2
+    rev: v0.4.3.9017
     hooks:
     -   id: style-files
         args: [--style_pkg=styler, --style_fun=tidyverse_style,
@@ -46,21 +27,6 @@ repos:
     -   id: no-debug-statement
     -   id: deps-in-desc
         exclude: data-raw
-#####
-# Java
-- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-  rev: v2.13.0
-  hooks:
-  - id: pretty-format-java
-    args: [--aosp,--autofix]
-#####
-# Julia
-# Due to lack of first-class Julia support, this needs Julia local install
-#   and JuliaFormatter.jl installed in the library
-# - repo: https://github.com/domluna/JuliaFormatter.jl
-#   rev: v1.0.39
-#   hooks:
-#   - id: julia-formatter
 #####
 # Secrets
 -   repo: https://github.com/Yelp/detect-secrets

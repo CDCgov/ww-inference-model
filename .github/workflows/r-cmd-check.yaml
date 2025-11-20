@@ -9,7 +9,7 @@ jobs:
   check-package:
     strategy:
       matrix:
-        r-version: ["4.1.0", "release"]
+        r-version: ["4.5.0", "release"]
         os: [windows-latest, ubuntu-latest]
     runs-on:  ${{matrix.os}}
     steps:

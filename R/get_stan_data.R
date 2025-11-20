@@ -249,9 +249,6 @@ get_lab_site_subpop_spine <- function(lab_site_site_spine,
 }
 
 
-
-
-
 #' Get stan data for ww + hosp model
 #'
 
@@ -741,7 +738,6 @@ get_ww_indices_and_values <- function(input_ww_data,
     owt <- nrow(ww_data_joined)
 
 
-
     # Get the vector of log LOD values corresponding to each observation
     ww_lod <- ww_data_joined |>
       dplyr::pull("log_lod")
@@ -770,7 +766,6 @@ get_ww_indices_and_values <- function(input_ww_data,
       dplyr::left_join(site_subpop_spine, by = "site_index") |>
       pull("subpop_index")
     ww_sampled_lab_sites <- ww_data_joined |> dplyr::pull("lab_site_index")
-
 
 
     ww_values <- list(

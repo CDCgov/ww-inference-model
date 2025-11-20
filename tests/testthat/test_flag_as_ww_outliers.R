@@ -120,7 +120,6 @@ test_that("rho_threshold and log_conc threshold parameters works as expected", {
 })
 
 
-
 test_that("exclude column is set to zero by default", {
   result <- flag_ww_outliers(dummy_data)
 

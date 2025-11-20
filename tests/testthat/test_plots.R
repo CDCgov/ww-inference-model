@@ -29,8 +29,6 @@ test_eval_data <- data |>
   dplyr::rename("daily_hosp_admits_eval" = observed_value)
 
 
-
-
 test_that("Test there is no error with eval data", {
   expect_no_error(
     get_plot_forecasted_counts(

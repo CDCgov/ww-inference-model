@@ -362,10 +362,11 @@ print.wwinference_fit_draws <- function(x, ...) {
 #' @param site_level_r Site-level Rt()s
 #' @noRd
 new_wwinference_fit_draws <- function(
-    predicted_counts,
-    predicted_ww,
-    global_rt,
-    subpop_rt) {
+  predicted_counts,
+  predicted_ww,
+  global_rt,
+  subpop_rt
+) {
   # Checking colnames: Must match all exactly
   predicted_counts_colnames <- c(
     "date", "pred_value", "observed_value", "draw", "total_pop"

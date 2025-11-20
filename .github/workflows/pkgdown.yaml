@@ -61,6 +61,10 @@ jobs:
         with:
           ref: ${{ steps.commit.outputs.tag }}
 
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
       - name: Checkout the sha-associated repo
         if: ${{ matrix.version == 'release' }}
         uses: actions/checkout@v4

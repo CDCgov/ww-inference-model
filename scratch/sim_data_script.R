@@ -65,6 +65,5 @@ ggplot(test) +
   geom_line(aes(x = t, y = rt_stan), color = "red")
 
 
-
 new_i_test <- rt_r * (convolve(new_i_over_n, rev(generation_interval), type = "open")[1:(ot + ht)]) # nolint
 plot(new_i_test)

@@ -92,7 +92,6 @@ diff_ar1_from_z_scores <- function(x0, ar, sd, z, stationary = FALSE) {
 }
 
 
-
 #' Alternative R implementation of a first
 #' differenced zero-mean AR(1) assembly
 #' from an initial

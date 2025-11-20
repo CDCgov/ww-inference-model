@@ -235,7 +235,6 @@ test_that(paste0(
 })
 
 
-
 test_that(paste0(
   "Test that modifying calibration time generates data of expected",
   " length"
@@ -274,7 +273,6 @@ test_that(paste0(
 
   expect_true(nrow(input_ww_data_ne) == nrow(input_ww_data_we) + 1)
 })
-
 
 
 test_that(paste0(

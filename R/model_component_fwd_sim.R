@@ -420,8 +420,6 @@ format_ww_data <- function(log_obs_conc_lab_site,
 }
 
 
-
-
 #' Format the hospital admissions data into a tidy dataframe
 #'
 #' @param pred_obs_hosp vector of non-negative integers indicating the number
