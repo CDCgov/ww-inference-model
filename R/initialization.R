@@ -20,7 +20,8 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
   n_ww_lab_sites <- as.numeric(stan_data$n_ww_lab_sites)
   # Estimate of number of initial infections
   i_first_obs_est <- (
-    mean(stan_data$hosp[1:7], na.rm = TRUE) / stan_data$p_hosp_prior_mean
+    mean(stan_data$hosp[1:7], 
+         na.rm = TRUE) + 1e-10 / stan_data$p_hosp_prior_mean
   )
 
   logit_i_frac_est <- stats::qlogis(i_first_obs_est / pop)
