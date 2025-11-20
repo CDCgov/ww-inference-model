@@ -22,7 +22,7 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
   i_first_obs_est <- (
     max(1, mean(stan_data$hosp[1:7], 
          na.rm = TRUE) / stan_data$p_hosp_prior_mean
-)) # initial prevalence of at least 1 / population (i.e. one initial infection)
+)) # ensure guess of prevalence at time of first obs is least 1 / population (at least one infection)
 
   logit_i_frac_est <- stats::qlogis(i_first_obs_est / pop)
 
