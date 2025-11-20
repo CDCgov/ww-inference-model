@@ -336,10 +336,11 @@ wwinference <- function(ww_data,
 #' @noRd
 #'
 new_wwinference_fit <- function(
-    fit,
-    raw_input_data,
-    stan_data_list,
-    fit_opts) {
+  fit,
+  raw_input_data,
+  stan_data_list,
+  fit_opts
+) {
   # Checking
   stopifnot(
     inherits(fit$result, what = "CmdStanFit"),
@@ -455,12 +456,13 @@ fit_model <- function(compiled_model,
 #'
 #' @export
 get_mcmc_options <- function(
-    iter_warmup = 750,
-    iter_sampling = 500,
-    seed = NULL,
-    chains = 4,
-    adapt_delta = 0.95,
-    max_treedepth = 12) {
+  iter_warmup = 750,
+  iter_sampling = 500,
+  seed = NULL,
+  chains = 4,
+  adapt_delta = 0.95,
+  max_treedepth = 12
+) {
   mcmc_settings <- list(
     iter_warmup = iter_warmup,
     iter_sampling = iter_sampling,
@@ -507,16 +509,17 @@ get_mcmc_options <- function(
 #' @examples
 #' model_spec_list <- get_model_spec()
 get_model_spec <- function(
-    generation_interval = wwinference::default_covid_gi,
-    inf_to_count_delay = wwinference::default_covid_inf_to_hosp,
-    infection_feedback_pmf = wwinference::default_covid_gi,
-    include_ww = TRUE,
-    compute_likelihood = TRUE,
-    params = get_params(
-      system.file("extdata", "example_params.toml",
-        package = "wwinference"
-      )
-    )) {
+  generation_interval = wwinference::default_covid_gi,
+  inf_to_count_delay = wwinference::default_covid_inf_to_hosp,
+  infection_feedback_pmf = wwinference::default_covid_gi,
+  include_ww = TRUE,
+  compute_likelihood = TRUE,
+  params = get_params(
+    system.file("extdata", "example_params.toml",
+      package = "wwinference"
+    )
+  )
+) {
   model_specs <- list(
     generation_interval = generation_interval,
     inf_to_count_delay = inf_to_count_delay,

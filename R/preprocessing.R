@@ -86,7 +86,6 @@ preprocess_ww_data <- function(ww_data,
 }
 
 
-
 #' Pre-process hospital admissions data, converting column names to those
 #' that [get_stan_data()] expects.
 #' @param count_data dataframe containing the following columns: date,
@@ -135,8 +134,6 @@ preprocess_count_data <- function(count_data,
 
   return(count_data_preprocessed)
 }
-
-
 
 
 #' Flag WW outliers

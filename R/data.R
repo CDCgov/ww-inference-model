@@ -81,8 +81,6 @@
 "ww_data_eval"
 
 
-
-
 #' Example hospital admissions dataset
 #'
 #'  A dataset containing the simulated daily hospital admissions
@@ -172,8 +170,6 @@
 #'   }
 #' @source vignette_data.R
 "hosp_data_eval"
-
-
 
 
 #' Example subpopulation level hospital admissions dataset

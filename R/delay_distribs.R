@@ -24,9 +24,10 @@
 #'
 #' @return A numeric vector representing the PMF.
 simulate_double_censored_pmf <- function(
-    max, fun_primary = stats::runif, primary_args = list(),
-    fun_dist = stats::rlnorm,
-    dist_args = list(...), n = 1e6, ...) {
+  max, fun_primary = stats::runif, primary_args = list(),
+  fun_dist = stats::rlnorm,
+  dist_args = list(...), n = 1e6, ...
+) {
   primary <- do.call(fun_primary, c(list(n), primary_args))
   secondary <- primary + do.call(fun_dist, c(list(n), dist_args))
   delay <- floor(secondary) - floor(primary)
@@ -139,7 +140,6 @@ make_hospital_onset_delay_pmf <- function(neg_binom_mu = 6.98665,
 
   return(hosp_onset_delay_pmf)
 }
-
 
 
 #' @title Make reporting delay pmf

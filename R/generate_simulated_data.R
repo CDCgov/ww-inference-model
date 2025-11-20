@@ -312,7 +312,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   new_i_over_n <- inf_and_subpop_rt$i_n_global
 
 
-
   # Generate expected state level hospitalizations from subpop infections -----
 
   ## Generate a time varying P(hosp|infection)----------------------------------
@@ -394,7 +393,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   pred_obs_hosp <- colSums(pred_obs_hosp_subpop)
 
 
-
   # Generate expected observed concentrations from infections in each site-----
   ## Genomes per person per day in each site----------------------------------
 
@@ -442,7 +440,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     nt = nt,
     lab_site_reporting_latency = lab_site_reporting_latency
   )
-
 
 
   # Global adjusted R(t) --------------------------------------------------
@@ -561,9 +558,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
       t = 1:(ot + ht)
     ) |>
     dplyr::left_join(date_df, by = "t")
-
-
-
 
 
   example_data <- list(
