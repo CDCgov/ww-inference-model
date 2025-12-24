@@ -17,7 +17,7 @@ lab <- c(1, 2, 3, 3, 3)
 ot <- 90
 nt <- 9
 forecast_horizon <- 28
-sim_start_date <- lubridate::ymd("2023-09-01")
+sim_start_date <- lubridate::ymd("2023-09-03")
 hosp_wday_effect <- c(
   0.95, 1.01, 1.02,
   1.02, 1.01, 1,
