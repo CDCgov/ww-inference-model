@@ -8,7 +8,6 @@ include directory (\code{stan}) for #include statements}
 compile_model(
   model_filepath = system.file("stan", "wwinference.stan", package = "wwinference"),
   include_paths = system.file("stan", package = "wwinference"),
-  threads = FALSE,
   target_dir = tempdir(),
   stanc_options = list(),
   cpp_options = list(),
@@ -24,10 +23,6 @@ compile_model(
 specified in #include statements. Passed to \code{\link[cmdstanr:cmdstan_model]{cmdstanr::cmdstan_model()}}.
 Defaults to the \code{stan} subdirectory of the installed
 \code{wwinference} package.}
-
-\item{threads}{Number of threads to use in model compilation,
-as an integer. Passed to \code{\link[cmdstanr:cmdstan_model]{cmdstanr::cmdstan_model()}}.
-Default \code{FALSE} (use single-threaded compilation).}
 
 \item{target_dir}{Directory in which to save the compiled
 stan model binary. Passed as the \code{dir} keyword argument to
