@@ -19,9 +19,6 @@
 #' specified in #include statements. Passed to [cmdstanr::cmdstan_model()].
 #' Defaults to the `stan` subdirectory of the installed
 #' `wwinference` package.
-#' @param threads Number of threads to use in model compilation,
-#' as an integer. Passed to [cmdstanr::cmdstan_model()].
-#' Default `FALSE` (use single-threaded compilation).
 #' @param target_dir Directory in which to save the compiled
 #' stan model binary. Passed as the `dir` keyword argument to
 #' [cmdstanr::cmdstan_model()]. Defaults to a temporary directory
@@ -50,7 +47,6 @@ compile_model <- function(model_filepath = system.file("stan",
                             "stan",
                             package = "wwinference"
                           ),
-                          threads = FALSE,
                           target_dir = tempdir(),
                           stanc_options = list(),
                           cpp_options = list(),
@@ -79,7 +75,6 @@ compile_model <- function(model_filepath = system.file("stan",
     compile = TRUE,
     stanc_options = stanc_options,
     cpp_options = cpp_options,
-    threads = threads,
     dir = target_dir,
     ...
   )
