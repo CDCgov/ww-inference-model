@@ -67,7 +67,11 @@ Description: An implementation of a hierarchical semi-mechanistic renewal
     data sources and produce the following outputs-- estimated and forecasted
     hospital admissions, estimated and forecasted wastewater concentrations,
     global R(t) estimates, local R(t) estimates for the subpopulations
-    represented by each wastewater catchment area.
+    represented by each wastewater catchment area. For an evaluation of the
+    model's performance on forecasting COVID-19 hospital admissions in real-time
+    and retrospectively, with and without wastewater and compared to other
+    forecasting models during the 2023-2024 winter COVID epidemic, please see our recent
+    pre-print Johnson (2026) <https://www.medrxiv.org/content/10.64898/2026.02.23.26346887>.
 License: Apache License (>= 2)
 URL: https://github.com/cdcgov/ww-inference-model/, https://cdcgov.github.io/ww-inference-model/
 BugReports: https://github.com/cdcgov/ww-inference-model/issues/

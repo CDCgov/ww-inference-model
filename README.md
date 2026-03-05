@@ -14,8 +14,8 @@ In brief, our model builds upon [EpiNow2](https://github.com/epiforecasts/EpiNow
 We modify EpiNow2 to add a model for the observed viral RNA concentration in wastewater, adding hierarchical structure to link the subpopulations represented by the observed wastewater concentrations in each wastewater catchment area.
 
 The intention is for {wwinference} to provide a user-friendly R-package interface for running forecasting models that use wastewater concentrations combined with other more traditional epidemiological signals such as cases or hospital admissions.
-It aims to be a re-implementation of the modeling components contained in the [wastewater-informed-covid-forecasting](https://github.com/CDCgov/wastewater-informed-covid-forecasting) project repository, with
-an emphasis here on making it easier for users to supply their own data.
+It aims to be a re-implementation of the modeling components contained in the [wastewater-informed-covid-forecasting](https://github.com/CDCgov/wastewater-informed-covid-forecasting) project repository, with an emphasis here on making it easier for users to supply their own data.
+For an evaluation of the model's performance on forecasting COVID-19 hospital admissions in real-time and retrospectively, with and without wastewater, and compared to other forecasting models during the 2023-2024 winter COVID epidemic, please see our recent [pre-print](https://www.medrxiv.org/content/10.64898/2026.02.23.26346887).
 
 We recommend reading the [model definition](model_definition.md) to learn more about how the model is structured and running the ["Getting Started" vignette](vignettes/wwinference.Rmd) for an example of how to fit the model to simulated data of COVID-19 hospital admissions and wastewater concentrations.
 This will help make clear the data requirements and how to structure this data to fit the model.
@@ -85,6 +85,22 @@ library(wwinference)
 ## Contributing to this package
 We welcome and encourage contributions. Open an issue in the repository to request changes.
 To contribute, fork the repository locally and open a pull request into the `main` branch.
+
+## Citation
+
+To cite `wwinference` in a publication, please use:
+
+```
+@article{JohnsonKEwwforecasteval2026,
+        title = {Bayesian generative modeling for heterogeneous wastewater data applied to COVID-19 forecasting},
+        author = {Johnson, Kaitlyn E and Vega Yon, George and Brand, Samuel PC and Bernal Zelaya, Christian and Bayer, Damon and Volkov, Igor and Susswein, Zachary and Magee, Andrew and Gostic, Katelyn M and English, Kayla M and Ghinai, Isaac and Hamlet, Arran and Olesen, Scott W and Pulliam, Juliet and Abbott, Sam and Morris, Dylan H},
+        year = {2026},
+        journal = {medRxiv preprint},
+        doi = {10.64898/2026.02.23.26346887},
+        url = {https://www.medrxiv.org/content/10.64898/2026.02.23.26346887},
+      }
+
+```
 
 ## Public Domain Standard Notice
 This repository constitutes a work of the United States Government and is not
