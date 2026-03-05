@@ -1,3 +1,5 @@
+# wwinference 0.1.2
+
 # wwinference 0.1.1.99 (dev)
 - Fixes the way the wastewater calibration and evaluation datasets are created
 to ensure that the dates align properly. ([#256](https://github.com/CDCgov/ww-inference-model/issues/256))
