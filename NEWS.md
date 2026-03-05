@@ -1,3 +1,5 @@
+# wwinference (development version)
+
 # wwinference 0.1.2
 - Updates `compile_model` to be remove an argument that has been deprecated in `cmdstanr`.
 - Fixes a bug in the handling of 0 counts when generated initialization values.
