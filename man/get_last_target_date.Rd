@@ -20,6 +20,6 @@ Enforces the convention that the forecast_date itself
 is day 0 of the forecast horizon, not (e.g. day 1).
 }
 \examples{
-get_final_target_date("2026-01-01", 3)
-get_final_target_date("2026-01-01", 0)
+get_last_target_date("2026-01-01", 3)
+get_last_target_date("2026-01-01", 0)
 }

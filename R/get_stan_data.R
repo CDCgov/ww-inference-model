@@ -25,8 +25,8 @@ get_first_calibration_date <- function(count_data,
 #' for which the model will produce a forecast.
 #'
 #' @examples
-#' get_final_target_date("2026-01-01", 3)
-#' get_final_target_date("2026-01-01", 0)
+#' get_last_target_date("2026-01-01", 3)
+#' get_last_target_date("2026-01-01", 0)
 #' @export
 get_last_target_date <- function(forecast_date,
                                  forecast_horizon) {
