@@ -6,7 +6,13 @@
 #' use when fitting the model.
 #'
 #' @return The first calibration date.
-#' @keywords internal
+#'
+#' @examples
+#'
+#' get_first_calibration_date(wwinference::hosp_data, 50)
+#'
+#' get_first_calibration_date(wwinference::hosp_data, 70)
+#' @export
 get_first_calibration_date <- function(count_data,
                                        calibration_time) {
   last_count_data_date <- max(count_data$date, na.rm = TRUE)
