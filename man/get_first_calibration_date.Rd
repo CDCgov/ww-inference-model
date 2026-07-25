@@ -19,4 +19,9 @@ The first calibration date.
 \description{
 Get the first date of calibration count data
 }
-\keyword{internal}
+\examples{
+
+get_first_calibration_date(wwinference::hosp_data, 50)
+
+get_first_calibration_date(wwinference::hosp_data, 70)
+}
