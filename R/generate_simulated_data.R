@@ -89,47 +89,55 @@
 #' hosp_data <- sim_data$hosp_data
 #' ww_data <- sim_data$ww_data
 #' }
-generate_simulated_data <- function(r_in_weeks = # nolint
-                                      c(
-                                        rep(1.1, 5), rep(0.9, 5),
-                                        1 + 0.007 * 1:16
-                                      ),
-                                    n_sites = 4,
-                                    ww_pop_sites = c(4e5, 2e5, 1e5, 5e4),
-                                    pop_size = 3e6,
-                                    site = c(1, 1, 2, 3, 4),
-                                    lab = c(1, 2, 3, 3, 3),
-                                    ot = 90,
-                                    nt = 9,
-                                    forecast_horizon = 28,
-                                    sim_start_date = lubridate::ymd(
-                                      "2023-09-01"
-                                    ),
-                                    hosp_wday_effect = c(
-                                      0.95, 1.01, 1.02,
-                                      1.02, 1.01, 1,
-                                      0.99
-                                    ) / 7,
-                                    i0_over_n = 5e-4,
-                                    initial_growth = 1e-4,
-                                    sd_in_lab_level_multiplier = 0.25,
-                                    mean_obs_error_in_ww_lab_site = 0.2,
-                                    mean_reporting_freq = 1 / 5,
-                                    sd_reporting_freq = 1 / 20,
-                                    mean_reporting_latency = 7,
-                                    sd_reporting_latency = 3,
-                                    mean_log_lod = 5,
-                                    sd_log_lod = 0.2,
-                                    global_rt_sd = 0.03,
-                                    sigma_eps = 0.05,
-                                    sd_i0_over_n = 0.5,
-                                    if_feedback = FALSE,
-                                    subpop_phi = c(25, 50, 70, 40, 100),
-                                    input_params_path =
-                                      fs::path_package("extdata",
-                                        "example_params.toml",
-                                        package = "wwinference"
-                                      )) {
+generate_simulated_data <- function(
+  r_in_weeks = # nolint
+  c(
+    rep(1.1, 5),
+    rep(0.9, 5),
+    1 + 0.007 * 1:16
+  ),
+  n_sites = 4,
+  ww_pop_sites = c(4e5, 2e5, 1e5, 5e4),
+  pop_size = 3e6,
+  site = c(1, 1, 2, 3, 4),
+  lab = c(1, 2, 3, 3, 3),
+  ot = 90,
+  nt = 9,
+  forecast_horizon = 28,
+  sim_start_date = lubridate::ymd(
+    "2023-09-01"
+  ),
+  hosp_wday_effect = c(
+    0.95,
+    1.01,
+    1.02,
+    1.02,
+    1.01,
+    1,
+    0.99
+  ) /
+    7,
+  i0_over_n = 5e-4,
+  initial_growth = 1e-4,
+  sd_in_lab_level_multiplier = 0.25,
+  mean_obs_error_in_ww_lab_site = 0.2,
+  mean_reporting_freq = 1 / 5,
+  sd_reporting_freq = 1 / 20,
+  mean_reporting_latency = 7,
+  sd_reporting_latency = 3,
+  mean_log_lod = 5,
+  sd_log_lod = 0.2,
+  global_rt_sd = 0.03,
+  sigma_eps = 0.05,
+  sd_i0_over_n = 0.5,
+  if_feedback = FALSE,
+  subpop_phi = c(25, 50, 70, 40, 100),
+  input_params_path = fs::path_package(
+    "extdata",
+    "example_params.toml",
+    package = "wwinference"
+  )
+) {
   # Some quick checks to make sure the inputs work as expected-----------------
   assert_rt_correct_length(r_in_weeks, ot, nt, forecast_horizon)
   assert_ww_site_pops_lt_total(pop_size, ww_pop_sites)
@@ -138,7 +146,8 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   # Expose the stan functions into the global environment--------------------
   model <- cmdstanr::cmdstan_model(
     stan_file = system.file(
-      "stan", "wwinference.stan",
+      "stan",
+      "wwinference.stan",
       package = "wwinference"
     ),
     compile = TRUE,
@@ -165,7 +174,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     ww_pop_sites = ww_pop_sites
   )
 
-
   n_lab_sites <- nrow(site_lab_map)
 
   # Define some time variables
@@ -176,11 +184,11 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   tot_weeks <- ceiling((uot + ot + ht) / 7) # initialization time +
   # calibration + forecast time
 
-
   # We need dates to get a weekday vector
   dates <- seq(
-    from = sim_start_date, to =
-      (sim_start_date + lubridate::days(ot + nt + ht - 1)), by = "days"
+    from = sim_start_date,
+    to = (sim_start_date + lubridate::days(ot + nt + ht - 1)),
+    by = "days"
   )
   log_i0_over_n <- log(i0_over_n)
   day_of_week_vector <- lubridate::wday(dates, week_start = 1)
@@ -194,8 +202,10 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     dplyr::pull("date")
 
   # Set the lab-site multiplier presumably from lab measurement processes
-  log_m_lab_sites <- rnorm(n_lab_sites,
-    mean = 0, sd = sd_in_lab_level_multiplier
+  log_m_lab_sites <- rnorm(
+    n_lab_sites,
+    mean = 0,
+    sd = sd_in_lab_level_multiplier
   ) # This is the magnitude shift (multiplier in natural scale) on the
   # observations, presumably from things like concentration method, PCR type,
   # collection type, etc.
@@ -206,19 +216,25 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   # infections, but since this module isn't currently in the model we will
   # just do this for now.
   sigma_ww_lab_site <- mean(site_lab_map$ww_pop) *
-    mean_obs_error_in_ww_lab_site / site_lab_map$ww_pop
+    mean_obs_error_in_ww_lab_site /
+    site_lab_map$ww_pop
 
   # Set randomly the lab-site reporting avg frequency (per day) and the
   # reporting latency (in days). Will use this to sample times in the observed
   # data
   lab_site_reporting_freq <- abs(rnorm(
-    n = n_lab_sites, mean = mean_reporting_freq,
+    n = n_lab_sites,
+    mean = mean_reporting_freq,
     sd = sd_reporting_freq
   ))
-  lab_site_reporting_latency <- pmax(1, ceiling(rnorm(
-    n = n_lab_sites,
-    mean = mean_reporting_latency, sd = sd_reporting_latency
-  )))
+  lab_site_reporting_latency <- pmax(
+    1,
+    ceiling(rnorm(
+      n = n_lab_sites,
+      mean = mean_reporting_latency,
+      sd = sd_reporting_latency
+    ))
+  )
   # Set a lab-site-specific LOD in log scale
   lod_lab_site <- rnorm(n_lab_sites, mean = mean_log_lod, sd = sd_log_lod)
 
@@ -229,9 +245,13 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   ## Generation interval------------------------------------------------------
   # Double censored and zero-truncated
   generation_interval <- simulate_double_censored_pmf(
-    max = params$gt_max, meanlog = params$mu_gi, sdlog = params$sigma_gi,
-    fun_dist = rlnorm, n = 5e6
-  ) |> drop_first_and_renormalize()
+    max = params$gt_max,
+    meanlog = params$mu_gi,
+    sdlog = params$sigma_gi,
+    fun_dist = rlnorm,
+    n = 5e6
+  ) |>
+    drop_first_and_renormalize()
 
   # Set infection feedback to generation interval
   infection_feedback_pmf <- generation_interval
@@ -241,7 +261,9 @@ generate_simulated_data <- function(r_in_weeks = # nolint
 
   # Get incubation period for COVID.
   inc <- make_incubation_period_pmf(
-    params$backward_scale, params$backward_shape, params$r
+    params$backward_scale,
+    params$backward_shape,
+    params$r
   )
   sym_to_hosp <- make_hospital_onset_delay_pmf(
     params$neg_binom_mu,
@@ -253,8 +275,10 @@ generate_simulated_data <- function(r_in_weeks = # nolint
 
   ## Shedding kinetics delay distribution-------------------------------
   vl_trajectory <- model$functions$get_vl_trajectory(
-    params$t_peak_mean, params$viral_peak_mean,
-    params$duration_shedding_mean, params$gt_max
+    params$t_peak_mean,
+    params$viral_peak_mean,
+    params$duration_shedding_mean,
+    params$gt_max
   )
 
   # Global undadjusted R(t) ---------------------------------------------------
@@ -277,12 +301,12 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     subpop_level_rt_variation = sigma_eps
   )
 
-
   # Subpopulation infection dynamics-------------------------------------
   # Function takes in all of the requirements to generation incident infections
   # and R(t) estimates for the unobserved time, calibration, and forecast time
   if (isTRUE(if_feedback)) {
-    infection_feedback <- rlnorm(1,
+    infection_feedback <- rlnorm(
+      1,
       meanlog = params$infection_feedback_prior_logmean,
       sdlog = params$infection_feedback_prior_logsd
     )
@@ -310,7 +334,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   new_i_over_n_site <- inf_and_subpop_rt$i_n
   r_site <- inf_and_subpop_rt$r_site
   new_i_over_n <- inf_and_subpop_rt$i_n_global
-
 
   # Generate expected state level hospitalizations from subpop infections -----
 
@@ -346,35 +369,37 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   }
 
   # unit test to make sure these are equivalent
-  if (!all.equal(
-    colSums(model_hosp_subpop_over_n * pop_fraction),
-    model_hosp_over_n,
-    tolerance = 1e-8
-  )) {
+  if (
+    !all.equal(
+      colSums(model_hosp_subpop_over_n * pop_fraction),
+      model_hosp_over_n,
+      tolerance = 1e-8
+    )
+  ) {
     cli::cli_abort("Sum of convolutions not equal to convolution of sums")
   }
 
-
   ## Add weekday effect on hospital admissions-------------------------------
-  pred_hosp <- pop_size * model$functions$day_of_week_effect(
-    model_hosp_over_n,
-    day_of_week_vector,
-    hosp_wday_effect
-  )
+  pred_hosp <- pop_size *
+    model$functions$day_of_week_effect(
+      model_hosp_over_n,
+      day_of_week_vector,
+      hosp_wday_effect
+    )
 
   pred_hosp_subpop <- matrix(
     nrow = n_subpops,
     ncol = (ot + ht)
   )
   for (i in 1:n_subpops) {
-    pred_hosp_subpop[i, ] <- pop_fraction[i] * pop_size *
+    pred_hosp_subpop[i, ] <- pop_fraction[i] *
+      pop_size *
       model$functions$day_of_week_effect(
         model_hosp_subpop_over_n[i, ],
         day_of_week_vector,
         hosp_wday_effect
       )
   }
-
 
   ## Add observation error---------------------------------------------------
   # Use negative binomial but could swap out for a different obs error.
@@ -386,12 +411,12 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   )
   for (i in 1:n_subpops) {
     pred_obs_hosp_subpop[i, ] <- rnbinom(
-      n = length(pred_hosp_subpop[i, ]), mu = pred_hosp_subpop[i, ],
+      n = length(pred_hosp_subpop[i, ]),
+      mu = pred_hosp_subpop[i, ],
       size = subpop_phi[i]
     )
   }
   pred_obs_hosp <- colSums(pred_obs_hosp_subpop)
-
 
   # Generate expected observed concentrations from infections in each site-----
   ## Genomes per person per day in each site----------------------------------
@@ -431,7 +456,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     lab_site_reporting_freq = lab_site_reporting_freq
   )
 
-
   log_obs_conc_lab_site <- truncate_for_latency(
     log_conc_lab_site = log_obs_conc_lab_site_eval,
     n_lab_sites = n_lab_sites,
@@ -440,7 +464,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     nt = nt,
     lab_site_reporting_latency = lab_site_reporting_latency
   )
-
 
   # Global adjusted R(t) --------------------------------------------------
   # I(t)/convolve(I(t), g(t)) #nolint
@@ -483,23 +506,19 @@ generate_simulated_data <- function(r_in_weeks = # nolint
   min_ww_val <- min(ww_data$log_genome_copies_per_ml)
   ww_data <- ww_data |>
     dplyr::mutate(
-      "log_genome_copies_per_ml" =
-        dplyr::case_when(
-          .data$log_genome_copies_per_ml ==
-            !!min_ww_val ~ 0.5 * .data$log_lod,
-          TRUE ~ .data$log_genome_copies_per_ml
-        )
+      "log_genome_copies_per_ml" = dplyr::case_when(
+        .data$log_genome_copies_per_ml == !!min_ww_val ~ 0.5 * .data$log_lod,
+        TRUE ~ .data$log_genome_copies_per_ml
+      )
     )
   ww_data_eval <- ww_data_eval |>
     dplyr::mutate(
-      "log_genome_copies_per_ml_eval" =
-        dplyr::case_when(
-          .data$log_genome_copies_per_ml_eval ==
-            !!min_ww_val ~ 0.5 * .data$log_lod,
-          TRUE ~ .data$log_genome_copies_per_ml_eval
-        )
+      "log_genome_copies_per_ml_eval" = dplyr::case_when(
+        .data$log_genome_copies_per_ml_eval == !!min_ww_val ~ 0.5 *
+          .data$log_lod,
+        TRUE ~ .data$log_genome_copies_per_ml_eval
+      )
     )
-
 
   # Make a hospital admissions dataframe for model calibration
   hosp_data <- format_hosp_data(
@@ -527,10 +546,13 @@ generate_simulated_data <- function(r_in_weeks = # nolint
     subpop_pop = pop_size * pop_fraction,
     subpop_name = c(1:n_sites, NA)
   ) |>
-    dplyr::mutate(subpop_name = ifelse(!is.na(subpop_name),
-      glue::glue("Site: {subpop_name}"),
-      "remainder of population"
-    ))
+    dplyr::mutate(
+      subpop_name = ifelse(
+        !is.na(subpop_name),
+        glue::glue("Site: {subpop_name}"),
+        "remainder of population"
+      )
+    )
 
   subpop_hosp_data <- format_subpop_hosp_data(
     pred_obs_hosp_subpop = pred_obs_hosp_subpop,
@@ -558,7 +580,6 @@ generate_simulated_data <- function(r_in_weeks = # nolint
       t = 1:(ot + ht)
     ) |>
     dplyr::left_join(date_df, by = "t")
-
 
   example_data <- list(
     ww_data = ww_data,

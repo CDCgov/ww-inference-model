@@ -1,27 +1,3 @@
-get_nonmatrix_names_from_draws <- function(draws) {
-  posterior::as_draws_list(draws)[[1]] |>
-    names() |>
-    strsplit(split = "[", fixed = TRUE) |>
-    sapply(function(x) {
-      x[1]
-    }) |>
-    unique()
-}
-
-get_par_dims_flat <- function(draws) {
-  par_names_no_dim <- get_nonmatrix_names_from_draws(draws)
-  par_names_with_dim <- posterior::as_draws_list(draws)[[1]] %>%
-    names()
-  counts <- sapply(par_names_no_dim, function(par) {
-    full <- paste0("^", par, "$")
-    pre_dim <- paste0("^", par, "\\[")
-    sum(
-      grepl(full, par_names_with_dim) | grepl(pre_dim, par_names_with_dim)
-    )
-  })
-  return(counts)
-}
-
 logit_fn <- function(p) {
   stats::qlogis(p)
 }
@@ -84,7 +60,9 @@ diff_ar1_from_z_scores <- function(x0, ar, sd, z, stationary = FALSE) {
   diffs <- rep(NA, n)
   diffs[1] <- x0
   diffs[2:n] <- ar1_from_z_scores(
-    z, sd, ar,
+    z,
+    sd,
+    ar,
     stationary = stationary
   )
 
@@ -129,11 +107,4 @@ diff_ar1_from_z_scores_alt <- function(x0, ar, sd, z, stationary = FALSE) {
   }
 
   return(x)
-}
-
-silent_wwinference <- function(...) {
-  utils::capture.output(
-    fit <- suppressMessages(wwinference(...))
-  )
-  return(fit)
 }

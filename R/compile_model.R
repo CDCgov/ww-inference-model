@@ -39,19 +39,22 @@
 #' @return The resulting `cmdstanr` model object, as the output
 #' of [cmdstanr::cmdstan_model()].
 #' @export
-compile_model <- function(model_filepath = system.file("stan",
-                            "wwinference.stan",
-                            package = "wwinference"
-                          ),
-                          include_paths = system.file(
-                            "stan",
-                            package = "wwinference"
-                          ),
-                          target_dir = tempdir(),
-                          stanc_options = list(),
-                          cpp_options = list(),
-                          verbose = TRUE,
-                          ...) {
+compile_model <- function(
+  model_filepath = system.file(
+    "stan",
+    "wwinference.stan",
+    package = "wwinference"
+  ),
+  include_paths = system.file(
+    "stan",
+    package = "wwinference"
+  ),
+  target_dir = tempdir(),
+  stanc_options = list(),
+  cpp_options = list(),
+  verbose = TRUE,
+  ...
+) {
   if (verbose) {
     cli::cli_inform(
       glue::glue(paste0(

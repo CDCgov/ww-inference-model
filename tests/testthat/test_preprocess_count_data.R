@@ -7,26 +7,27 @@ hosp_data <- tibble::tibble(
 
 # Test that function returns a dataframe with correct columns
 test_that("Function returns dataframe with correct columns", {
-  processed <- preprocess_count_data(hosp_data,
+  processed <- preprocess_count_data(
+    hosp_data,
     count_col_name = "daily_admits",
     pop_size_col_name = "state_pop"
   )
 
   expected_cols <- c("date", "count", "total_pop")
 
-  checkmate::expect_names(names(processed),
-    must.include = expected_cols
-  )
+  checkmate::expect_names(names(processed), must.include = expected_cols)
 })
 
 # Test that count column is renamed correctly
 test_that("Count column is renamed correctly", {
-  processed <- preprocess_count_data(hosp_data,
+  processed <- preprocess_count_data(
+    hosp_data,
     count_col_name = "daily_admits",
     pop_size_col_name = "state_pop"
   )
 
-  checkmate::expect_names(names(processed),
+  checkmate::expect_names(
+    names(processed),
     must.include = "count",
     disjunct.from = "daily_admits"
   )
@@ -34,12 +35,14 @@ test_that("Count column is renamed correctly", {
 
 # Test that population size column is renamed correctly
 test_that("Population size column is renamed correctly", {
-  processed <- preprocess_count_data(hosp_data,
+  processed <- preprocess_count_data(
+    hosp_data,
     count_col_name = "daily_admits",
     pop_size_col_name = "state_pop"
   )
 
-  checkmate::expect_names(names(processed),
+  checkmate::expect_names(
+    names(processed),
     must.include = "total_pop",
     disjunct.from = "state_pop"
   )
@@ -54,25 +57,26 @@ hosp_data <- tibble::tibble(
 
 # Test that function returns a dataframe with correct columns
 test_that("Function returns dataframe with correct columns", {
-  processed <- preprocess_count_data(hosp_data,
+  processed <- preprocess_count_data(
+    hosp_data,
     count_col_name = "daily_admits",
     pop_size_col_name = "state_pop"
   )
 
   expected_cols <- c("date", "count", "total_pop")
-  checkmate::expect_names(names(processed),
-    must.include = expected_cols
-  )
+  checkmate::expect_names(names(processed), must.include = expected_cols)
 })
 
 # Test that count column is renamed correctly
 test_that("Count column is renamed correctly", {
-  processed <- preprocess_count_data(hosp_data,
+  processed <- preprocess_count_data(
+    hosp_data,
     count_col_name = "daily_admits",
     pop_size_col_name = "state_pop"
   )
 
-  checkmate::expect_names(names(processed),
+  checkmate::expect_names(
+    names(processed),
     must.include = "count",
     disjunct.from = "daily_admits"
   )
@@ -80,28 +84,32 @@ test_that("Count column is renamed correctly", {
 
 # Test that population size column is renamed correctly
 test_that("Population size column is renamed correctly", {
-  processed <- preprocess_count_data(hosp_data,
+  processed <- preprocess_count_data(
+    hosp_data,
     count_col_name = "daily_admits",
     pop_size_col_name = "state_pop"
   )
 
-  checkmate::expect_names(names(processed),
-    must.include = "total_pop", disjunct.from = "state_pop"
+  checkmate::expect_names(
+    names(processed),
+    must.include = "total_pop",
+    disjunct.from = "state_pop"
   )
 })
 
 test_that("Function handles missing columns with an error", {
   incomplete_hosp_data <- hosp_data |> dplyr::select(-"daily_admits")
 
-
-  expect_error(preprocess_count_data(incomplete_hosp_data,
+  expect_error(preprocess_count_data(
+    incomplete_hosp_data,
     count_col_name = "daily_admits",
     pop_size_col_name = "state_pop"
   ))
 })
 
 test_that("All rows are preserved after preprocessing", {
-  processed <- preprocess_count_data(hosp_data,
+  processed <- preprocess_count_data(
+    hosp_data,
     count_col_name = "daily_admits",
     pop_size_col_name = "state_pop"
   )
@@ -113,13 +121,14 @@ test_that("All rows are preserved after preprocessing", {
 # Test that no NA values are introduced during preprocessing
 # (assuming input has no NAs)
 test_that("No NA values are introduced during preprocessing", {
-  processed <- preprocess_count_data(hosp_data,
+  processed <- preprocess_count_data(
+    hosp_data,
     count_col_name = "daily_admits",
     pop_size_col_name = "state_pop"
   )
 
   # Check for any new NA values introduced in any column
-  expect_false(any(is.na(processed)))
+  expect_false(anyNA(processed))
 })
 
 # Test that renaming columns works when using default parameter values
@@ -143,7 +152,8 @@ test_that("Renaming columns works with default parameters", {
 test_that("Function handles empty dataframes with an error", {
   empty_hosp_data <- hosp_data[FALSE, ]
 
-  expect_error(preprocess_count_data(empty_hosp_data,
+  expect_error(preprocess_count_data(
+    empty_hosp_data,
     count_col_name = "daily_admits",
     pop_size_col_name = "state_pop"
   ))
@@ -155,7 +165,8 @@ test_that("Function handles zero counts and population sizes without errors", {
   zero_counts_hosp_data <- hosp_data |>
     dplyr::mutate(daily_admits = 0, state_pop = 0)
 
-  processed_zero_counts <- preprocess_count_data(zero_counts_hosp_data,
+  processed_zero_counts <- preprocess_count_data(
+    zero_counts_hosp_data,
     count_col_name = "daily_admits",
     pop_size_col_name = "state_pop"
   )
@@ -176,11 +187,12 @@ test_that("Function handles NAs in count column", {
   na_counts_hosp_data <- hosp_data |>
     dplyr::mutate(daily_admits = c(NA, daily_admits[2]))
 
-  processed_na_counts <- preprocess_count_data(na_counts_hosp_data,
+  processed_na_counts <- preprocess_count_data(
+    na_counts_hosp_data,
     count_col_name = "daily_admits",
     pop_size_col_name = "state_pop"
   )
 
   # Check if NAs are preserved in count columns after processing
-  expect_true(any(is.na(processed_na_counts$count)))
+  expect_true(anyNA(processed_na_counts$count))
 })
