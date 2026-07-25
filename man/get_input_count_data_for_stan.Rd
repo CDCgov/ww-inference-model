@@ -4,17 +4,17 @@
 \alias{get_input_count_data_for_stan}
 \title{Get the input count data to pass directly to stan}
 \usage{
-get_input_count_data_for_stan(preprocessed_count_data, calibration_time)
+get_input_count_data_for_stan(preprocessed_count_data, date_time_spine)
 }
 \arguments{
 \item{preprocessed_count_data}{a dataframe with the input count data, must
-have the following columns: date, count, total_pop}
+have a column named \code{date}.}
 
-\item{calibration_time}{integer indicating the max duration in days that
-the model is calibrated to the count data for}
+\item{date_time_spine}{table mapping dates to model time index, as the
+output of \code{\link[=get_date_time_spine]{get_date_time_spine()}}.}
 }
 \value{
-datatframe of count data passed to stan
+data frame of count data passed to stan
 }
 \description{
 Get the input count data to pass directly to stan

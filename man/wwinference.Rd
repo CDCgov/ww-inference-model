@@ -104,7 +104,7 @@ returns the object invisibly.
 
 \itemize{
 \item The summary method returns the outcome from the
-\verb{$summary} (\code{\link[cmdstanr:fit-method-summary]{cmdstanr::summary()}}) function.
+\verb{$summary} (\code{\link[cmdstanr:summary]{cmdstanr::summary()}}) function.
 }
 }
 \description{
@@ -196,8 +196,8 @@ ww_fit <- wwinference(
 }
 \seealso{
 Other diagnostics:
-\code{\link{get_model_diagnostic_flags}()},
-\code{\link{parameter_diagnostics}()},
-\code{\link{summary_diagnostics}()}
+\code{\link[=get_model_diagnostic_flags]{get_model_diagnostic_flags()}},
+\code{\link[=parameter_diagnostics]{parameter_diagnostics()}},
+\code{\link[=summary_diagnostics]{summary_diagnostics()}}
 }
 \concept{diagnostics}

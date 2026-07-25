@@ -165,6 +165,8 @@ wwinference <- function(ww_data,
     cli::cli_abort(
       "The user must specify a forecast date"
     )
+  } else {
+    forecast_date <- as.Date(forecast_date)
   }
 
   # If there is no wastewater data, set include_ww to 0
@@ -201,10 +203,21 @@ wwinference <- function(ww_data,
   }
   assert_no_dates_after_max(count_data$date, forecast_date)
 
+  first_calibration_date <- get_first_calibration_date(
+    count_data, calibration_time
+  )
+  last_target_date <- forecast_date + lubridate::days(forecast_horizon)
+
+  # Get the table that maps 1-indexed time to dates
+  date_time_spine <- get_date_time_spine(
+    first_date = first_calibration_date,
+    last_date = last_target_date
+  )
+
   # Get the input count data that will get passed directly to stan
   input_count_data <- get_input_count_data_for_stan(
     count_data,
-    calibration_time
+    date_time_spine
   )
   last_count_data_date <- max(input_count_data$date, na.rm = TRUE)
   first_count_data_date <- min(input_count_data$date, na.rm = TRUE)
@@ -215,14 +228,6 @@ wwinference <- function(ww_data,
     first_count_data_date,
     last_count_data_date,
     calibration_time
-  )
-  # Get the table that maps 1-indexed time to dates
-  date_time_spine <- get_date_time_spine(
-    forecast_date = forecast_date,
-    input_count_data = input_count_data,
-    last_count_data_date = last_count_data_date,
-    forecast_horizon = forecast_horizon,
-    calibration_time = calibration_time
   )
 
   # Get lab_site_site_spine

@@ -1,3 +1,25 @@
+test_that(paste0(
+  "get_date_time_spine yields an ordered tibble with ",
+  "all and only the expected dates"
+), {
+  result <- get_date_time_spine(
+    "2024-04-04",
+    "2024-04-06"
+  )
+
+  expect_equal(
+    result,
+    tibble::tibble(
+      date = as.Date(c(
+        "2024-04-04",
+        "2024-04-05",
+        "2024-04-06"
+      )),
+      t = 1:3
+    )
+  )
+})
+
 withr::with_seed(123, {
   ww_data <- tibble::tibble(
     date = rep(seq(
@@ -51,11 +73,22 @@ forecast_date <- "2023-11-06"
 calibration_time <- 90
 forecast_horizon <- 28
 include_ww <- 1
-
-input_count_data <- get_input_count_data_for_stan(
+last_target_date <- as.Date(forecast_date) + lubridate::days(forecast_horizon)
+first_calibration_date <- get_first_calibration_date(
   count_data,
   calibration_time
 )
+
+date_time_spine <- get_date_time_spine(
+  first_date = first_calibration_date,
+  last_date = last_target_date
+)
+
+input_count_data <- get_input_count_data_for_stan(
+  count_data,
+  date_time_spine
+)
+
 first_count_data_date <- min(input_count_data$date, na.rm = TRUE)
 last_count_data_date <- max(input_count_data$date, na.rm = TRUE)
 input_ww_data <- get_input_ww_data_for_stan(
@@ -64,13 +97,7 @@ input_ww_data <- get_input_ww_data_for_stan(
   last_count_data_date,
   calibration_time
 )
-date_time_spine <- get_date_time_spine(
-  forecast_date = forecast_date,
-  input_count_data = input_count_data,
-  last_count_data_date = last_count_data_date,
-  forecast_horizon = forecast_horizon,
-  calibration_time = calibration_time
-)
+
 
 lab_site_site_spine <- get_lab_site_site_spine(
   input_ww_data = input_ww_data
@@ -239,11 +266,23 @@ test_that(paste0(
   "Test that modifying calibration time generates data of expected",
   " length"
 ), {
+  calibration_time_new <- 80
+
+  first_calibration_date_new <- get_first_calibration_date(
+    count_data,
+    calibration_time_new
+  )
+
+  date_time_spine_new <- get_date_time_spine(
+    first_date = first_calibration_date_new,
+    last_date = last_target_date
+  )
+
   result <- get_input_count_data_for_stan(
     count_data,
-    calibration_time = 80
+    date_time_spine_new
   )
-  expect_true(nrow(result) == 80)
+  expect_equal(nrow(result), calibration_time_new)
 })
 
 
@@ -276,7 +315,7 @@ test_that(paste0(
 
 
 test_that(paste0(
-  "Test that passing out of window wastewater data behaves as",
+  "Test that passing out of window wastewater data behaves as ",
   "expected"
 ), {
   # Make wastewater data outside of scope of admissions data
@@ -306,13 +345,6 @@ test_that(paste0(
     first_count_data_date,
     last_count_data_date,
     calibration_time
-  )
-  date_time_spine <- get_date_time_spine(
-    forecast_date = forecast_date,
-    input_count_data = input_count_data,
-    last_count_data_date = last_count_data_date,
-    forecast_horizon = forecast_horizon,
-    calibration_time = calibration_time
   )
 
   lab_site_site_spine_od <- get_lab_site_site_spine(
@@ -377,13 +409,7 @@ test_that(paste0(
     last_count_data_date,
     calibration_time
   )
-  date_time_spine <- get_date_time_spine(
-    forecast_date = forecast_date,
-    input_count_data = input_count_data,
-    last_count_data_date = last_count_data_date,
-    forecast_horizon = forecast_horizon,
-    calibration_time = calibration_time
-  )
+
   lab_site_site_spine_old <- get_lab_site_site_spine(
     input_ww_data = old_input_ww_data_for_stan
   )

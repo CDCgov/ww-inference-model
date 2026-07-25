@@ -128,9 +128,20 @@ forecast_date <- "2023-11-06"
 calibration_time <- 90
 forecast_horizon <- 28
 include_ww <- 1
+last_target_date <- (as.Date(forecast_date) +
+  lubridate::days(forecast_horizon))
+first_calibration_date <- get_first_calibration_date(
+  input_count_data, calibration_time
+)
+
+date_time_spine <- get_date_time_spine(
+  first_calibration_date,
+  last_target_date
+)
+
 input_count_data_for_stan <- get_input_count_data_for_stan(
   input_count_data,
-  calibration_time
+  date_time_spine
 )
 last_count_data_date <- max(input_count_data_for_stan$date, na.rm = TRUE)
 first_count_data_date <- min(input_count_data_for_stan$date, na.rm = TRUE)
@@ -139,13 +150,6 @@ input_ww_data_for_stan <- get_input_ww_data_for_stan(
   first_count_data_date,
   last_count_data_date,
   calibration_time
-)
-date_time_spine <- get_date_time_spine(
-  forecast_date = forecast_date,
-  input_count_data = input_count_data_for_stan,
-  last_count_data_date = last_count_data_date,
-  forecast_horizon = forecast_horizon,
-  calibration_time = calibration_time
 )
 lab_site_site_spine <- get_lab_site_site_spine(
   input_ww_data = input_ww_data_for_stan
