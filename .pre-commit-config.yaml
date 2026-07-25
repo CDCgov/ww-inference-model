@@ -12,17 +12,6 @@ repos:
     -   id: trailing-whitespace
 
 # R
--   repo: https://github.com/lorenzwalthert/precommit
-    rev: v0.4.3.9030
-    hooks:
-    -   id: use-tidy-description
-    -   id: readme-rmd-rendered
-    -   id: parsable-R
-    -   id: no-browser-statement
-    -   id: no-print-statement
-    -   id: no-debug-statement
-    -   id: deps-in-desc
-        exclude: data-raw
 
 -   repo: https://github.com/posit-dev/air-pre-commit
     rev: 0.11.0
