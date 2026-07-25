@@ -42,8 +42,10 @@ indicating the date that the forecast is to be made. Default is NULL}
 \item{calibration_time}{integer indicating the number of days to calibrate
 the model for, default is \code{90}}
 
-\item{forecast_horizon}{integer indicating the number of days, including the
-forecast date, to produce forecasts for, default is \code{28}}
+\item{forecast_horizon}{integer number of days \emph{beyond} the
+forecast date to forecast. For example, \code{forecast_horizon} \code{1} with
+\code{forecast_date} \code{2026-01-01} would produce forecasts through
+\code{2026-01-02}. Default is \code{28}.}
 
 \item{model_spec}{The model specification parameters as defined using
 \code{get_model_spec()}. The default here pertains to the \code{forecast_date} in the

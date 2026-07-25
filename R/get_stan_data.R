@@ -13,6 +13,26 @@ get_first_calibration_date <- function(count_data,
   return(last_count_data_date - lubridate::days(calibration_time - 1))
 }
 
+
+#' Get the final target date of the forecast period
+#'
+#' Enforces the convention that the forecast_date itself
+#' is day 0 of the forecast horizon, not (e.g. day 1).
+#'
+#' @param forecast_date Forecast date, coercible by [as.Date()].
+#' @param forecast_horizon Forecast horizon, in days.
+#' @return The last target date, i.e. the last date
+#' for which the model will produce a forecast.
+#'
+#' @examples
+#' get_final_target_date("2026-01-01", 3)
+#' get_final_target_date("2026-01-01", 0)
+#' @export
+get_last_target_date <- function(forecast_date,
+                                 forecast_horizon) {
+  return(as.Date(forecast_date) + lubridate::days(forecast_horizon))
+}
+
 #' Get the input count data to pass directly to stan
 #'
 #' @param preprocessed_count_data a dataframe with the input count data, must
@@ -330,8 +350,9 @@ get_lab_site_subpop_spine <- function(lab_site_site_spine,
 #' calibration_time <- 90
 #' forecast_horizon <- 28
 #' include_ww <- 1
-#' last_target_date <- (as.Date(forecast_date) +
-#'   lubridate::days(forecast_horizon))
+#' last_target_date <- get_last_target_date(
+#'   forecast_date, forecast_horizon
+#' )
 #' first_calibration_date <- get_first_calibration_date(
 #'   input_count_data, calibration_time
 #' )

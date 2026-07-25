@@ -128,8 +128,9 @@ forecast_date <- "2023-11-06"
 calibration_time <- 90
 forecast_horizon <- 28
 include_ww <- 1
-last_target_date <- (as.Date(forecast_date) +
-  lubridate::days(forecast_horizon))
+last_target_date <- get_last_target_date(
+  forecast_date, forecast_horizon
+)
 first_calibration_date <- get_first_calibration_date(
   input_count_data, calibration_time
 )

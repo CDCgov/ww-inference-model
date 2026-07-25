@@ -25,8 +25,10 @@
 #' indicating the date that the forecast is to be made. Default is NULL
 #' @param calibration_time integer indicating the number of days to calibrate
 #' the model for, default is `90`
-#' @param forecast_horizon integer indicating the number of days, including the
-#' forecast date, to produce forecasts for, default is `28`
+#' @param forecast_horizon integer number of days _beyond_ the
+#' forecast date to forecast. For example, `forecast_horizon` `1` with
+#' `forecast_date` `2026-01-01` would produce forecasts through
+#' `2026-01-02`. Default is `28`.
 #' @param model_spec The model specification parameters as defined using
 #' `get_model_spec()`. The default here pertains to the `forecast_date` in the
 #' example data provided by the package, but this should be specified by the
@@ -206,7 +208,10 @@ wwinference <- function(ww_data,
   first_calibration_date <- get_first_calibration_date(
     count_data, calibration_time
   )
-  last_target_date <- forecast_date + lubridate::days(forecast_horizon)
+  last_target_date <- get_last_target_date(
+    forecast_date,
+    forecast_horizon
+  )
 
   # Get the table that maps 1-indexed time to dates
   date_time_spine <- get_date_time_spine(
