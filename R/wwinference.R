@@ -207,7 +207,8 @@ wwinference <- function(
   assert_no_dates_after_max(count_data$date, forecast_date)
 
   first_calibration_date <- get_first_calibration_date(
-    count_data, calibration_time
+    count_data,
+    calibration_time
   )
   last_target_date <- get_last_target_date(
     forecast_date,

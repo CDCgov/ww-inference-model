@@ -13,8 +13,7 @@
 #'
 #' get_first_calibration_date(wwinference::hosp_data, 70)
 #' @export
-get_first_calibration_date <- function(count_data,
-                                       calibration_time) {
+get_first_calibration_date <- function(count_data, calibration_time) {
   last_count_data_date <- max(count_data$date, na.rm = TRUE)
   return(last_count_data_date - lubridate::days(calibration_time - 1))
 }
@@ -34,8 +33,7 @@ get_first_calibration_date <- function(count_data,
 #' get_last_target_date("2026-01-01", 3)
 #' get_last_target_date("2026-01-01", 0)
 #' @export
-get_last_target_date <- function(forecast_date,
-                                 forecast_horizon) {
+get_last_target_date <- function(forecast_date, forecast_horizon) {
   return(as.Date(forecast_date) + lubridate::days(forecast_horizon))
 }
 
@@ -47,8 +45,10 @@ get_last_target_date <- function(forecast_date,
 #' output of [get_date_time_spine()].
 #' @return data frame of count data passed to stan
 #' @export
-get_input_count_data_for_stan <- function(preprocessed_count_data,
-                                          date_time_spine) {
+get_input_count_data_for_stan <- function(
+  preprocessed_count_data,
+  date_time_spine
+) {
   spine_filtered <- date_time_spine |>
     dplyr::filter(.data$date <= max(!!preprocessed_count_data$date))
 
@@ -136,13 +136,14 @@ get_input_ww_data_for_stan <- function(
 #' @return A tibble mapping dates to (1-indexed) model time.
 #' @export
 #'
-get_date_time_spine <- function(first_date,
-                                last_date) {
-  date_time_spine <- tibble::tibble(date = seq(
-    from = as.Date(first_date),
-    to = as.Date(last_date),
-    by = "days"
-  )) |>
+get_date_time_spine <- function(first_date, last_date) {
+  date_time_spine <- tibble::tibble(
+    date = seq(
+      from = as.Date(first_date),
+      to = as.Date(last_date),
+      by = "days"
+    )
+  ) |>
     dplyr::mutate(t = dplyr::row_number())
   return(date_time_spine)
 }
@@ -819,7 +820,6 @@ get_ww_indices_and_values <- function(
   }
   return(ww_values)
 }
-
 
 
 #' Get count data integer sizes for stan
