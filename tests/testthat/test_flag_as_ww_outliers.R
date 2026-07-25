@@ -5,8 +5,16 @@ dummy_data <- tibble::tibble(
   lab_site_index = rep(1, 10),
   date = as.Date("2021-01-01") + 0:9,
   log_genome_copies_per_ml = log(c(
-    100, 150, 100, 200, 270, 200,
-    NA, 400, 20, 600
+    100,
+    150,
+    100,
+    200,
+    270,
+    200,
+    NA,
+    400,
+    20,
+    600
   )),
   below_lod = c(0, 0, 0, 0, 0, 0, 0, 0, 1, 0)
 )
@@ -27,15 +35,23 @@ test_that("function flags outliers correctly", {
     lab_site_index = rep(1, 12),
     date = as.Date("2021-01-01") + 0:11,
     log_genome_copies_per_ml = log(c(
-      100, 120, 100, 110, 115, 130, 110, 200, NA,
-      100, 20, 500000
+      100,
+      120,
+      100,
+      110,
+      115,
+      130,
+      110,
+      200,
+      NA,
+      100,
+      20,
+      500000
     )),
     below_lod = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0)
   )
 
-  result <- flag_ww_outliers(dummy_data,
-    log_conc_threshold = 1
-  )
+  result <- flag_ww_outliers(dummy_data, log_conc_threshold = 1)
 
   # Check if the known outlier is flagged correctly
   testthat::expect_true(sum(result$flag_as_ww_outlier) > 0)
@@ -51,8 +67,18 @@ test_that("function does not flag non-outliers", {
     lab_site_index = rep(1, 12),
     date = as.Date("2021-01-01") + 0:11,
     log_genome_copies_per_ml = log(c(
-      100, 120, 100, 110, 115, 130, 110, 200, NA,
-      100, 20, 150
+      100,
+      120,
+      100,
+      110,
+      115,
+      130,
+      110,
+      200,
+      NA,
+      100,
+      20,
+      150
     )),
     below_lod = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0)
   )
@@ -73,8 +99,18 @@ test_that("function handles NA values appropriately", {
     lab_site_index = rep(1, 12),
     date = as.Date("2021-01-01") + 0:11,
     log_genome_copies_per_ml = c(
-      NA, 120, 100, 110, NA, 130, 110, 200, NA,
-      100, 20, 150
+      NA,
+      120,
+      100,
+      110,
+      NA,
+      130,
+      110,
+      200,
+      NA,
+      100,
+      20,
+      150
     ),
     below_lod = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0)
   )
@@ -94,29 +130,44 @@ test_that("rho_threshold and log_conc threshold parameters works as expected", {
     lab_site_index = rep(1, 12),
     date = as.Date("2021-01-01") + 0:11,
     log_genome_copies_per_ml = c(
-      100, 120, 100, 110, 115, 1000, 110, 100, NA,
-      100, 20, 100
+      100,
+      120,
+      100,
+      110,
+      115,
+      1000,
+      110,
+      100,
+      NA,
+      100,
+      20,
+      100
     ),
     below_lod = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0)
   )
 
   # With a high rho threshold, we definitely won't flag the last result
-  high_rho_threshold_result <- flag_ww_outliers(dummy_data,
+  high_rho_threshold_result <- flag_ww_outliers(
+    dummy_data,
     rho_threshold = 5,
     log_conc_threshold = 5
   )
   # With a low rho threshold we should flag the last point
-  low_rho_threshold_result <- flag_ww_outliers(dummy_data,
+  low_rho_threshold_result <- flag_ww_outliers(
+    dummy_data,
     rho_threshold = 0.5,
     log_conc_threshold = 0.5
   )
 
   # Expect fewer outliers with higher threshold and more with lower threshold
-  testthat::expect_true(sum(
-    low_rho_threshold_result$flag_as_ww_outlier
-  ) > sum(
-    high_rho_threshold_result$flag_as_ww_outlier
-  ))
+  testthat::expect_true(
+    sum(
+      low_rho_threshold_result$flag_as_ww_outlier
+    ) >
+      sum(
+        high_rho_threshold_result$flag_as_ww_outlier
+      )
+  )
 })
 
 

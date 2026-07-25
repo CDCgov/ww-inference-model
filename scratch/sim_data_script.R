@@ -6,7 +6,8 @@ list.files(file.path("R"), full.names = TRUE) |>
   purrr::walk(source)
 
 r_in_weeks <- c(
-  rep(1.1, 5), rep(0.9, 5),
+  rep(1.1, 5),
+  rep(0.9, 5),
   1 + 0.007 * 1:16
 )
 n_sites <- 4
@@ -19,10 +20,15 @@ nt <- 9
 forecast_horizon <- 28
 sim_start_date <- lubridate::ymd("2023-09-01")
 hosp_wday_effect <- c(
-  0.95, 1.01, 1.02,
-  1.02, 1.01, 1,
+  0.95,
+  1.01,
+  1.02,
+  1.02,
+  1.01,
+  1,
   0.99
-) / 7
+) /
+  7
 i0_over_n <- 5e-4
 initial_growth <- 1e-4
 sd_in_lab_level_multiplier <- 0.25
@@ -39,17 +45,14 @@ sd_i0_over_n <- 0.5
 infection_feedback <- TRUE
 subpop_phi <- c(25, 50, 70, 40, 100)
 input_params_path <-
-  fs::path_package("extdata",
-    "example_params.toml",
-    package = "wwinference"
-  )
+  fs::path_package("extdata", "example_params.toml", package = "wwinference")
 if_feedback <- FALSE
 
 # R(t) comparison
-rt_r <- new_i_over_n / (convolve(new_i_over_n,
-  rev(c(0, generation_interval)),
-  type = "open"
-))[1:(uot + ot + ht)]
+rt_r <- new_i_over_n /
+  (convolve(new_i_over_n, rev(c(0, generation_interval)), type = "open"))[
+    1:(uot + ot + ht)
+  ]
 
 test <- tibble::tibble(
   rt_stan = rt,
@@ -58,12 +61,10 @@ test <- tibble::tibble(
 )
 
 ggplot(test) +
-  geom_line(aes(x = t, y = rt_r),
-    color = "black",
-    linewidth = 2
-  ) +
+  geom_line(aes(x = t, y = rt_r), color = "black", linewidth = 2) +
   geom_line(aes(x = t, y = rt_stan), color = "red")
 
 
-new_i_test <- rt_r * (convolve(new_i_over_n, rev(generation_interval), type = "open")[1:(ot + ht)]) # nolint
+new_i_test <- rt_r *
+  (convolve(new_i_over_n, rev(generation_interval), type = "open")[1:(ot + ht)]) # nolint
 plot(new_i_test)

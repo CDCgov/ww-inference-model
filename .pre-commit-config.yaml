@@ -12,21 +12,16 @@ repos:
     -   id: trailing-whitespace
 
 # R
--   repo: https://github.com/lorenzwalthert/precommit
-    rev: v0.4.3.9030
+
+-   repo: https://github.com/posit-dev/air-pre-commit
+    rev: 0.11.0
     hooks:
-    -   id: style-files
-        args: [--style_pkg=styler, --style_fun=tidyverse_style,
-               --cache-root=styler-perm]
-    -   id: use-tidy-description
-    -   id: lintr
-    -   id: readme-rmd-rendered
-    -   id: parsable-R
-    -   id: no-browser-statement
-    -   id: no-print-statement
-    -   id: no-debug-statement
-    -   id: deps-in-desc
-        exclude: data-raw
+      - id: air-format
+-   repo: https://github.com/etiennebacher/jarl-pre-commit
+    rev: 0.5.0
+    hooks:
+      - id: jarl-check
+        args: ["--fix", "--allow-dirty"]
 #####
 # Secrets
 -   repo: https://github.com/Yelp/detect-secrets

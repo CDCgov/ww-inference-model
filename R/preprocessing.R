@@ -32,16 +32,19 @@
 #'   conc_col_name = "log_conc",
 #'   lod_col_name = "log_lod"
 #' )
-preprocess_ww_data <- function(ww_data,
-                               conc_col_name = "log_genome_copies_per_ml",
-                               lod_col_name = "log_lod") {
+preprocess_ww_data <- function(
+  ww_data,
+  conc_col_name = "log_genome_copies_per_ml",
+  lod_col_name = "log_lod"
+) {
   assert_req_ww_cols_present(
     ww_data,
     conc_col_name,
     lod_col_name
   )
   # Perform some checks on the contents of the ww_data dataframe
-  validate_ww_conc_data(ww_data,
+  validate_ww_conc_data(
+    ww_data,
     conc_col_name = conc_col_name,
     lod_col_name = lod_col_name
   )
@@ -78,7 +81,8 @@ preprocess_ww_data <- function(ww_data,
 
   # Get an extra column that identifies the wastewater outliers using the
   # default parameters
-  ww_preprocessed <- flag_ww_outliers(ww_data_add_cols,
+  ww_preprocessed <- flag_ww_outliers(
+    ww_data_add_cols,
     conc_col_name = "log_genome_copies_per_ml"
   )
 
@@ -110,9 +114,11 @@ preprocess_ww_data <- function(ww_data,
 #'   "daily_admits",
 #'   "state_pop"
 #' )
-preprocess_count_data <- function(count_data,
-                                  count_col_name = "daily_hosp_admits",
-                                  pop_size_col_name = "state_pop") {
+preprocess_count_data <- function(
+  count_data,
+  count_col_name = "daily_hosp_admits",
+  pop_size_col_name = "state_pop"
+) {
   # This checks that we have all the right column names
   assert_req_count_cols_present(
     count_data,
@@ -120,11 +126,11 @@ preprocess_count_data <- function(count_data,
     pop_size_col_name
   )
   # Perform some checks on the contents of the hosp_data df
-  validate_count_data(count_data,
+  validate_count_data(
+    count_data,
     count_col_name = count_col_name,
     pop_size_col_name = pop_size_col_name
   )
-
 
   count_data_preprocessed <- count_data |>
     dplyr::rename(
@@ -161,11 +167,13 @@ preprocess_count_data <- function(count_data,
 #' ww_data <- wwinference::ww_data
 #' ww_data_preprocessed <- wwinference::preprocess_ww_data(ww_data)
 #' ww_data_outliers_flagged <- flag_ww_outliers(ww_data_preprocessed)
-flag_ww_outliers <- function(ww_data,
-                             conc_col_name = "log_genome_copies_per_ml",
-                             rho_threshold = 2,
-                             log_conc_threshold = 3,
-                             threshold_n_dps = 1) {
+flag_ww_outliers <- function(
+  ww_data,
+  conc_col_name = "log_genome_copies_per_ml",
+  rho_threshold = 2,
+  log_conc_threshold = 3,
+  threshold_n_dps = 1
+) {
   n_dps <- ww_data |>
     dplyr::filter(.data$below_lod == 0) |>
     dplyr::group_by(.data$lab_site_index) |>
@@ -173,9 +181,7 @@ flag_ww_outliers <- function(ww_data,
 
   # Get the ww statistics we need for outlier detection
   ww_stats <- ww_data |>
-    dplyr::left_join(n_dps,
-      by = "lab_site_index"
-    ) |>
+    dplyr::left_join(n_dps, by = "lab_site_index") |>
     # exclude below LOD from z scoring and remove lab-sites with too
     # few data points
     dplyr::filter(
@@ -226,20 +232,20 @@ flag_ww_outliers <- function(ww_data,
         TRUE ~ 0
       ),
       flagged_for_removal_rho = dplyr::case_when(
-        (
-          abs(.data$z_score_rho) >= !!rho_threshold &
-            (abs(.data$z_score_rho_t_plus_1) >= !!rho_threshold) &
-            sign(.data$z_score_rho != sign(.data$z_score_rho_t_plus_1))
-        ) ~ 1,
+        (abs(.data$z_score_rho) >= !!rho_threshold &
+          (abs(.data$z_score_rho_t_plus_1) >= !!rho_threshold) &
+          sign(.data$z_score_rho != sign(.data$z_score_rho_t_plus_1))) ~ 1,
         is.na(.data$z_score_rho) ~ NA,
         TRUE ~ 0
       )
     ) |>
-    dplyr::mutate(flag_as_ww_outlier = dplyr::case_when(
-      .data$flagged_for_removal_rho == 1 ~ 1,
-      .data$flagged_for_removal_conc == 1 ~ 1,
-      TRUE ~ 0
-    )) |>
+    dplyr::mutate(
+      flag_as_ww_outlier = dplyr::case_when(
+        .data$flagged_for_removal_rho == 1 ~ 1,
+        .data$flagged_for_removal_conc == 1 ~ 1,
+        TRUE ~ 0
+      )
+    ) |>
     dplyr::ungroup() |>
     dplyr::mutate(
       exclude = 0 # by default, we don't exclude anything
@@ -283,16 +289,17 @@ flag_ww_outliers <- function(ww_data,
 #'   outlier_col_name = "flag_as_ww_outlier",
 #'   remove_outliers = TRUE
 #' )
-indicate_ww_exclusions <- function(data,
-                                   outlier_col_name = "flag_as_ww_outlier",
-                                   remove_outliers = TRUE) {
+indicate_ww_exclusions <- function(
+  data,
+  outlier_col_name = "flag_as_ww_outlier",
+  remove_outliers = TRUE
+) {
   # Check for the presence of the outlier column name
   if (!outlier_col_name %in% c(colnames(data))) {
     cli::cli_abort(
       "Specified name of the outlier column not present in the data"
     )
   }
-
 
   if (isTRUE(remove_outliers)) {
     # Port over the outliers flagged to the exclude column

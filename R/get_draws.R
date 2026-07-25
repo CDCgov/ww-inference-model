@@ -74,7 +74,11 @@ get_draws.default <- function(x, ..., what = "all") {
 #' Vector of valid values for `what` in `get_draws`
 #' @noRd
 get_draws_what_ok <- c(
-  "all", "predicted_counts", "predicted_ww", "global_rt", "subpop_rt"
+  "all",
+  "predicted_counts",
+  "predicted_ww",
+  "global_rt",
+  "subpop_rt"
 )
 
 #' @rdname get_draws
@@ -88,24 +92,28 @@ get_draws_what_ok <- c(
 #' @param fit_obj a CmdStan object that is the output of fitting the model to
 #' `x` and `count_data`
 #' @export
-get_draws.data.frame <- function(x,
-                                 count_data,
-                                 date_time_spine,
-                                 site_subpop_spine,
-                                 lab_site_subpop_spine,
-                                 stan_data_list,
-                                 fit_obj,
-                                 ...,
-                                 what = "all") {
+get_draws.data.frame <- function(
+  x,
+  count_data,
+  date_time_spine,
+  site_subpop_spine,
+  lab_site_subpop_spine,
+  stan_data_list,
+  fit_obj,
+  ...,
+  what = "all"
+) {
   # Checking we are getting all
   what_ok <- get_draws_what_ok
 
-  if (any(!what %in% what_ok)) {
+  if (!all(what %in% what_ok)) {
     idx <- which(!what %in% what_ok)
     stop(
       "The following invalid values were passed to `what`: ",
-      paste(what[idx], collapse = ", "), ". Valid values include: ",
-      paste(what_ok, collapse = ", "), "."
+      paste(what[idx], collapse = ", "),
+      ". Valid values include: ",
+      paste(what_ok, collapse = ", "),
+      "."
     )
   }
 
@@ -142,7 +150,6 @@ get_draws.data.frame <- function(x,
 
   draws <- fit_obj$result$draws()
 
-
   count_draws <- if (what_ok["predicted_counts"]) {
     draws |> # predicted_counts
       tidybayes::spread_draws(!!str2lang("pred_hosp[t]")) |>
@@ -170,7 +177,6 @@ get_draws.data.frame <- function(x,
     NULL
   }
 
-
   ww_draws <- if (what_ok["predicted_ww"]) {
     draws |>
       tidybayes::spread_draws(!!str2lang("pred_ww[lab_site_index, t]")) |>
@@ -182,15 +188,17 @@ get_draws.data.frame <- function(x,
       dplyr::left_join(date_time_spine, by = "t") |>
       dplyr::left_join(lab_site_subpop_spine, by = "lab_site_index") |>
       dplyr::left_join(
-        x |> dplyr::distinct(
-          .data$log_genome_copies_per_ml,
-          .data$log_lod,
-          .data$date,
-          .data$below_lod,
-          .data$lab_site_index
-        ),
+        x |>
+          dplyr::distinct(
+            .data$log_genome_copies_per_ml,
+            .data$log_lod,
+            .data$date,
+            .data$below_lod,
+            .data$lab_site_index
+          ),
         by = c(
-          "lab_site_index", "date"
+          "lab_site_index",
+          "date"
         )
       ) |>
       dplyr::ungroup() |>
@@ -281,32 +289,39 @@ print.wwinference_fit_draws <- function(x, ...) {
     ifelse(length(x$predicted_ww) > 0, max(x$predicted_ww$draw), 0),
     ifelse(length(x$global_rt) > 0, max(x$global_rt$draw), 0),
     ifelse(length(x$subpop_rt) > 0, max(x$subpop_rt$draw), 0)
-  ) |> max()
+  ) |>
+    max()
 
   # This calculates the number of time points in each dataframe
   timepoints <- c(
     ifelse(
       length(x$predicted_counts) > 0,
-      diff(range(x$predicted_counts$date)) + 1, 0
+      diff(range(x$predicted_counts$date)) + 1,
+      0
     ),
     ifelse(
       length(x$predicted_ww) > 0,
-      diff(range(x$predicted_ww$date)) + 1, 0
+      diff(range(x$predicted_ww$date)) + 1,
+      0
     ),
     ifelse(
       length(x$global_rt) > 0,
-      diff(range(x$global_rt$date)) + 1, 0
+      diff(range(x$global_rt$date)) + 1,
+      0
     ),
     ifelse(
       length(x$subpop_rt) > 0,
-      diff(range(x$subpop_rt$date)) + 1, 0
+      diff(range(x$subpop_rt$date)) + 1,
+      0
     )
-  ) |> max()
+  ) |>
+    max()
 
   cat(
     sprintf(
       "Draws from the model featuring %i draws across %i days ",
-      draws, timepoints
+      draws,
+      timepoints
     ),
     "in the following datasets:\n"
   ) # Same draws and timepoints
@@ -369,7 +384,11 @@ new_wwinference_fit_draws <- function(
 ) {
   # Checking colnames: Must match all exactly
   predicted_counts_colnames <- c(
-    "date", "pred_value", "observed_value", "draw", "total_pop"
+    "date",
+    "pred_value",
+    "observed_value",
+    "draw",
+    "total_pop"
   )
   if (length(predicted_counts)) {
     checkmate::assert_names(
@@ -400,7 +419,10 @@ new_wwinference_fit_draws <- function(
   }
 
   global_rt_colnames <- c(
-    "date", "draw", "pred_value", "total_pop"
+    "date",
+    "draw",
+    "pred_value",
+    "total_pop"
   )
   if (length(global_rt)) {
     checkmate::assert_names(
@@ -448,7 +470,9 @@ plot.wwinference_fit_draws <- function(x, y = NULL, what, ...) {
   if (length(what) != 1L) {
     stop(
       "The value provided to `what` must be a length one character vector. ",
-      "Currently, it is of length ", length(what), "."
+      "Currently, it is of length ",
+      length(what),
+      "."
     )
   }
 

@@ -48,13 +48,15 @@ get_model_diagnostic_flags.wwinference_fit <- function(x, ...) {
 
 #' @rdname get_model_diagnostic_flags
 #' @export
-get_model_diagnostic_flags.default <- function(x,
-                                               ebmfi_tolerance = 0.2,
-                                               divergences_tolerance = 0.01,
-                                               frac_high_rhat_tolerance = 0.05,
-                                               rhat_tolerance = 1.05,
-                                               max_tree_depth_tol = 0.01,
-                                               ...) {
+get_model_diagnostic_flags.default <- function(
+  x,
+  ebmfi_tolerance = 0.2,
+  divergences_tolerance = 0.01,
+  frac_high_rhat_tolerance = 0.05,
+  rhat_tolerance = 1.05,
+  max_tree_depth_tol = 0.01,
+  ...
+) {
   n_chains <- x$num_chains()
   iter_sampling <- x$metadata()$iter_sampling
 
@@ -67,7 +69,8 @@ get_model_diagnostic_flags.default <- function(x,
   flag_too_many_divergences <- any(
     diagnostic_summary$num_divergent >= max_n_divergences
   )
-  frac_high_rhat <- as.numeric(mean(summary[, "rhat"]$rhat > rhat_tolerance,
+  frac_high_rhat <- as.numeric(mean(
+    summary[, "rhat"]$rhat > rhat_tolerance,
     na.rm = TRUE
   ))
   flag_high_rhat <- frac_high_rhat >= frac_high_rhat_tolerance
@@ -86,8 +89,10 @@ get_model_diagnostic_flags.default <- function(x,
   # Message if a flag doesn't pass. Still return
   # the same data, but we want user to know the issue
   if (any(flag_df[1, ])) {
-    warning("Model flagged for convergence issues, run model diagnostics
-      on the output stanfit object for more information")
+    warning(
+      "Model flagged for convergence issues, run model diagnostics
+      on the output stanfit object for more information"
+    )
   }
   return(flag_df)
 }

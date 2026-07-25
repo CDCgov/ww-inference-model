@@ -3,9 +3,7 @@ options(cmdstanr_warn_inits = FALSE)
 hosp_data <- wwinference::hosp_data
 ww_data <- wwinference::ww_data
 params <- wwinference::get_params(
-  fs::path_package("extdata", "example_params.toml",
-    package = "wwinference"
-  )
+  fs::path_package("extdata", "example_params.toml", package = "wwinference")
 )
 
 

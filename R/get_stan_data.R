@@ -73,19 +73,26 @@ get_input_count_data_for_stan <- function(preprocessed_count_data,
 #' the model is calibrated to the count data for
 #' @return dataframe of the ww data passed to stan
 #' @export
-get_input_ww_data_for_stan <- function(preprocessed_ww_data,
-                                       first_count_data_date,
-                                       last_count_data_date,
-                                       calibration_time) {
+get_input_ww_data_for_stan <- function(
+  preprocessed_ww_data,
+  first_count_data_date,
+  last_count_data_date,
+  calibration_time
+) {
   # Test to see if ww_data_present
   ww_data_present <- !is.null(preprocessed_ww_data)
-  if (ww_data_present == FALSE) {
+  if (!ww_data_present) {
     message("No wastewater data present")
     ww_data <- NULL
   } else {
-    if (all(sum(preprocessed_ww_data$flag_as_ww_outlier) > sum(
-      preprocessed_ww_data$exclude
-    ))) {
+    if (
+      all(
+        sum(preprocessed_ww_data$flag_as_ww_outlier) >
+          sum(
+            preprocessed_ww_data$exclude
+          )
+      )
+    ) {
       cli::cli_warn(
         c(
           "Wastewater data being passed to the model has outliers flagged,",
@@ -95,7 +102,8 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
     }
 
     # Test for presence of needed column names
-    assert_req_ww_cols_present(preprocessed_ww_data,
+    assert_req_ww_cols_present(
+      preprocessed_ww_data,
       conc_col_name = "log_genome_copies_per_ml",
       lod_col_name = "log_lod"
     )
@@ -105,8 +113,9 @@ get_input_ww_data_for_stan <- function(preprocessed_ww_data,
     ww_data <- preprocessed_ww_data |>
       dplyr::filter(
         .data$exclude != 1,
-        .data$date > !!last_count_data_date -
-          lubridate::days(!!calibration_time)
+        .data$date >
+          !!last_count_data_date -
+            lubridate::days(!!calibration_time)
       ) |>
       dplyr::arrange(.data$date, .data$lab_site_index)
   }
@@ -156,8 +165,11 @@ get_lab_site_site_spine <- function(input_ww_data) {
     lab_site_site_spine <-
       input_ww_data |>
       dplyr::select(
-        "lab_site_index", "site_index",
-        "site", "lab", "site_pop"
+        "lab_site_index",
+        "site_index",
+        "site",
+        "lab",
+        "site_pop"
       ) |>
       dplyr::arrange(.data$lab_site_index) |>
       dplyr::distinct() |>
@@ -169,7 +181,6 @@ get_lab_site_site_spine <- function(input_ww_data) {
   } else {
     lab_site_site_spine <- tibble::tibble()
   }
-
 
   return(lab_site_site_spine)
 }
@@ -188,8 +199,7 @@ get_lab_site_site_spine <- function(input_ww_data) {
 #' the sum of the site populations in the input wastewater data
 #' @export
 #'
-get_site_subpop_spine <- function(input_ww_data,
-                                  input_count_data) {
+get_site_subpop_spine <- function(input_ww_data, input_count_data) {
   ww_data_present <- !is.null(input_ww_data)
 
   total_pop <- input_count_data |>
@@ -197,11 +207,8 @@ get_site_subpop_spine <- function(input_ww_data,
     dplyr::pull()
 
   if (ww_data_present) {
-    add_auxiliary_subpop <- ifelse(
-      total_pop > sum(unique(input_ww_data$site_pop)),
-      TRUE,
-      FALSE
-    )
+    add_auxiliary_subpop <-
+      total_pop > sum(unique(input_ww_data$site_pop))
     site_indices <- input_ww_data |>
       dplyr::select("site_index", "site", "site_pop") |>
       dplyr::distinct() |>
@@ -223,7 +230,8 @@ get_site_subpop_spine <- function(input_ww_data,
         subpop_index = dplyr::row_number()
       ) |>
       dplyr::mutate(
-        subpop_name = ifelse(!is.na(.data$site),
+        subpop_name = ifelse(
+          !is.na(.data$site),
           glue::glue("Site: {site}"),
           "remainder of population"
         )
@@ -252,8 +260,7 @@ get_site_subpop_spine <- function(input_ww_data,
 #' @return a tibble mapping lab-sites to subpopulations
 #' @export
 #'
-get_lab_site_subpop_spine <- function(lab_site_site_spine,
-                                      site_subpop_spine) {
+get_lab_site_subpop_spine <- function(lab_site_site_spine, site_subpop_spine) {
   ww_data_present <- !nrow(lab_site_site_spine) == 0
   # Get lab_site to subpop spine
   if (ww_data_present) {
@@ -411,35 +418,40 @@ get_lab_site_subpop_spine <- function(lab_site_site_spine,
 #'   params,
 #'   include_ww
 #' )
-get_stan_data <- function(input_count_data,
-                          input_ww_data,
-                          date_time_spine,
-                          lab_site_site_spine,
-                          site_subpop_spine,
-                          lab_site_subpop_spine,
-                          last_count_data_date,
-                          first_count_data_date,
-                          forecast_date,
-                          forecast_horizon,
-                          calibration_time,
-                          generation_interval,
-                          inf_to_count_delay,
-                          infection_feedback_pmf,
-                          params,
-                          include_ww,
-                          compute_likelihood = 1) {
+get_stan_data <- function(
+  input_count_data,
+  input_ww_data,
+  date_time_spine,
+  lab_site_site_spine,
+  site_subpop_spine,
+  lab_site_subpop_spine,
+  last_count_data_date,
+  first_count_data_date,
+  forecast_date,
+  forecast_horizon,
+  calibration_time,
+  generation_interval,
+  inf_to_count_delay,
+  infection_feedback_pmf,
+  params,
+  include_ww,
+  compute_likelihood = 1
+) {
   # Validate input pmfs----------------------------------------------------
-  validate_pmf(generation_interval,
+  validate_pmf(
+    generation_interval,
     calibration_time,
     input_count_data,
     arg = "generation interval"
   )
-  validate_pmf(infection_feedback_pmf,
+  validate_pmf(
+    infection_feedback_pmf,
     calibration_time,
     input_count_data,
     arg = "infection feedback pmf"
   )
-  validate_pmf(inf_to_count_delay,
+  validate_pmf(
+    inf_to_count_delay,
     calibration_time,
     input_count_data,
     arg = "infection to count delay"
@@ -482,7 +494,8 @@ get_stan_data <- function(input_count_data,
     dplyr::distinct(.data$total_pop) |>
     dplyr::pull()
 
-  assert_single_value(pop,
+  assert_single_value(
+    pop,
     arg = "global population",
     add_err_msg = c(
       "More than one global population size",
@@ -506,15 +519,16 @@ get_stan_data <- function(input_count_data,
   )
 
   stopifnot(
-    "Wastewater sampled times not equal to length of input ww data" =
-      length(ww_vals$ww_sampled_times) == ww_data_sizes$owt
+    "Wastewater sampled times not equal to length of input ww data" = length(
+      ww_vals$ww_sampled_times
+    ) ==
+      ww_data_sizes$owt
   )
 
   message(
     "Prop of population size covered by wastewater: ",
     sum(unique(input_ww_data$site_pop)) / pop
   )
-
 
   # Get count data inputs-----------------------------------------------
   count_data_sizes <- get_count_data_sizes(
@@ -534,10 +548,10 @@ get_stan_data <- function(input_count_data,
   )
 
   message(
-    "Removed ", nrow(input_ww_data) - ww_data_sizes$owt,
+    "Removed ",
+    nrow(input_ww_data) - ww_data_sizes$owt,
     " outliers from WW data"
   )
-
 
   # matrix to transform P(count|I) from weekly to daily
   ind_m <- get_ind_m(
@@ -551,15 +565,16 @@ get_stan_data <- function(input_count_data,
   )
 
   # Estimate of number of initial infections
-  i_first_obs_est <- (
-    mean(count_values$count[1:7], na.rm = TRUE) /
-      params$p_hosp_mean
-  )
+  i_first_obs_est <- (mean(count_values$count[1:7], na.rm = TRUE) /
+    params$p_hosp_mean)
 
   # package up parameters for stan data object
   viral_shedding_pars <- c(
-    params$t_peak_mean, params$t_peak_sd, params$viral_peak_mean,
-    params$viral_peak_sd, params$duration_shedding_mean,
+    params$t_peak_mean,
+    params$t_peak_sd,
+    params$viral_peak_mean,
+    params$viral_peak_sd,
+    params$duration_shedding_mean,
     params$duration_shedding_sd
   )
 
@@ -625,22 +640,15 @@ get_stan_data <- function(input_count_data,
     i_first_obs_over_n_prior_b = 1 +
       params$i_first_obs_certainty *
         (1 - (i_first_obs_est / pop)),
-    hosp_wday_effect_prior_alpha =
-      params$hosp_wday_effect_prior_alpha,
-    mean_initial_exp_growth_rate_prior_mean =
-      params$mean_initial_exp_growth_rate_prior_mean,
-    mean_initial_exp_growth_rate_prior_sd =
-      params$mean_initial_exp_growth_rate_prior_sd,
-    sigma_initial_exp_growth_rate_prior_mode =
-      params$sigma_initial_exp_growth_rate_prior_mode,
-    sigma_initial_exp_growth_rate_prior_sd =
-      params$sigma_initial_exp_growth_rate_prior_sd,
+    hosp_wday_effect_prior_alpha = params$hosp_wday_effect_prior_alpha,
+    mean_initial_exp_growth_rate_prior_mean = params$mean_initial_exp_growth_rate_prior_mean,
+    mean_initial_exp_growth_rate_prior_sd = params$mean_initial_exp_growth_rate_prior_sd,
+    sigma_initial_exp_growth_rate_prior_mode = params$sigma_initial_exp_growth_rate_prior_mode,
+    sigma_initial_exp_growth_rate_prior_sd = params$sigma_initial_exp_growth_rate_prior_sd,
     mode_sigma_ww_site_prior_mode = params$mode_sigma_ww_site_prior_mode,
     mode_sigma_ww_site_prior_sd = params$mode_sigma_ww_site_prior_sd,
-    sd_log_sigma_ww_site_prior_mode =
-      params$sd_log_sigma_ww_site_prior_mode,
-    sd_log_sigma_ww_site_prior_sd =
-      params$sd_log_sigma_ww_site_prior_sd,
+    sd_log_sigma_ww_site_prior_mode = params$sd_log_sigma_ww_site_prior_mode,
+    sd_log_sigma_ww_site_prior_sd = params$sd_log_sigma_ww_site_prior_sd,
     eta_sd_sd = params$eta_sd_sd,
     eta_sd_mean = params$eta_sd_mean,
     sigma_i_first_obs_prior_mode = params$sigma_i_first_obs_prior_mode,
@@ -656,14 +664,10 @@ get_stan_data <- function(input_count_data,
     log_phi_g_prior_sd = params$log_phi_g_prior_sd,
     offset_ref_log_r_t_prior_mean = params$offset_ref_log_r_t_prior_mean,
     offset_ref_log_r_t_prior_sd = params$offset_ref_log_r_t_prior_sd,
-    offset_ref_logit_i_first_obs_prior_mean =
-      params$offset_ref_logit_i_first_obs_prior_mean,
-    offset_ref_logit_i_first_obs_prior_sd =
-      params$offset_ref_logit_i_first_obs_prior_sd,
-    offset_ref_initial_exp_growth_rate_prior_mean =
-      params$offset_ref_initial_exp_growth_rate_prior_mean,
-    offset_ref_initial_exp_growth_rate_prior_sd =
-      params$offset_ref_initial_exp_growth_rate_prior_sd
+    offset_ref_logit_i_first_obs_prior_mean = params$offset_ref_logit_i_first_obs_prior_mean,
+    offset_ref_logit_i_first_obs_prior_sd = params$offset_ref_logit_i_first_obs_prior_sd,
+    offset_ref_initial_exp_growth_rate_prior_mean = params$offset_ref_initial_exp_growth_rate_prior_mean,
+    offset_ref_initial_exp_growth_rate_prior_sd = params$offset_ref_initial_exp_growth_rate_prior_sd
   )
 
   return(stan_data_list)
@@ -686,14 +690,13 @@ get_stan_data <- function(input_count_data,
 #' n_ww_lab_sites: number of unique wastewater site-lab combinations
 #'
 #' @export
-get_ww_data_sizes <- function(ww_data,
-                              lod_col_name = "below_lod") {
+get_ww_data_sizes <- function(ww_data, lod_col_name = "below_lod") {
   ww_data_present <- nrow(ww_data) != 0
   if (isTRUE(ww_data_present)) {
     # Test for presence of column names
     stopifnot(
-      "LOD column name isn't present in input dataset" =
-        lod_col_name %in% colnames(ww_data)
+      "LOD column name isn't present in input dataset" = lod_col_name %in%
+        colnames(ww_data)
     )
 
     # Number of wastewater observations
@@ -726,7 +729,6 @@ get_ww_data_sizes <- function(ww_data,
     )
   }
 
-
   return(data_sizes)
 }
 
@@ -741,11 +743,13 @@ get_ww_data_sizes <- function(ww_data,
 #'
 #' @return a list of the vectors needed for stan
 #' @export
-get_ww_indices_and_values <- function(input_ww_data,
-                                      date_time_spine,
-                                      lab_site_site_spine,
-                                      site_subpop_spine,
-                                      lab_site_subpop_spine) {
+get_ww_indices_and_values <- function(
+  input_ww_data,
+  date_time_spine,
+  lab_site_site_spine,
+  site_subpop_spine,
+  lab_site_subpop_spine
+) {
   ww_data_present <- !is.null(input_ww_data)
 
   # Get a vector of population sizes for each subpop
@@ -762,11 +766,9 @@ get_ww_indices_and_values <- function(input_ww_data,
 
     owt <- nrow(ww_data_joined)
 
-
     # Get the vector of log LOD values corresponding to each observation
     ww_lod <- ww_data_joined |>
       dplyr::pull("log_lod")
-
 
     # Get the vector of log wastewater concentrations
     log_conc <- ww_data_joined |>
@@ -781,8 +783,9 @@ get_ww_indices_and_values <- function(input_ww_data,
       dplyr::filter(.data$below_lod == 0) |>
       dplyr::pull(.data$ind_rel_to_sampled_times)
     stopifnot(
-      "Length of censored vectors incorrect" =
-        length(ww_censored) + length(ww_uncensored) == owt
+      "Length of censored vectors incorrect" = length(ww_censored) +
+        length(ww_uncensored) ==
+        owt
     )
 
     ww_sampled_times <- ww_data_joined |> dplyr::pull("t")
@@ -791,7 +794,6 @@ get_ww_indices_and_values <- function(input_ww_data,
       dplyr::left_join(site_subpop_spine, by = "site_index") |>
       pull("subpop_index")
     ww_sampled_lab_sites <- ww_data_joined |> dplyr::pull("lab_site_index")
-
 
     ww_values <- list(
       ww_lod = ww_lod,
@@ -847,13 +849,15 @@ get_ww_indices_and_values <- function(input_ww_data,
 #' from the model
 #' tot_weeks: number of week(rounded up) that infections are generated for
 #' @export
-get_count_data_sizes <- function(input_count_data,
-                                 forecast_date,
-                                 forecast_horizon,
-                                 calibration_time,
-                                 last_count_data_date,
-                                 uot,
-                                 count_col_name = "count") {
+get_count_data_sizes <- function(
+  input_count_data,
+  forecast_date,
+  forecast_horizon,
+  calibration_time,
+  last_count_data_date,
+  uot,
+  count_col_name = "count"
+) {
   nowcast_time <- as.integer(
     lubridate::ymd(forecast_date) - last_count_data_date
   )
@@ -911,10 +915,12 @@ get_count_indices <- function(input_count_data) {
 #' in the calibration and forecast period
 #
 #' @export
-get_count_values <- function(input_count_data,
-                             ot,
-                             ht,
-                             count_col_name = "count") {
+get_count_values <- function(
+  input_count_data,
+  ot,
+  ht,
+  count_col_name = "count"
+) {
   counts <- input_count_data |>
     dplyr::pull({{ count_col_name }})
 

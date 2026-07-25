@@ -12,13 +12,13 @@ ww_data <- tibble::tibble(
 # Test that function returns a dataframe with site indices ordered by
 # population size (with first index at highest pop)
 test_that("Function returns site indices in order of largest site pop", {
-  processed <- preprocess_ww_data(ww_data,
+  processed <- preprocess_ww_data(
+    ww_data,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
 
   spine <- processed |> dplyr::distinct(site_pop, site_index)
-
 
   expect_true(spine$site_pop[spine$site_index == 1] == max(spine$site_pop))
 })
@@ -26,15 +26,24 @@ test_that("Function returns site indices in order of largest site pop", {
 
 # Test that function returns a dataframe with correct columns
 test_that("Function returns dataframe with correct columns", {
-  processed <- preprocess_ww_data(ww_data,
+  processed <- preprocess_ww_data(
+    ww_data,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
 
   expected_cols <- c(
-    "date", "site", "lab", "log_genome_copies_per_ml",
-    "log_lod", "site_pop", "lab_site_index", "site_index",
-    "flag_as_ww_outlier", "lab_site_name", "below_lod"
+    "date",
+    "site",
+    "lab",
+    "log_genome_copies_per_ml",
+    "log_lod",
+    "site_pop",
+    "lab_site_index",
+    "site_index",
+    "flag_as_ww_outlier",
+    "lab_site_name",
+    "below_lod"
   )
 
   checkmate::expect_names(names(processed), must.include = expected_cols)
@@ -72,15 +81,18 @@ ww_data_int_alt <- tibble::tibble(
 )
 
 test_that("Function returns dataframe with correct site indices", {
-  processed_int <- preprocess_ww_data(ww_data_int,
+  processed_int <- preprocess_ww_data(
+    ww_data_int,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
-  processed_char <- preprocess_ww_data(ww_data_char,
+  processed_char <- preprocess_ww_data(
+    ww_data_char,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
-  processed_int_alt <- preprocess_ww_data(ww_data_int_alt,
+  processed_int_alt <- preprocess_ww_data(
+    ww_data_int_alt,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
@@ -108,13 +120,16 @@ ww_data_w_repeats <- tibble::tibble(
 
 test_that("Function returns an error if there are repeated values", {
   msg <- expect_error(
-    preprocess_ww_data(ww_data_w_repeats,
+    preprocess_ww_data(
+      ww_data_w_repeats,
       conc_col_name = "conc",
       lod_col_name = "lod"
-    ), "The data has more than one observation per `lab-site-day`"
+    ),
+    "The data has more than one observation per `lab-site-day`"
   )
 
-  expect_no_error(preprocess_ww_data(ww_data,
+  expect_no_error(preprocess_ww_data(
+    ww_data,
     conc_col_name = "conc",
     lod_col_name = "lod"
   ))
@@ -123,7 +138,8 @@ test_that("Function returns an error if there are repeated values", {
 
 # Test that concentration column is renamed correctly
 test_that("Concentration column is renamed correctly", {
-  processed <- preprocess_ww_data(ww_data,
+  processed <- preprocess_ww_data(
+    ww_data,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
@@ -138,12 +154,14 @@ test_that("Concentration column is renamed correctly", {
 test_that("LOD column is renamed correctly", {
   ww_data_test <- ww_data |>
     dplyr::rename("LOD" = "lod")
-  processed <- preprocess_ww_data(ww_data_test,
+  processed <- preprocess_ww_data(
+    ww_data_test,
     conc_col_name = "conc",
     lod_col_name = "LOD"
   )
 
-  checkmate::expect_names(names(processed),
+  checkmate::expect_names(
+    names(processed),
     must.include = "log_lod",
     disjunct.from = "LOD"
   )
@@ -151,13 +169,14 @@ test_that("LOD column is renamed correctly", {
 
 # Test that lab_site_index and site_index are created correctly
 test_that("lab_site_index and site_index are created correctly", {
-  processed <- preprocess_ww_data(ww_data,
+  processed <- preprocess_ww_data(
+    ww_data,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
 
-  expect_true(all(!is.na(processed$lab_site_index)))
-  expect_true(all(!is.na(processed$site_index)))
+  expect_true(!anyNA(processed$lab_site_index))
+  expect_true(!anyNA(processed$site_index))
 
   # Check for unique indices for each lab-site combination
   expect_equal(length(unique(processed$lab_site_index)), 2)
@@ -177,20 +196,20 @@ test_that("lab_site_index and site_index are created correctly", {
     site_pop = c(rep(1e6, 2), 3e5, 1e6)
   )
 
-  processed <- preprocess_ww_data(test_ww_data,
+  processed <- preprocess_ww_data(
+    test_ww_data,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
 
-  expect_true(all(!is.na(processed$lab_site_index)))
-  expect_true(all(!is.na(processed$site_index)))
+  expect_true(!anyNA(processed$lab_site_index))
+  expect_true(!anyNA(processed$site_index))
 
   # Check for unique indices for each lab-site combination
   expect_equal(length(unique(processed$lab_site_index)), 4)
 
   # Check for unique indices for each site
   expect_equal(length(unique(processed$site_index)), 2)
-
 
   # Check to make sure that lab and site indices get created correctly
   # even if labs and sites are characters
@@ -203,13 +222,14 @@ test_that("lab_site_index and site_index are created correctly", {
     site_pop = c(rep(1e6, 2), rep(3e5, 2))
   )
 
-  processed <- preprocess_ww_data(test_ww_data,
+  processed <- preprocess_ww_data(
+    test_ww_data,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
 
-  expect_true(all(!is.na(processed$lab_site_index)))
-  expect_true(all(!is.na(processed$site_index)))
+  expect_true(!anyNA(processed$lab_site_index))
+  expect_true(!anyNA(processed$site_index))
 
   # Check for unique indices for each lab-site combination
   expect_equal(length(unique(processed$lab_site_index)), 2)
@@ -227,7 +247,8 @@ test_that("lab_site_index and site_index are created correctly", {
 
 # Test that below_lod flag is set correctly
 test_that("below_lod flag is set correctly", {
-  processed <- preprocess_ww_data(ww_data,
+  processed <- preprocess_ww_data(
+    ww_data,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
@@ -250,7 +271,8 @@ test_that("below_lod flag is set correctly", {
     site_pop = c(rep(1e6, 2), rep(3e5, 2))
   )
 
-  processed <- preprocess_ww_data(ww_data_test,
+  processed <- preprocess_ww_data(
+    ww_data_test,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
@@ -266,13 +288,14 @@ test_that("below_lod flag is set correctly", {
 
 # Test that lab_site_index and site_index are created correctly
 test_that("lab_site_index and site_index are created correctly", {
-  processed <- preprocess_ww_data(ww_data,
+  processed <- preprocess_ww_data(
+    ww_data,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
 
-  expect_true(all(!is.na(processed$lab_site_index)))
-  expect_true(all(!is.na(processed$site_index)))
+  expect_true(!anyNA(processed$lab_site_index))
+  expect_true(!anyNA(processed$site_index))
 
   # Check for unique indices for each lab-site combination
   expect_equal(length(unique(processed$lab_site_index)), 2)
@@ -283,14 +306,17 @@ test_that("lab_site_index and site_index are created correctly", {
 
 # Test that lab_site_name is constructed properly
 test_that("lab_site_name is constructed properly", {
-  processed <- preprocess_ww_data(ww_data,
+  processed <- preprocess_ww_data(
+    ww_data,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
 
   expected_lab_site_names <- c(
-    "Site: 2, Lab: 1", "Site: 2, Lab: 1",
-    "Site: 1, Lab: 1", "Site: 1, Lab: 1"
+    "Site: 2, Lab: 1",
+    "Site: 2, Lab: 1",
+    "Site: 1, Lab: 1",
+    "Site: 1, Lab: 1"
   )
 
   expect_equal(processed$lab_site_name, expected_lab_site_names)
@@ -300,7 +326,8 @@ test_that("lab_site_name is constructed properly", {
 test_that("Function handles empty dataframes with an error", {
   empty_ww_data <- ww_data[FALSE, ]
 
-  expect_error(preprocess_ww_data(empty_ww_data,
+  expect_error(preprocess_ww_data(
+    empty_ww_data,
     conc_col_name = "conc",
     lod_col_name = "lod"
   ))
@@ -319,16 +346,33 @@ test_that("Function flags outliers correctly", {
     site = rep(1, 20),
     lab = rep(1, 20),
     conc = c(
-      345.2, 335.3, 345.2, 335.3, 345.2, 335.3,
-      345.2, 335.3, 334,
-      345.2, 335.3, 345.2, 335.3, 345.2, 335.3,
-      345.2, 335.3, 340, 334, 100000
+      345.2,
+      335.3,
+      345.2,
+      335.3,
+      345.2,
+      335.3,
+      345.2,
+      335.3,
+      334,
+      345.2,
+      335.3,
+      345.2,
+      335.3,
+      345.2,
+      335.3,
+      345.2,
+      335.3,
+      340,
+      334,
+      100000
     ),
     lod = rep(20, 20),
     site_pop = rep(1e6, 20)
   )
 
-  processed <- preprocess_ww_data(outlier_ww_data,
+  processed <- preprocess_ww_data(
+    outlier_ww_data,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
@@ -343,7 +387,8 @@ test_that("Function flags outliers correctly", {
 
 # Test that all rows are preserved after preprocessing
 test_that("All rows are preserved after preprocessing", {
-  processed <- preprocess_ww_data(ww_data,
+  processed <- preprocess_ww_data(
+    ww_data,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
@@ -355,13 +400,14 @@ test_that("All rows are preserved after preprocessing", {
 # Test that no NA values are introduced during preprocessing
 # (assuming input has no NAs)
 test_that("No NA values are introduced during preprocessing", {
-  processed <- preprocess_ww_data(ww_data,
+  processed <- preprocess_ww_data(
+    ww_data,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )
 
   # Check for any new NA values introduced in any column
-  expect_true(all(!is.na(processed)))
+  expect_true(!anyNA(processed))
 })
 
 # Test that the function can handle LOD values equal to concentration values
@@ -371,7 +417,8 @@ test_that("Function handles LOD values equal to concentration values", {
     dplyr::mutate(conc = lod) # Set concentration equal to LOD,
   # we expect this should get flagged as below LOD
 
-  processed_edge_case <- preprocess_ww_data(edge_case_ww_data,
+  processed_edge_case <- preprocess_ww_data(
+    edge_case_ww_data,
     conc_col_name = "conc",
     lod_col_name = "lod"
   )

@@ -22,9 +22,7 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
   # 1, so that minimum possible prevalence guess is 1 / population
   i_first_obs_est <- max(
     1,
-    mean(stan_data$hosp[1:7],
-      na.rm = TRUE
-    ) / stan_data$p_hosp_prior_mean
+    mean(stan_data$hosp[1:7], na.rm = TRUE) / stan_data$p_hosp_prior_mean
   )
 
   logit_i_frac_est <- stats::qlogis(i_first_obs_est / pop)
@@ -68,35 +66,40 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
     autoreg_rt_subpop = abs(stats::rnorm(1, 0.5, 0.05)),
     autoreg_p_hosp = abs(stats::rnorm(1, 1 / 100, 0.001)),
     sigma_rt = abs(stats::rnorm(1, 0, stdev)),
-    i_first_obs_over_n =
-      stats::plogis(stats::rnorm(1, logit_i_frac_est), 0.05),
+    i_first_obs_over_n = stats::plogis(stats::rnorm(1, logit_i_frac_est), 0.05),
     mean_initial_exp_growth_rate = stats::rnorm(1, 0, stdev),
     inv_sqrt_phi_h = 1 / sqrt(200) + stats::rnorm(1, 1 / 10000, 1 / 10000),
     mode_sigma_ww_site = abs(stats::rnorm(
-      1, stan_data$mode_sigma_ww_site_prior_mode,
+      1,
+      stan_data$mode_sigma_ww_site_prior_mode,
       stdev * stan_data$mode_sigma_ww_site_prior_sd
     )),
     sd_log_sigma_ww_site = abs(stats::rnorm(
-      1, stan_data$sd_log_sigma_ww_site_prior_mode,
+      1,
+      stan_data$sd_log_sigma_ww_site_prior_mode,
       stdev * stan_data$sd_log_sigma_ww_site_prior_sd
     )),
     eta_log_sigma_ww_site = abs(stats::rnorm(n_ww_lab_sites, 0, stdev)),
     p_hosp_mean = stats::rnorm(
-      1, stats::qlogis(stan_data$p_hosp_prior_mean),
+      1,
+      stats::qlogis(stan_data$p_hosp_prior_mean),
       stdev
     ),
     p_hosp_w = stats::rnorm(tot_weeks, 0, stdev),
     p_hosp_w_sd = abs(stats::rnorm(1, 0.01, 0.001)),
     t_peak = stats::rnorm(
-      1, stan_data$viral_shedding_pars[1],
+      1,
+      stan_data$viral_shedding_pars[1],
       stdev * stan_data$viral_shedding_pars[2]
     ),
     viral_peak = stats::rnorm(
-      1, stan_data$viral_shedding_pars[3],
+      1,
+      stan_data$viral_shedding_pars[3],
       stdev * stan_data$viral_shedding_pars[4]
     ),
     dur_shed = stats::rnorm(
-      1, stan_data$viral_shedding_pars[5],
+      1,
+      stan_data$viral_shedding_pars[5],
       stdev * stan_data$viral_shedding_pars[6]
     ),
     log10_g = stats::rnorm(1, stan_data$log10_g_prior_mean, 0.5),
@@ -110,10 +113,7 @@ get_inits_for_one_chain <- function(stan_data, stdev = 0.01) {
 
   if (stan_data$n_subpops > 1) {
     init_list$error_rt_subpop <- matrix(
-      stats::rnorm((n_subpops - 1) * n_weeks,
-        mean = 0,
-        sd = stdev
-      ),
+      stats::rnorm((n_subpops - 1) * n_weeks, mean = 0, sd = stdev),
       (n_subpops - 1),
       n_weeks
     )

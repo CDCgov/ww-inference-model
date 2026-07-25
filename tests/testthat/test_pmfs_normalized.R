@@ -10,12 +10,10 @@ test_that("Test that bundled PMFs in the package data sum to 1", {
 
   testthat::expect_equal(sum(shedding_pdf), 1.0)
 
-
   default_spec <- wwinference::get_model_spec()
 
   generation_interval <- default_spec$generation_interval
   testthat::expect_equal(sum(generation_interval), 1.0)
-
 
   inf_to_count_delay <- default_spec$inf_to_count_delay
   testthat::expect_equal(sum(inf_to_count_delay), 1.0)
