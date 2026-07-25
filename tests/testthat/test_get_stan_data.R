@@ -1,24 +1,27 @@
-test_that(paste0(
-  "get_date_time_spine yields an ordered tibble with ",
-  "all and only the expected dates"
-), {
-  result <- get_date_time_spine(
-    "2024-04-04",
-    "2024-04-06"
-  )
-
-  expect_equal(
-    result,
-    tibble::tibble(
-      date = as.Date(c(
-        "2024-04-04",
-        "2024-04-05",
-        "2024-04-06"
-      )),
-      t = 1:3
+test_that(
+  paste0(
+    "get_date_time_spine yields an ordered tibble with ",
+    "all and only the expected dates"
+  ),
+  {
+    result <- get_date_time_spine(
+      "2024-04-04",
+      "2024-04-06"
     )
-  )
-})
+
+    expect_equal(
+      result,
+      tibble::tibble(
+        date = as.Date(c(
+          "2024-04-04",
+          "2024-04-05",
+          "2024-04-06"
+        )),
+        t = 1:3
+      )
+    )
+  }
+)
 
 withr::with_seed(123, {
   ww_data <- tibble::tibble(
@@ -152,7 +155,7 @@ test_that(
 test_that(
   paste0(
     "Test that the number of subpopulations is correct for the ",
-    "standard case where sum(site_pops) > total_pop"
+    "case where sum(site_pops) > total_pop"
   ),
   {
     input_count_data_mod <- input_count_data
@@ -236,28 +239,18 @@ test_that(
   }
 )
 
-test_that(paste0(
-  "Test that modifying calibration time generates data of expected",
-  " length"
-), {
-  calibration_time_new <- 80
+test_that(
+  paste0(
+    "Test that the model handles include_ww = 0 ",
+    "and no data appropriately"
+  ),
+  {
+    null_ww_data <- NULL
 
-  first_calibration_date_new <- get_first_calibration_date(
-    count_data,
-    calibration_time_new
-  )
-
-  date_time_spine_new <- get_date_time_spine(
-    first_date = first_calibration_date_new,
-    last_date = last_target_date
-  )
-
-  result <- get_input_count_data_for_stan(
-    count_data,
-    date_time_spine_new
-  )
-  expect_equal(nrow(result), calibration_time_new)
-})
+    site_subpop_spine_mod <- get_site_subpop_spine(
+      input_ww_data = null_ww_data,
+      input_count_data = input_count_data
+    )
 
     lab_site_subpop_spine_mod <- get_lab_site_subpop_spine(
       lab_site_site_spine = lab_site_site_spine,
@@ -295,42 +288,52 @@ test_that(
     " length"
   ),
   {
+    calibration_time_new <- 80
+
+    first_calibration_date_new <- get_first_calibration_date(
+      count_data,
+      calibration_time_new
+    )
+
+    date_time_spine_new <- get_date_time_spine(
+      first_date = first_calibration_date_new,
+      last_date = last_target_date
+    )
+
     result <- get_input_count_data_for_stan(
       count_data,
-      calibration_time = 80
+      date_time_spine_new
     )
-    expect_true(nrow(result) == 80)
+    expect_equal(nrow(result), calibration_time_new)
   }
 )
 
 
-test_that(paste0(
-  "Test that passing out of window wastewater data behaves as ",
-  "expected"
-), {
-  # Make wastewater data outside of scope of admissions data
-  withr::with_seed(123, {
-    recent_ww_data <- tibble::tibble(
-      date = rep(seq(
-        from = lubridate::ymd("2024-08-01"),
-        to = lubridate::ymd("2024-11-01"),
-        by = "weeks"
-      ), 2),
-      site = c(rep(1, 14), rep(2, 14)),
-      lab = c(rep(1, 28)),
-      conc = abs(rnorm(28, mean = 500, sd = 50)),
-      lod = c(rep(20, 14), rep(15, 14)),
-      site_pop = c(rep(2e5, 14), rep(4e5, 14))
+test_that(
+  paste0(
+    "Test that things not flagged for removal don't get removed ",
+    "and things that are flagged for removal do get removed"
+  ),
+  {
+    ww_data_no_exclusions <- ww_data_filtered
+    ww_data_no_exclusions$exclude <- 0
+    input_ww_data_ne <- get_input_ww_data_for_stan(
+      ww_data_no_exclusions,
+      first_count_data_date,
+      last_count_data_date,
+      calibration_time
     )
 
     expect_true(nrow(input_ww_data_ne) == nrow(input_ww_data))
 
-  recent_input_ww_data_for_stan <- get_input_ww_data_for_stan(
-    recent_input_ww_data,
-    first_count_data_date,
-    last_count_data_date,
-    calibration_time
-  )
+    ww_data_w_exclusions <- ww_data_filtered
+    ww_data_w_exclusions$exclude[10] <- 1
+    input_ww_data_we <- get_input_ww_data_for_stan(
+      ww_data_w_exclusions,
+      first_count_data_date,
+      last_count_data_date,
+      calibration_time
+    )
 
     expect_true(nrow(input_ww_data_ne) == nrow(input_ww_data_we) + 1)
   }
@@ -375,13 +378,6 @@ test_that(
       last_count_data_date,
       calibration_time
     )
-    date_time_spine <- get_date_time_spine(
-      forecast_date = forecast_date,
-      input_count_data = input_count_data,
-      last_count_data_date = last_count_data_date,
-      forecast_horizon = forecast_horizon,
-      calibration_time = calibration_time
-    )
 
     lab_site_site_spine_od <- get_lab_site_site_spine(
       input_ww_data = recent_input_ww_data_for_stan
@@ -397,16 +393,50 @@ test_that(
       site_subpop_spine = site_subpop_spine_od
     )
 
-  old_input_ww_data_for_stan <- get_input_ww_data_for_stan(
-    old_input_ww_data,
-    first_count_data_date,
-    last_count_data_date,
-    calibration_time
-  )
+    expect_error(get_stan_data(
+      input_count_data,
+      recent_input_ww_data_for_stan,
+      date_time_spine,
+      lab_site_site_spine_od,
+      site_subpop_spine_od,
+      lab_site_subpop_spine_od,
+      last_count_data_date,
+      first_count_data_date,
+      forecast_date,
+      forecast_horizon,
+      calibration_time,
+      generation_interval,
+      inf_to_count_delay,
+      infection_feedback_pmf,
+      params,
+      include_ww
+    ))
 
-  lab_site_site_spine_old <- get_lab_site_site_spine(
-    input_ww_data = old_input_ww_data_for_stan
-  )
+    # Make wastewater data outside of scope of admissions data
+    withr::with_seed(123, {
+      old_ww_data <- tibble::tibble(
+        date = rep(
+          seq(
+            from = lubridate::ymd("2022-08-01"),
+            to = lubridate::ymd("2022-11-01"),
+            by = "weeks"
+          ),
+          2
+        ),
+        site = c(rep(1, 14), rep(2, 14)),
+        lab = c(rep(1, 28)),
+        conc = abs(rnorm(28, mean = 500, sd = 50)),
+        lod = c(rep(20, 14), rep(15, 14)),
+        site_pop = c(rep(2e5, 14), rep(4e5, 14))
+      )
+    })
+
+    old_ww_data_preprocessed <- preprocess_ww_data(
+      old_ww_data,
+      conc_col_name = "conc",
+      lod_col_name = "lod"
+    )
+    old_input_ww_data <- indicate_ww_exclusions(old_ww_data_preprocessed)
 
     old_input_ww_data_for_stan <- get_input_ww_data_for_stan(
       old_input_ww_data,
@@ -414,13 +444,7 @@ test_that(
       last_count_data_date,
       calibration_time
     )
-    date_time_spine <- get_date_time_spine(
-      forecast_date = forecast_date,
-      input_count_data = input_count_data,
-      last_count_data_date = last_count_data_date,
-      forecast_horizon = forecast_horizon,
-      calibration_time = calibration_time
-    )
+
     lab_site_site_spine_old <- get_lab_site_site_spine(
       input_ww_data = old_input_ww_data_for_stan
     )

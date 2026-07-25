@@ -514,7 +514,8 @@ generate_simulated_data <- function(
   ww_data_eval <- ww_data_eval |>
     dplyr::mutate(
       "log_genome_copies_per_ml_eval" = dplyr::case_when(
-        .data$log_genome_copies_per_ml_eval == !!min_ww_val ~ 0.5 *
+        .data$log_genome_copies_per_ml_eval == !!min_ww_val ~
+          0.5 *
           .data$log_lod,
         TRUE ~ .data$log_genome_copies_per_ml_eval
       )
