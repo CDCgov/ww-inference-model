@@ -149,16 +149,18 @@
 #'
 #' @rdname wwinference
 #' @aliases wwinference_fit
-wwinference <- function(ww_data,
-                        count_data,
-                        forecast_date = NULL,
-                        calibration_time = 90,
-                        forecast_horizon = 28,
-                        model_spec = get_model_spec(),
-                        fit_opts = list(),
-                        generate_initial_values = TRUE,
-                        initial_values_seed = NULL,
-                        compiled_model = compile_model()) {
+wwinference <- function(
+  ww_data,
+  count_data,
+  forecast_date = NULL,
+  calibration_time = 90,
+  forecast_horizon = 28,
+  model_spec = get_model_spec(),
+  fit_opts = list(),
+  generate_initial_values = TRUE,
+  initial_values_seed = NULL,
+  compiled_model = compile_model()
+) {
   include_ww <- as.integer(model_spec$include_ww)
 
   if (is.null(forecast_date)) {
@@ -182,7 +184,6 @@ wwinference <- function(ww_data,
     ww_data <- NULL
   }
 
-
   fit_opts_use <- get_mcmc_options() # get defaults
   # this overwrites defaults with all and only the values the user sets in
   # `fit_opts`
@@ -190,10 +191,10 @@ wwinference <- function(ww_data,
 
   # Check that the fit options passed to wwinference are valid cmdstanr::sample
   # arguments
-  checkmate::assert_names(names(fit_opts),
+  checkmate::assert_names(
+    names(fit_opts),
     subset.of = formalArgs(compiled_model$sample)
   )
-
 
   ## Check that data is compatible with specifications
   if (!is.null(ww_data)) {
@@ -241,7 +242,6 @@ wwinference <- function(ww_data,
     site_subpop_spine = site_subpop_spine
   )
 
-
   raw_input_data <- list(
     input_count_data = input_count_data,
     input_ww_data = input_ww_data,
@@ -288,7 +288,6 @@ wwinference <- function(ww_data,
     })
   }
 
-
   # This returns the cmdstan object if the model runs, and result = NULL if
   # the model errors
   safe_fit_model <- purrr::safely(fit_model)
@@ -300,7 +299,8 @@ wwinference <- function(ww_data,
     init_lists = init_lists
   )
 
-  if (!is.null(fit$error)) { # If the model errors, return the error message
+  if (!is.null(fit$error)) {
+    # If the model errors, return the error message
     return(fit$error)
   } else {
     convergence_flag_df <- get_model_diagnostic_flags(fit$result)
@@ -315,8 +315,10 @@ wwinference <- function(ww_data,
     # Message if a flag doesn't pass. Still return
     # the same data, but we want user to know the issue
     if (any(convergence_flag_df[1, ])) {
-      warning("Model flagged for convergence issues, run model diagnostics
-      on the output stanfit object for more information")
+      warning(
+        "Model flagged for convergence issues, run model diagnostics
+      on the output stanfit object for more information"
+      )
     }
   }
 
@@ -371,10 +373,14 @@ print.wwinference_fit <- function(x, ...) {
   cat("wwinference_fit object\n")
   cat("N of WW sites              :", x$stan_data_list$n_ww_sites, "\n")
   cat("N of unique lab-site pairs :", x$stan_data_list$n_ww_lab_sites, "\n")
-  cat("Total population           :", formatC(
-    x$stan_data_list$state_pop,
-    format = "d"
-  ), "\n")
+  cat(
+    "Total population           :",
+    formatC(
+      x$stan_data_list$state_pop,
+      format = "d"
+    ),
+    "\n"
+  )
   cat("N of weeks                 :", x$stan_data_list$n_weeks, "\n")
   cat("--------------------\n")
   cat("For more details, you can access the following:\n")
@@ -402,10 +408,7 @@ summary.wwinference_fit <- function(object, ...) {
 #' @param init_lists A list of initial values for the sampler
 #' @return The fit object from the model
 #' @noRd
-fit_model <- function(compiled_model,
-                      stan_data_list,
-                      fit_opts,
-                      init_lists) {
+fit_model <- function(compiled_model, stan_data_list, fit_opts, init_lists) {
   args_for_stan_sampling <-
     c(
       list(
@@ -515,9 +518,7 @@ get_model_spec <- function(
   include_ww = TRUE,
   compute_likelihood = TRUE,
   params = get_params(
-    system.file("extdata", "example_params.toml",
-      package = "wwinference"
-    )
+    system.file("extdata", "example_params.toml", package = "wwinference")
   )
 ) {
   model_specs <- list(

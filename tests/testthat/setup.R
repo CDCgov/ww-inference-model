@@ -6,7 +6,8 @@ testthat_stan_include <- function() {
 }
 
 model_file_path_id <- system.file(
-  "stan", "wwinference.stan",
+  "stan",
+  "wwinference.stan",
   package = "wwinference"
 )
 
@@ -22,7 +23,5 @@ compiled_site_inf_model <- cmdstanr::cmdstan_model(
 )
 
 params <- wwinference::get_params(
-  system.file("extdata", "example_params.toml",
-    package = "wwinference"
-  )
+  system.file("extdata", "example_params.toml", package = "wwinference")
 )

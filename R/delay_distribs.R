@@ -24,9 +24,13 @@
 #'
 #' @return A numeric vector representing the PMF.
 simulate_double_censored_pmf <- function(
-  max, fun_primary = stats::runif, primary_args = list(),
+  max,
+  fun_primary = stats::runif,
+  primary_args = list(),
   fun_dist = stats::rlnorm,
-  dist_args = list(...), n = 1e6, ...
+  dist_args = list(...),
+  n = 1e6,
+  ...
 ) {
   primary <- do.call(fun_primary, c(list(n), primary_args))
   secondary <- primary + do.call(fun_dist, c(list(n), dist_args))
@@ -84,9 +88,11 @@ drop_first_and_renormalize <- function(x) {
 #' correction on the incubaion period distribution, default is `0.15` for COVID
 #'
 #' @return pmf of incubation period
-make_incubation_period_pmf <- function(backward_scale = 3.60,
-                                       backward_shape = 1.50,
-                                       r = 0.15) {
+make_incubation_period_pmf <- function(
+  backward_scale = 3.60,
+  backward_shape = 1.50,
+  r = 0.15
+) {
   # From: Park, Sang Woo, et al. "Inferring the differences in incubation-period
   # and generation-interval distributions of the Delta and Omicron variants of
   # SARS-CoV-2." Proceedings of the National Academy of Sciences 120.22 (2023):
@@ -102,13 +108,10 @@ make_incubation_period_pmf <- function(backward_scale = 3.60,
 
   # Relies on fundamental assumption about epidemic growth rate.
 
-
   discr_gr_adj_weibull <- tibble::tibble(
     time = seq(0, 23, by = 1), # 23 seems to get most of the distribution mass
-    density0 = dweibull(time,
-      shape = backward_shape,
-      scale = backward_scale
-    ) * exp(r * time)
+    density0 = dweibull(time, shape = backward_shape, scale = backward_scale) *
+      exp(r * time)
   )
 
   inc_period_pmf <- wwinference::to_simplex(discr_gr_adj_weibull$density0)
@@ -130,11 +133,14 @@ make_incubation_period_pmf <- function(backward_scale = 3.60,
 #' is `2.490848` from fit to data in above paper
 #'
 #' @return pmf of distribution from symptom onset to hospital admission
-make_hospital_onset_delay_pmf <- function(neg_binom_mu = 6.98665,
-                                          neg_binom_size = 2.490848) {
+make_hospital_onset_delay_pmf <- function(
+  neg_binom_mu = 6.98665,
+  neg_binom_size = 2.490848
+) {
   density <- dnbinom(
     x = seq(0, 30, 1),
-    mu = neg_binom_mu, size = neg_binom_size
+    mu = neg_binom_mu,
+    size = neg_binom_size
   )
   hosp_onset_delay_pmf <- density / sum(density)
 
@@ -154,8 +160,10 @@ make_hospital_onset_delay_pmf <- function(neg_binom_mu = 6.98665,
 #'
 #' @return convolution of incubation period and sympton onset to hospital
 #' admission pmf
-make_reporting_delay_pmf <- function(incubation_period_pmf,
-                                     hospital_onset_delay_pmf) {
+make_reporting_delay_pmf <- function(
+  incubation_period_pmf,
+  hospital_onset_delay_pmf
+) {
   pmfs <- list(
     "incubation_period" = incubation_period_pmf,
     "hosp_onset_delay" = hospital_onset_delay_pmf

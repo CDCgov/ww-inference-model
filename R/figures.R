@@ -26,12 +26,14 @@
 
 #' @export
 #'
-get_plot_forecasted_counts <- function(draws,
-                                       forecast_date,
-                                       count_data_eval = NULL,
-                                       count_data_eval_col_name = NULL,
-                                       count_type = "hospital admissions",
-                                       n_draws_to_plot = 100) {
+get_plot_forecasted_counts <- function(
+  draws,
+  forecast_date,
+  count_data_eval = NULL,
+  count_data_eval_col_name = NULL,
+  count_type = "hospital admissions",
+  n_draws_to_plot = 100
+) {
   n_draws_available <- max(draws$draw)
   if (n_draws_available < n_draws_to_plot) {
     stop(
@@ -48,14 +50,17 @@ get_plot_forecasted_counts <- function(draws,
 
   sampled_draws <- sample.int(n_draws_available, n_draws_to_plot)
 
-  draws_to_plot <- draws |> dplyr::filter(
-    .data$draw %in% !!sampled_draws
-  )
+  draws_to_plot <- draws |>
+    dplyr::filter(
+      .data$draw %in% !!sampled_draws
+    )
 
   p <- ggplot(draws_to_plot) +
     geom_line(
       aes(x = .data$date, y = .data$pred_value, group = .data$draw),
-      color = "red4", alpha = 0.1, linewidth = 0.2
+      color = "red4",
+      alpha = 0.1,
+      linewidth = 0.2
     ) +
     geom_vline(
       xintercept = lubridate::ymd(forecast_date),
@@ -71,14 +76,17 @@ get_plot_forecasted_counts <- function(draws,
     theme_bw() +
     theme(
       axis.text.x = element_text(
-        size = 8, vjust = 1,
-        hjust = 1, angle = 45
+        size = 8,
+        vjust = 1,
+        hjust = 1,
+        angle = 45
       ),
       axis.title.x = element_text(size = 12),
       axis.title.y = element_text(size = 12),
       plot.title = element_text(
         size = 10,
-        vjust = 0.5, hjust = 0.5
+        vjust = 0.5,
+        hjust = 0.5
       )
     )
 
@@ -87,7 +95,9 @@ get_plot_forecasted_counts <- function(draws,
       geom_point(
         data = count_data_eval,
         aes(x = .data$date, y = .data[[count_data_eval_col_name]]),
-        shape = 21, color = "black", fill = "white"
+        shape = 21,
+        color = "black",
+        fill = "white"
       )
   }
   # Add calibration data as final step, this should be plotted on top of
@@ -112,9 +122,7 @@ get_plot_forecasted_counts <- function(draws,
 #' concentrations in each site and lab combination
 #' @export
 #'
-get_plot_ww_conc <- function(draws,
-                             forecast_date,
-                             n_draws_to_plot = 100) {
+get_plot_ww_conc <- function(draws, forecast_date, n_draws_to_plot = 100) {
   sampled_draws <- sample(1:max(draws$draw), n_draws_to_plot)
 
   draws_to_plot <- draws |>
@@ -125,21 +133,28 @@ get_plot_ww_conc <- function(draws,
   p <- ggplot(draws_to_plot) +
     geom_line(
       aes(
-        x = .data$date, y = .data$pred_value,
+        x = .data$date,
+        y = .data$pred_value,
         color = .data$subpop_name,
         group = .data$draw
       ),
-      alpha = 0.1, size = 0.2,
+      alpha = 0.1,
+      size = 0.2,
       show.legend = FALSE
     ) +
-    geom_point(aes(x = .data$date, y = .data$observed_value),
-      color = "black", show.legend = FALSE, size = 0.5
+    geom_point(
+      aes(x = .data$date, y = .data$observed_value),
+      color = "black",
+      show.legend = FALSE,
+      size = 0.5
     ) +
     geom_point(
       data = draws_to_plot |>
         dplyr::filter(.data$below_lod == 1),
       aes(x = .data$date, y = .data$observed_value),
-      color = "blue", show.legend = FALSE, size = 0.5
+      color = "blue",
+      show.legend = FALSE,
+      size = 0.5
     ) +
     facet_wrap(~lab_site_name, scales = "free_y") +
     geom_vline(
@@ -156,8 +171,10 @@ get_plot_ww_conc <- function(draws,
     theme_bw() +
     theme(
       axis.text.x = element_text(
-        size = 5, vjust = 1,
-        hjust = 1, angle = 45
+        size = 5,
+        vjust = 1,
+        hjust = 1,
+        angle = 45
       ),
       axis.title.x = element_text(size = 12),
       axis.text.y = element_text(size = 5),
@@ -165,7 +182,8 @@ get_plot_ww_conc <- function(draws,
       strip.text = element_text(size = 6),
       plot.title = element_text(
         size = 10,
-        vjust = 0.5, hjust = 0.5
+        vjust = 0.5,
+        hjust = 0.5
       )
     )
   return(p)
@@ -186,20 +204,21 @@ get_plot_ww_conc <- function(draws,
 #' estimate
 #' @export
 #'
-get_plot_global_rt <- function(draws,
-                               forecast_date,
-                               n_draws_to_plot = 100) {
+get_plot_global_rt <- function(draws, forecast_date, n_draws_to_plot = 100) {
   sampled_draws <- sample.int(max(draws$draw), n_draws_to_plot)
 
-  draws_to_plot <- draws |> dplyr::filter(
-    .data$draw %in% !!sampled_draws
-  )
+  draws_to_plot <- draws |>
+    dplyr::filter(
+      .data$draw %in% !!sampled_draws
+    )
 
   # R(t) timeseries
   p <- ggplot(draws_to_plot) +
     geom_step(
       aes(x = .data$date, y = .data$pred_value, group = .data$draw),
-      color = "blue4", alpha = 0.1, linewidth = 0.2
+      color = "blue4",
+      alpha = 0.1,
+      linewidth = 0.2
     ) +
     geom_vline(
       xintercept = lubridate::ymd(forecast_date),
@@ -216,15 +235,18 @@ get_plot_global_rt <- function(draws,
     theme_bw() +
     theme(
       axis.text.x = element_text(
-        size = 5, vjust = 1,
-        hjust = 1, angle = 45
+        size = 5,
+        vjust = 1,
+        hjust = 1,
+        angle = 45
       ),
       axis.title.x = element_text(size = 12),
       axis.text.y = element_text(size = 5),
       axis.title.y = element_text(size = 12),
       plot.title = element_text(
         size = 10,
-        vjust = 0.5, hjust = 0.5
+        vjust = 0.5,
+        hjust = 0.5
       )
     )
   return(p)
@@ -245,22 +267,24 @@ get_plot_global_rt <- function(draws,
 #' subpopulation (so wastewater sites + those not on wastewater)
 #' @export
 #'
-get_plot_subpop_rt <- function(draws,
-                               forecast_date,
-                               n_draws_to_plot = 100) {
+get_plot_subpop_rt <- function(draws, forecast_date, n_draws_to_plot = 100) {
   sampled_draws <- sample.int(max(draws$draw), n_draws_to_plot)
 
-  draws_to_plot <- draws |> dplyr::filter(
-    .data$draw %in% !!sampled_draws
-  )
+  draws_to_plot <- draws |>
+    dplyr::filter(
+      .data$draw %in% !!sampled_draws
+    )
 
   p <- ggplot(draws_to_plot) +
     geom_step(
       aes(
-        x = .data$date, y = .data$pred_value, group = .data$draw,
+        x = .data$date,
+        y = .data$pred_value,
+        group = .data$draw,
         color = .data$subpop_name
       ),
-      alpha = 0.1, linewidth = 0.2,
+      alpha = 0.1,
+      linewidth = 0.2,
       show.legend = FALSE
     ) +
     geom_vline(
@@ -280,8 +304,10 @@ get_plot_subpop_rt <- function(draws,
     theme_bw() +
     theme(
       axis.text.x = element_text(
-        size = 5, vjust = 1,
-        hjust = 1, angle = 45
+        size = 5,
+        vjust = 1,
+        hjust = 1,
+        angle = 45
       ),
       axis.text.y = element_text(size = 5),
       axis.title.x = element_text(size = 12),
@@ -289,7 +315,8 @@ get_plot_subpop_rt <- function(draws,
       strip.text = element_text(size = 6),
       plot.title = element_text(
         size = 10,
-        vjust = 0.5, hjust = 0.5
+        vjust = 0.5,
+        hjust = 0.5
       )
     )
 

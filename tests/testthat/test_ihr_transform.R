@@ -20,7 +20,6 @@ test_that("Test logit-scale random walk on IHR in stan works", {
   p_hosp_r <- inv_logit_fn(p_hosp_r) # convert to natural scale
   p_hosp_r <- p_hosp_r[1:ndays] # Trim to size
 
-
   # Get vector from stan and compare
   p_hosp_stan <- model$functions$assemble_p_hosp(
     weeks_to_days, # matrix to expand from weekly to daily

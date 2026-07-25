@@ -8,7 +8,8 @@ data <- tibble::tibble(
 
 # Test that function returns a dataframe with an additional 'exclude' column
 test_that("Function returns dataframe with 'exclude' column", {
-  processed <- indicate_ww_exclusions(data,
+  processed <- indicate_ww_exclusions(
+    data,
     outlier_col_name = "flag_as_ww_outlier",
     remove_outliers = TRUE
   )
@@ -21,7 +22,8 @@ test_that("Function returns dataframe with 'exclude' column", {
 # Test that outliers are correctly marked for exclusion when
 # remove_outliers is TRUE
 test_that("Outliers are marked for exclusion when remove_outliers is TRUE", {
-  processed <- indicate_ww_exclusions(data,
+  processed <- indicate_ww_exclusions(
+    data,
     outlier_col_name = "flag_as_ww_outlier",
     remove_outliers = TRUE
   )
@@ -33,7 +35,8 @@ test_that("Outliers are marked for exclusion when remove_outliers is TRUE", {
 
 # Test that no rows are marked for exclusion when remove_outliers is FALSE
 test_that("No rows are marked for exclusion when remove_outliers is FALSE", {
-  processed <- indicate_ww_exclusions(data,
+  processed <- indicate_ww_exclusions(
+    data,
     outlier_col_name = "flag_as_ww_outlier",
     remove_outliers = FALSE
   )

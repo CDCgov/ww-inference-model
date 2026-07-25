@@ -44,7 +44,6 @@ validate_paramlist <- function(paramlist) {
     "wastewater_observation_process"
   )
 
-
   missing_sections <- setdiff(
     names(paramlist),
     expected_sections

@@ -21,11 +21,13 @@
 #' traceback.
 #'
 #' @return NULL, invisibly
-assert_no_dates_after_max <- function(date_vector,
-                                      max_date,
-                                      arg_dates = "y",
-                                      arg_max_date = "x",
-                                      call = rlang::caller_env()) {
+assert_no_dates_after_max <- function(
+  date_vector,
+  max_date,
+  arg_dates = "y",
+  arg_max_date = "x",
+  call = rlang::caller_env()
+) {
   if (max(date_vector) > max_date) {
     cli::cli_abort(
       c(
@@ -56,11 +58,13 @@ assert_no_dates_after_max <- function(date_vector,
 #' traceback.
 #'
 #' @return NULL, invisible
-assert_rt_correct_length <- function(r_in_weeks,
-                                     ot,
-                                     nt,
-                                     forecast_horizon,
-                                     call = rlang::caller_env()) {
+assert_rt_correct_length <- function(
+  r_in_weeks,
+  ot,
+  nt,
+  forecast_horizon,
+  call = rlang::caller_env()
+) {
   if (length(r_in_weeks) < (ot + nt + forecast_horizon) / 7) {
     cli::cli_abort(
       c(
@@ -88,9 +92,11 @@ assert_rt_correct_length <- function(r_in_weeks,
 #'  traceback.
 #'
 #' @return NULL, invisibly
-assert_ww_site_pops_lt_total <- function(pop_size,
-                                         ww_pop_sites,
-                                         call = rlang::caller_env()) {
+assert_ww_site_pops_lt_total <- function(
+  pop_size,
+  ww_pop_sites,
+  call = rlang::caller_env()
+) {
   if (sum(ww_pop_sites) > pop_size) {
     cli::cli_abort(
       c(
@@ -115,9 +121,11 @@ assert_ww_site_pops_lt_total <- function(pop_size,
 #' traceback.
 #'
 #' @return NULL, invisibly
-assert_site_lab_indices_align <- function(site,
-                                          lab,
-                                          call = rlang::caller_env()) {
+assert_site_lab_indices_align <- function(
+  site,
+  lab,
+  call = rlang::caller_env()
+) {
   if (length(site) != length(lab)) {
     cli::cli_abort(
       c(
@@ -142,14 +150,19 @@ assert_site_lab_indices_align <- function(site,
 #'  default is the empty string (`""`)
 #'
 #' @return NULL, invisibly
-assert_elements_non_neg <- function(x, arg = "x",
-                                    call = rlang::caller_env(),
-                                    add_err_msg = "") {
+assert_elements_non_neg <- function(
+  x,
+  arg = "x",
+  call = rlang::caller_env(),
+  add_err_msg = ""
+) {
   # Greater than or equal to 0 or is NA
   is_non_neg <- (x >= 0) | is.na(x)
   if (!all(is_non_neg)) {
     cli::cli_abort(
-      c("{.arg {arg}} has negative elements.", add_err_msg,
+      c(
+        "{.arg {arg}} has negative elements.",
+        add_err_msg,
         "!" = "All elements must be 0 or greater",
         "i" = "Elements {.val {which(!is_non_neg)}} are negative"
       ),
@@ -170,12 +183,17 @@ assert_elements_non_neg <- function(x, arg = "x",
 #' default is the empty string (`""`)
 #'
 #' @return NULL, invisibly
-assert_non_missingness <- function(x, arg = "x",
-                                   call = rlang::caller_env(),
-                                   add_err_msg = "") {
+assert_non_missingness <- function(
+  x,
+  arg = "x",
+  call = rlang::caller_env(),
+  add_err_msg = ""
+) {
   if (checkmate::anyMissing(x)) {
     cli::cli_abort(
-      c("{.arg {arg}} has missing values", add_err_msg,
+      c(
+        "{.arg {arg}} has missing values",
+        add_err_msg,
         "!" = "All elements of{.arg {arg}} should be present",
         "i" = "Element(s) {.val {which(is.na(x))}} are missing"
       ),
@@ -200,13 +218,18 @@ assert_non_missingness <- function(x, arg = "x",
 #' default is the empty string (`""`)
 #'
 #' @return NULL, invisibly
-assert_no_repeated_elements <- function(x, arg = "x",
-                                        call = rlang::caller_env(),
-                                        add_err_msg = "") {
+assert_no_repeated_elements <- function(
+  x,
+  arg = "x",
+  call = rlang::caller_env(),
+  add_err_msg = ""
+) {
   duplicates <- duplicated(x)
   if (any(duplicates)) {
     cli::cli_abort(
-      c("{.arg {arg}} has more than one element", add_err_msg,
+      c(
+        "{.arg {arg}} has more than one element",
+        add_err_msg,
         "i" = "Multiple {.arg {arg}} are not currently supported.",
         "!" = "Duplicate element(s) index: {.val {which(duplicates)}}"
       ),
@@ -234,18 +257,20 @@ assert_no_repeated_elements <- function(x, arg = "x",
 #' default is the empty string (`""`)
 #'
 #' @return NULL, invisibly
-assert_cols_det_unique_row <- function(df,
-                                       unique_key_columns,
-                                       arg = "x",
-                                       call = rlang::caller_env(),
-                                       add_err_msg = "") {
-  duplicated_rows <- df |> dplyr::filter(dplyr::n() > 1,
-    .by = {{ unique_key_columns }}
-  )
+assert_cols_det_unique_row <- function(
+  df,
+  unique_key_columns,
+  arg = "x",
+  call = rlang::caller_env(),
+  add_err_msg = ""
+) {
+  duplicated_rows <- df |>
+    dplyr::filter(dplyr::n() > 1, .by = {{ unique_key_columns }})
 
   if (nrow(duplicated_rows) != 0) {
     cli::cli_abort(
-      c("The data has more than one observation per {.arg {arg}}",
+      c(
+        "The data has more than one observation per {.arg {arg}}",
         add_err_msg,
         "i" = "Multiple observations in a {.arg {arg}} are not",
         "currently supported."
@@ -302,12 +327,15 @@ assert_int_or_char <- function(x, arg = "x", call = rlang::caller_env()) {
 #'
 #' @return This function is called for its side effect of throwing an error. It
 #'   should never return.
-throw_type_error <- function(object,
-                             arg_name,
-                             expected_type,
-                             call = rlang::caller_env()) {
+throw_type_error <- function(
+  object,
+  arg_name,
+  expected_type,
+  call = rlang::caller_env()
+) {
   cli::cli_abort(
-    c("{.arg {arg_name}} is {.obj_type_friendly {object}}",
+    c(
+      "{.arg {arg_name}} is {.obj_type_friendly {object}}",
       "i" = "Must be of type {.emph {expected_type}}"
     ),
     call = call,
@@ -337,14 +365,18 @@ throw_type_error <- function(object,
 #' traceback.
 #'
 #' @return NULL, invisibly
-assert_req_ww_cols_present <- function(ww_data,
-                                       conc_col_name,
-                                       lod_col_name,
-                                       add_req_col_names = c(
-                                         "date", "site",
-                                         "lab", "site_pop"
-                                       ),
-                                       call = rlang::caller_env()) {
+assert_req_ww_cols_present <- function(
+  ww_data,
+  conc_col_name,
+  lod_col_name,
+  add_req_col_names = c(
+    "date",
+    "site",
+    "lab",
+    "site_pop"
+  ),
+  call = rlang::caller_env()
+) {
   column_names <- colnames(ww_data)
   expected_col_names <- c(
     {{ conc_col_name }},
@@ -353,16 +385,16 @@ assert_req_ww_cols_present <- function(ww_data,
   )
 
   # This either returns TRUE or tells you whats missing.
-  name_check_result <- checkmate::check_names(column_names,
+  name_check_result <- checkmate::check_names(
+    column_names,
     must.include = expected_col_names
   )
   if (!isTRUE(name_check_result)) {
     cli::cli_abort(
-      message =
-        c(
-          "Required columns are missing from the wastewater data. ",
-          autoescape_brackets(name_check_result)
-        ),
+      message = c(
+        "Required columns are missing from the wastewater data. ",
+        autoescape_brackets(name_check_result)
+      ),
       class = "wwinference_input_data_error",
       call = call
     )
@@ -392,11 +424,13 @@ assert_req_ww_cols_present <- function(ww_data,
 #' traceback.
 #'
 #' @return NULL, invisibly
-assert_req_count_cols_present <- function(count_data,
-                                          count_col_name,
-                                          pop_size_col_name,
-                                          add_req_col_names = c("date"),
-                                          call = rlang::caller_env()) {
+assert_req_count_cols_present <- function(
+  count_data,
+  count_col_name,
+  pop_size_col_name,
+  add_req_col_names = c("date"),
+  call = rlang::caller_env()
+) {
   column_names <- colnames(count_data)
   expected_col_names <- c(
     count_col_name,
@@ -405,7 +439,8 @@ assert_req_count_cols_present <- function(count_data,
   )
 
   # This tells you whats missing
-  check_colnames <- checkmate::check_names(column_names,
+  check_colnames <- checkmate::check_names(
+    column_names,
     must.include = expected_col_names
   )
 
@@ -434,9 +469,12 @@ assert_req_count_cols_present <- function(count_data,
 #' default is the empty string (`""`)
 #'
 #' @return NULL, invisibly
-assert_single_value <- function(x, arg = "x",
-                                call = rlang::caller_env(),
-                                add_err_msg = "") {
+assert_single_value <- function(
+  x,
+  arg = "x",
+  call = rlang::caller_env(),
+  add_err_msg = ""
+) {
   unique_elements <- unique(x)
 
   if (length(unique_elements) > 1) {
@@ -463,10 +501,12 @@ assert_single_value <- function(x, arg = "x",
 #' default is the empty string (`""`)
 #'
 #' @return NULL invisible
-assert_df_not_empty <- function(x,
-                                arg = "x",
-                                call = rlang::caller_env(),
-                                add_err_msg = "") {
+assert_df_not_empty <- function(
+  x,
+  arg = "x",
+  call = rlang::caller_env(),
+  add_err_msg = ""
+) {
   nrows <- nrow(x)
 
   if (is.null(nrows)) {
@@ -480,7 +520,8 @@ assert_df_not_empty <- function(x,
       class = "wwinference_input_data_error"
     )
   } else if (nrows < 1) {
-    cli::cli_abort(c("{.arg {arg}} is empty", add_err_msg),
+    cli::cli_abort(
+      c("{.arg {arg}} is empty", add_err_msg),
       call = call,
       class = "wwinference_input_data_error"
     )
@@ -503,9 +544,11 @@ assert_df_not_empty <- function(x,
 #' default is the empty string (`""`)
 #'
 #' @return NULL invisible
-assert_daily_data <- function(dates,
-                              call = rlang::caller_env(),
-                              add_err_msg = "") {
+assert_daily_data <- function(
+  dates,
+  call = rlang::caller_env(),
+  add_err_msg = ""
+) {
   # Generate a sequence of dates from the minimum to the
   # maximum date in the dataset
   expected_dates <- seq.Date(
@@ -513,7 +556,6 @@ assert_daily_data <- function(dates,
     to = max(dates),
     by = "day"
   )
-
 
   if (!all(expected_dates %in% dates)) {
     cli::cli_abort(
@@ -543,15 +585,17 @@ assert_daily_data <- function(dates,
 #' default is the empty string (`""`)
 #'
 #' @return NULL invisible
-assert_sufficient_days_of_data <- function(date_vector,
-                                           data_name,
-                                           calibration_time,
-                                           call = rlang::caller_env(),
-                                           add_err_msg = "") {
+assert_sufficient_days_of_data <- function(
+  date_vector,
+  data_name,
+  calibration_time,
+  call = rlang::caller_env(),
+  add_err_msg = ""
+) {
   # check that you have sufficient count data for the calibration time
-  calibration_start <- max(date_vector,
-    na.rm = TRUE
-  ) - lubridate::days(calibration_time) + 1
+  calibration_start <- max(date_vector, na.rm = TRUE) -
+    lubridate::days(calibration_time) +
+    1
   check_sufficient_data <- min(date_vector, na.rm = TRUE) <= calibration_start
   if (!check_sufficient_data) {
     cli::cli_abort(
@@ -578,11 +622,13 @@ assert_sufficient_days_of_data <- function(date_vector,
 #' default is the empty string (`""`)
 #'
 #' @return NULL invisible
-assert_dates_within_frame <- function(dates1,
-                                      dates2,
-                                      max_date,
-                                      call = rlang::caller_env(),
-                                      add_err_msg = "") {
+assert_dates_within_frame <- function(
+  dates1,
+  dates2,
+  max_date,
+  call = rlang::caller_env(),
+  add_err_msg = ""
+) {
   checkmate::assert_date(dates1)
   checkmate::assert_date(dates2)
   check_dates2_win_frame <- min(dates1) <= max(dates2) &
@@ -619,18 +665,19 @@ assert_dates_within_frame <- function(dates1,
 #' default is the empty string (`""`)
 #'
 #' @return NULL invisible
-assert_equivalent_indexing <- function(first_data,
-                                       second_data,
-                                       arg1 = "x1",
-                                       arg2 = "x2",
-                                       call = rlang::caller_env(),
-                                       add_err_msg = "") {
+assert_equivalent_indexing <- function(
+  first_data,
+  second_data,
+  arg1 = "x1",
+  arg2 = "x2",
+  call = rlang::caller_env(),
+  add_err_msg = ""
+) {
   first_index <- first_data |>
     dplyr::distinct(.data$date, .data$t)
   second_index <- second_data |>
     dplyr::distinct(.data$date, .data$t) |>
     dplyr::rename("second_t" = "t")
-
 
   test_df <- first_index |>
     dplyr::inner_join(second_index, by = "date")

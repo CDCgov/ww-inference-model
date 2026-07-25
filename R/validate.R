@@ -9,25 +9,30 @@
 #' traceback.
 #'
 #' @return NULL, invisibly
-validate_ww_conc_data <- function(ww_data,
-                                  conc_col_name,
-                                  lod_col_name,
-                                  call = rlang::caller_env()) {
+validate_ww_conc_data <- function(
+  ww_data,
+  conc_col_name,
+  lod_col_name,
+  call = rlang::caller_env()
+) {
   assert_df_not_empty(ww_data, arg = "ww_data", call)
 
-  ww_conc <- ww_data |> dplyr::pull({
-    conc_col_name
-  })
+  ww_conc <- ww_data |>
+    dplyr::pull({
+      conc_col_name
+    })
   arg <- conc_col_name
-  assert_non_missingness(ww_conc, arg, call,
-    add_err_msg =
-      c(
-        "Package expects that there are no missing",
-        " values in wastewater concentration data.",
-        "Observations below the limit of detection must",
-        " indicate a numeric value less than the limit",
-        "of detection"
-      )
+  assert_non_missingness(
+    ww_conc,
+    arg,
+    call,
+    add_err_msg = c(
+      "Package expects that there are no missing",
+      " values in wastewater concentration data.",
+      "Observations below the limit of detection must",
+      " indicate a numeric value less than the limit",
+      "of detection"
+    )
   )
   checkmate::assert_vector(ww_conc)
 
@@ -36,18 +41,18 @@ validate_ww_conc_data <- function(ww_data,
     df = ww_data,
     unique_key_columns = c("date", "site", "lab"),
     arg = "lab-site-day",
-    add_err_msg =
-      c(
-        "Package expects either at most one ",
-        "wastewater observation per a given a site, lab, ",
-        "and sample collection date. Got date(s) with ",
-        "more than one observation for a given site and lab."
-      )
+    add_err_msg = c(
+      "Package expects either at most one ",
+      "wastewater observation per a given a site, lab, ",
+      "and sample collection date. Got date(s) with ",
+      "more than one observation for a given site and lab."
+    )
   )
 
-  ww_lod <- ww_data |> dplyr::pull({
-    lod_col_name
-  })
+  ww_lod <- ww_data |>
+    dplyr::pull({
+      lod_col_name
+    })
   arg <- "lod_col_name"
   assert_non_missingness(ww_lod, arg, call)
   checkmate::assert_vector(ww_lod)
@@ -70,7 +75,6 @@ validate_ww_conc_data <- function(ww_data,
   arg <- "lab_labels"
   assert_int_or_char(lab_labels, arg, call)
   assert_non_missingness(lab_labels, arg, call)
-
 
   # Site populations should be integers, not be missing, and be
   # non-negative
@@ -101,7 +105,6 @@ validate_ww_conc_data <- function(ww_data,
     )
   }
 
-
   invisible()
 }
 
@@ -116,15 +119,18 @@ validate_ww_conc_data <- function(ww_data,
 #' traceback.
 #'
 #' @return NULL, invisibly
-validate_count_data <- function(count_data,
-                                count_col_name,
-                                pop_size_col_name,
-                                call = rlang::caller_env()) {
+validate_count_data <- function(
+  count_data,
+  count_col_name,
+  pop_size_col_name,
+  call = rlang::caller_env()
+) {
   assert_df_not_empty(count_data, arg = "count_data", call)
   # Count data should be non negative and a vector of integers
-  counts <- count_data |> dplyr::pull({
-    count_col_name
-  })
+  counts <- count_data |>
+    dplyr::pull({
+      count_col_name
+    })
   arg <- "counts"
   checkmate::assert_vector(counts)
   checkmate::assert_integerish(counts)
@@ -133,19 +139,19 @@ validate_count_data <- function(count_data,
   # Right now the model expects daily data! Check that the dates are each day
   assert_daily_data(
     count_data$date,
-    add_err_msg =
-      c(
-        "Count dataset does not appear to be daily.",
-        "The current model only supports daily data"
-      )
+    add_err_msg = c(
+      "Count dataset does not appear to be daily.",
+      "The current model only supports daily data"
+    )
   )
 
   # Currently, the framework only supports a single population size for
   # an individual model fit. Therefore, check that there are not multiple
   # "global" population sizes being passed in.
-  pop <- count_data |> dplyr::pull({
-    pop_size_col_name
-  })
+  pop <- count_data |>
+    dplyr::pull({
+      pop_size_col_name
+    })
   arg <- "global_pop"
 
   checkmate::assert_integerish(pop)
@@ -158,7 +164,6 @@ validate_count_data <- function(count_data,
     "average population size over the inference period"
   )
   assert_single_value(pop, arg, call, add_err_msg)
-
 
   # Date column should be of date type, for count data, there should only
   # be one observation per day
@@ -189,14 +194,16 @@ validate_count_data <- function(count_data,
 #' @param forecast_date IS08 formatted date indicating the forecast date
 #'
 #' @return NULL, invisibly
-validate_data_jointly <- function(input_count_data,
-                                  input_ww_data,
-                                  date_time_spine,
-                                  lab_site_site_spine,
-                                  site_subpop_spine,
-                                  lab_site_subpop_spine,
-                                  calibration_time,
-                                  forecast_date) {
+validate_data_jointly <- function(
+  input_count_data,
+  input_ww_data,
+  date_time_spine,
+  lab_site_site_spine,
+  site_subpop_spine,
+  lab_site_subpop_spine,
+  calibration_time,
+  forecast_date
+) {
   # check that you have sufficient count data for the calibration time
   assert_sufficient_days_of_data(
     input_count_data$date,
@@ -208,14 +215,13 @@ validate_data_jointly <- function(input_count_data,
     )
   )
 
-  assert_elements_non_neg(calibration_time,
-    arg = "calibration_time"
-  )
+  assert_elements_non_neg(calibration_time, arg = "calibration_time")
   checkmate::assert_integerish(calibration_time)
 
   # make sure filtering to exclude days before earliest calibration time
   # didn't eliminate
-  assert_df_not_empty(input_ww_data,
+  assert_df_not_empty(
+    input_ww_data,
     add_err_msg = c(
       "There is no wastewater data within ",
       "the count data calibration period"
@@ -296,12 +302,14 @@ validate_data_jointly <- function(input_count_data,
 #' @param arg name of the argument supplying the object
 #' @param call The calling environment to be reflected in the error message
 #' @return NULL, invisibly
-validate_pmf <- function(pmf,
-                         calibration_time,
-                         count_data,
-                         tolerance = 1e-6,
-                         arg = "x",
-                         call = rlang::caller_env()) {
+validate_pmf <- function(
+  pmf,
+  calibration_time,
+  count_data,
+  tolerance = 1e-6,
+  arg = "x",
+  call = rlang::caller_env()
+) {
   if (!isTRUE(all.equal(sum(pmf), 1, tolerance = 1e-6))) {
     cli::cli_abort(
       c(
@@ -321,7 +329,8 @@ validate_pmf <- function(pmf,
     )
   }
 
-  assert_elements_non_neg(pmf,
+  assert_elements_non_neg(
+    pmf,
     add_err_msg = c(
       "Elements in {.arg {arg}} must",
       "be non-negative. Otherwise, ",
