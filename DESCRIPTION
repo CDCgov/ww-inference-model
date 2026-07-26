@@ -80,7 +80,6 @@ Depends:
 SystemRequirements: CmdStan (>=2.37)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
 Suggests:
     testthat (>= 3.0.0),
     bookdown,
@@ -110,3 +109,4 @@ Remotes:
     stan-dev/cmdstanr
 VignetteBuilder:
     knitr
+Config/roxygen2/version: 8.0.0

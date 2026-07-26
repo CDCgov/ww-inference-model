@@ -5,7 +5,9 @@
 \alias{wwinference-package}
 \title{wwinference: Jointly infers infection dynamics from wastewater data and epidemiological indicators}
 \description{
-An implementation of a hierarchical semi-mechanistic renewal approach jointly calibrating to multiple wastewater concentrations datasets from subsets of a specified population and epidemioliogical indicators such as cases or hospital admissions from the whole population. Our framework is an extension of the widely used semi-mechanistic renewal framework EpiNow2, using a Bayesian latent variable approach implemented in the probabilistic programming language Stan. This package contains just the core components needed to fit these two data sources and produce the following outputs-- estimated and forecasted hospital admissions, estimated and forecasted wastewater concentrations, global R(t) estimates, local R(t) estimates for the subpopulations represented by each wastewater catchment area.
+\if{html}{\figure{logo.svg}{options: style='float: right' alt='logo' width='120'}}
+
+An implementation of a hierarchical semi-mechanistic renewal approach jointly calibrating to multiple wastewater concentrations datasets from subsets of a specified population and epidemioliogical indicators such as cases or hospital admissions from the whole population. Our framework is an extension of the widely used semi-mechanistic renewal framework EpiNow2, using a Bayesian latent variable approach implemented in the probabilistic programming language Stan. This package contains just the core components needed to fit these two data sources and produce the following outputs-- estimated and forecasted hospital admissions, estimated and forecasted wastewater concentrations, global R(t) estimates, local R(t) estimates for the subpopulations represented by each wastewater catchment area. For an evaluation of the model's performance on forecasting COVID-19 hospital admissions in real-time and retrospectively, with and without wastewater and compared to other forecasting models during the 2023-2024 winter COVID epidemic, please see our recent pre-print Johnson (2026) \url{https://www.medrxiv.org/content/10.64898/2026.02.23.26346887}.
 }
 \seealso{
 Useful links:
@@ -21,6 +23,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Kaitlyn Johnson \email{johnsonkaitlyne9@gmail.com} (\href{https://orcid.org/0000-0001-8011-0012}{ORCID})
   \item Dylan Morris \email{dylan@dylanhmorris.com} (\href{https://orcid.org/0000-0002-3655-406X}{ORCID})
   \item Sam Abbott \email{contact@samabbott.co.uk} (\href{https://orcid.org/0000-0001-8057-8037}{ORCID})
   \item Christian Bernal Zelaya \email{xuk0@cdc.gov}

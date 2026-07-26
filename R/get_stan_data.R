@@ -1,25 +1,60 @@
+#' Get the first date of calibration count data
+#'
+#' @param count_data dataframe with the input count data. Must contain a
+#' column named `date`.
+#' @param calibration_time Maximum number of days of count date to
+#' use when fitting the model.
+#'
+#' @return The first calibration date.
+#'
+#' @examples
+#'
+#' get_first_calibration_date(wwinference::hosp_data, 50)
+#'
+#' get_first_calibration_date(wwinference::hosp_data, 70)
+#' @export
+get_first_calibration_date <- function(count_data, calibration_time) {
+  last_count_data_date <- max(count_data$date, na.rm = TRUE)
+  return(last_count_data_date - lubridate::days(calibration_time - 1))
+}
+
+
+#' Get the final target date of the forecast period
+#'
+#' Enforces the convention that the forecast_date itself
+#' is day 0 of the forecast horizon, not (e.g. day 1).
+#'
+#' @param forecast_date Forecast date, coercible by [as.Date()].
+#' @param forecast_horizon Forecast horizon, in days.
+#' @return The last target date, i.e. the last date
+#' for which the model will produce a forecast.
+#'
+#' @examples
+#' get_last_target_date("2026-01-01", 3)
+#' get_last_target_date("2026-01-01", 0)
+#' @export
+get_last_target_date <- function(forecast_date, forecast_horizon) {
+  return(as.Date(forecast_date) + lubridate::days(forecast_horizon))
+}
+
 #' Get the input count data to pass directly to stan
 #'
 #' @param preprocessed_count_data a dataframe with the input count data, must
-#' have the following columns: date, count, total_pop
-#' @param calibration_time integer indicating the max duration in days that
-#' the model is calibrated to the count data for
-#' @return datatframe of count data passed to stan
+#' have a column named `date`.
+#' @param date_time_spine table mapping dates to model time index, as the
+#' output of [get_date_time_spine()].
+#' @return data frame of count data passed to stan
 #' @export
 get_input_count_data_for_stan <- function(
   preprocessed_count_data,
-  calibration_time
+  date_time_spine
 ) {
-  # Get the last date that there were observations of the epidemiological
-  # indicator (aka cases or hospital admissions counts)
-  last_count_data_date <- max(preprocessed_count_data$date, na.rm = TRUE)
+  spine_filtered <- date_time_spine |>
+    dplyr::filter(.data$date <= max(!!preprocessed_count_data$date))
 
-  input_count_data_filtered <- preprocessed_count_data |>
-    dplyr::filter(
-      .data$date > !!last_count_data_date - lubridate::days(!!calibration_time)
-    )
-
-  count_data <- add_time_indexing(input_count_data_filtered)
+  count_data <- preprocessed_count_data |>
+    dplyr::right_join(spine_filtered, by = "date") |>
+    arrange(.data$date)
 
   return(count_data)
 }
@@ -88,45 +123,28 @@ get_input_ww_data_for_stan <- function(
   return(ww_data)
 }
 
-#' Get date time spine to map to model output
+
+#' Produce a tibble with a date column and a 1-indexed t column
 #'
-#' @param forecast_date a character string in ISO8601 format (YYYY-MM-DD)
-#' indicating the date that the forecast is to be made.
-#' @param input_count_data a dataframe of the count data to be passed
-#' directly to stan, , must have the following columns: date, count, total_pop
-#' @param last_count_data_date string indicating the date of the last observed
-#' count data point in 1SO8601 format (YYYY-MM-DD)
-#' @param calibration_time integer indicating the number of days to calibrate
-#' the model for, default is `90`
-#' @param forecast_horizon integer indicating the number of days, including the
-#' forecast date, to produce forecasts for, default is `28`
+#' For a range of dates, inclusive.
 #'
+#' @param first_date first date in the table. Must be coercible to a
+#' date via [as.Date()].
+#' @param last_date ldate date in the table. Must be coercible to a
+#' date via [as.Date()].
 #'
-#' @return a tibble containing an integer for time mapped to the corresponding
-#' date, for the entire calibration and forecast period
+#' @return A tibble mapping dates to (1-indexed) model time.
 #' @export
 #'
-get_date_time_spine <- function(
-  forecast_date,
-  input_count_data,
-  last_count_data_date,
-  calibration_time,
-  forecast_horizon
-) {
-  nowcast_time <- as.integer(
-    lubridate::ymd(forecast_date) - last_count_data_date
-  )
+get_date_time_spine <- function(first_date, last_date) {
   date_time_spine <- tibble::tibble(
     date = seq(
-      from = min(input_count_data$date),
-      to = min(input_count_data$date) +
-        calibration_time +
-        nowcast_time +
-        forecast_horizon,
+      from = as.Date(first_date),
+      to = as.Date(last_date),
       by = "days"
     )
   ) |>
-    dplyr::mutate(t = row_number())
+    dplyr::mutate(t = dplyr::row_number())
   return(date_time_spine)
 }
 
@@ -346,9 +364,21 @@ get_lab_site_subpop_spine <- function(lab_site_site_spine, site_subpop_spine) {
 #' calibration_time <- 90
 #' forecast_horizon <- 28
 #' include_ww <- 1
+#' last_target_date <- get_last_target_date(
+#'   forecast_date, forecast_horizon
+#' )
+#' first_calibration_date <- get_first_calibration_date(
+#'   input_count_data, calibration_time
+#' )
+#'
+#' date_time_spine <- get_date_time_spine(
+#'   first_calibration_date,
+#'   last_target_date
+#' )
+#'
 #' input_count_data_for_stan <- get_input_count_data_for_stan(
 #'   input_count_data,
-#'   calibration_time
+#'   date_time_spine
 #' )
 #' last_count_data_date <- max(input_count_data_for_stan$date, na.rm = TRUE)
 #' first_count_data_date <- min(input_count_data_for_stan$date, na.rm = TRUE)
@@ -357,13 +387,6 @@ get_lab_site_subpop_spine <- function(lab_site_site_spine, site_subpop_spine) {
 #'   first_count_data_date,
 #'   last_count_data_date,
 #'   calibration_time
-#' )
-#' date_time_spine <- get_date_time_spine(
-#'   forecast_date = forecast_date,
-#'   input_count_data = input_count_data_for_stan,
-#'   last_count_data_date = last_count_data_date,
-#'   forecast_horizon = forecast_horizon,
-#'   calibration_time = calibration_time
 #' )
 #' lab_site_site_spine <- get_lab_site_site_spine(
 #'   input_ww_data = input_ww_data_for_stan
@@ -796,40 +819,6 @@ get_ww_indices_and_values <- function(
     )
   }
   return(ww_values)
-}
-
-
-#' Add time indexing to count data
-#'
-#' @param input_count_data data frame with dates and counts,
-#' but without time indexing.
-#'
-#' @return The same data frame, with an added
-#' time index, including NA rows if dates internal
-#' to the timeseries are missing admissions data.
-#' @export
-#'
-#' @examples
-#' hosp_data_example <- tibble::tibble(
-#'   date = lubridate::ymd("2024-01-01", "2024-01-02", "2024-01-06"),
-#'   daily_hosp_admits = c(5, 3, 8)
-#' )
-#' hosp_data_w_t <- add_time_indexing(hosp_data_example)
-add_time_indexing <- function(input_count_data) {
-  date_df <- tibble::tibble(
-    date = seq(
-      from = min(input_count_data$date),
-      to = max(input_count_data$date),
-      by = "days"
-    )
-  ) |>
-    dplyr::mutate(t = dplyr::row_number())
-
-  count_data <- input_count_data |>
-    dplyr::left_join(date_df, by = "date") |>
-    arrange(.data$date)
-
-  return(count_data)
 }
 
 
