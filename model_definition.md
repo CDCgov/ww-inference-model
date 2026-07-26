@@ -194,7 +194,7 @@ In fact, there is substantial inter-individual variability in shedding kinetics 
 This approximation is more accurate when population sizes are large.
 Incorporating the expected variability in the observed concentrations as a function of the number of contributing infected individuals is an area of active development.
 
-We model the shedding kinetics $s(\tau)$ as a discretized, scaled triangular distribution[^Larremore2021]:
+We model the shedding kinetics $s(\tau)$ as a discretized, scaled triangular distribution[^Kissler2023]:
 
 ```math
 \log_{10}[s^\mathrm{cont}(\tau)] = \begin{cases}
@@ -374,7 +374,7 @@ Wastewater data are indexed by site $i$, wastewater testing lab $j$, and day $t$
 [^Cevik]: Cevik, M. et al. SARS-CoV-2, SARS-CoV, and MERS-CoV viral load dynamics, duration of viral shedding, and infectiousness: a systematic review and meta-analysis. _Lancet Microbe_ **2(1)**,e13-e22 (2021). https://doi.org/10.1016/S2666-5247(20)30172-5
 [^Watson]: Leighton, M. et al. Improving estimates of epidemiological quantities by combining reported cases with wastewater data: a statistical framework with applications to COVID-19 in Aotearoa New Zealand. _medRxiv_ (2023). https://doi.org/10.1101/2023.08.14.23294060
 [^Ortiz]: Ortiz, P. _Wastewater facts - statistics and household data in 2024_. https://housegrail.com/wastewater-facts-statistics/
-[^Larremore2021]: Larremore, D.B. et al. Test sensitivity is secondary to frequency and turnaround time for COVID-19 screening. _Science Advances_ (2021). https://doi.org/10.1126/sciadv.abd5393
+[^Kissler2023]: Kissler, S.M. et al. Viral kinetics of sequential SARS-CoV-2 infections. _Nat Commun_ 14, 6206 (2023). https://doi.org/10.1038/s41467-023-41941-z
 [^Cori]: Cori, A., Ferguson, N. M., Fraser, C., & Cauchemez, S. A new framework and software to estimate time-varying reproduction numbers during epidemics. _Am. J. Epidemiol._ **178**, 1505-1512 (2013). https://doi.org/10.1093/aje/kwt133
 [^EpiNow2]: Abbott, S. et al. _EpiNow2: Estimate real-time case counts and time-varying epidemiological parameters._ https://doi.org/10.5281/zenodo.3957489
 [^Epidemia]: Fraser, C. (2007). Estimating individual and household reproduction numbers in an emerging epidemic. _PLoS One_, **2**(8), e758 (2007). https://doi.org/10.1371/journal.pone.0000758
