@@ -1,4 +1,4 @@
-# wwinference (development version)
+# wwinference 0.1.3
 
 # wwinference 0.1.2
 - Updates `compile_model` to be remove an argument that has been deprecated in `cmdstanr`.
