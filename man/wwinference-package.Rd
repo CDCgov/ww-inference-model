@@ -37,7 +37,7 @@ Other contributors:
 \itemize{
   \item Adam Howes \email{adamthowes@gmail.com} (\href{https://orcid.org/0000-0003-2386-4031}{ORCID}) [contributor]
   \item Chirag Kumar \email{kzs9@cdc.gov} [contributor]
-  \item Alexander Keyel \email{alexander.keyel@health.ny.gov} (\href{https://orcid.org/000-0001-5256-6274}{ORCID}) [contributor]
+  \item Alexander Keyel \email{alexander.keyel@health.ny.gov} (\href{https://orcid.org/0000-0001-5256-6274}{ORCID}) [contributor]
   \item Hannah Cohen \email{llg4@cdc.gov} [contributor]
 }
 

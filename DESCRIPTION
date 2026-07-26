@@ -51,7 +51,7 @@ Authors@R: c(
            family = "Keyel",
            role = c("ctb"),
            email = "alexander.keyel@health.ny.gov",
-           comment = c(ORCID = "000-0001-5256-6274")),
+           comment = c(ORCID = "0000-0001-5256-6274")),
     person(given = "Hannah",
            family = "Cohen",
            role = c("ctb"),
