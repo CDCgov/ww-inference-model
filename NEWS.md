@@ -1,4 +1,7 @@
-# wwinference (development version)
+# wwinference 0.1.3
+- Fixes documentation bug in definition of forecast horizon.
+- Fixes off-by-one `get_date_time_spine()` that led it to produce an unneeded and unused row.
+- Refactors and simplifies time indexing logic to reduce risk of misalignment bugs.
 
 # wwinference 0.1.2
 - Updates `compile_model` to be remove an argument that has been deprecated in `cmdstanr`.
