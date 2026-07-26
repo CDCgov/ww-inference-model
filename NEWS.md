@@ -1,3 +1,5 @@
+# wwinference (development version)
+
 # wwinference 0.1.3
 - Fixes documentation bug in definition of forecast horizon.
 - Fixes off-by-one `get_date_time_spine()` that led it to produce an unneeded and unused row.
