@@ -1,4 +1,5 @@
 # wwinference (development version)
+- Fixes a misplaced parenthesis in `flag_ww_outliers()` that made the rho rule compare a z score against the sign of the next one rather than comparing the two signs, so sustained rises and falls were flagged as outliers alongside genuine spikes.
 
 # wwinference 0.1.3
 - Fixes documentation bug in definition of forecast horizon.
