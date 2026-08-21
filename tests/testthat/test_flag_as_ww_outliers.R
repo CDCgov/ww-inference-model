@@ -176,3 +176,53 @@ test_that("exclude column is set to zero by default", {
 
   expect_true(all(result$exclude == 0))
 })
+
+# The rho rule is meant to catch a spike: a steep move followed immediately by a
+# steep move in the opposite direction. A steep move followed by another in the
+# same direction is a real trend and should be left alone.
+make_ww_series <- function(log_conc) {
+  n <- length(log_conc)
+  tibble::tibble(
+    site = rep("Site1", n),
+    lab = rep("Lab1", n),
+    lab_site_index = rep(1, n),
+    date = as.Date("2021-01-01") + seq_len(n) - 1,
+    log_genome_copies_per_ml = log_conc,
+    below_lod = rep(0, n)
+  )
+}
+
+test_that("a sustained trend is not flagged as a rho outlier", {
+  rising <- make_ww_series(c(1, 1, 1, 1, 6, 11, 11, 11))
+  falling <- make_ww_series(c(11, 11, 11, 11, 6, 1, 1, 1))
+
+  for (rho_threshold in c(0.8, 1, 1.2)) {
+    rising_result <- flag_ww_outliers(
+      rising,
+      rho_threshold = rho_threshold,
+      log_conc_threshold = 100
+    )
+    falling_result <- flag_ww_outliers(
+      falling,
+      rho_threshold = rho_threshold,
+      log_conc_threshold = 100
+    )
+
+    testthat::expect_equal(sum(rising_result$flag_as_ww_outlier), 0)
+    testthat::expect_equal(sum(falling_result$flag_as_ww_outlier), 0)
+  }
+})
+
+test_that("a spike is still flagged as a rho outlier", {
+  spike <- make_ww_series(c(1, 1, 1, 1, 9, 1, 1, 1))
+
+  for (rho_threshold in c(0.8, 1, 1.2)) {
+    result <- flag_ww_outliers(
+      spike,
+      rho_threshold = rho_threshold,
+      log_conc_threshold = 100
+    )
+
+    testthat::expect_equal(sum(result$flag_as_ww_outlier), 1)
+  }
+})
