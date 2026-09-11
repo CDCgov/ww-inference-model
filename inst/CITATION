@@ -1,0 +1,40 @@
+bibentry(
+  bibtype = "Article",
+  title = "Bayesian generative modeling for heterogeneous wastewater data applied to COVID-19 forecasting",
+  author = c(
+    person("Kaitlyn", "Johnson"), person("George", "Vega Yon"),
+    person("Samuel P. C.", "Brand"), person("Christian", "Bernal Zelaya"),
+    person("Damon", "Bayer"), person("Igor", "Volkov"),
+    person("Zachary", "Susswein"), person("Andrew", "Magee"),
+    person("Katelyn M.", "Gostic"), person("Kayla M.", "English"),
+    person("Isaac", "Ghinai"), person("Anders", "Hamlet"),
+    person("Scott W.", "Olesen"), person("Juliet", "Pulliam"),
+    person("Sam", "Abbott"), person("Dylan H.", "Morris")
+  ),
+  year = "2026",
+  journal = "medRxiv",
+  doi = "10.64898/2026.02.23.26346887",
+  url = "https://www.medrxiv.org/content/10.64898/2026.02.23.26346887"
+)
+
+year <- if (!is.null(meta$`Date/Publication`)) {
+  substr(meta$`Date/Publication`, 1, 4)
+} else if (!is.null(meta$Date)) {
+  substr(meta$Date, 1, 4)
+} else {
+  format(Sys.Date(), "%Y")
+}
+
+bibentry(
+  bibtype = "Manual",
+  title = "{{wwinference: Jointly infers infection dynamics from wastewater data and epidemiological indicators}}",
+  author = c(
+    person("Kaitlyn", "Johnson"), person("Dylan", "Morris"),
+    person("Sam", "Abbott"), person("Christian", "Bernal Zelaya"),
+    person("George", "Vega Yon"), person("Damon", "Bayer"),
+    person("Andrew", "Magee"), person("Scott", "Olesen")
+  ),
+  year = year,
+  note = sprintf("R package version %s", meta$Version),
+  url = "https://github.com/CDCgov/ww-inference-model/"
+)
