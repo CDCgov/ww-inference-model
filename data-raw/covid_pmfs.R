@@ -1,4 +1,3 @@
-# jarl-ignore-file internal_function: package data generation can use internal fns
 # Load in the parameters
 params <- wwinference::get_params(
   system.file("extdata", "example_params.toml", package = "wwinference")
